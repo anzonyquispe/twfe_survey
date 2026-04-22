@@ -1,0 +1,19 @@
+dictionary using 97-98/P979833C.RAW {
+
+_column(1)	nic87		%4.0f	"Industry - NIC-87 Industry Code"
+_column(5)	runslno		%6.0f	"Running Serial No. "
+_column(11)	stcode		%2.0f	"State Code (ST)"
+_column(13)	permid		%5.0f	"Permanent Serial No.
+_column(18)	schcode   	%1.0f  	"Scheme Code"
+
+_column(21)	linkcode	%3.0f	"Link Code"
+
+_column(24)	workingprops	%7.0f	"Working Proprietors"
+_column(31)	unpaidfamilyemp	%7.0f	"Unpaid family workers"
+_column(38)	coopemp		%7.0f	"Other Employees Average"
+_column(45)	totpersons	%7.0f	"Total Averages"
+_column(52)     total_wages        %12.0f        "TOTAL WAGES"
+_column(64)     total_bonus        %12.0f        " TOTAL BONUS"
+_column(76)     total_addl_labcost        %12.0f        "TOTAL PF & OTHERS"
+
+};

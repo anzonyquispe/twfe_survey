@@ -1,0 +1,5537 @@
+-------------------------------------------------------------------------------------------------------------------------
+       log:  C:\research\segregation\AER-DATA\programs\build-districts.log
+  log type:  text
+ opened on:  17 Nov 2010, 15:31:15
+
+. 
+. 
+. ************* 1. Establish Sample ***********************
+. ****** This is the city surrounding each MSA's CBD ******
+. 
+. use ../gis/segsamp_cbd.dta
+
+. 
+. gen statefips = real(first_stat)
+
+. gen place = real(first_plac)
+
+. rename first_name cbdname
+
+. 
+. do ../data/xwalk/place-change-code60.do
+
+. /*
+> This program changes place codes
+> to match place-codes.dta based
+> on discrepancies found in 1960 only.  
+> This program is intended to be called
+> in order to make place codes consistent 
+> between the 1960 census and place-codes.dta.
+> */
+. 
+. 
+. *CA
+. *La Habra 
+. replace place = 1428 if place==1425 & statefips==6
+(0 real changes made)
+
+. 
+. *CT
+. *Bridgeport
+. replace place = 200 if place==110 & statefips==9
+(0 real changes made)
+
+. *New Britain
+. replace place = 1390 if place==705 & statefips==9
+(0 real changes made)
+
+. *Hartford
+. replace place = 970 if place==485 & statefips==9
+(0 real changes made)
+
+. *New Haven
+. replace place = 1450 if place==735 & statefips==9
+(0 real changes made)
+
+. *West Haven
+. replace place = 2535 if place==1270 & statefips==9
+(0 real changes made)
+
+. *Milford
+. replace place = 1270 if place==645 & statefips==9
+(0 real changes made)
+
+. *Norwalk
+. replace place = 1630 if place==825 & statefips==9
+(0 real changes made)
+
+. *Stamford
+. replace place = 2180 if place==1100 & statefips==9
+(0 real changes made)
+
+. *Waterbury
+. replace place = 2460 if place==1240 & statefips==9
+(0 real changes made)
+
+. 
+. *FL
+. *Jacksonville, FL
+. replace place = 1003 if place==1000 & statefips==12
+(1 real change made)
+
+. *Miami Beach, FL
+. replace place = 1375 if place==1369 & statefips==12
+(0 real changes made)
+
+. *North Miami, FL
+. replace place = 1498 if place==1502 & statefips==12
+(0 real changes made)
+
+. replace place = 1498 if place==1495 & statefips==12
+(0 real changes made)
+
+. *Lakeland
+. replace place = 1136 if place==1140 & statefips==12
+(0 real changes made)
+
+. 
+. *IL
+. *Alton
+. replace place = 115 if place==105 & statefips==17
+(0 real changes made)
+
+. *Morton Grove, IL
+. replace place = 3873 if place==3870 & statefips==17
+(0 real changes made)
+
+. 
+. *ME
+. *Portland, ME
+. replace place = 3750 if place==2095 & statefips==23
+(0 real changes made)
+
+. 
+. *MD
+. *Annapolis
+. replace place = 11 if place==15 & statefips==24
+(0 real changes made)
+
+. 
+. *MA
+. *Attleboro
+. replace place = 210 if place==105 & statefips==25
+(0 real changes made)
+
+. *Boston
+. replace place = 440 if place==220 & statefips==25
+(0 real changes made)
+
+. *Brockton
+. replace place = 540 if place==270 & statefips==25
+(0 real changes made)
+
+. *Cambridge
+. replace place = 610 if place==302 & statefips==25
+(0 real changes made)
+
+. *Fall River
+. replace place = 1220 if place==605 & statefips==25
+(0 real changes made)
+
+. *Lowell
+. replace place = 2180 if place==1085 & statefips==25
+(0 real changes made)
+
+. *Lynn
+. replace place = 2210 if place==1100 & statefips==25
+(0 real changes made)
+
+. *New Bedford
+. replace place = 2770 if place==1380 & statefips==25
+(0 real changes made)
+
+. *Pittsfield
+. replace place = 3370 if place==1680 & statefips==25
+(0 real changes made)
+
+. *Waltham
+. replace place = 4440 if place==2205 & statefips==25
+(0 real changes made)
+
+. *Worcester
+. replace place = 5030 if place==2500 & statefips==25
+(0 real changes made)
+
+. *Springfield
+. replace place = 4090 if place==2030 & statefips==25
+(0 real changes made)
+
+. *Lawrence
+. replace place = 2030 if place==1010 & statefips==25
+(0 real changes made)
+
+. *Melrose
+. replace place = 2430 if place==1215 & statefips==25
+(0 real changes made)
+
+. *Woburn
+. replace place = 5010 if place==2490 & statefips==25
+(0 real changes made)
+
+. *Peabody
+. replace place = 3260 if place==1625 & statefips==25
+(0 real changes made)
+
+. replace place = 700 if place==345 & statefips==25
+(0 real changes made)
+
+. *Beverly
+. replace place = 390 if place==195 & statefips==25
+(0 real changes made)
+
+. *Revere
+. replace place = 3510 if place==1750 & statefips==25
+(0 real changes made)
+
+. *Medford
+. replace place = 2400 if place==1200 & statefips==25
+(0 real changes made)
+
+. *Everett
+. replace place = 1200 if place==595 & statefips==25
+(0 real changes made)
+
+. *Salem
+. replace place = 3670 if place==1830 & statefips==25
+(0 real changes made)
+
+. *Holyoke
+. replace place = 1830 if place==910 & statefips==25
+(0 real changes made)
+
+. replace place = 2230 if place==1110 & statefips==25
+(0 real changes made)
+
+. replace place = 760 if place==375 & statefips==25
+(0 real changes made)
+
+. replace place = 3460 if place==1725 & statefips==25
+(0 real changes made)
+
+. replace place = 2830 if place==1410 & statefips==25
+(0 real changes made)
+
+. *Somerville
+. replace place = 3920 if place==1945 & statefips==25
+(0 real changes made)
+
+. 
+. *MI
+. 
+. replace place = 1185 if place==1205 & statefips==26
+(0 real changes made)
+
+. *Sterling Heights, MI
+. replace place = 2583 if place==2578 & statefips==26
+(0 real changes made)
+
+. 
+. *NH
+. *Manchester
+. replace place = 1610 if place==875 & statefips==33
+(0 real changes made)
+
+. 
+. *NM
+. *Roswell
+. replace place = 334  if place==330 & statefips==35
+(0 real changes made)
+
+. 
+. *PA
+. *Aliquippa, PA
+. replace place = 115 if place==100 & statefips==42
+(0 real changes made)
+
+. *Monroeville, PA
+. replace place = 6564 if place==6578 & statefips==42
+(0 real changes made)
+
+. *Sharon
+. replace place = 7738 if place==7700 & statefips==42
+(0 real changes made)
+
+. 
+. *RI
+. replace place = 90 if place==50 & statefips==44
+(0 real changes made)
+
+. replace place = 120 if place==65 & statefips==44
+(0 real changes made)
+
+. *Pawtucket
+. replace place = 380 if place==195 & statefips==44
+(0 real changes made)
+
+. *Providence
+. replace place = 400 if place==205 & statefips==44
+(0 real changes made)
+
+. *Warwick
+. replace place = 500 if place==260 & statefips==44
+(0 real changes made)
+
+. 
+. *TN
+. *Nashville
+. replace place = 1016 if place==1015 & statefips==47
+(0 real changes made)
+
+. 
+. *VA
+. *Arlington CDP
+. replace place = 56 if place==55 & statefips==51
+(0 real changes made)
+
+. 
+. 
+. 
+. 
+. 
+. 
+end of do-file
+
+. 
+. sort statefips place
+
+. merge statefips place using ../data/xwalk/place-codes.dta
+variables statefips place do not uniquely identify observations in the master data
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          2 |     23,264       99.27       99.27
+          3 |        172        0.73      100.00
+------------+-----------------------------------
+      Total |     23,436      100.00
+
+. keep if _merge==3
+(23264 observations deleted)
+
+. drop _merge
+
+. 
+. keep statefips place placefips areaname
+
+. sort statefips place placefips
+
+. 
+. save ccsamp.dta, replace
+(note: file ccsamp.dta not found)
+file ccsamp.dta saved
+
+. 
+. clear
+
+. use ../data/welch_ccd/welch_long.dta
+
+. sort leaid
+
+. by leaid: keep if _n==1
+(4521 observations deleted)
+
+. keep leaid
+
+. expand 53
+(6448 observations created)
+
+. sort leaid
+
+. by leaid: gen year = _n+54
+
+. sort leaid year
+
+. save temp.dta, replace
+(note: file temp.dta not found)
+file temp.dta saved
+
+. 
+. /************ 2.  Clean Common Core/Welch & Light Data ******************
+> This data set includes the 124 districts investigated by Welch & Light 
+> The CCD does not include info on all districts in all years ************/
+. 
+. use ../data/welch_ccd/welch_long.dta
+
+. 
+. *** Create every year/district combination
+. sort leaid year
+
+. merge leaid year using temp.dta
+year was int now float
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          2 |      1,927       29.32       29.32
+          3 |      4,645       70.68      100.00
+------------+-----------------------------------
+      Total |      6,572      100.00
+
+. drop _merge
+
+. 
+. ** Fix Wilmington, DE
+. replace state = 10 if leaid ==  9999999
+(16 real changes made)
+
+. replace south = 1 if leaid ==  9999999
+(53 real changes made)
+
+. gen west = (region==4)
+
+. replace west = . if region==.
+(1927 real changes made, 1927 to missing)
+
+. 
+. /** We want data from the school years including 
+> April of census years: 69-70, 79-80, 89-90 **/
+. 
+. gen white69 = white if year==69
+(6450 missing values generated)
+
+. gen black69 = black if year==69
+(6450 missing values generated)
+
+. gen stu69 = tot if year==69
+(6450 missing values generated)
+
+. gen white79 = white if year==79
+(6460 missing values generated)
+
+. gen black79 = black if year==79
+(6460 missing values generated)
+
+. gen stu79 = tot if year==79
+(6460 missing values generated)
+
+. gen white89 = white if year==89
+(6448 missing values generated)
+
+. gen black89 = black if year==89
+(6448 missing values generated)
+
+. gen stu89 = tot if year==89
+(6448 missing values generated)
+
+. drop tot
+
+. 
+. sort leaid imp state 
+
+. by leaid: replace imp = imp[1]
+(1654 real changes made)
+
+. by leaid: replace major = major[1]
+(1927 real changes made)
+
+. by leaid: replace south = south[1]
+(1911 real changes made)
+
+. by leaid: replace state = state[1]
+(1911 real changes made)
+
+. 
+. gen deseg = (year>=imp)
+
+. replace deseg = -1 if year==imp-1
+(108 real changes made)
+
+. 
+. *** Fill out dissimilarity index
+. sort leaid year
+
+. by leaid: gen new = (disd==. & disd[_n-1]~=.)
+
+. by leaid: replace new = 1 if disd~=. & disd[_n-1]==.
+(323 real changes made)
+
+. by leaid: gen spell = sum(new)
+
+. sort leaid spell year
+
+. by leaid spell: gen num = _n
+
+. by leaid spell: gen tot = _N
+
+. replace tot = 0 if disd~=.
+(4552 real changes made)
+
+. replace spell = 0 if disd~=.
+(4552 real changes made)
+
+. ** Clear cut cases
+. gsort leaid -year
+
+. by leaid: replace disd = disd[_n+1] if disd==. & disd[_n+1]~=. & tot>1 & num==1 & deseg==deseg[_n+1]
+(70 real changes made)
+
+. by leaid: replace disd = disd[_n+2] if disd==. & disd[_n+2]~=. & tot>3 & num==2 & deseg==deseg[_n+2]
+(16 real changes made)
+
+. by leaid: replace disd = disd[_n+3] if disd==. & disd[_n+3]~=. & tot>5 & num==3 & deseg==deseg[_n+3]
+(12 real changes made)
+
+. sort leaid year
+
+. by leaid: replace disd = disd[_n+1] if disd==. & disd[_n+1]~=. & tot>1 & num==tot & deseg==deseg[_n+1]
+(179 real changes made)
+
+. by leaid: replace disd = disd[_n+2] if disd==. & disd[_n+2]~=. & tot>3 & num==tot-1 & deseg==deseg[_n+2]
+(125 real changes made)
+
+. by leaid: replace disd = disd[_n+3] if disd==. & disd[_n+3]~=. & tot>5 & num==tot-2 & deseg==deseg[_n+3]
+(121 real changes made)
+
+. ** Avg at 1
+. by leaid: replace disd = .5*disd[_n+1]+.5*disd[_n-1] if tot==1 & deseg==deseg[_n-1] & deseg==deseg[_n+1]
+(127 real changes made)
+
+. by leaid: replace disd = disd[_n+1] if disd==. & tot==1 & deseg==deseg[_n+1]
+(1 real change made)
+
+. by leaid: replace disd = disd[_n-1] if disd==. & tot==1 & deseg==deseg[_n-1]
+(123 real changes made)
+
+. ** Avg at 3
+. by leaid: replace disd = .5*disd[_n+2]+.5*disd[_n-2] if tot==3 & num==2 & deseg==deseg[_n-2] & deseg==deseg[_n+2]
+(12 real changes made)
+
+. by leaid: replace disd = disd[_n+2] if disd==. & tot==3 & num==2 & deseg==deseg[_n+2]
+(0 real changes made)
+
+. by leaid: replace disd = disd[_n-2] if disd==. & tot==3 & num==2 & deseg==deseg[_n-2]
+(1 real change made)
+
+. ** Avg at 5
+. by leaid: replace disd = .5*disd[_n+3]+.5*disd[_n-3] if tot==5 & num==3 & deseg==deseg[_n-3] & deseg==deseg[_n+3]
+(2 real changes made)
+
+. by leaid: replace disd = disd[_n+3] if disd==. & tot==5 & num==3 & deseg==deseg[_n+3]
+(0 real changes made)
+
+. by leaid: replace disd = disd[_n-3] if disd==. & tot==5 & num==3 & deseg==deseg[_n-3]
+(0 real changes made)
+
+. drop new spell num tot
+
+. 
+. ** Do the same for dissimilarity index - white/nonwhite 
+. sort leaid year
+
+. by leaid: gen new = (dis_wn==. & dis_wn[_n-1]~=.)
+
+. by leaid: replace new = 1 if dis_wn~=. & dis_wn[_n-1]==.
+(323 real changes made)
+
+. by leaid: gen spell = sum(new)
+
+. sort leaid spell year
+
+. by leaid spell: gen num = _n
+
+. by leaid spell: gen tot = _N
+
+. replace tot = 0 if dis_wn~=.
+(4552 real changes made)
+
+. replace spell = 0 if dis_wn~=.
+(4552 real changes made)
+
+. gsort leaid -year
+
+. by leaid: replace dis_wn = dis_wn[_n+1] if dis_wn==. & dis_wn[_n+1]~=. & tot>1 & num==1 & deseg==deseg[_n+1]
+(70 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n+2] if dis_wn==. & dis_wn[_n+2]~=. & tot>3 & num==2 & deseg==deseg[_n+2]
+(16 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n+3] if dis_wn==. & dis_wn[_n+3]~=. & tot>5 & num==3 & deseg==deseg[_n+3]
+(12 real changes made)
+
+. sort leaid year
+
+. by leaid: replace dis_wn = dis_wn[_n+1] if dis_wn==. & dis_wn[_n+1]~=. & tot>1 & num==tot & deseg==deseg[_n+1]
+(179 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n+2] if dis_wn==. & dis_wn[_n+2]~=. & tot>3 & num==tot-1 & deseg==deseg[_n+2]
+(125 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n+3] if dis_wn==. & dis_wn[_n+3]~=. & tot>5 & num==tot-2 & deseg==deseg[_n+3]
+(121 real changes made)
+
+. ** Avg at 1
+. by leaid: replace dis_wn = .5*dis_wn[_n+1]+.5*dis_wn[_n-1] if tot==1 & deseg==deseg[_n-1] & deseg==deseg[_n+1]
+(127 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n+1] if dis_wn==. & tot==1 & deseg==deseg[_n+1]
+(1 real change made)
+
+. by leaid: replace dis_wn = dis_wn[_n-1] if dis_wn==. & tot==1 & deseg==deseg[_n-1]
+(123 real changes made)
+
+. ** Avg at 3
+. by leaid: replace dis_wn = .5*dis_wn[_n+2]+.5*dis_wn[_n-2] if tot==3 & num==2 & deseg==deseg[_n-2] & deseg==deseg[_n+2]
+(12 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n+2] if dis_wn==. & tot==3 & num==2 & deseg==deseg[_n+2]
+(0 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n-2] if dis_wn==. & tot==3 & num==2 & deseg==deseg[_n-2]
+(1 real change made)
+
+. ** Avg at 5
+. by leaid: replace dis_wn = .5*dis_wn[_n+3]+.5*dis_wn[_n-3] if tot==5 & num==3 & deseg==deseg[_n-3] & deseg==deseg[_n+3]
+(2 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n+3] if dis_wn==. & tot==5 & num==3 & deseg==deseg[_n+3]
+(0 real changes made)
+
+. by leaid: replace dis_wn = dis_wn[_n-3] if dis_wn==. & tot==5 & num==3 & deseg==deseg[_n-3]
+(0 real changes made)
+
+. drop new spell num tot
+
+. 
+. ** Do the same for exposure index - white/nonwhite 
+. sort leaid year
+
+. by leaid: gen new = (exp_wtotb==. & exp_wtotb[_n-1]~=.)
+
+. by leaid: replace new = 1 if exp_wtotb~=. & exp_wtotb[_n-1]==.
+(327 real changes made)
+
+. by leaid: gen spell = sum(new)
+
+. sort leaid spell year
+
+. by leaid spell: gen num = _n
+
+. by leaid spell: gen tot = _N
+
+. replace tot = 0 if exp_wtotb~=.
+(4547 real changes made)
+
+. replace spell = 0 if exp_wtotb~=.
+(4547 real changes made)
+
+. gsort leaid -year
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+1] if exp_wtotb==. & exp_wtotb[_n+1]~=. & tot>1 & num==1 & deseg==deseg[_n+1
+> ]
+(70 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+2] if exp_wtotb==. & exp_wtotb[_n+2]~=. & tot>3 & num==2 & deseg==deseg[_n+2
+> ]
+(16 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+3] if exp_wtotb==. & exp_wtotb[_n+3]~=. & tot>5 & num==3 & deseg==deseg[_n+3
+> ]
+(12 real changes made)
+
+. sort leaid year
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+1] if exp_wtotb==. & exp_wtotb[_n+1]~=. & tot>1 & num==tot & deseg==deseg[_n
+> +1]
+(179 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+2] if exp_wtotb==. & exp_wtotb[_n+2]~=. & tot>3 & num==tot-1 & deseg==deseg[
+> _n+2]
+(125 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+3] if exp_wtotb==. & exp_wtotb[_n+3]~=. & tot>5 & num==tot-2 & deseg==deseg[
+> _n+3]
+(121 real changes made)
+
+. ** Avg at 1
+. by leaid: replace exp_wtotb = .5*exp_wtotb[_n+1]+.5*exp_wtotb[_n-1] if tot==1 & deseg==deseg[_n-1] & deseg==deseg[_n+1]
+(131 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+1] if exp_wtotb==. & tot==1 & deseg==deseg[_n+1]
+(1 real change made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n-1] if exp_wtotb==. & tot==1 & deseg==deseg[_n-1]
+(123 real changes made)
+
+. ** Avg at 3
+. by leaid: replace exp_wtotb = .5*exp_wtotb[_n+2]+.5*exp_wtotb[_n-2] if tot==3 & num==2 & deseg==deseg[_n-2] & deseg==de
+> seg[_n+2]
+(12 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+2] if exp_wtotb==. & tot==3 & num==2 & deseg==deseg[_n+2]
+(0 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n-2] if exp_wtotb==. & tot==3 & num==2 & deseg==deseg[_n-2]
+(1 real change made)
+
+. ** Avg at 5
+. by leaid: replace exp_wtotb = .5*exp_wtotb[_n+3]+.5*exp_wtotb[_n-3] if tot==5 & num==3 & deseg==deseg[_n-3] & deseg==de
+> seg[_n+3]
+(2 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n+3] if exp_wtotb==. & tot==5 & num==3 & deseg==deseg[_n+3]
+(0 real changes made)
+
+. by leaid: replace exp_wtotb = exp_wtotb[_n-3] if exp_wtotb==. & tot==5 & num==3 & deseg==deseg[_n-3]
+(0 real changes made)
+
+. drop new spell num tot
+
+. 
+. ** Do the same for exposure index - nonwhite/white 
+. sort leaid year
+
+. by leaid: gen new = (exp_btotw==. & exp_btotw[_n-1]~=.)
+
+. by leaid: replace new = 1 if exp_btotw~=. & exp_btotw[_n-1]==.
+(323 real changes made)
+
+. by leaid: gen spell = sum(new)
+
+. sort leaid spell year
+
+. by leaid spell: gen num = _n
+
+. by leaid spell: gen tot = _N
+
+. replace tot = 0 if exp_btotw~=.
+(4552 real changes made)
+
+. replace spell = 0 if exp_btotw~=.
+(4552 real changes made)
+
+. gsort leaid -year
+
+. by leaid: replace exp_btotw = exp_btotw[_n+1] if exp_btotw==. & exp_btotw[_n+1]~=. & tot>1 & num==1 & deseg==deseg[_n+1
+> ]
+(70 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n+2] if exp_btotw==. & exp_btotw[_n+2]~=. & tot>3 & num==2 & deseg==deseg[_n+2
+> ]
+(16 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n+3] if exp_btotw==. & exp_btotw[_n+3]~=. & tot>5 & num==3 & deseg==deseg[_n+3
+> ]
+(12 real changes made)
+
+. sort leaid year
+
+. by leaid: replace exp_btotw = exp_btotw[_n+1] if exp_btotw==. & exp_btotw[_n+1]~=. & tot>1 & num==tot & deseg==deseg[_n
+> +1]
+(179 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n+2] if exp_btotw==. & exp_btotw[_n+2]~=. & tot>3 & num==tot-1 & deseg==deseg[
+> _n+2]
+(125 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n+3] if exp_btotw==. & exp_btotw[_n+3]~=. & tot>5 & num==tot-2 & deseg==deseg[
+> _n+3]
+(121 real changes made)
+
+. ** Avg at 1
+. by leaid: replace exp_btotw = .5*exp_btotw[_n+1]+.5*exp_btotw[_n-1] if tot==1 & deseg==deseg[_n-1] & deseg==deseg[_n+1]
+(127 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n+1] if exp_btotw==. & tot==1 & deseg==deseg[_n+1]
+(1 real change made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n-1] if exp_btotw==. & tot==1 & deseg==deseg[_n-1]
+(123 real changes made)
+
+. ** Avg at 3
+. by leaid: replace exp_btotw = .5*exp_btotw[_n+2]+.5*exp_btotw[_n-2] if tot==3 & num==2 & deseg==deseg[_n-2] & deseg==de
+> seg[_n+2]
+(12 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n+2] if exp_btotw==. & tot==3 & num==2 & deseg==deseg[_n+2]
+(0 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n-2] if exp_btotw==. & tot==3 & num==2 & deseg==deseg[_n-2]
+(1 real change made)
+
+. ** Avg at 5
+. by leaid: replace exp_btotw = .5*exp_btotw[_n+3]+.5*exp_btotw[_n-3] if tot==5 & num==3 & deseg==deseg[_n-3] & deseg==de
+> seg[_n+3]
+(2 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n+3] if exp_btotw==. & tot==5 & num==3 & deseg==deseg[_n+3]
+(0 real changes made)
+
+. by leaid: replace exp_btotw = exp_btotw[_n-3] if exp_btotw==. & tot==5 & num==3 & deseg==deseg[_n-3]
+(0 real changes made)
+
+. drop new spell num tot
+
+. 
+. *** Dissim & Exposure Indices 
+. sort leaid year
+
+. gen disd55 = disd if year==55
+(6572 missing values generated)
+
+. gen disd56 = disd if year==56
+(6572 missing values generated)
+
+. gen disd58 = disd if year==58
+(6572 missing values generated)
+
+. gen disd59 = disd if year==59
+(6572 missing values generated)
+
+. gen disd60 = disd if year==60
+(6569 missing values generated)
+
+. gen disd69 = disd if year==69
+(6448 missing values generated)
+
+. gen disd70 = disd if year==70
+(6448 missing values generated)
+
+. gen disd65 = disd if year==65
+(6462 missing values generated)
+
+. gen disd66 = disd if year==66
+(6460 missing values generated)
+
+. gen disd68 = disd if year==68
+(6448 missing values generated)
+
+. gen disd79 = disd if year==79
+(6449 missing values generated)
+
+. gen disd80 = disd if year==80
+(6448 missing values generated)
+
+. gen disd75 = disd if year==75
+(6449 missing values generated)
+
+. gen disd76 = disd if year==76
+(6448 missing values generated)
+
+. gen disd78 = disd if year==78
+(6448 missing values generated)
+
+. gen disd89 = disd if year==89
+(6451 missing values generated)
+
+. gen disd90 = disd if year==90
+(6448 missing values generated)
+
+. gen disd85 = disd if year==85
+(6449 missing values generated)
+
+. gen disd86 = disd if year==86
+(6448 missing values generated)
+
+. gen disd88 = disd if year==88
+(6450 missing values generated)
+
+. gen dis_wn55 = dis_wn if year==55
+(6572 missing values generated)
+
+. gen dis_wn56 = dis_wn if year==56
+(6572 missing values generated)
+
+. gen dis_wn58 = dis_wn if year==58
+(6572 missing values generated)
+
+. gen dis_wn59 = dis_wn if year==59
+(6572 missing values generated)
+
+. gen dis_wn60 = dis_wn if year==60
+(6569 missing values generated)
+
+. gen dis_wn69 = dis_wn if year==69
+(6448 missing values generated)
+
+. gen dis_wn70 = dis_wn if year==70
+(6448 missing values generated)
+
+. gen dis_wn65 = dis_wn if year==65
+(6462 missing values generated)
+
+. gen dis_wn66 = dis_wn if year==66
+(6460 missing values generated)
+
+. gen dis_wn68 = dis_wn if year==68
+(6448 missing values generated)
+
+. gen dis_wn79 = dis_wn if year==79
+(6449 missing values generated)
+
+. gen dis_wn80 = dis_wn if year==80
+(6448 missing values generated)
+
+. gen dis_wn75 = dis_wn if year==75
+(6449 missing values generated)
+
+. gen dis_wn76 = dis_wn if year==76
+(6448 missing values generated)
+
+. gen dis_wn78 = dis_wn if year==78
+(6448 missing values generated)
+
+. gen dis_wn89 = dis_wn if year==89
+(6451 missing values generated)
+
+. gen dis_wn90 = dis_wn if year==90
+(6448 missing values generated)
+
+. gen dis_wn85 = dis_wn if year==85
+(6449 missing values generated)
+
+. gen dis_wn86 = dis_wn if year==86
+(6448 missing values generated)
+
+. gen dis_wn88 = dis_wn if year==88
+(6450 missing values generated)
+
+. gen expos55 = exp_wtotb if year==55
+(6572 missing values generated)
+
+. gen expos60 = exp_wtotb if year==60
+(6569 missing values generated)
+
+. gen expos65 = exp_wtotb if year==65
+(6462 missing values generated)
+
+. gen expos69 = exp_wtotb if year==69
+(6448 missing values generated)
+
+. gen expos70 = exp_wtotb if year==70
+(6448 missing values generated)
+
+. gen expos75 = exp_wtotb if year==75
+(6449 missing values generated)
+
+. gen expos79 = exp_wtotb if year==79
+(6449 missing values generated)
+
+. gen expos80 = exp_wtotb if year==80
+(6448 missing values generated)
+
+. gen expos85 = exp_wtotb if year==85
+(6449 missing values generated)
+
+. gen expos89 = exp_wtotb if year==89
+(6451 missing values generated)
+
+. gen expos90 = exp_wtotb if year==90
+(6448 missing values generated)
+
+. gen expos_bw55 = exp_btotw if year==55
+(6572 missing values generated)
+
+. gen expos_bw60 = exp_btotw if year==60
+(6569 missing values generated)
+
+. gen expos_bw65 = exp_btotw if year==65
+(6462 missing values generated)
+
+. gen expos_bw69 = exp_btotw if year==69
+(6448 missing values generated)
+
+. gen expos_bw70 = exp_btotw if year==70
+(6448 missing values generated)
+
+. gen expos_bw75 = exp_btotw if year==75
+(6449 missing values generated)
+
+. gen expos_bw79 = exp_btotw if year==79
+(6449 missing values generated)
+
+. gen expos_bw80 = exp_btotw if year==80
+(6448 missing values generated)
+
+. gen expos_bw85 = exp_btotw if year==85
+(6449 missing values generated)
+
+. gen expos_bw89 = exp_btotw if year==89
+(6451 missing values generated)
+
+. gen expos_bw90 = exp_btotw if year==90
+(6448 missing values generated)
+
+. 
+. by leaid: gen lagdisd1 = disd if year==imp-1
+(6468 missing values generated)
+
+. by leaid: gen lagdisd2 = disd if year==imp-2
+(6480 missing values generated)
+
+. gen disdimp = disd if year==imp
+(6465 missing values generated)
+
+. by leaid: gen leaddisd1 = disd if year==imp+1
+(6465 missing values generated)
+
+. by leaid: gen leaddisd2 = disd if year==imp+2
+(6465 missing values generated)
+
+. by leaid: gen leaddisd3 = disd if year==imp+3
+(6465 missing values generated)
+
+. by leaid: gen leaddisd4 = disd if year==imp+4
+(6464 missing values generated)
+
+. by leaid: gen leaddisd5 = disd if year==imp+5
+(6464 missing values generated)
+
+. 
+. by leaid: gen lagexpos1 = exp_wtotb if year==imp-1
+(6468 missing values generated)
+
+. by leaid: gen lagexpos2 = exp_wtotb if year==imp-2
+(6480 missing values generated)
+
+. gen exposimp = exp_wtotb if year==imp
+(6465 missing values generated)
+
+. by leaid: gen leadexpos1 = exp_wtotb if year==imp+1
+(6465 missing values generated)
+
+. by leaid: gen leadexpos2 = exp_wtotb if year==imp+2
+(6465 missing values generated)
+
+. by leaid: gen leadexpos3 = exp_wtotb if year==imp+3
+(6465 missing values generated)
+
+. by leaid: gen leadexpos4 = exp_wtotb if year==imp+4
+(6464 missing values generated)
+
+. by leaid: gen leadexpos5 = exp_wtotb if year==imp+5
+(6464 missing values generated)
+
+. 
+. collapse (mean) *55 *56 *66 *76 *86 *59 *58 *60 *69 *79 *89 *70 *80 *90 *68 *78 *88 *65 *75 *85 *imp* major south west 
+> region lead* lag*, by(leaid state)
+
+. drop imp_* msa90
+
+. 
+. sort leaid 
+
+. save ccd.dta, replace 
+(note: file ccd.dta not found)
+file ccd.dta saved
+
+. 
+. drop south west region lead* lag* disdimp exposimp
+
+. 
+. *** Create a copy with different variable names to be used for largest suburban district 
+. rename leaid leaidsub
+
+. rename white69 white69sub
+
+. rename black69 black69sub
+
+. rename stu69 stu69sub
+
+. rename white79 white79sub
+
+. rename black79 black79sub
+
+. rename stu79 stu79sub
+
+. rename white89 white89sub
+
+. rename black89 black89sub
+
+. rename stu89 stu89sub
+
+. rename disd69 disd69sub
+
+. rename disd79 disd79sub
+
+. rename disd89 disd89sub
+
+. rename expos69 expos69sub
+
+. rename expos79 expos79sub
+
+. rename expos89 expos89sub
+
+. rename imp impsub
+
+. rename major majorsub
+
+. 
+. sort leaidsub
+
+. save ccdsub.dta, replace
+(note: file ccdsub.dta not found)
+file ccdsub.dta saved
+
+. 
+. 
+. ************ 3. Clean Districts Data from 1970 ******************
+. 
+. /*** Generate MD districts for 1970 separately using data from the 1970 
+> County Data Book because MD was not released in the 1970 school 
+> district census data.  Fortunately, MD has all county-level districts. ***/
+. 
+. use ../data/ccdb/county4070.dta
+
+. keep if year==70
+(9555 observations deleted)
+
+. keep if statefips==24
+(3161 observations deleted)
+
+. 
+. keep statefips cntyfips name pop 
+
+. gen district = _n
+
+. gen place = -9
+
+. *** This is for Baltimore, MD
+. replace place = 25 if cntyfips==510
+(1 real change made)
+
+. replace district = 90 if cntyfips==510
+(1 real change made)
+
+. 
+. save md-districts.dta, replace
+(note: file md-districts.dta not found)
+file md-districts.dta saved
+
+. 
+. /********* Create Main 1970 District Data ********************************
+> This data set is indexed by county/place combos.  Therefore any school 
+> district spanning places gets more than one record and needs to be combined ***/
+. 
+. use ../data/district70/district70.dta
+
+. 
+. ** There is no point worrying about school districts in areas with no people
+. drop if pop==0 | district==99999
+(3062 observations deleted)
+
+. 
+. ** Keep only elementary or unified school districts
+. keep if type==1|type==2
+(2139 observations deleted)
+
+. 
+. ** Add MD data 
+. append using md-districts.dta 
+pop was float now double
+
+. 
+. ** Fix bad place codes
+. do ../data/xwalk/place-change-code70.do
+
+. /*
+> This program changes place codes
+> to match place-codes.dta based
+> on discrepancies found in 1970.
+> This program is intended to be called
+> in order to make 1970 census place codes 
+> consistent with place-codes.dta.
+> 
+> NOTE: This code applies to the 1940 to 1977
+> CCDB Data.
+> */
+. 
+. ***1960 Problems***
+. 
+. *CA
+. *East Bakersfield - NIL
+. drop if place==820 & statefips==6
+(0 observations deleted)
+
+. *La Habra 
+. replace place = 1428 if place==1425 & statefips==6
+(2 real changes made)
+
+. ** Lancaster, CA
+. replace place = 1476 if place==1475 & statefips==6
+(1 real change made)
+
+. ** Napa, CA
+. replace place = 1884 if place==1880 & statefips==6
+(1 real change made)
+
+. ** San Buenaventura/Ventura CA
+. replace place = 2460 if place==3004 & statefips==6
+(1 real change made)
+
+. 
+. *CT
+. /*** A bunch of the old NE Town codes have census records,
+> but the census duplicates those records with the newer
+> place codes that match ***/
+. 
+. *FL
+. *Jacksonville, FL
+. replace place = 1003 if place==1000 & statefips==12
+(1 real change made)
+
+. *Miami Beach, FL
+. replace place = 1375 if place==1369 & statefips==12
+(1 real change made)
+
+. *North Miami, FL
+. replace place = 1498 if place==1502 & statefips==12
+(1 real change made)
+
+. ** Lakeland, FL
+. replace place = 1136 if place==1140 & statefips==12
+(1 real change made)
+
+. 
+. *IL
+. *Morton Grove, IL
+. replace place = 3873 if place==3870 & statefips==17
+(6 real changes made)
+
+. 
+. *MD
+. *Annapolis
+. replace place = 11 if place==15 & statefips==24
+(0 real changes made)
+
+. 
+. *MA
+. 
+. replace place = 5010 if place==2490 & statefips==25
+(1 real change made)
+
+. 
+. *MI
+. 
+. replace place = 1185 if place==1205 & statefips==26
+(1 real change made)
+
+. *Sterling Heights, MI
+. replace place = 2583 if place==2578 & statefips==26
+(2 real changes made)
+
+. 
+. *NC
+. *Kannapolis, NC
+. replace place = 1320 if place==1500 & statefips==37
+(2 real changes made)
+
+. 
+. *NM
+. *Roswell
+. replace place = 334  if place==330 & statefips==35
+(1 real change made)
+
+. 
+. *PA
+. *Aliquippa
+. replace place = 115 if place==100 & statefips==42
+(0 real changes made)
+
+. *Monroeville, PA
+. replace place = 6564 if place==6578 & statefips==42
+(1 real change made)
+
+. *New Kensington
+. replace place = 6776 if place==6790 & statefips==42
+(1 real change made)
+
+. *Sharon
+. replace place = 7738 if place==7700 & statefips==42
+(0 real changes made)
+
+. *Washington
+. replace place = 8590 if place==8400 & statefips==42
+(0 real changes made)
+
+. 
+. *Clarksburg, WV
+. replace place = 310 if place==380 & statefips==54
+(1 real change made)
+
+. 
+. 
+end of do-file
+
+. 
+. ** Identify central city districts
+. sort statefips place
+
+. merge statefips place using ccsamp.dta
+variables statefips place do not uniquely identify observations in the master data
+variables statefips place do not uniquely identify observations in ccsamp.dta
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     37,357       98.65       98.65
+          3 |        513        1.35      100.00
+------------+-----------------------------------
+      Total |     37,870      100.00
+
+. 
+. *** Set these variables to . for suburban districts
+. replace place = . if _merge==1
+(21752 real changes made, 21752 to missing)
+
+. replace placefips = . if _merge==1
+(0 real changes made)
+
+. replace areaname = "" if _merge==1
+(0 real changes made)
+
+. drop _merge
+
+. 
+. ** Create population in each school district/place combination (keeping name of largest pop area)
+. sort statefips cntyfips district place placefips areaname pop
+
+. by statefips cntyfips district place placefips areaname: replace name = name[_N]
+(20743 real changes made)
+
+. collapse (sum) pop, by(statefips cntyfips district place placefips areaname name)
+
+. 
+. /** Appropriately recode to suburban districts partly in cities
+> that span counties or that are not the largest in the city (Phoenix case)  **/
+. ** Atlanta spans 2 counties
+. replace place = . if statefips==13 & cntyfips==89 & district==1740
+(1 real change made, 1 to missing)
+
+. ** Kansas City, MO spans 3 counties
+. replace place = . if statefips==29 & place==2220 & district~=16410
+(15 real changes made, 15 to missing)
+
+. ** Phoenix 
+. replace place = . if statefips==4 & place==260 & district~=6300
+(17 real changes made, 17 to missing)
+
+. ** Fort Worth
+. replace place = . if statefips==48 & place==1500 & district==15900
+(2 real changes made, 2 to missing)
+
+. ** Houston
+. replace place = . if statefips==48 & place==1975 & district~=23640
+(16 real changes made, 16 to missing)
+
+. ** Huntington, WV
+. replace place = . if statefips==54 & place==760 & district~=180
+(1 real change made, 1 to missing)
+
+. ** Oklahoma City
+. replace place = . if statefips==40 & place==1815 & district~=22770
+(22 real changes made, 22 to missing)
+
+. ** Shreveport
+. replace place = . if statefips==22 & place==1240 & district~=300
+(1 real change made, 1 to missing)
+
+. 
+. /*** If central city has multiple school districts, assign the 
+>              largest by population to be the central district ***/
+. sort statefips cntyfips place pop district
+
+. by statefips cntyfips place: gen tobs = _N
+
+. by statefips cntyfips place: gen obs = _n
+
+. 
+. *** Set these variables to .
+. replace place = . if obs < tobs
+(254 real changes made, 254 to missing)
+
+. replace placefips = . if obs < tobs
+(326 real changes made, 326 to missing)
+
+. replace areaname = "" if obs < tobs
+(326 real changes made)
+
+. drop obs tobs
+
+. 
+. gen year = 1970
+
+. save temp70d.dta, replace
+(note: file temp70d.dta not found)
+file temp70d.dta saved
+
+. 
+. 
+. ******************** 4. 1980 Districts ***********************
+. 
+. use ../data/district80/district80.dta
+
+. 
+. ** There is no point worrying about school districts in areas with no people
+. drop if pop==0 
+(3 observations deleted)
+
+. 
+. ** Keep only elementary or unified school districts
+. keep if sdlvl=="E"|sdlvl=="U"|sdlvl=="1"|sdlvl=="3"
+(667 observations deleted)
+
+. rename sdlvl type
+
+. 
+. keep statefips cntyfips district name cname type pop
+
+. 
+. gen year = 1980
+
+. save temp80d.dta, replace
+(note: file temp80d.dta not found)
+file temp80d.dta saved
+
+. 
+. 
+. *********** 5. 1990 Districts
+. 
+. use ../data/district90/district90.dta,clear
+
+. keep if type=="E"|type=="U"
+(2247 observations deleted)
+
+. rename AGENCYNO district
+
+. 
+. drop if statefips<1|statefips>56
+(1 observation deleted)
+
+. rename NAME89 name
+
+. rename MEMBER89 students
+
+. 
+. keep statefips cntyfips district type name students
+
+. gen year = 1990
+
+. 
+. 
+. ********** 6. Combine Districts and Assign Other Variables
+. 
+. append using temp80d
+statefips was byte now float
+cntyfips was int now float
+name was str30 now str40
+
+. append using temp70d
+pop was float now double
+
+. 
+. *** Assign MSA Codes
+. do ../data/xwalk/msa-code.do
+
+. /**
+> msa-code.do
+> This program takes a data set including statefips and
+> cntyfips and codes up extra variables msa and cmsa.
+> 
+> This program comes in 3 parts
+> 1. Relabel all counties to the new coding system that
+> makes county geography consistent over time.  This code
+> is from county-change-code.do.
+> NOTE that NE county equivalents are taken care of
+> 2. create codes msacmsa and pmsa.  This code is based on
+> msa-county.txt, which comes from Mable geocorr.
+> 3. create final msa and cmsa codes
+> 
+> This is generic code meant to be run on any data set.
+> **/
+. 
+. ****** DON'T FIX b/c BEFORE 1950 ***************
+. ** Los Alamos, NM => Sandoval -- split from Sandoval & Santa Fe in 1949
+. *replace cntyfips = 43 if cntyfips==28 & statefips==35
+. ***********************************************
+. 
+. ******************** Part 1 ***************************
+. 
+. ** La Paz County AZ Split off from Yuma County in 1983 => recombine
+. replace cntyfips = 27 if cntyfips==12 & statefips==4
+(5 real changes made)
+
+. ** Miami-Dade County changed its fips code in 1997, use new one
+. replace cntyfips = 86 if cntyfips==25 & statefips==12
+(4 real changes made)
+
+. ** Columbus City, GA merged into Muscogee County in 1971
+. replace cntyfips = 215 if cntyfips==510 & statefips==13 
+(0 real changes made)
+
+. ** Old county consolidated into Fremont County Idaho
+. replace cntyfips = 43 if cntyfips==89 & statefips==16
+(0 real changes made)
+
+. ** Ste Genevieve Co, MO changed codes in 1980
+. replace cntyfips = 193 if cntyfips==186 & statefips==29
+(2 real changes made)
+
+. ** Carson City, NV created from (now defunct) Omsby County in 1969
+. replace cntyfips = 510 if cntyfips==25 & statefips==32
+(0 real changes made)
+
+. ** Cibola county broke off from Valencia County in 1981
+. replace cntyfips = 61 if cntyfips==6 & statefips==35
+(1 real change made)
+
+. ** Two old Indian territories combined into counties in SD
+. replace cntyfips = 55 if cntyfips==1 & statefips==46
+(0 real changes made)
+
+. replace cntyfips = 71 if cntyfips==131 & statefips==46
+(1 real change made)
+
+. ** Washington County, SD absorbed into Shannon County in 1941
+. replace cntyfips = 113 if cntyfips==133 & statefips==46
+(0 real changes made)
+
+. ** Old Consolidation in WI
+. replace cntyfips = 29 if cntyfips==47 & statefips==56
+(0 real changes made)
+
+. 
+. ** Combine Independent Cities With Surrounding Counties in VA
+. replace cntyfips = 3  if cntyfips==540 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 5  if cntyfips==580 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 15 if cntyfips==790 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 15 if cntyfips==820 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 19 if cntyfips==515 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 41 if cntyfips==570 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 59 if cntyfips==600 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 59 if cntyfips==610 & statefips==51
+(2 real changes made)
+
+. replace cntyfips = 69 if cntyfips==840 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 77 if cntyfips==640 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 81 if cntyfips==595 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 83 if cntyfips==780 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 95 if cntyfips==830 & statefips==51
+(1 real change made)
+
+. replace cntyfips = 121 if cntyfips==750 & statefips==51
+(3 real changes made)
+
+. 
+. **These are all consolidated into Norfolk and assigned
+. *code 129 (NOTE 129 ADDED TO MSA-COUNTY CODE BELOW)
+. replace cntyfips = 129 if cntyfips==550 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 129 if cntyfips==710 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 129 if cntyfips==740 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 129 if cntyfips==800 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 129 if cntyfips==810 & statefips==51
+(3 real changes made)
+
+. 
+. **
+. replace cntyfips = 143 if cntyfips==590 & statefips==51
+(3 real changes made)
+
+. **730 took part from 53 too but the 149 part is bigger
+. replace cntyfips = 149 if cntyfips==730 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 153 if cntyfips==683 & statefips==51
+(2 real changes made)
+
+. replace cntyfips = 153 if cntyfips==685 & statefips==51
+(2 real changes made)
+
+. replace cntyfips = 161 if cntyfips==770 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 161 if cntyfips==775 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 163 if cntyfips==530 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 163 if cntyfips==678 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 165 if cntyfips==660 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 175 if cntyfips==620 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 177 if cntyfips==630 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 191 if cntyfips==520 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 195 if cntyfips==720 & statefips==51
+(3 real changes made)
+
+. replace cntyfips = 199 if cntyfips==735 & statefips==51
+(2 real changes made)
+
+. **These counties existed in 1940 but don't exist today
+. *129 is a code resurrected for convenience
+. replace cntyfips = 129 if cntyfips==123 & statefips==51
+(1 real change made)
+
+. replace cntyfips = 129 if cntyfips==154 & statefips==51
+(0 real changes made)
+
+. replace cntyfips = 129 if cntyfips==785 & statefips==51
+(0 real changes made)
+
+. replace cntyfips = 650 if cntyfips==55 & statefips==51
+(0 real changes made)
+
+. replace cntyfips = 700 if cntyfips==189 & statefips==51
+(0 real changes made)
+
+. replace cntyfips = 700 if cntyfips==815 & statefips==51
+(0 real changes made)
+
+. 
+. **Assign Menominee WI to Shawano - Menominee had been an indian reservation
+. replace cntyfips = 115 if cntyfips==78 & statefips==55
+(3 real changes made)
+
+. 
+. 
+. *************** Part 2 **************************
+. 
+. *** These are the msa/cmsa codes
+. gen msacmsa = -9
+
+. *** 129 is a county coded above
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==129
+(16 real changes made)
+
+. 
+. ** All But New England States
+. replace msacmsa = 960 if statefips== 36 & cntyfips==7
+(45 real changes made)
+
+. replace msacmsa = 960 if statefips== 36 & cntyfips==107
+(24 real changes made)
+
+. replace msacmsa = 9360 if statefips== 4 & cntyfips==27
+(28 real changes made)
+
+. replace msacmsa = 9340 if statefips== 6 & cntyfips==115
+(12 real changes made)
+
+. replace msacmsa = 9340 if statefips== 6 & cntyfips==101
+(26 real changes made)
+
+. replace msacmsa = 9320 if statefips== 39 & cntyfips==99
+(48 real changes made)
+
+. replace msacmsa = 9320 if statefips== 39 & cntyfips==29
+(36 real changes made)
+
+. replace msacmsa = 9320 if statefips== 39 & cntyfips==155
+(67 real changes made)
+
+. replace msacmsa = 9280 if statefips== 42 & cntyfips==133
+(45 real changes made)
+
+. replace msacmsa = 9260 if statefips== 53 & cntyfips==77
+(45 real changes made)
+
+. replace msacmsa = 9200 if statefips== 37 & cntyfips==19
+(3 real changes made)
+
+. replace msacmsa = 9200 if statefips== 37 & cntyfips==129
+(4 real changes made)
+
+. replace msacmsa = 920 if statefips== 28 & cntyfips==59
+(12 real changes made)
+
+. replace msacmsa = 920 if statefips== 28 & cntyfips==47
+(15 real changes made)
+
+. replace msacmsa = 920 if statefips== 28 & cntyfips==45
+(7 real changes made)
+
+. replace msacmsa = 9140 if statefips== 42 & cntyfips==81
+(27 real changes made)
+
+. replace msacmsa = 9080 if statefips== 48 & cntyfips==9
+(12 real changes made)
+
+. replace msacmsa = 9080 if statefips== 48 & cntyfips==485
+(18 real changes made)
+
+. replace msacmsa = 9040 if statefips== 20 & cntyfips==79
+(22 real changes made)
+
+. replace msacmsa = 9040 if statefips== 20 & cntyfips==173
+(42 real changes made)
+
+. replace msacmsa = 9040 if statefips== 20 & cntyfips==15
+(30 real changes made)
+
+. replace msacmsa = 9000 if statefips== 54 & cntyfips==69
+(4 real changes made)
+
+. replace msacmsa = 9000 if statefips== 54 & cntyfips==51
+(3 real changes made)
+
+. replace msacmsa = 9000 if statefips== 39 & cntyfips==13
+(24 real changes made)
+
+. replace msacmsa = 8960 if statefips== 12 & cntyfips==99
+(4 real changes made)
+
+. replace msacmsa = 8940 if statefips== 55 & cntyfips==73
+(33 real changes made)
+
+. replace msacmsa = 8920 if statefips== 19 & cntyfips==13
+(28 real changes made)
+
+. replace msacmsa = 8872 if statefips== 54 & cntyfips==37
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 54 & cntyfips==3
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==99
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==685
+(0 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==683
+(0 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==630
+(0 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==610
+(0 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==61
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==600
+(0 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==59
+(8 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==510
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==47
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==43
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==187
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==179
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==177
+(6 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==153
+(7 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==13
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 51 & cntyfips==107
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==9
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==510
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==5
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==43
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==35
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==33
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==31
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==3
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==27
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==25
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==21
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==17
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 24 & cntyfips==13
+(3 real changes made)
+
+. replace msacmsa = 8872 if statefips== 11 & cntyfips==1
+(3 real changes made)
+
+. replace msacmsa = 8800 if statefips== 48 & cntyfips==309
+(52 real changes made)
+
+. replace msacmsa = 880 if statefips== 30 & cntyfips==111
+(35 real changes made)
+
+. replace msacmsa = 8780 if statefips== 6 & cntyfips==107
+(121 real changes made)
+
+. replace msacmsa = 8750 if statefips== 48 & cntyfips==469
+(12 real changes made)
+
+. replace msacmsa = 870 if statefips== 26 & cntyfips==21
+(48 real changes made)
+
+. replace msacmsa = 8680 if statefips== 36 & cntyfips==65
+(63 real changes made)
+
+. replace msacmsa = 8680 if statefips== 36 & cntyfips==43
+(43 real changes made)
+
+. replace msacmsa = 8640 if statefips== 48 & cntyfips==423
+(26 real changes made)
+
+. replace msacmsa = 8600 if statefips== 1 & cntyfips==125
+(6 real changes made)
+
+. replace msacmsa = 860 if statefips== 53 & cntyfips==73
+(23 real changes made)
+
+. replace msacmsa = 8560 if statefips== 40 & cntyfips==37
+(45 real changes made)
+
+. replace msacmsa = 8560 if statefips== 40 & cntyfips==145
+(19 real changes made)
+
+. replace msacmsa = 8560 if statefips== 40 & cntyfips==143
+(48 real changes made)
+
+. replace msacmsa = 8560 if statefips== 40 & cntyfips==131
+(31 real changes made)
+
+. replace msacmsa = 8560 if statefips== 40 & cntyfips==113
+(43 real changes made)
+
+. replace msacmsa = 8520 if statefips== 4 & cntyfips==19
+(47 real changes made)
+
+. replace msacmsa = 8440 if statefips== 20 & cntyfips==177
+(23 real changes made)
+
+. replace msacmsa = 8400 if statefips== 39 & cntyfips==95
+(31 real changes made)
+
+. replace msacmsa = 8400 if statefips== 39 & cntyfips==51
+(22 real changes made)
+
+. replace msacmsa = 8400 if statefips== 39 & cntyfips==173
+(33 real changes made)
+
+. replace msacmsa = 840 if statefips== 48 & cntyfips==361
+(15 real changes made)
+
+. replace msacmsa = 840 if statefips== 48 & cntyfips==245
+(22 real changes made)
+
+. replace msacmsa = 840 if statefips== 48 & cntyfips==199
+(16 real changes made)
+
+. replace msacmsa = 8360 if statefips== 5 & cntyfips==91
+(13 real changes made)
+
+. replace msacmsa = 8360 if statefips== 48 & cntyfips==37
+(35 real changes made)
+
+. replace msacmsa = 8320 if statefips== 18 & cntyfips==21
+(4 real changes made)
+
+. replace msacmsa = 8320 if statefips== 18 & cntyfips==167
+(4 real changes made)
+
+. replace msacmsa = 8320 if statefips== 18 & cntyfips==165
+(6 real changes made)
+
+. replace msacmsa = 8280 if statefips== 12 & cntyfips==57
+(4 real changes made)
+
+. replace msacmsa = 8280 if statefips== 12 & cntyfips==53
+(3 real changes made)
+
+. replace msacmsa = 8280 if statefips== 12 & cntyfips==103
+(3 real changes made)
+
+. replace msacmsa = 8280 if statefips== 12 & cntyfips==101
+(3 real changes made)
+
+. replace msacmsa = 8240 if statefips== 12 & cntyfips==73
+(3 real changes made)
+
+. replace msacmsa = 8240 if statefips== 12 & cntyfips==39
+(3 real changes made)
+
+. replace msacmsa = 8160 if statefips== 36 & cntyfips==75
+(29 real changes made)
+
+. replace msacmsa = 8160 if statefips== 36 & cntyfips==67
+(64 real changes made)
+
+. replace msacmsa = 8160 if statefips== 36 & cntyfips==53
+(40 real changes made)
+
+. replace msacmsa = 8160 if statefips== 36 & cntyfips==11
+(27 real changes made)
+
+. replace msacmsa = 8140 if statefips== 45 & cntyfips==85
+(6 real changes made)
+
+. replace msacmsa = 8120 if statefips== 6 & cntyfips==77
+(49 real changes made)
+
+. replace msacmsa = 8080 if statefips== 54 & cntyfips==9
+(3 real changes made)
+
+. replace msacmsa = 8080 if statefips== 54 & cntyfips==29
+(3 real changes made)
+
+. replace msacmsa = 8080 if statefips== 39 & cntyfips==81
+(16 real changes made)
+
+. replace msacmsa = 8050 if statefips== 42 & cntyfips==27
+(15 real changes made)
+
+. replace msacmsa = 7920 if statefips== 29 & cntyfips==77
+(29 real changes made)
+
+. replace msacmsa = 7920 if statefips== 29 & cntyfips==43
+(24 real changes made)
+
+. replace msacmsa = 7920 if statefips== 29 & cntyfips==225
+(16 real changes made)
+
+. replace msacmsa = 7880 if statefips== 17 & cntyfips==167
+(45 real changes made)
+
+. replace msacmsa = 7880 if statefips== 17 & cntyfips==129
+(14 real changes made)
+
+. replace msacmsa = 7840 if statefips== 53 & cntyfips==63
+(44 real changes made)
+
+. replace msacmsa = 7800 if statefips== 18 & cntyfips==141
+(18 real changes made)
+
+. replace msacmsa = 7760 if statefips== 46 & cntyfips==99
+(27 real changes made)
+
+. replace msacmsa = 7760 if statefips== 46 & cntyfips==83
+(15 real changes made)
+
+. replace msacmsa = 7720 if statefips== 31 & cntyfips==43
+(11 real changes made)
+
+. replace msacmsa = 7720 if statefips== 19 & cntyfips==193
+(26 real changes made)
+
+. replace msacmsa = 7680 if statefips== 22 & cntyfips==17
+(4 real changes made)
+
+. replace msacmsa = 7680 if statefips== 22 & cntyfips==15
+(4 real changes made)
+
+. replace msacmsa = 7680 if statefips== 22 & cntyfips==119
+(3 real changes made)
+
+. replace msacmsa = 7640 if statefips== 48 & cntyfips==181
+(37 real changes made)
+
+. replace msacmsa = 7620 if statefips== 55 & cntyfips==117
+(31 real changes made)
+
+. replace msacmsa = 7610 if statefips== 42 & cntyfips==85
+(38 real changes made)
+
+. replace msacmsa = 7602 if statefips== 53 & cntyfips==67
+(23 real changes made)
+
+. replace msacmsa = 7602 if statefips== 53 & cntyfips==61
+(43 real changes made)
+
+. replace msacmsa = 7602 if statefips== 53 & cntyfips==53
+(51 real changes made)
+
+. replace msacmsa = 7602 if statefips== 53 & cntyfips==35
+(15 real changes made)
+
+. replace msacmsa = 7602 if statefips== 53 & cntyfips==33
+(59 real changes made)
+
+. replace msacmsa = 7602 if statefips== 53 & cntyfips==29
+(9 real changes made)
+
+. replace msacmsa = 760 if statefips== 22 & cntyfips==63
+(3 real changes made)
+
+. replace msacmsa = 760 if statefips== 22 & cntyfips==5
+(3 real changes made)
+
+. replace msacmsa = 760 if statefips== 22 & cntyfips==33
+(4 real changes made)
+
+. replace msacmsa = 760 if statefips== 22 & cntyfips==121
+(3 real changes made)
+
+. replace msacmsa = 7560 if statefips== 42 & cntyfips==79
+(37 real changes made)
+
+. replace msacmsa = 7560 if statefips== 42 & cntyfips==69
+(32 real changes made)
+
+. replace msacmsa = 7560 if statefips== 42 & cntyfips==37
+(19 real changes made)
+
+. replace msacmsa = 7560 if statefips== 42 & cntyfips==131
+(10 real changes made)
+
+. replace msacmsa = 7520 if statefips== 13 & cntyfips==51
+(4 real changes made)
+
+. replace msacmsa = 7520 if statefips== 13 & cntyfips==29
+(3 real changes made)
+
+. replace msacmsa = 7520 if statefips== 13 & cntyfips==103
+(3 real changes made)
+
+. replace msacmsa = 7510 if statefips== 12 & cntyfips==81
+(3 real changes made)
+
+. replace msacmsa = 7510 if statefips== 12 & cntyfips==115
+(3 real changes made)
+
+. replace msacmsa = 7490 if statefips== 35 & cntyfips==49
+(8 real changes made)
+
+. replace msacmsa = 7490 if statefips== 35 & cntyfips==28
+(3 real changes made)
+
+. replace msacmsa = 7480 if statefips== 6 & cntyfips==83
+(59 real changes made)
+
+. replace msacmsa = 7460 if statefips== 6 & cntyfips==79
+(32 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==97
+(102 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==95
+(23 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==87
+(29 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==85
+(106 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==81
+(61 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==75
+(4 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==55
+(15 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==41
+(50 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==13
+(50 real changes made)
+
+. replace msacmsa = 7362 if statefips== 6 & cntyfips==1
+(54 real changes made)
+
+. replace msacmsa = 7320 if statefips== 6 & cntyfips==73
+(121 real changes made)
+
+. replace msacmsa = 7240 if statefips== 48 & cntyfips==91
+(7 real changes made)
+
+. replace msacmsa = 7240 if statefips== 48 & cntyfips==493
+(14 real changes made)
+
+. replace msacmsa = 7240 if statefips== 48 & cntyfips==29
+(56 real changes made)
+
+. replace msacmsa = 7240 if statefips== 48 & cntyfips==187
+(18 real changes made)
+
+. replace msacmsa = 7200 if statefips== 48 & cntyfips==451
+(14 real changes made)
+
+. replace msacmsa = 7160 if statefips== 49 & cntyfips==57
+(6 real changes made)
+
+. replace msacmsa = 7160 if statefips== 49 & cntyfips==35
+(14 real changes made)
+
+. replace msacmsa = 7160 if statefips== 49 & cntyfips==11
+(3 real changes made)
+
+. replace msacmsa = 7120 if statefips== 6 & cntyfips==53
+(63 real changes made)
+
+. replace msacmsa = 7040 if statefips== 29 & cntyfips==99
+(36 real changes made)
+
+. replace msacmsa = 7040 if statefips== 29 & cntyfips==71
+(29 real changes made)
+
+. replace msacmsa = 7040 if statefips== 29 & cntyfips==510
+(3 real changes made)
+
+. replace msacmsa = 7040 if statefips== 29 & cntyfips==219
+(12 real changes made)
+
+. replace msacmsa = 7040 if statefips== 29 & cntyfips==189
+(72 real changes made)
+
+. replace msacmsa = 7040 if statefips== 29 & cntyfips==183
+(16 real changes made)
+
+. replace msacmsa = 7040 if statefips== 29 & cntyfips==113
+(15 real changes made)
+
+. replace msacmsa = 7040 if statefips== 17 & cntyfips==83
+(6 real changes made)
+
+. replace msacmsa = 7040 if statefips== 17 & cntyfips==27
+(36 real changes made)
+
+. replace msacmsa = 7040 if statefips== 17 & cntyfips==163
+(83 real changes made)
+
+. replace msacmsa = 7040 if statefips== 17 & cntyfips==133
+(11 real changes made)
+
+. replace msacmsa = 7040 if statefips== 17 & cntyfips==119
+(45 real changes made)
+
+. replace msacmsa = 7000 if statefips== 29 & cntyfips==3
+(13 real changes made)
+
+. replace msacmsa = 7000 if statefips== 29 & cntyfips==21
+(13 real changes made)
+
+. replace msacmsa = 6980 if statefips== 27 & cntyfips==9
+(10 real changes made)
+
+. replace msacmsa = 6980 if statefips== 27 & cntyfips==145
+(39 real changes made)
+
+. replace msacmsa = 6960 if statefips== 26 & cntyfips==17
+(14 real changes made)
+
+. replace msacmsa = 6960 if statefips== 26 & cntyfips==145
+(49 real changes made)
+
+. replace msacmsa = 6960 if statefips== 26 & cntyfips==111
+(17 real changes made)
+
+. replace msacmsa = 6922 if statefips== 6 & cntyfips==67
+(51 real changes made)
+
+. replace msacmsa = 6922 if statefips== 6 & cntyfips==61
+(48 real changes made)
+
+. replace msacmsa = 6922 if statefips== 6 & cntyfips==17
+(41 real changes made)
+
+. replace msacmsa = 6922 if statefips== 6 & cntyfips==113
+(18 real changes made)
+
+. replace msacmsa = 6895 if statefips== 37 & cntyfips==65
+(7 real changes made)
+
+. replace msacmsa = 6895 if statefips== 37 & cntyfips==127
+(6 real changes made)
+
+. replace msacmsa = 6880 if statefips== 17 & cntyfips==7
+(11 real changes made)
+
+. replace msacmsa = 6880 if statefips== 17 & cntyfips==201
+(39 real changes made)
+
+. replace msacmsa = 6880 if statefips== 17 & cntyfips==141
+(41 real changes made)
+
+. replace msacmsa = 6840 if statefips== 36 & cntyfips==73
+(20 real changes made)
+
+. replace msacmsa = 6840 if statefips== 36 & cntyfips==69
+(36 real changes made)
+
+. replace msacmsa = 6840 if statefips== 36 & cntyfips==55
+(68 real changes made)
+
+. replace msacmsa = 6840 if statefips== 36 & cntyfips==51
+(32 real changes made)
+
+. replace msacmsa = 6840 if statefips== 36 & cntyfips==37
+(32 real changes made)
+
+. replace msacmsa = 6840 if statefips== 36 & cntyfips==117
+(38 real changes made)
+
+. replace msacmsa = 6820 if statefips== 27 & cntyfips==109
+(22 real changes made)
+
+. replace msacmsa = 6800 if statefips== 51 & cntyfips==775
+(0 real changes made)
+
+. replace msacmsa = 6800 if statefips== 51 & cntyfips==770
+(0 real changes made)
+
+. replace msacmsa = 6800 if statefips== 51 & cntyfips==23
+(3 real changes made)
+
+. replace msacmsa = 6800 if statefips== 51 & cntyfips==161
+(9 real changes made)
+
+. replace msacmsa = 680 if statefips== 6 & cntyfips==29
+(125 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==87
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==85
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==760
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==75
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==730
+(0 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==670
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==570
+(0 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==53
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==41
+(6 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==36
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==149
+(6 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==145
+(3 real changes made)
+
+. replace msacmsa = 6760 if statefips== 51 & cntyfips==127
+(3 real changes made)
+
+. replace msacmsa = 6740 if statefips== 53 & cntyfips==5
+(18 real changes made)
+
+. replace msacmsa = 6740 if statefips== 53 & cntyfips==21
+(11 real changes made)
+
+. replace msacmsa = 6720 if statefips== 32 & cntyfips==31
+(3 real changes made)
+
+. replace msacmsa = 6690 if statefips== 6 & cntyfips==89
+(64 real changes made)
+
+. replace msacmsa = 6680 if statefips== 42 & cntyfips==11
+(57 real changes made)
+
+. replace msacmsa = 6660 if statefips== 46 & cntyfips==103
+(16 real changes made)
+
+. replace msacmsa = 6640 if statefips== 37 & cntyfips==69
+(6 real changes made)
+
+. replace msacmsa = 6640 if statefips== 37 & cntyfips==63
+(6 real changes made)
+
+. replace msacmsa = 6640 if statefips== 37 & cntyfips==37
+(3 real changes made)
+
+. replace msacmsa = 6640 if statefips== 37 & cntyfips==183
+(6 real changes made)
+
+. replace msacmsa = 6640 if statefips== 37 & cntyfips==135
+(6 real changes made)
+
+. replace msacmsa = 6640 if statefips== 37 & cntyfips==101
+(3 real changes made)
+
+. replace msacmsa = 6580 if statefips== 12 & cntyfips==15
+(3 real changes made)
+
+. replace msacmsa = 6560 if statefips== 8 & cntyfips==101
+(8 real changes made)
+
+. replace msacmsa = 6520 if statefips== 49 & cntyfips==49
+(9 real changes made)
+
+. replace msacmsa = 6442 if statefips== 53 & cntyfips==11
+(27 real changes made)
+
+. replace msacmsa = 6442 if statefips== 41 & cntyfips==9
+(16 real changes made)
+
+. replace msacmsa = 6442 if statefips== 41 & cntyfips==71
+(26 real changes made)
+
+. replace msacmsa = 6442 if statefips== 41 & cntyfips==67
+(39 real changes made)
+
+. replace msacmsa = 6442 if statefips== 41 & cntyfips==53
+(15 real changes made)
+
+. replace msacmsa = 6442 if statefips== 41 & cntyfips==51
+(41 real changes made)
+
+. replace msacmsa = 6442 if statefips== 41 & cntyfips==5
+(78 real changes made)
+
+. replace msacmsa = 6442 if statefips== 41 & cntyfips==47
+(76 real changes made)
+
+. replace msacmsa = 640 if statefips== 48 & cntyfips==55
+(12 real changes made)
+
+. replace msacmsa = 640 if statefips== 48 & cntyfips==491
+(33 real changes made)
+
+. replace msacmsa = 640 if statefips== 48 & cntyfips==453
+(28 real changes made)
+
+. replace msacmsa = 640 if statefips== 48 & cntyfips==21
+(12 real changes made)
+
+. replace msacmsa = 640 if statefips== 48 & cntyfips==209
+(13 real changes made)
+
+. replace msacmsa = 6340 if statefips== 16 & cntyfips==5
+(9 real changes made)
+
+. replace msacmsa = 6280 if statefips== 42 & cntyfips==7
+(49 real changes made)
+
+. replace msacmsa = 6280 if statefips== 42 & cntyfips==51
+(20 real changes made)
+
+. replace msacmsa = 6280 if statefips== 42 & cntyfips==3
+(140 real changes made)
+
+. replace msacmsa = 6280 if statefips== 42 & cntyfips==19
+(23 real changes made)
+
+. replace msacmsa = 6280 if statefips== 42 & cntyfips==129
+(53 real changes made)
+
+. replace msacmsa = 6280 if statefips== 42 & cntyfips==125
+(42 real changes made)
+
+. replace msacmsa = 6240 if statefips== 5 & cntyfips==69
+(25 real changes made)
+
+. replace msacmsa = 6200 if statefips== 4 & cntyfips==21
+(51 real changes made)
+
+. replace msacmsa = 6200 if statefips== 4 & cntyfips==13
+(152 real changes made)
+
+. replace msacmsa = 6162 if statefips== 42 & cntyfips==91
+(65 real changes made)
+
+. replace msacmsa = 6162 if statefips== 42 & cntyfips==45
+(56 real changes made)
+
+. replace msacmsa = 6162 if statefips== 42 & cntyfips==29
+(38 real changes made)
+
+. replace msacmsa = 6162 if statefips== 42 & cntyfips==17
+(40 real changes made)
+
+. replace msacmsa = 6162 if statefips== 42 & cntyfips==101
+(3 real changes made)
+
+. replace msacmsa = 6162 if statefips== 34 & cntyfips==9
+(43 real changes made)
+
+. replace msacmsa = 6162 if statefips== 34 & cntyfips==7
+(106 real changes made)
+
+. replace msacmsa = 6162 if statefips== 34 & cntyfips==5
+(109 real changes made)
+
+. replace msacmsa = 6162 if statefips== 34 & cntyfips==33
+(37 real changes made)
+
+. replace msacmsa = 6162 if statefips== 34 & cntyfips==15
+(66 real changes made)
+
+. replace msacmsa = 6162 if statefips== 34 & cntyfips==11
+(39 real changes made)
+
+. replace msacmsa = 6162 if statefips== 34 & cntyfips==1
+(58 real changes made)
+
+. replace msacmsa = 6162 if statefips== 24 & cntyfips==15
+(3 real changes made)
+
+. replace msacmsa = 6162 if statefips== 10 & cntyfips==3
+(22 real changes made)
+
+. replace msacmsa = 6120 if statefips== 17 & cntyfips==203
+(28 real changes made)
+
+. replace msacmsa = 6120 if statefips== 17 & cntyfips==179
+(61 real changes made)
+
+. replace msacmsa = 6120 if statefips== 17 & cntyfips==143
+(58 real changes made)
+
+. replace msacmsa = 6080 if statefips== 12 & cntyfips==33
+(3 real changes made)
+
+. replace msacmsa = 6080 if statefips== 12 & cntyfips==113
+(3 real changes made)
+
+. replace msacmsa = 6020 if statefips== 54 & cntyfips==107
+(3 real changes made)
+
+. replace msacmsa = 6020 if statefips== 39 & cntyfips==167
+(20 real changes made)
+
+. replace msacmsa = 6015 if statefips== 12 & cntyfips==5
+(3 real changes made)
+
+. replace msacmsa = 600 if statefips== 45 & cntyfips==37
+(3 real changes made)
+
+. replace msacmsa = 600 if statefips== 45 & cntyfips==3
+(3 real changes made)
+
+. replace msacmsa = 600 if statefips== 13 & cntyfips==73
+(3 real changes made)
+
+. replace msacmsa = 600 if statefips== 13 & cntyfips==245
+(4 real changes made)
+
+. replace msacmsa = 600 if statefips== 13 & cntyfips==189
+(3 real changes made)
+
+. replace msacmsa = 5990 if statefips== 21 & cntyfips==59
+(6 real changes made)
+
+. replace msacmsa = 5960 if statefips== 12 & cntyfips==97
+(3 real changes made)
+
+. replace msacmsa = 5960 if statefips== 12 & cntyfips==95
+(4 real changes made)
+
+. replace msacmsa = 5960 if statefips== 12 & cntyfips==69
+(3 real changes made)
+
+. replace msacmsa = 5960 if statefips== 12 & cntyfips==117
+(3 real changes made)
+
+. replace msacmsa = 5920 if statefips== 31 & cntyfips==55
+(41 real changes made)
+
+. replace msacmsa = 5920 if statefips== 31 & cntyfips==25
+(38 real changes made)
+
+. replace msacmsa = 5920 if statefips== 31 & cntyfips==177
+(21 real changes made)
+
+. replace msacmsa = 5920 if statefips== 31 & cntyfips==153
+(18 real changes made)
+
+. replace msacmsa = 5920 if statefips== 19 & cntyfips==155
+(33 real changes made)
+
+. replace msacmsa = 5880 if statefips== 40 & cntyfips==87
+(24 real changes made)
+
+. replace msacmsa = 5880 if statefips== 40 & cntyfips==83
+(17 real changes made)
+
+. replace msacmsa = 5880 if statefips== 40 & cntyfips==27
+(23 real changes made)
+
+. replace msacmsa = 5880 if statefips== 40 & cntyfips==17
+(32 real changes made)
+
+. replace msacmsa = 5880 if statefips== 40 & cntyfips==125
+(41 real changes made)
+
+. replace msacmsa = 5880 if statefips== 40 & cntyfips==109
+(61 real changes made)
+
+. replace msacmsa = 5800 if statefips== 48 & cntyfips==329
+(5 real changes made)
+
+. replace msacmsa = 5800 if statefips== 48 & cntyfips==135
+(4 real changes made)
+
+. replace msacmsa = 580 if statefips== 1 & cntyfips==81
+(9 real changes made)
+
+. replace msacmsa = 5790 if statefips== 12 & cntyfips==83
+(3 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==95
+(4 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==93
+(3 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==830
+(0 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==810
+(0 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==800
+(0 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==740
+(0 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==735
+(0 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==73
+(3 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==710
+(0 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==700
+(3 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==650
+(3 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==550
+(0 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==199
+(5 real changes made)
+
+. replace msacmsa = 5720 if statefips== 51 & cntyfips==115
+(3 real changes made)
+
+. replace msacmsa = 5720 if statefips== 37 & cntyfips==53
+(3 real changes made)
+
+. replace msacmsa = 5602 if statefips== 42 & cntyfips==103
+(5 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==87
+(23 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==85
+(4 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==81
+(10 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==79
+(21 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==71
+(55 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==61
+(9 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==59
+(160 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==5
+(10 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==47
+(17 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==27
+(42 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==119
+(123 real changes made)
+
+. replace msacmsa = 5602 if statefips== 36 & cntyfips==103
+(217 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==41
+(61 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==39
+(59 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==37
+(58 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==35
+(56 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==31
+(48 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==3
+(205 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==29
+(66 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==27
+(112 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==25
+(135 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==23
+(71 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==21
+(27 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==19
+(68 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==17
+(35 real changes made)
+
+. replace msacmsa = 5602 if statefips== 34 & cntyfips==13
+(60 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==95
+(3 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==93
+(3 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==89
+(3 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==87
+(3 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==75
+(3 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==71
+(3 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==51
+(3 real changes made)
+
+. replace msacmsa = 5560 if statefips== 22 & cntyfips==103
+(3 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==43
+(3 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==37
+(3 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==21
+(3 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==189
+(7 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==187
+(6 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==165
+(3 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==149
+(6 real changes made)
+
+. replace msacmsa = 5360 if statefips== 47 & cntyfips==147
+(3 real changes made)
+
+. replace msacmsa = 5345 if statefips== 12 & cntyfips==21
+(3 real changes made)
+
+. replace msacmsa = 5330 if statefips== 45 & cntyfips==51
+(3 real changes made)
+
+. replace msacmsa = 5280 if statefips== 18 & cntyfips==35
+(22 real changes made)
+
+. replace msacmsa = 5240 if statefips== 1 & cntyfips==51
+(6 real changes made)
+
+. replace msacmsa = 5240 if statefips== 1 & cntyfips==101
+(4 real changes made)
+
+. replace msacmsa = 5240 if statefips== 1 & cntyfips==1
+(3 real changes made)
+
+. replace msacmsa = 5200 if statefips== 22 & cntyfips==73
+(6 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==97
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==89
+(7 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==77
+(4 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==67
+(6 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==63
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==57
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==45
+(6 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==297
+(5 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==255
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==247
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==227
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==223
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==217
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==151
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==15
+(6 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==135
+(6 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==13
+(4 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==121
+(6 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==117
+(3 real changes made)
+
+. replace msacmsa = 520 if statefips== 13 & cntyfips==113
+(3 real changes made)
+
+. replace msacmsa = 5170 if statefips== 6 & cntyfips==99
+(76 real changes made)
+
+. replace msacmsa = 5160 if statefips== 1 & cntyfips==97
+(4 real changes made)
+
+. replace msacmsa = 5160 if statefips== 1 & cntyfips==3
+(3 real changes made)
+
+. replace msacmsa = 5140 if statefips== 30 & cntyfips==63
+(30 real changes made)
+
+. replace msacmsa = 5120 if statefips== 55 & cntyfips==93
+(19 real changes made)
+
+. replace msacmsa = 5120 if statefips== 55 & cntyfips==109
+(22 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==59
+(12 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==53
+(53 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==37
+(29 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==3
+(22 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==25
+(16 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==19
+(18 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==171
+(29 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==163
+(16 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==141
+(13 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==139
+(20 real changes made)
+
+. replace msacmsa = 5120 if statefips== 27 & cntyfips==123
+(16 real changes made)
+
+. replace msacmsa = 5082 if statefips== 55 & cntyfips==89
+(19 real changes made)
+
+. replace msacmsa = 5082 if statefips== 55 & cntyfips==79
+(51 real changes made)
+
+. replace msacmsa = 5082 if statefips== 55 & cntyfips==133
+(52 real changes made)
+
+. replace msacmsa = 5082 if statefips== 55 & cntyfips==131
+(25 real changes made)
+
+. replace msacmsa = 5082 if statefips== 55 & cntyfips==101
+(30 real changes made)
+
+. replace msacmsa = 500 if statefips== 13 & cntyfips==59
+(3 real changes made)
+
+. replace msacmsa = 500 if statefips== 13 & cntyfips==219
+(3 real changes made)
+
+. replace msacmsa = 500 if statefips== 13 & cntyfips==195
+(3 real changes made)
+
+. replace msacmsa = 4992 if statefips== 12 & cntyfips==86
+(4 real changes made)
+
+. replace msacmsa = 4992 if statefips== 12 & cntyfips==11
+(4 real changes made)
+
+. replace msacmsa = 4940 if statefips== 6 & cntyfips==47
+(55 real changes made)
+
+. replace msacmsa = 4920 if statefips== 5 & cntyfips==35
+(16 real changes made)
+
+. replace msacmsa = 4920 if statefips== 47 & cntyfips==47
+(3 real changes made)
+
+. replace msacmsa = 4920 if statefips== 47 & cntyfips==167
+(6 real changes made)
+
+. replace msacmsa = 4920 if statefips== 47 & cntyfips==157
+(8 real changes made)
+
+. replace msacmsa = 4920 if statefips== 28 & cntyfips==33
+(3 real changes made)
+
+. replace msacmsa = 4900 if statefips== 12 & cntyfips==9
+(4 real changes made)
+
+. replace msacmsa = 4890 if statefips== 41 & cntyfips==29
+(26 real changes made)
+
+. replace msacmsa = 4880 if statefips== 48 & cntyfips==215
+(45 real changes made)
+
+. replace msacmsa = 4800 if statefips== 39 & cntyfips==33
+(21 real changes made)
+
+. replace msacmsa = 4800 if statefips== 39 & cntyfips==139
+(34 real changes made)
+
+. replace msacmsa = 480 if statefips== 37 & cntyfips==21
+(6 real changes made)
+
+. replace msacmsa = 480 if statefips== 37 & cntyfips==115
+(3 real changes made)
+
+. replace msacmsa = 4720 if statefips== 55 & cntyfips==25
+(58 real changes made)
+
+. replace msacmsa = 4680 if statefips== 13 & cntyfips==289
+(3 real changes made)
+
+. replace msacmsa = 4680 if statefips== 13 & cntyfips==225
+(3 real changes made)
+
+. replace msacmsa = 4680 if statefips== 13 & cntyfips==21
+(4 real changes made)
+
+. replace msacmsa = 4680 if statefips== 13 & cntyfips==169
+(3 real changes made)
+
+. replace msacmsa = 4680 if statefips== 13 & cntyfips==153
+(3 real changes made)
+
+. replace msacmsa = 4640 if statefips== 51 & cntyfips==9
+(3 real changes made)
+
+. replace msacmsa = 4640 if statefips== 51 & cntyfips==680
+(3 real changes made)
+
+. replace msacmsa = 4640 if statefips== 51 & cntyfips==515
+(0 real changes made)
+
+. replace msacmsa = 4640 if statefips== 51 & cntyfips==31
+(3 real changes made)
+
+. replace msacmsa = 4640 if statefips== 51 & cntyfips==19
+(6 real changes made)
+
+. replace msacmsa = 4600 if statefips== 48 & cntyfips==303
+(28 real changes made)
+
+. replace msacmsa = 460 if statefips== 55 & cntyfips==87
+(28 real changes made)
+
+. replace msacmsa = 460 if statefips== 55 & cntyfips==15
+(18 real changes made)
+
+. replace msacmsa = 460 if statefips== 55 & cntyfips==139
+(19 real changes made)
+
+. replace msacmsa = 4520 if statefips== 21 & cntyfips==29
+(3 real changes made)
+
+. replace msacmsa = 4520 if statefips== 21 & cntyfips==185
+(3 real changes made)
+
+. replace msacmsa = 4520 if statefips== 21 & cntyfips==111
+(8 real changes made)
+
+. replace msacmsa = 4520 if statefips== 18 & cntyfips==61
+(9 real changes made)
+
+. replace msacmsa = 4520 if statefips== 18 & cntyfips==43
+(3 real changes made)
+
+. replace msacmsa = 4520 if statefips== 18 & cntyfips==19
+(8 real changes made)
+
+. replace msacmsa = 4520 if statefips== 18 & cntyfips==143
+(6 real changes made)
+
+. replace msacmsa = 450 if statefips== 1 & cntyfips==15
+(14 real changes made)
+
+. replace msacmsa = 4472 if statefips== 6 & cntyfips==71
+(95 real changes made)
+
+. replace msacmsa = 4472 if statefips== 6 & cntyfips==65
+(68 real changes made)
+
+. replace msacmsa = 4472 if statefips== 6 & cntyfips==59
+(88 real changes made)
+
+. replace msacmsa = 4472 if statefips== 6 & cntyfips==37
+(238 real changes made)
+
+. replace msacmsa = 4472 if statefips== 6 & cntyfips==111
+(54 real changes made)
+
+. replace msacmsa = 4420 if statefips== 48 & cntyfips==459
+(21 real changes made)
+
+. replace msacmsa = 4420 if statefips== 48 & cntyfips==203
+(20 real changes made)
+
+. replace msacmsa = 4420 if statefips== 48 & cntyfips==183
+(21 real changes made)
+
+. replace msacmsa = 4400 if statefips== 5 & cntyfips==85
+(17 real changes made)
+
+. replace msacmsa = 4400 if statefips== 5 & cntyfips==45
+(22 real changes made)
+
+. replace msacmsa = 4400 if statefips== 5 & cntyfips==125
+(17 real changes made)
+
+. replace msacmsa = 4400 if statefips== 5 & cntyfips==119
+(11 real changes made)
+
+. replace msacmsa = 4360 if statefips== 31 & cntyfips==109
+(36 real changes made)
+
+. replace msacmsa = 4320 if statefips== 39 & cntyfips==3
+(36 real changes made)
+
+. replace msacmsa = 4320 if statefips== 39 & cntyfips==11
+(26 real changes made)
+
+. replace msacmsa = 4280 if statefips== 21 & cntyfips==67
+(4 real changes made)
+
+. replace msacmsa = 4280 if statefips== 21 & cntyfips==49
+(3 real changes made)
+
+. replace msacmsa = 4280 if statefips== 21 & cntyfips==239
+(3 real changes made)
+
+. replace msacmsa = 4280 if statefips== 21 & cntyfips==209
+(4 real changes made)
+
+. replace msacmsa = 4280 if statefips== 21 & cntyfips==17
+(6 real changes made)
+
+. replace msacmsa = 4280 if statefips== 21 & cntyfips==151
+(8 real changes made)
+
+. replace msacmsa = 4280 if statefips== 21 & cntyfips==113
+(3 real changes made)
+
+. replace msacmsa = 4200 if statefips== 40 & cntyfips==31
+(39 real changes made)
+
+. replace msacmsa = 4150 if statefips== 20 & cntyfips==45
+(14 real changes made)
+
+. replace msacmsa = 4120 if statefips== 4 & cntyfips==15
+(31 real changes made)
+
+. replace msacmsa = 4120 if statefips== 32 & cntyfips==3
+(4 real changes made)
+
+. replace msacmsa = 4120 if statefips== 32 & cntyfips==23
+(3 real changes made)
+
+. replace msacmsa = 4100 if statefips== 35 & cntyfips==13
+(10 real changes made)
+
+. replace msacmsa = 4080 if statefips== 48 & cntyfips==479
+(10 real changes made)
+
+. replace msacmsa = 4040 if statefips== 26 & cntyfips==65
+(45 real changes made)
+
+. replace msacmsa = 4040 if statefips== 26 & cntyfips==45
+(32 real changes made)
+
+. replace msacmsa = 4040 if statefips== 26 & cntyfips==37
+(27 real changes made)
+
+. replace msacmsa = 4000 if statefips== 42 & cntyfips==71
+(53 real changes made)
+
+. replace msacmsa = 40 if statefips== 48 & cntyfips==441
+(17 real changes made)
+
+. replace msacmsa = 3980 if statefips== 12 & cntyfips==105
+(4 real changes made)
+
+. replace msacmsa = 3960 if statefips== 22 & cntyfips==19
+(4 real changes made)
+
+. replace msacmsa = 3920 if statefips== 18 & cntyfips==23
+(12 real changes made)
+
+. replace msacmsa = 3920 if statefips== 18 & cntyfips==157
+(10 real changes made)
+
+. replace msacmsa = 3880 if statefips== 22 & cntyfips==99
+(3 real changes made)
+
+. replace msacmsa = 3880 if statefips== 22 & cntyfips==97
+(3 real changes made)
+
+. replace msacmsa = 3880 if statefips== 22 & cntyfips==55
+(3 real changes made)
+
+. replace msacmsa = 3880 if statefips== 22 & cntyfips==1
+(3 real changes made)
+
+. replace msacmsa = 3870 if statefips== 55 & cntyfips==63
+(18 real changes made)
+
+. replace msacmsa = 3870 if statefips== 27 & cntyfips==55
+(14 real changes made)
+
+. replace msacmsa = 3850 if statefips== 18 & cntyfips==67
+(15 real changes made)
+
+. replace msacmsa = 3850 if statefips== 18 & cntyfips==159
+(6 real changes made)
+
+. replace msacmsa = 3840 if statefips== 47 & cntyfips==93
+(5 real changes made)
+
+. replace msacmsa = 3840 if statefips== 47 & cntyfips==9
+(9 real changes made)
+
+. replace msacmsa = 3840 if statefips== 47 & cntyfips==173
+(3 real changes made)
+
+. replace msacmsa = 3840 if statefips== 47 & cntyfips==155
+(3 real changes made)
+
+. replace msacmsa = 3840 if statefips== 47 & cntyfips==105
+(6 real changes made)
+
+. replace msacmsa = 3840 if statefips== 47 & cntyfips==1
+(9 real changes made)
+
+. replace msacmsa = 3810 if statefips== 48 & cntyfips==99
+(16 real changes made)
+
+. replace msacmsa = 3810 if statefips== 48 & cntyfips==27
+(30 real changes made)
+
+. replace msacmsa = 380 if statefips== 2 & cntyfips==20
+(3 real changes made)
+
+. replace msacmsa = 3760 if statefips== 29 & cntyfips==95
+(43 real changes made)
+
+. replace msacmsa = 3760 if statefips== 29 & cntyfips==49
+(13 real changes made)
+
+. replace msacmsa = 3760 if statefips== 29 & cntyfips==47
+(25 real changes made)
+
+. replace msacmsa = 3760 if statefips== 29 & cntyfips==37
+(32 real changes made)
+
+. replace msacmsa = 3760 if statefips== 29 & cntyfips==177
+(19 real changes made)
+
+. replace msacmsa = 3760 if statefips== 29 & cntyfips==165
+(17 real changes made)
+
+. replace msacmsa = 3760 if statefips== 29 & cntyfips==107
+(19 real changes made)
+
+. replace msacmsa = 3760 if statefips== 20 & cntyfips==91
+(20 real changes made)
+
+. replace msacmsa = 3760 if statefips== 20 & cntyfips==209
+(13 real changes made)
+
+. replace msacmsa = 3760 if statefips== 20 & cntyfips==121
+(14 real changes made)
+
+. replace msacmsa = 3760 if statefips== 20 & cntyfips==103
+(22 real changes made)
+
+. replace msacmsa = 3720 if statefips== 26 & cntyfips==77
+(38 real changes made)
+
+. replace msacmsa = 3720 if statefips== 26 & cntyfips==25
+(43 real changes made)
+
+. replace msacmsa = 3720 if statefips== 26 & cntyfips==159
+(41 real changes made)
+
+. replace msacmsa = 3710 if statefips== 29 & cntyfips==97
+(22 real changes made)
+
+. replace msacmsa = 3710 if statefips== 29 & cntyfips==145
+(21 real changes made)
+
+. replace msacmsa = 3700 if statefips== 5 & cntyfips==31
+(25 real changes made)
+
+. replace msacmsa = 3680 if statefips== 42 & cntyfips==21
+(38 real changes made)
+
+. replace msacmsa = 3680 if statefips== 42 & cntyfips==111
+(33 real changes made)
+
+. replace msacmsa = 3660 if statefips== 51 & cntyfips==520
+(0 real changes made)
+
+. replace msacmsa = 3660 if statefips== 51 & cntyfips==191
+(6 real changes made)
+
+. replace msacmsa = 3660 if statefips== 51 & cntyfips==169
+(3 real changes made)
+
+. replace msacmsa = 3660 if statefips== 47 & cntyfips==73
+(6 real changes made)
+
+. replace msacmsa = 3660 if statefips== 47 & cntyfips==19
+(6 real changes made)
+
+. replace msacmsa = 3660 if statefips== 47 & cntyfips==179
+(6 real changes made)
+
+. replace msacmsa = 3660 if statefips== 47 & cntyfips==171
+(3 real changes made)
+
+. replace msacmsa = 3660 if statefips== 47 & cntyfips==163
+(10 real changes made)
+
+. replace msacmsa = 3620 if statefips== 55 & cntyfips==105
+(29 real changes made)
+
+. replace msacmsa = 3610 if statefips== 36 & cntyfips==13
+(58 real changes made)
+
+. replace msacmsa = 3605 if statefips== 37 & cntyfips==133
+(3 real changes made)
+
+. replace msacmsa = 3600 if statefips== 12 & cntyfips==89
+(3 real changes made)
+
+. replace msacmsa = 3600 if statefips== 12 & cntyfips==31
+(3 real changes made)
+
+. replace msacmsa = 3600 if statefips== 12 & cntyfips==19
+(3 real changes made)
+
+. replace msacmsa = 3600 if statefips== 12 & cntyfips==109
+(3 real changes made)
+
+. replace msacmsa = 3580 if statefips== 47 & cntyfips==23
+(3 real changes made)
+
+. replace msacmsa = 3580 if statefips== 47 & cntyfips==113
+(6 real changes made)
+
+. replace msacmsa = 3560 if statefips== 28 & cntyfips==89
+(6 real changes made)
+
+. replace msacmsa = 3560 if statefips== 28 & cntyfips==49
+(9 real changes made)
+
+. replace msacmsa = 3560 if statefips== 28 & cntyfips==121
+(5 real changes made)
+
+. replace msacmsa = 3520 if statefips== 26 & cntyfips==75
+(50 real changes made)
+
+. replace msacmsa = 3500 if statefips== 19 & cntyfips==103
+(21 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==97
+(38 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==95
+(18 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==81
+(18 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==63
+(18 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==59
+(12 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==57
+(18 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==145
+(13 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==11
+(10 real changes made)
+
+. replace msacmsa = 3480 if statefips== 18 & cntyfips==109
+(13 real changes made)
+
+. replace msacmsa = 3440 if statefips== 1 & cntyfips==89
+(6 real changes made)
+
+. replace msacmsa = 3440 if statefips== 1 & cntyfips==83
+(6 real changes made)
+
+. replace msacmsa = 3400 if statefips== 54 & cntyfips==99
+(4 real changes made)
+
+. replace msacmsa = 3400 if statefips== 54 & cntyfips==11
+(4 real changes made)
+
+. replace msacmsa = 3400 if statefips== 39 & cntyfips==87
+(22 real changes made)
+
+. replace msacmsa = 3400 if statefips== 21 & cntyfips==89
+(9 real changes made)
+
+. replace msacmsa = 3400 if statefips== 21 & cntyfips==43
+(3 real changes made)
+
+. replace msacmsa = 3400 if statefips== 21 & cntyfips==19
+(10 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==71
+(10 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==473
+(10 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==39
+(24 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==339
+(21 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==291
+(20 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==201
+(77 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==167
+(27 real changes made)
+
+. replace msacmsa = 3362 if statefips== 48 & cntyfips==157
+(17 real changes made)
+
+. replace msacmsa = 3350 if statefips== 22 & cntyfips==57
+(3 real changes made)
+
+. replace msacmsa = 3350 if statefips== 22 & cntyfips==109
+(4 real changes made)
+
+. replace msacmsa = 3320 if statefips== 15 & cntyfips==3
+(120 real changes made)
+
+. replace msacmsa = 3290 if statefips== 37 & cntyfips==35
+(9 real changes made)
+
+. replace msacmsa = 3290 if statefips== 37 & cntyfips==3
+(3 real changes made)
+
+. replace msacmsa = 3290 if statefips== 37 & cntyfips==27
+(4 real changes made)
+
+. replace msacmsa = 3290 if statefips== 37 & cntyfips==23
+(3 real changes made)
+
+. replace msacmsa = 3285 if statefips== 28 & cntyfips==73
+(7 real changes made)
+
+. replace msacmsa = 3285 if statefips== 28 & cntyfips==35
+(8 real changes made)
+
+. replace msacmsa = 3240 if statefips== 42 & cntyfips==99
+(12 real changes made)
+
+. replace msacmsa = 3240 if statefips== 42 & cntyfips==75
+(18 real changes made)
+
+. replace msacmsa = 3240 if statefips== 42 & cntyfips==43
+(32 real changes made)
+
+. replace msacmsa = 3240 if statefips== 42 & cntyfips==41
+(27 real changes made)
+
+. replace msacmsa = 320 if statefips== 48 & cntyfips==381
+(7 real changes made)
+
+. replace msacmsa = 320 if statefips== 48 & cntyfips==375
+(13 real changes made)
+
+. replace msacmsa = 3160 if statefips== 45 & cntyfips==83
+(22 real changes made)
+
+. replace msacmsa = 3160 if statefips== 45 & cntyfips==77
+(3 real changes made)
+
+. replace msacmsa = 3160 if statefips== 45 & cntyfips==7
+(15 real changes made)
+
+. replace msacmsa = 3160 if statefips== 45 & cntyfips==45
+(4 real changes made)
+
+. replace msacmsa = 3160 if statefips== 45 & cntyfips==21
+(3 real changes made)
+
+. replace msacmsa = 3150 if statefips== 37 & cntyfips==147
+(5 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==81
+(11 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==67
+(3 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==59
+(3 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==57
+(9 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==197
+(3 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==169
+(3 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==151
+(6 real changes made)
+
+. replace msacmsa = 3120 if statefips== 37 & cntyfips==1
+(6 real changes made)
+
+. replace msacmsa = 3080 if statefips== 55 & cntyfips==9
+(29 real changes made)
+
+. replace msacmsa = 3040 if statefips== 30 & cntyfips==13
+(20 real changes made)
+
+. replace msacmsa = 3000 if statefips== 26 & cntyfips==81
+(67 real changes made)
+
+. replace msacmsa = 3000 if statefips== 26 & cntyfips==5
+(36 real changes made)
+
+. replace msacmsa = 3000 if statefips== 26 & cntyfips==139
+(33 real changes made)
+
+. replace msacmsa = 3000 if statefips== 26 & cntyfips==121
+(41 real changes made)
+
+. replace msacmsa = 2995 if statefips== 8 & cntyfips==77
+(8 real changes made)
+
+. replace msacmsa = 2985 if statefips== 38 & cntyfips==35
+(24 real changes made)
+
+. replace msacmsa = 2985 if statefips== 27 & cntyfips==119
+(30 real changes made)
+
+. replace msacmsa = 2980 if statefips== 37 & cntyfips==191
+(6 real changes made)
+
+. replace msacmsa = 2975 if statefips== 36 & cntyfips==115
+(38 real changes made)
+
+. replace msacmsa = 2975 if statefips== 36 & cntyfips==113
+(33 real changes made)
+
+. replace msacmsa = 2900 if statefips== 12 & cntyfips==1
+(3 real changes made)
+
+. replace msacmsa = 2880 if statefips== 1 & cntyfips==55
+(9 real changes made)
+
+. replace msacmsa = 2840 if statefips== 6 & cntyfips==39
+(26 real changes made)
+
+. replace msacmsa = 2840 if statefips== 6 & cntyfips==19
+(125 real changes made)
+
+. replace msacmsa = 280 if statefips== 42 & cntyfips==13
+(22 real changes made)
+
+. replace msacmsa = 2760 if statefips== 18 & cntyfips==69
+(3 real changes made)
+
+. replace msacmsa = 2760 if statefips== 18 & cntyfips==33
+(10 real changes made)
+
+. replace msacmsa = 2760 if statefips== 18 & cntyfips==3
+(14 real changes made)
+
+. replace msacmsa = 2760 if statefips== 18 & cntyfips==183
+(24 real changes made)
+
+. replace msacmsa = 2760 if statefips== 18 & cntyfips==179
+(9 real changes made)
+
+. replace msacmsa = 2760 if statefips== 18 & cntyfips==1
+(9 real changes made)
+
+. replace msacmsa = 2750 if statefips== 12 & cntyfips==91
+(3 real changes made)
+
+. replace msacmsa = 2720 if statefips== 5 & cntyfips==33
+(15 real changes made)
+
+. replace msacmsa = 2720 if statefips== 5 & cntyfips==131
+(20 real changes made)
+
+. replace msacmsa = 2720 if statefips== 40 & cntyfips==135
+(32 real changes made)
+
+. replace msacmsa = 2710 if statefips== 12 & cntyfips==85
+(3 real changes made)
+
+. replace msacmsa = 2710 if statefips== 12 & cntyfips==111
+(3 real changes made)
+
+. replace msacmsa = 2700 if statefips== 12 & cntyfips==71
+(4 real changes made)
+
+. replace msacmsa = 2670 if statefips== 8 & cntyfips==69
+(11 real changes made)
+
+. replace msacmsa = 2655 if statefips== 45 & cntyfips==41
+(15 real changes made)
+
+. replace msacmsa = 2650 if statefips== 1 & cntyfips==77
+(6 real changes made)
+
+. replace msacmsa = 2650 if statefips== 1 & cntyfips==33
+(12 real changes made)
+
+. replace msacmsa = 2620 if statefips== 49 & cntyfips==25
+(3 real changes made)
+
+. replace msacmsa = 2620 if statefips== 4 & cntyfips==5
+(21 real changes made)
+
+. replace msacmsa = 2580 if statefips== 5 & cntyfips==7
+(22 real changes made)
+
+. replace msacmsa = 2580 if statefips== 5 & cntyfips==143
+(28 real changes made)
+
+. replace msacmsa = 2560 if statefips== 37 & cntyfips==51
+(7 real changes made)
+
+. replace msacmsa = 2520 if statefips== 38 & cntyfips==17
+(30 real changes made)
+
+. replace msacmsa = 2520 if statefips== 27 & cntyfips==27
+(20 real changes made)
+
+. replace msacmsa = 2440 if statefips== 21 & cntyfips==101
+(4 real changes made)
+
+. replace msacmsa = 2440 if statefips== 18 & cntyfips==173
+(3 real changes made)
+
+. replace msacmsa = 2440 if statefips== 18 & cntyfips==163
+(4 real changes made)
+
+. replace msacmsa = 2440 if statefips== 18 & cntyfips==129
+(8 real changes made)
+
+. replace msacmsa = 2400 if statefips== 41 & cntyfips==39
+(48 real changes made)
+
+. replace msacmsa = 240 if statefips== 42 & cntyfips==95
+(26 real changes made)
+
+. replace msacmsa = 240 if statefips== 42 & cntyfips==77
+(28 real changes made)
+
+. replace msacmsa = 240 if statefips== 42 & cntyfips==25
+(16 real changes made)
+
+. replace msacmsa = 2360 if statefips== 42 & cntyfips==49
+(39 real changes made)
+
+. replace msacmsa = 2340 if statefips== 40 & cntyfips==47
+(26 real changes made)
+
+. replace msacmsa = 2335 if statefips== 36 & cntyfips==15
+(14 real changes made)
+
+. replace msacmsa = 2330 if statefips== 18 & cntyfips==39
+(21 real changes made)
+
+. replace msacmsa = 2320 if statefips== 48 & cntyfips==141
+(27 real changes made)
+
+. replace msacmsa = 2290 if statefips== 55 & cntyfips==35
+(18 real changes made)
+
+. replace msacmsa = 2290 if statefips== 55 & cntyfips==17
+(27 real changes made)
+
+. replace msacmsa = 2240 if statefips== 55 & cntyfips==31
+(11 real changes made)
+
+. replace msacmsa = 2240 if statefips== 27 & cntyfips==137
+(55 real changes made)
+
+. replace msacmsa = 2200 if statefips== 19 & cntyfips==61
+(8 real changes made)
+
+. replace msacmsa = 220 if statefips== 22 & cntyfips==79
+(4 real changes made)
+
+. replace msacmsa = 2190 if statefips== 10 & cntyfips==1
+(16 real changes made)
+
+. replace msacmsa = 2180 if statefips== 1 & cntyfips==69
+(6 real changes made)
+
+. replace msacmsa = 2180 if statefips== 1 & cntyfips==45
+(9 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==99
+(65 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==93
+(24 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==91
+(39 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==87
+(23 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==49
+(72 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==163
+(109 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==161
+(40 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==147
+(27 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==125
+(92 real changes made)
+
+. replace msacmsa = 2162 if statefips== 26 & cntyfips==115
+(33 real changes made)
+
+. replace msacmsa = 2120 if statefips== 19 & cntyfips==49
+(29 real changes made)
+
+. replace msacmsa = 2120 if statefips== 19 & cntyfips==181
+(18 real changes made)
+
+. replace msacmsa = 2120 if statefips== 19 & cntyfips==153
+(37 real changes made)
+
+. replace msacmsa = 2082 if statefips== 8 & cntyfips==59
+(3 real changes made)
+
+. replace msacmsa = 2082 if statefips== 8 & cntyfips==5
+(19 real changes made)
+
+. replace msacmsa = 2082 if statefips== 8 & cntyfips==35
+(3 real changes made)
+
+. replace msacmsa = 2082 if statefips== 8 & cntyfips==31
+(3 real changes made)
+
+. replace msacmsa = 2082 if statefips== 8 & cntyfips==13
+(8 real changes made)
+
+. replace msacmsa = 2082 if statefips== 8 & cntyfips==123
+(37 real changes made)
+
+. replace msacmsa = 2082 if statefips== 8 & cntyfips==1
+(22 real changes made)
+
+. replace msacmsa = 2040 if statefips== 17 & cntyfips==115
+(32 real changes made)
+
+. replace msacmsa = 2030 if statefips== 1 & cntyfips==79
+(3 real changes made)
+
+. replace msacmsa = 2030 if statefips== 1 & cntyfips==103
+(8 real changes made)
+
+. replace msacmsa = 2020 if statefips== 12 & cntyfips==35
+(3 real changes made)
+
+. replace msacmsa = 2020 if statefips== 12 & cntyfips==127
+(4 real changes made)
+
+. replace msacmsa = 2000 if statefips== 39 & cntyfips==57
+(24 real changes made)
+
+. replace msacmsa = 2000 if statefips== 39 & cntyfips==23
+(22 real changes made)
+
+. replace msacmsa = 2000 if statefips== 39 & cntyfips==113
+(56 real changes made)
+
+. replace msacmsa = 2000 if statefips== 39 & cntyfips==109
+(30 real changes made)
+
+. replace msacmsa = 200 if statefips== 35 & cntyfips==61
+(9 real changes made)
+
+. replace msacmsa = 200 if statefips== 35 & cntyfips==43
+(10 real changes made)
+
+. replace msacmsa = 200 if statefips== 35 & cntyfips==1
+(5 real changes made)
+
+. replace msacmsa = 1960 if statefips== 19 & cntyfips==163
+(18 real changes made)
+
+. replace msacmsa = 1960 if statefips== 17 & cntyfips==73
+(33 real changes made)
+
+. replace msacmsa = 1960 if statefips== 17 & cntyfips==161
+(28 real changes made)
+
+. replace msacmsa = 1950 if statefips== 51 & cntyfips==590
+(0 real changes made)
+
+. replace msacmsa = 1950 if statefips== 51 & cntyfips==143
+(6 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==85
+(43 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==439
+(62 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==397
+(6 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==367
+(22 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==257
+(24 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==251
+(30 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==231
+(32 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==221
+(8 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==213
+(24 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==139
+(26 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==121
+(33 real changes made)
+
+. replace msacmsa = 1922 if statefips== 48 & cntyfips==113
+(56 real changes made)
+
+. replace msacmsa = 1900 if statefips== 54 & cntyfips==57
+(3 real changes made)
+
+. replace msacmsa = 1900 if statefips== 24 & cntyfips==1
+(3 real changes made)
+
+. replace msacmsa = 1890 if statefips== 41 & cntyfips==3
+(20 real changes made)
+
+. replace msacmsa = 1880 if statefips== 48 & cntyfips==409
+(22 real changes made)
+
+. replace msacmsa = 1880 if statefips== 48 & cntyfips==355
+(39 real changes made)
+
+. replace msacmsa = 1840 if statefips== 39 & cntyfips==97
+(15 real changes made)
+
+. replace msacmsa = 1840 if statefips== 39 & cntyfips==89
+(35 real changes made)
+
+. replace msacmsa = 1840 if statefips== 39 & cntyfips==49
+(67 real changes made)
+
+. replace msacmsa = 1840 if statefips== 39 & cntyfips==45
+(29 real changes made)
+
+. replace msacmsa = 1840 if statefips== 39 & cntyfips==41
+(20 real changes made)
+
+. replace msacmsa = 1840 if statefips== 39 & cntyfips==129
+(15 real changes made)
+
+. replace msacmsa = 1800 if statefips== 13 & cntyfips==53
+(3 real changes made)
+
+. replace msacmsa = 1800 if statefips== 13 & cntyfips==215
+(4 real changes made)
+
+. replace msacmsa = 1800 if statefips== 13 & cntyfips==145
+(3 real changes made)
+
+. replace msacmsa = 1800 if statefips== 1 & cntyfips==113
+(6 real changes made)
+
+. replace msacmsa = 1760 if statefips== 45 & cntyfips==79
+(9 real changes made)
+
+. replace msacmsa = 1760 if statefips== 45 & cntyfips==63
+(15 real changes made)
+
+. replace msacmsa = 1740 if statefips== 29 & cntyfips==19
+(21 real changes made)
+
+. replace msacmsa = 1720 if statefips== 8 & cntyfips==41
+(44 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==93
+(51 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==85
+(28 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==7
+(21 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==55
+(26 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==35
+(97 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==153
+(60 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==133
+(37 real changes made)
+
+. replace msacmsa = 1692 if statefips== 39 & cntyfips==103
+(24 real changes made)
+
+. replace msacmsa = 1660 if statefips== 47 & cntyfips==125
+(3 real changes made)
+
+. replace msacmsa = 1660 if statefips== 21 & cntyfips==47
+(3 real changes made)
+
+. replace msacmsa = 1642 if statefips== 39 & cntyfips==61
+(73 real changes made)
+
+. replace msacmsa = 1642 if statefips== 39 & cntyfips==25
+(29 real changes made)
+
+. replace msacmsa = 1642 if statefips== 39 & cntyfips==17
+(35 real changes made)
+
+. replace msacmsa = 1642 if statefips== 39 & cntyfips==165
+(31 real changes made)
+
+. replace msacmsa = 1642 if statefips== 39 & cntyfips==15
+(17 real changes made)
+
+. replace msacmsa = 1642 if statefips== 21 & cntyfips==81
+(6 real changes made)
+
+. replace msacmsa = 1642 if statefips== 21 & cntyfips==77
+(3 real changes made)
+
+. replace msacmsa = 1642 if statefips== 21 & cntyfips==37
+(20 real changes made)
+
+. replace msacmsa = 1642 if statefips== 21 & cntyfips==191
+(3 real changes made)
+
+. replace msacmsa = 1642 if statefips== 21 & cntyfips==15
+(6 real changes made)
+
+. replace msacmsa = 1642 if statefips== 21 & cntyfips==117
+(15 real changes made)
+
+. replace msacmsa = 1642 if statefips== 18 & cntyfips==29
+(9 real changes made)
+
+. replace msacmsa = 1642 if statefips== 18 & cntyfips==115
+(3 real changes made)
+
+. replace msacmsa = 1620 if statefips== 6 & cntyfips==7
+(37 real changes made)
+
+. replace msacmsa = 1602 if statefips== 55 & cntyfips==59
+(32 real changes made)
+
+. replace msacmsa = 1602 if statefips== 18 & cntyfips==89
+(48 real changes made)
+
+. replace msacmsa = 1602 if statefips== 18 & cntyfips==127
+(27 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==97
+(125 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==93
+(21 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==91
+(38 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==89
+(33 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==63
+(40 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==43
+(120 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==37
+(42 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==31
+(366 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==197
+(86 real changes made)
+
+. replace msacmsa = 1602 if statefips== 17 & cntyfips==111
+(58 real changes made)
+
+. replace msacmsa = 160 if statefips== 36 & cntyfips==95
+(24 real changes made)
+
+. replace msacmsa = 160 if statefips== 36 & cntyfips==93
+(24 real changes made)
+
+. replace msacmsa = 160 if statefips== 36 & cntyfips==91
+(42 real changes made)
+
+. replace msacmsa = 160 if statefips== 36 & cntyfips==83
+(42 real changes made)
+
+. replace msacmsa = 160 if statefips== 36 & cntyfips==57
+(26 real changes made)
+
+. replace msacmsa = 160 if statefips== 36 & cntyfips==1
+(46 real changes made)
+
+. replace msacmsa = 1580 if statefips== 56 & cntyfips==21
+(7 real changes made)
+
+. replace msacmsa = 1560 if statefips== 47 & cntyfips==65
+(6 real changes made)
+
+. replace msacmsa = 1560 if statefips== 47 & cntyfips==115
+(5 real changes made)
+
+. replace msacmsa = 1560 if statefips== 13 & cntyfips==83
+(3 real changes made)
+
+. replace msacmsa = 1560 if statefips== 13 & cntyfips==47
+(3 real changes made)
+
+. replace msacmsa = 1560 if statefips== 13 & cntyfips==295
+(6 real changes made)
+
+. replace msacmsa = 1540 if statefips== 51 & cntyfips==79
+(3 real changes made)
+
+. replace msacmsa = 1540 if statefips== 51 & cntyfips==65
+(3 real changes made)
+
+. replace msacmsa = 1540 if statefips== 51 & cntyfips==540
+(0 real changes made)
+
+. replace msacmsa = 1540 if statefips== 51 & cntyfips==3
+(6 real changes made)
+
+. replace msacmsa = 1520 if statefips== 45 & cntyfips==91
+(12 real changes made)
+
+. replace msacmsa = 1520 if statefips== 37 & cntyfips==71
+(3 real changes made)
+
+. replace msacmsa = 1520 if statefips== 37 & cntyfips==25
+(8 real changes made)
+
+. replace msacmsa = 1520 if statefips== 37 & cntyfips==179
+(6 real changes made)
+
+. replace msacmsa = 1520 if statefips== 37 & cntyfips==159
+(5 real changes made)
+
+. replace msacmsa = 1520 if statefips== 37 & cntyfips==119
+(4 real changes made)
+
+. replace msacmsa = 1520 if statefips== 37 & cntyfips==109
+(4 real changes made)
+
+. replace msacmsa = 1480 if statefips== 54 & cntyfips==79
+(3 real changes made)
+
+. replace msacmsa = 1480 if statefips== 54 & cntyfips==39
+(4 real changes made)
+
+. replace msacmsa = 1440 if statefips== 45 & cntyfips==35
+(8 real changes made)
+
+. replace msacmsa = 1440 if statefips== 45 & cntyfips==19
+(4 real changes made)
+
+. replace msacmsa = 1440 if statefips== 45 & cntyfips==15
+(3 real changes made)
+
+. replace msacmsa = 1400 if statefips== 17 & cntyfips==19
+(53 real changes made)
+
+. replace msacmsa = 1360 if statefips== 19 & cntyfips==113
+(36 real changes made)
+
+. replace msacmsa = 1350 if statefips== 56 & cntyfips==25
+(3 real changes made)
+
+. replace msacmsa = 1320 if statefips== 39 & cntyfips==19
+(12 real changes made)
+
+. replace msacmsa = 1320 if statefips== 39 & cntyfips==151
+(57 real changes made)
+
+. replace msacmsa = 1280 if statefips== 36 & cntyfips==63
+(32 real changes made)
+
+. replace msacmsa = 1280 if statefips== 36 & cntyfips==29
+(87 real changes made)
+
+. replace msacmsa = 1260 if statefips== 48 & cntyfips==41
+(7 real changes made)
+
+. replace msacmsa = 1240 if statefips== 48 & cntyfips==61
+(28 real changes made)
+
+. replace msacmsa = 120 if statefips== 13 & cntyfips==95
+(4 real changes made)
+
+. replace msacmsa = 120 if statefips== 13 & cntyfips==177
+(3 real changes made)
+
+. replace msacmsa = 1080 if statefips== 16 & cntyfips==27
+(28 real changes made)
+
+. replace msacmsa = 1080 if statefips== 16 & cntyfips==1
+(10 real changes made)
+
+. replace msacmsa = 1040 if statefips== 17 & cntyfips==113
+(38 real changes made)
+
+. replace msacmsa = 1020 if statefips== 18 & cntyfips==105
+(5 real changes made)
+
+. replace msacmsa = 1010 if statefips== 38 & cntyfips==59
+(23 real changes made)
+
+. replace msacmsa = 1010 if statefips== 38 & cntyfips==15
+(30 real changes made)
+
+. replace msacmsa = 1000 if statefips== 1 & cntyfips==9
+(6 real changes made)
+
+. replace msacmsa = 1000 if statefips== 1 & cntyfips==73
+(25 real changes made)
+
+. replace msacmsa = 1000 if statefips== 1 & cntyfips==117
+(3 real changes made)
+
+. replace msacmsa = 1000 if statefips== 1 & cntyfips==115
+(4 real changes made)
+
+. 
+. ** New England
+. replace msacmsa = 3283 if statefips==9 & cntyfips==3
+(86 real changes made)
+
+. replace msacmsa = 3283 if statefips==9 & cntyfips==7
+(40 real changes made)
+
+. replace msacmsa = 3283 if statefips==9 & cntyfips==13
+(40 real changes made)
+
+. replace msacmsa = 5483 if statefips==9 & cntyfips==1
+(68 real changes made)
+
+. replace msacmsa = 5483 if statefips==9 & cntyfips==9
+(78 real changes made)
+
+. replace msacmsa = 5523 if statefips==9 & cntyfips==11
+(57 real changes made)
+
+. replace msacmsa = 4243 if statefips==23 & cntyfips==1
+(29 real changes made)
+
+. replace msacmsa = 6403 if statefips==23 & cntyfips==5
+(50 real changes made)
+
+. replace msacmsa = 733 if statefips==23 & cntyfips==19
+(86 real changes made)
+
+. replace msacmsa = 8003 if statefips==25 & cntyfips==13
+(62 real changes made)
+
+. replace msacmsa = 8003 if statefips==25 & cntyfips==15
+(55 real changes made)
+
+. ** Too small to be useful
+. *replace msacmsa = 743 if statefips==25 & cntyfips==1
+. replace msacmsa = 1123 if statefips==25 & cntyfips==5
+(60 real changes made)
+
+. replace msacmsa = 1123 if statefips==25 & cntyfips==9
+(102 real changes made)
+
+. replace msacmsa = 1123 if statefips==25 & cntyfips==17
+(163 real changes made)
+
+. replace msacmsa = 1123 if statefips==25 & cntyfips==21
+(85 real changes made)
+
+. replace msacmsa = 1123 if statefips==25 & cntyfips==23
+(81 real changes made)
+
+. replace msacmsa = 1123 if statefips==25 & cntyfips==25
+(12 real changes made)
+
+. replace msacmsa = 1123 if statefips==25 & cntyfips==27
+(178 real changes made)
+
+. replace msacmsa = 6323 if statefips==25 & cntyfips==3
+(76 real changes made)
+
+. ** Note that I decided to break Manchester off myself
+. replace msacmsa = 4760 if statefips==33 & cntyfips==11
+(66 real changes made)
+
+. replace msacmsa = 4760 if statefips==33 & cntyfips==13
+(48 real changes made)
+
+. replace msacmsa = 4760 if statefips==33 & cntyfips==15
+(73 real changes made)
+
+. replace msacmsa = 6483 if statefips==44 & cntyfips==1
+(8 real changes made)
+
+. replace msacmsa = 6483 if statefips==44 & cntyfips==3
+(13 real changes made)
+
+. replace msacmsa = 6483 if statefips==44 & cntyfips==7
+(48 real changes made)
+
+. replace msacmsa = 6483 if statefips==44 & cntyfips==9
+(24 real changes made)
+
+. replace msacmsa = 1303 if statefips==50 & cntyfips==7
+(50 real changes made)
+
+. replace msacmsa = 1303 if statefips==50 & cntyfips==11
+(39 real changes made)
+
+. replace msacmsa = 1303 if statefips==50 & cntyfips==13
+(10 real changes made)
+
+. 
+. **** This is the whole USA (by state)
+. replace msacmsa = 0 if cntyfips==0
+(1 real change made)
+
+. 
+. *** These are the PMSAs within CMSAs
+. gen pmsa = -9
+
+. 
+. ** All But New England
+. replace pmsa = 9270 if statefips== 6 & cntyfips==113
+(18 real changes made)
+
+. replace pmsa = 9160 if statefips== 24 & cntyfips==15
+(3 real changes made)
+
+. replace pmsa = 9160 if statefips== 10 & cntyfips==3
+(22 real changes made)
+
+. replace pmsa = 8840 if statefips== 54 & cntyfips==37
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 54 & cntyfips==3
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==99
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==685
+(0 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==683
+(0 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==630
+(0 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==610
+(0 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==61
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==600
+(0 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==59
+(8 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==510
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==47
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==43
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==187
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==179
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==177
+(6 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==153
+(7 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==13
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 51 & cntyfips==107
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 24 & cntyfips==9
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 24 & cntyfips==33
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 24 & cntyfips==31
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 24 & cntyfips==21
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 24 & cntyfips==17
+(3 real changes made)
+
+. replace pmsa = 8840 if statefips== 11 & cntyfips==1
+(3 real changes made)
+
+. replace pmsa = 8760 if statefips== 34 & cntyfips==11
+(39 real changes made)
+
+. replace pmsa = 875 if statefips== 34 & cntyfips==31
+(48 real changes made)
+
+. replace pmsa = 875 if statefips== 34 & cntyfips==3
+(205 real changes made)
+
+. replace pmsa = 8735 if statefips== 6 & cntyfips==111
+(54 real changes made)
+
+. replace pmsa = 8720 if statefips== 6 & cntyfips==95
+(23 real changes made)
+
+. replace pmsa = 8720 if statefips== 6 & cntyfips==55
+(15 real changes made)
+
+. replace pmsa = 8480 if statefips== 34 & cntyfips==21
+(27 real changes made)
+
+. replace pmsa = 8200 if statefips== 53 & cntyfips==53
+(51 real changes made)
+
+. replace pmsa = 80 if statefips== 39 & cntyfips==153
+(60 real changes made)
+
+. replace pmsa = 80 if statefips== 39 & cntyfips==133
+(37 real changes made)
+
+. replace pmsa = 7600 if statefips== 53 & cntyfips==61
+(43 real changes made)
+
+. replace pmsa = 7600 if statefips== 53 & cntyfips==33
+(59 real changes made)
+
+. replace pmsa = 7600 if statefips== 53 & cntyfips==29
+(9 real changes made)
+
+. replace pmsa = 7500 if statefips== 6 & cntyfips==97
+(102 real changes made)
+
+. replace pmsa = 7485 if statefips== 6 & cntyfips==87
+(29 real changes made)
+
+. replace pmsa = 7400 if statefips== 6 & cntyfips==85
+(106 real changes made)
+
+. replace pmsa = 7360 if statefips== 6 & cntyfips==81
+(61 real changes made)
+
+. replace pmsa = 7360 if statefips== 6 & cntyfips==75
+(4 real changes made)
+
+. replace pmsa = 7360 if statefips== 6 & cntyfips==41
+(50 real changes made)
+
+. replace pmsa = 720 if statefips== 24 & cntyfips==510
+(3 real changes made)
+
+. replace pmsa = 720 if statefips== 24 & cntyfips==5
+(3 real changes made)
+
+. replace pmsa = 720 if statefips== 24 & cntyfips==35
+(3 real changes made)
+
+. replace pmsa = 720 if statefips== 24 & cntyfips==3
+(3 real changes made)
+
+. replace pmsa = 720 if statefips== 24 & cntyfips==27
+(3 real changes made)
+
+. replace pmsa = 720 if statefips== 24 & cntyfips==25
+(3 real changes made)
+
+. replace pmsa = 720 if statefips== 24 & cntyfips==13
+(3 real changes made)
+
+. replace pmsa = 7080 if statefips== 41 & cntyfips==53
+(15 real changes made)
+
+. replace pmsa = 7080 if statefips== 41 & cntyfips==47
+(76 real changes made)
+
+. replace pmsa = 6920 if statefips== 6 & cntyfips==67
+(51 real changes made)
+
+. replace pmsa = 6920 if statefips== 6 & cntyfips==61
+(48 real changes made)
+
+. replace pmsa = 6920 if statefips== 6 & cntyfips==17
+(41 real changes made)
+
+. replace pmsa = 6780 if statefips== 6 & cntyfips==71
+(95 real changes made)
+
+. replace pmsa = 6780 if statefips== 6 & cntyfips==65
+(68 real changes made)
+
+. replace pmsa = 6600 if statefips== 55 & cntyfips==101
+(30 real changes made)
+
+. replace pmsa = 6450 if statefips== 33 & cntyfips==17
+(36 real changes made)
+
+. replace pmsa = 6450 if statefips== 33 & cntyfips==15
+(73 real changes made)
+
+. replace pmsa = 6450 if statefips== 23 & cntyfips==31
+(42 real changes made)
+
+. replace pmsa = 6440 if statefips== 53 & cntyfips==11
+(27 real changes made)
+
+. replace pmsa = 6440 if statefips== 41 & cntyfips==9
+(16 real changes made)
+
+. replace pmsa = 6440 if statefips== 41 & cntyfips==71
+(26 real changes made)
+
+. replace pmsa = 6440 if statefips== 41 & cntyfips==67
+(39 real changes made)
+
+. replace pmsa = 6440 if statefips== 41 & cntyfips==51
+(41 real changes made)
+
+. replace pmsa = 6440 if statefips== 41 & cntyfips==5
+(78 real changes made)
+
+. replace pmsa = 6160 if statefips== 42 & cntyfips==91
+(65 real changes made)
+
+. replace pmsa = 6160 if statefips== 42 & cntyfips==45
+(56 real changes made)
+
+. replace pmsa = 6160 if statefips== 42 & cntyfips==29
+(38 real changes made)
+
+. replace pmsa = 6160 if statefips== 42 & cntyfips==17
+(40 real changes made)
+
+. replace pmsa = 6160 if statefips== 42 & cntyfips==101
+(3 real changes made)
+
+. replace pmsa = 6160 if statefips== 34 & cntyfips==7
+(106 real changes made)
+
+. replace pmsa = 6160 if statefips== 34 & cntyfips==5
+(109 real changes made)
+
+. replace pmsa = 6160 if statefips== 34 & cntyfips==33
+(37 real changes made)
+
+. replace pmsa = 6160 if statefips== 34 & cntyfips==15
+(66 real changes made)
+
+. replace pmsa = 5945 if statefips== 6 & cntyfips==59
+(88 real changes made)
+
+. replace pmsa = 5910 if statefips== 53 & cntyfips==67
+(23 real changes made)
+
+. replace pmsa = 5775 if statefips== 6 & cntyfips==13
+(50 real changes made)
+
+. replace pmsa = 5775 if statefips== 6 & cntyfips==1
+(54 real changes made)
+
+. replace pmsa = 5660 if statefips== 42 & cntyfips==103
+(5 real changes made)
+
+. replace pmsa = 5660 if statefips== 36 & cntyfips==71
+(55 real changes made)
+
+. replace pmsa = 5640 if statefips== 34 & cntyfips==41
+(61 real changes made)
+
+. replace pmsa = 5640 if statefips== 34 & cntyfips==39
+(59 real changes made)
+
+. replace pmsa = 5640 if statefips== 34 & cntyfips==37
+(58 real changes made)
+
+. replace pmsa = 5640 if statefips== 34 & cntyfips==27
+(112 real changes made)
+
+. replace pmsa = 5640 if statefips== 34 & cntyfips==13
+(60 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==87
+(23 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==85
+(4 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==81
+(10 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==79
+(21 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==61
+(9 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==5
+(10 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==47
+(17 real changes made)
+
+. replace pmsa = 5600 if statefips== 36 & cntyfips==119
+(123 real changes made)
+
+. replace pmsa = 560 if statefips== 34 & cntyfips==9
+(43 real changes made)
+
+. replace pmsa = 560 if statefips== 34 & cntyfips==1
+(58 real changes made)
+
+. replace pmsa = 5380 if statefips== 36 & cntyfips==59
+(160 real changes made)
+
+. replace pmsa = 5380 if statefips== 36 & cntyfips==103
+(217 real changes made)
+
+. replace pmsa = 5190 if statefips== 34 & cntyfips==29
+(66 real changes made)
+
+. replace pmsa = 5190 if statefips== 34 & cntyfips==25
+(135 real changes made)
+
+. replace pmsa = 5080 if statefips== 55 & cntyfips==89
+(19 real changes made)
+
+. replace pmsa = 5080 if statefips== 55 & cntyfips==79
+(51 real changes made)
+
+. replace pmsa = 5080 if statefips== 55 & cntyfips==133
+(52 real changes made)
+
+. replace pmsa = 5080 if statefips== 55 & cntyfips==131
+(25 real changes made)
+
+. replace pmsa = 5015 if statefips== 34 & cntyfips==35
+(56 real changes made)
+
+. replace pmsa = 5015 if statefips== 34 & cntyfips==23
+(71 real changes made)
+
+. replace pmsa = 5015 if statefips== 34 & cntyfips==19
+(68 real changes made)
+
+. replace pmsa = 5000 if statefips== 12 & cntyfips==86
+(4 real changes made)
+
+. replace pmsa = 4480 if statefips== 6 & cntyfips==37
+(238 real changes made)
+
+. replace pmsa = 440 if statefips== 26 & cntyfips==93
+(24 real changes made)
+
+. replace pmsa = 440 if statefips== 26 & cntyfips==91
+(39 real changes made)
+
+. replace pmsa = 440 if statefips== 26 & cntyfips==161
+(40 real changes made)
+
+. replace pmsa = 3800 if statefips== 55 & cntyfips==59
+(32 real changes made)
+
+. replace pmsa = 3740 if statefips== 17 & cntyfips==91
+(38 real changes made)
+
+. replace pmsa = 3640 if statefips== 34 & cntyfips==17
+(35 real changes made)
+
+. replace pmsa = 3360 if statefips== 48 & cntyfips==71
+(10 real changes made)
+
+. replace pmsa = 3360 if statefips== 48 & cntyfips==473
+(10 real changes made)
+
+. replace pmsa = 3360 if statefips== 48 & cntyfips==339
+(21 real changes made)
+
+. replace pmsa = 3360 if statefips== 48 & cntyfips==291
+(20 real changes made)
+
+. replace pmsa = 3360 if statefips== 48 & cntyfips==201
+(77 real changes made)
+
+. replace pmsa = 3360 if statefips== 48 & cntyfips==157
+(17 real changes made)
+
+. replace pmsa = 3200 if statefips== 39 & cntyfips==17
+(35 real changes made)
+
+. replace pmsa = 3180 if statefips== 24 & cntyfips==43
+(3 real changes made)
+
+. replace pmsa = 3060 if statefips== 8 & cntyfips==123
+(37 real changes made)
+
+. replace pmsa = 2960 if statefips== 18 & cntyfips==89
+(48 real changes made)
+
+. replace pmsa = 2960 if statefips== 18 & cntyfips==127
+(27 real changes made)
+
+. replace pmsa = 2920 if statefips== 48 & cntyfips==167
+(27 real changes made)
+
+. replace pmsa = 2800 if statefips== 48 & cntyfips==439
+(62 real changes made)
+
+. replace pmsa = 2800 if statefips== 48 & cntyfips==367
+(22 real changes made)
+
+. replace pmsa = 2800 if statefips== 48 & cntyfips==251
+(30 real changes made)
+
+. replace pmsa = 2800 if statefips== 48 & cntyfips==221
+(8 real changes made)
+
+. replace pmsa = 2680 if statefips== 12 & cntyfips==11
+(4 real changes made)
+
+. replace pmsa = 2640 if statefips== 26 & cntyfips==49
+(72 real changes made)
+
+. replace pmsa = 2281 if statefips== 36 & cntyfips==27
+(42 real changes made)
+
+. replace pmsa = 2160 if statefips== 26 & cntyfips==99
+(65 real changes made)
+
+. replace pmsa = 2160 if statefips== 26 & cntyfips==87
+(23 real changes made)
+
+. replace pmsa = 2160 if statefips== 26 & cntyfips==163
+(109 real changes made)
+
+. replace pmsa = 2160 if statefips== 26 & cntyfips==147
+(27 real changes made)
+
+. replace pmsa = 2160 if statefips== 26 & cntyfips==125
+(92 real changes made)
+
+. replace pmsa = 2160 if statefips== 26 & cntyfips==115
+(33 real changes made)
+
+. replace pmsa = 2080 if statefips== 8 & cntyfips==59
+(3 real changes made)
+
+. replace pmsa = 2080 if statefips== 8 & cntyfips==5
+(19 real changes made)
+
+. replace pmsa = 2080 if statefips== 8 & cntyfips==35
+(3 real changes made)
+
+. replace pmsa = 2080 if statefips== 8 & cntyfips==31
+(3 real changes made)
+
+. replace pmsa = 2080 if statefips== 8 & cntyfips==1
+(22 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==85
+(43 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==397
+(6 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==257
+(24 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==231
+(32 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==213
+(24 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==139
+(26 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==121
+(33 real changes made)
+
+. replace pmsa = 1920 if statefips== 48 & cntyfips==113
+(56 real changes made)
+
+. replace pmsa = 1680 if statefips== 39 & cntyfips==93
+(51 real changes made)
+
+. replace pmsa = 1680 if statefips== 39 & cntyfips==85
+(28 real changes made)
+
+. replace pmsa = 1680 if statefips== 39 & cntyfips==7
+(21 real changes made)
+
+. replace pmsa = 1680 if statefips== 39 & cntyfips==55
+(26 real changes made)
+
+. replace pmsa = 1680 if statefips== 39 & cntyfips==35
+(97 real changes made)
+
+. replace pmsa = 1680 if statefips== 39 & cntyfips==103
+(24 real changes made)
+
+. replace pmsa = 1640 if statefips== 39 & cntyfips==61
+(73 real changes made)
+
+. replace pmsa = 1640 if statefips== 39 & cntyfips==25
+(29 real changes made)
+
+. replace pmsa = 1640 if statefips== 39 & cntyfips==165
+(31 real changes made)
+
+. replace pmsa = 1640 if statefips== 39 & cntyfips==15
+(17 real changes made)
+
+. replace pmsa = 1640 if statefips== 21 & cntyfips==81
+(6 real changes made)
+
+. replace pmsa = 1640 if statefips== 21 & cntyfips==77
+(3 real changes made)
+
+. replace pmsa = 1640 if statefips== 21 & cntyfips==37
+(20 real changes made)
+
+. replace pmsa = 1640 if statefips== 21 & cntyfips==191
+(3 real changes made)
+
+. replace pmsa = 1640 if statefips== 21 & cntyfips==15
+(6 real changes made)
+
+. replace pmsa = 1640 if statefips== 21 & cntyfips==117
+(15 real changes made)
+
+. replace pmsa = 1640 if statefips== 18 & cntyfips==29
+(9 real changes made)
+
+. replace pmsa = 1640 if statefips== 18 & cntyfips==115
+(3 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==97
+(125 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==93
+(21 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==89
+(33 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==63
+(40 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==43
+(120 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==37
+(42 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==31
+(366 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==197
+(86 real changes made)
+
+. replace pmsa = 1600 if statefips== 17 & cntyfips==111
+(58 real changes made)
+
+. replace pmsa = 1150 if statefips== 53 & cntyfips==35
+(15 real changes made)
+
+. replace pmsa = 1145 if statefips== 48 & cntyfips==39
+(24 real changes made)
+
+. replace pmsa = 1125 if statefips== 8 & cntyfips==13
+(8 real changes made)
+
+. 
+. ** No New England CMSAs (Boston is broken up above)
+. 
+. ******************** Part 3 ***********************
+. 
+. gen msa = msacmsa
+
+. replace msa = pmsa if pmsa~=-9
+(7408 real changes made)
+
+. gen cmsa = -9
+
+. replace cmsa = msacmsa
+(20350 real changes made)
+
+. drop pmsa msacmsa
+
+. 
+. 
+end of do-file
+
+. ** Additional MSA for Worcester, MA
+. replace msa = 9240 if statefips==25 & cntyfips==27
+(178 real changes made)
+
+. drop if msa==-9
+(26748 observations deleted)
+
+. ** Coded for cntyfips=0
+. drop if msa==0
+(1 observation deleted)
+
+. 
+. *** Count the number of districts in each MSA
+. sort msa year statefips district
+
+. gen numdis = 0
+
+. by msa year: replace numdis = 1 if _n==1
+(960 real changes made)
+
+. by msa year: replace numdis = 1 if (district~=district[_n-1]|statefips~=statefips[_n-1]) & _n>1
+(18517 real changes made)
+
+. 
+. /*** Assign placefips/place/areaname codes to CC school districts
+> Note: there is always 1 or 0 nonmissing place obs per msa ******/
+. sort msa statefips district place year
+
+. by msa statefips district: replace place = place[1] if place[1]~=.
+(452 real changes made)
+
+. by msa statefips district: replace placefips=placefips[1] if place[1]~=.
+(452 real changes made)
+
+. by msa statefips district: replace areaname=areaname[1] if place[1]~=.
+(452 real changes made)
+
+. 
+. /**** Fill in place/placefips/areaname codes for remaining years for districts that
+> changed names over time or are too complicated to automate.  Note that we maintain
+> old district counts before consolidation, after which we set consol=1         ******/
+. *Modesto, CA (split into Elementary and Secondary for 1990 only, only count elem)
+. replace place = 1790 if msa==5170 & district==25130
+(1 real change made)
+
+. *Binghamton
+. replace place = 325 if msa==960 & (district==4830|district==4870)
+(2 real changes made)
+
+. *Fort Worth
+. replace place = 1500 if msa==2800 & district==19700
+(2 real changes made)
+
+. *Kansas City Mo
+. replace place = 2220 if msa==3760 & district==16400
+(2 real changes made)
+
+. *Knoxville TN Consolidated to Knox County b/t 1980 and 1990
+. gen consol = 0
+
+. replace place = 760 if statefips==47 & cntyfips==93 & year==1990
+(1 real change made)
+
+. replace consol = 1 if msa==3840 & place==760 & year==1990
+(1 real change made)
+
+. *Louisville => Jefferson County b/t 1970 and 1980
+. replace place = 1230 if msa==4520 & district==2990
+(2 real changes made)
+
+. replace consol = 1 if msa==4520 & district==2990 & year>=1980 
+(2 real changes made)
+
+. *Raleigh, NC => Wake County b/t 1970 and 1980
+. replace place = 2020 if statefips==37 & cntyfips==183 & year>1970
+(2 real changes made)
+
+. replace consol = 1 if msa==6640 & district==4720
+(2 real changes made)
+
+. *Fayetteville, NC => Cumberland County b/t 1980 and 1990
+. replace consol = 1 if msa==2560 & district==11
+(1 real change made)
+
+. replace place = 910 if msa==2560 & district==11
+(1 real change made)
+
+. *Rockford, IL
+. replace place = 4965 if msa==6880 & district==34510
+(2 real changes made)
+
+. * St. Louis
+. replace place = 3875 if statefips==29 & district==29280 
+(2 real changes made)
+
+. * Tucson
+. replace place = 320 if msa==8520 & district==8800
+(2 real changes made)
+
+. * Portland, OR
+. replace place = 905 if statefips==41 & district==10040
+(1 real change made)
+
+. * Wilmington, DE got split into 3 districts in 1978 
+. * Then in 1981, a fourth district was created
+. replace place = 255 if statefips==10 & cntyfips==3 & district ~= 80 & district ~= 29 & year>=1980
+(7 real changes made)
+
+. replace consol = 1 if statefips == 10 & place==255 & year>=1980 
+(7 real changes made)
+
+. 
+. *** Drop MSAs with no CC data observed
+. egen xx = max(place), by(msa)
+(5352 missing values generated)
+
+. drop if xx==.
+(5352 observations deleted)
+
+. 
+. sort msa statefips cntyfips place year name
+
+. 
+. *** Confirm that except for Wilmington, DE there is exactly 1 CC district per MSA/year
+. egen maxdis = max(district) if place~=., by(msa year)
+(14416 missing values generated)
+
+. egen mindis = min(district) if place~=., by(msa year)
+(14416 missing values generated)
+
+. l msa year statefips cntyfips place name district if mindis~=maxdis & place~=.
+
+       +-------------------------------------------------------------------------------------+
+       |  msa   year   statef~s   cntyfips   place                           name   district |
+       |-------------------------------------------------------------------------------------|
+14671. | 9160   1980         10          3     255            BRANDYWINE SCH DIST       1240 |
+14672. | 9160   1980         10          3     255             CHRISTINA SCH DIST        200 |
+14673. | 9160   1980         10          3     255              COLONIAL SCH DIST        230 |
+14674. | 9160   1990         10          3     255            BRANDYWINE SCH DIST       1240 |
+14675. | 9160   1990         10          3     255             CHRISTINA SCH DIST        200 |
+       |-------------------------------------------------------------------------------------|
+14676. | 9160   1990         10          3     255              COLONIAL SCH DIST        230 |
+14677. | 9160   1990         10          3     255   RED CLAY CONSOLIDATED SCH DI       1300 |
+       +-------------------------------------------------------------------------------------+
+
+. drop maxdis mindis
+
+. 
+. ** Create variables for total cc and msa population and students
+. gen ccdpop = pop if place~=. 
+(14587 missing values generated)
+
+. gen tdispop = pop 
+(4616 missing values generated)
+
+. gen ccdstu = student if place~=.
+(14904 missing values generated)
+
+. gen tdisstu = students
+(10475 missing values generated)
+
+. 
+. /** Create code for central district to merge with other data set
+>     The common core data set uses a modern (1990) district code **/
+. gen ccst = statefips if place~=. & year==1990
+(14904 missing values generated)
+
+. gen ccdis = district if place~=. & year==1990
+(14904 missing values generated)
+
+. gen double leaid = (ccst*100000) + ccdis
+(14904 missing values generated)
+
+. /** We observe a desegregation order in 1969 for the suburban Cumberland County, not the
+> city Fayetteville NC district, though the two subsequently merged.  Therefore,
+> it is important that the central district leaid be for Fayetteville city district only **/
+. replace leaid = 3701470 if msa==2560
+(7 real changes made)
+
+. 
+. *** Identify the largest suburban district
+. sort msa year place tdisstu 
+
+. by msa year place: gen subst = statefips if _n==_N
+(14077 missing values generated)
+
+. by msa year place: gen subdis = district if _n==_N
+(14077 missing values generated)
+
+. replace subst = . if place~=. | year~=1990
+(836 real changes made, 836 to missing)
+
+. replace subdis = . if place~=. | year~=1990
+(836 real changes made, 836 to missing)
+
+. gen leaidsub = (subst*100000) + subdis
+(14913 missing values generated)
+
+. 
+. ** Create one observation per msa/year
+. sort msa areaname
+
+. by msa: replace areaname = areaname[_N]
+(14440 real changes made)
+
+. gsort msa year place -pop -students
+
+. by msa year: replace name = name[1]
+(14213 real changes made)
+
+. collapse (sum) ccdstu ccdpop tdis* numdis (max) consol leaid leaidsub, by(msa name areaname year)
+
+. 
+. ** Fraction of pop or students in msa that are in the central district
+. gen fraction = ccdpop/tdispop
+(171 missing values generated)
+
+. replace fraction = ccdstu/tdisstu if year==1990
+(171 real changes made)
+
+. 
+. 
+. ************* 7. Add Desegregation Data *****************
+. 
+. *** Merge on Deseg Data for Central Cities
+. sort msa leaid
+
+. by msa: replace leaid = leaid[1]
+(334 real changes made)
+
+. *Wilmington, DE
+. replace leaid = 9999999 if msa==9160
+(3 real changes made)
+
+. sort leaid 
+
+. 
+. merge leaid using ccd.dta
+variable leaid does not uniquely identify observations in the master data
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        219       40.63       40.63
+          2 |         26        4.82       45.45
+          3 |        294       54.55      100.00
+------------+-----------------------------------
+      Total |        539      100.00
+
+. 
+. ** Add desegregation data for a few CC districts
+. *Gary, Albuquerque & NYC & Modesto, CA never had deseg plans
+. replace imp = 999 if msa==200|msa==2960|msa==5600|msa==5170
+(12 real changes made)
+
+. ** Only keep MSAs with desegregation data about the central district
+. drop if imp==. | _merge==2
+(251 observations deleted)
+
+. drop _merge
+
+. 
+. *** Merge on Deseg Data for Largest Suburban District
+. sort msa leaidsub
+
+. by msa: replace leaidsub = leaidsub[1]
+(176 real changes made)
+
+. sort leaidsub
+
+. merge leaidsub using ccdsub.dta
+variable leaidsub does not uniquely identify observations in the master data
+leaidsub was float now double
+(label state already defined)
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        270       66.50       66.50
+          2 |        118       29.06       95.57
+          3 |         18        4.43      100.00
+------------+-----------------------------------
+      Total |        406      100.00
+
+. drop if _merge==2
+(118 observations deleted)
+
+. drop _merge
+
+. 
+. **** Add on a 1960 cross-section
+. sort msa year
+
+. save ../data/districtpan.dta, replace
+file ../data/districtpan.dta saved
+
+. keep if year==1970
+(192 observations deleted)
+
+. replace year = 1960
+(96 real changes made)
+
+. replace numdis = .
+(96 real changes made, 96 to missing)
+
+. replace fraction = .
+(96 real changes made, 96 to missing)
+
+. replace ccdpop = .
+(96 real changes made, 96 to missing)
+
+. replace tdispop = .
+(96 real changes made, 96 to missing)
+
+. append using ../data/districtpan.dta
+(label state already defined)
+
+. 
+. **** Panel the year-indexed variables
+. gen disd = .
+(384 missing values generated)
+
+. replace disd = disd59 if year==1960
+(0 real changes made)
+
+. replace disd = disd69 if year==1970
+(95 real changes made)
+
+. replace disd = disd79 if year==1980
+(94 real changes made)
+
+. replace disd = disd89 if year==1990
+(92 real changes made)
+
+. gen dis_wn = .
+(384 missing values generated)
+
+. replace dis_wn = dis_wn59 if year==1960
+(0 real changes made)
+
+. replace dis_wn = dis_wn69 if year==1970
+(95 real changes made)
+
+. replace dis_wn = dis_wn79 if year==1980
+(94 real changes made)
+
+. replace dis_wn = dis_wn89 if year==1990
+(92 real changes made)
+
+. gen disdT = .
+(384 missing values generated)
+
+. replace disdT = disd60 if year==1960
+(3 real changes made)
+
+. replace disdT = disd70 if year==1970
+(95 real changes made)
+
+. replace disdT = disd80 if year==1980
+(95 real changes made)
+
+. replace disdT = disd90 if year==1990
+(95 real changes made)
+
+. gen dis_wnT = .
+(384 missing values generated)
+
+. replace dis_wnT = dis_wn60 if year==1960
+(3 real changes made)
+
+. replace dis_wnT = dis_wn70 if year==1970
+(95 real changes made)
+
+. replace dis_wnT = dis_wn80 if year==1980
+(95 real changes made)
+
+. replace dis_wnT = dis_wn90 if year==1990
+(95 real changes made)
+
+. gen disdm1 = .
+(384 missing values generated)
+
+. replace disdm1 = disd58 if year==1960
+(0 real changes made)
+
+. replace disdm1 = disd68 if year==1970
+(95 real changes made)
+
+. replace disdm1 = disd78 if year==1980
+(95 real changes made)
+
+. replace disdm1 = disd88 if year==1990
+(94 real changes made)
+
+. gen disdm3 = .
+(384 missing values generated)
+
+. replace disdm3 = disd56 if year==1960
+(0 real changes made)
+
+. replace disdm3 = disd66 if year==1970
+(86 real changes made)
+
+. replace disdm3 = disd76 if year==1980
+(95 real changes made)
+
+. replace disdm3 = disd86 if year==1990
+(95 real changes made)
+
+. gen dis_wnm3 = .
+(384 missing values generated)
+
+. replace dis_wnm3 = dis_wn56 if year==1960
+(0 real changes made)
+
+. replace dis_wnm3 = dis_wn66 if year==1970
+(86 real changes made)
+
+. replace dis_wnm3 = dis_wn76 if year==1980
+(95 real changes made)
+
+. replace dis_wnm3 = dis_wn86 if year==1990
+(95 real changes made)
+
+. gen disdm4  = .
+(384 missing values generated)
+
+. replace disdm4 = disd55 if year==1960
+(0 real changes made)
+
+. replace disdm4 = disd65 if year==1970
+(84 real changes made)
+
+. replace disdm4 = disd75 if year==1980
+(94 real changes made)
+
+. replace disdm4 = disd85 if year==1990
+(95 real changes made)
+
+. gen dis_wnm4 = .
+(384 missing values generated)
+
+. replace dis_wnm4 = dis_wn55 if year==1960
+(0 real changes made)
+
+. replace dis_wnm4 = dis_wn65 if year==1970
+(84 real changes made)
+
+. replace dis_wnm4 = dis_wn75 if year==1980
+(94 real changes made)
+
+. replace dis_wnm4 = dis_wn85 if year==1990
+(95 real changes made)
+
+. 
+. drop disd56 disd66 disd76 disd86 disd59 disd69 disd79 disd89 disd60 disd70 disd80 disd90 disd55 disd65 disd75 disd85 di
+> sd58 disd68 disd78 disd88
+
+. drop dis_wn56 dis_wn66 dis_wn76 dis_wn86 dis_wn59 dis_wn69 dis_wn79 dis_wn89 dis_wn60 dis_wn70 dis_wn80 dis_wn90 dis_wn
+> 55 dis_wn65 dis_wn75 dis_wn85 dis_wn58 dis_wn68 dis_wn78 dis_wn88
+
+. gen disdsub = .
+(384 missing values generated)
+
+. replace disdsub = disd69sub if year==1970
+(6 real changes made)
+
+. replace disdsub = disd79sub if year==1980
+(6 real changes made)
+
+. replace disdsub = disd89sub if year==1990
+(6 real changes made)
+
+. drop disd69sub disd79sub disd89sub
+
+. gen expos = .
+(384 missing values generated)
+
+. replace expos = expos69 if year==1970
+(95 real changes made)
+
+. replace expos = expos79 if year==1980
+(94 real changes made)
+
+. replace expos = expos89 if year==1990
+(92 real changes made)
+
+. gen expos_bw = .
+(384 missing values generated)
+
+. replace expos_bw = expos_bw69 if year==1970
+(95 real changes made)
+
+. replace expos_bw = expos_bw79 if year==1980
+(94 real changes made)
+
+. replace expos_bw = expos_bw89 if year==1990
+(92 real changes made)
+
+. gen exposT = .
+(384 missing values generated)
+
+. replace exposT = expos60 if year==1960
+(3 real changes made)
+
+. replace exposT = expos70 if year==1970
+(95 real changes made)
+
+. replace exposT = expos80 if year==1980
+(95 real changes made)
+
+. replace exposT = expos90 if year==1990
+(95 real changes made)
+
+. gen expos_bwT = .
+(384 missing values generated)
+
+. replace expos_bwT = expos_bw60 if year==1960
+(3 real changes made)
+
+. replace expos_bwT = expos_bw70 if year==1970
+(95 real changes made)
+
+. replace expos_bwT = expos_bw80 if year==1980
+(95 real changes made)
+
+. replace expos_bwT = expos_bw90 if year==1990
+(95 real changes made)
+
+. gen exposm4 = .
+(384 missing values generated)
+
+. replace exposm4 = expos55 if year==1960
+(0 real changes made)
+
+. replace exposm4 = expos65 if year==1970
+(84 real changes made)
+
+. replace exposm4 = expos75 if year==1980
+(94 real changes made)
+
+. replace exposm4 = expos85 if year==1990
+(95 real changes made)
+
+. gen expos_bwm4 = .
+(384 missing values generated)
+
+. replace expos_bwm4 = expos_bw55 if year==1960
+(0 real changes made)
+
+. replace expos_bwm4 = expos_bw65 if year==1970
+(84 real changes made)
+
+. replace expos_bwm4 = expos_bw75 if year==1980
+(94 real changes made)
+
+. replace expos_bwm4 = expos_bw85 if year==1990
+(95 real changes made)
+
+. drop expos69 expos79 expos89 expos60 expos70 expos80 expos90 expos55 expos65 expos75 expos85
+
+. drop expos_bw69 expos_bw79 expos_bw89 expos_bw60 expos_bw70 expos_bw80 expos_bw90 expos_bw55 expos_bw65 expos_bw75 expo
+> s_bw85
+
+. gen expossub = .
+(384 missing values generated)
+
+. replace expossub = expos69sub if year==1970
+(6 real changes made)
+
+. replace expossub = expos79sub if year==1980
+(6 real changes made)
+
+. replace expossub = expos89sub if year==1990
+(6 real changes made)
+
+. drop expos69sub expos79sub expos89sub
+
+. gen white = .
+(384 missing values generated)
+
+. replace white = white69 if year==1970
+(95 real changes made)
+
+. replace white = white79 if year==1980
+(88 real changes made)
+
+. replace white = white89 if year==1990
+(95 real changes made)
+
+. drop white69 white79 white89
+
+. gen whitesub = .
+(384 missing values generated)
+
+. replace whitesub = white69sub if year==1970
+(6 real changes made)
+
+. replace whitesub = white79sub if year==1980
+(6 real changes made)
+
+. replace whitesub = white89sub if year==1990
+(6 real changes made)
+
+. drop white69sub white79sub white89sub
+
+. gen black = .
+(384 missing values generated)
+
+. replace black = black69 if year==1970
+(95 real changes made)
+
+. replace black = black79 if year==1980
+(88 real changes made)
+
+. replace black = black89 if year==1990
+(95 real changes made)
+
+. drop black69 black79 black89
+
+. gen blacksub = .
+(384 missing values generated)
+
+. replace blacksub = black69sub if year==1970
+(6 real changes made)
+
+. replace blacksub = black79sub if year==1980
+(6 real changes made)
+
+. replace blacksub = black89sub if year==1990
+(6 real changes made)
+
+. drop black69sub black79sub black89sub
+
+. gen stu = .
+(384 missing values generated)
+
+. replace stu = stu69 if year==1970
+(95 real changes made)
+
+. replace stu = stu79 if year==1980
+(88 real changes made)
+
+. replace stu = stu89 if year==1990
+(95 real changes made)
+
+. drop stu69 stu79 stu89
+
+. gen stusub = .
+(384 missing values generated)
+
+. replace stusub = stu69sub if year==1970
+(6 real changes made)
+
+. replace stusub = stu79sub if year==1980
+(6 real changes made)
+
+. replace stusub = stu89sub if year==1990
+(6 real changes made)
+
+. drop stu69sub stu79sub stu89sub
+
+. 
+. 
+. ******************** 8.  Label Variables ******************************
+. 
+. label variable ccdstu "students in the central city district from Census (1990)"
+
+. label variable ccdpop "population of central city district from Census (1970-1980)"
+
+. label variable tdisstu "total district students in MSA from Census (1990)"
+
+. label variable tdispop "total district population of MSA from Census (1970-1980)"
+
+. label variable numdis "number of elem+unified districts in MSA from Census"
+
+. label variable leaid "ID Code for CC district"
+
+. label variable leaidsub "ID code for largest suburban district"
+
+. label variable white "white enrollment in 1969-1970, 1979-1980 or 1989-1990 from W&L"
+
+. label variable black "black enrollment in 1969-1970, 1979-1980 or 1989-1990 from W&L"
+
+. label variable stu "total enrollment 1969-1970, 1979-1980 or 1989-1990 from W&L"
+
+. label variable disd "dissimilarity index 1969-1970, 1979-1980 or 1989-1990 from W&L"
+
+. label variable disdT "dissimilarity index 1970-71, 1980-81 or 1990-91 from W&L"
+
+. label variable expos "w to b exposure index 1969-1970, 1979-1980 or 1989-1990 from W&L"
+
+. label variable exposT "w to bexposure index 1970-71, 1980-81 or 1990-91 from W&L"
+
+. label variable expos_bw "b to w exposure index 1969-1970, 1979-1980 or 1989-1990 from W&L"
+
+. label variable expos_bwT "b to w exposure index 1970-71, 1980-81 or 1990-91 from W&L"
+
+. label variable major "indicator for major desegregation order from w&l"
+
+. label variable imp "Desegregation order implementation year (Sep or beginning of sch yr) from W&L"
+
+. label variable fraction "fraction of pop (70-80) or students (90) in CC district from census "
+
+. label variable consol "central district includes consolidated districts-NOTE W&L data consol in all years, census data 
+> only consol in consol=1 years"
+note: label truncated to 80 characters
+
+. label variable lagdisd1 "diss index 1 year prior to implementation"
+
+. label variable disdimp "diss index in implementation year"
+
+. label variable leaddisd1 "diss index 1 year after implementation"
+
+. label variable lagexpos1 "exposure index 1 year prior to implementation"
+
+. label variable exposimp "exposure index in implementation year"
+
+. label variable leadexpos1 "exposure index 1 year after implementation"
+
+. 
+. sort msa year
+
+. save ../data/districtpan.dta, replace
+file ../data/districtpan.dta saved
+
+. 
+. erase temp.dta
+
+. erase temp70d.dta
+
+. erase temp80d.dta
+
+. erase md-districts.dta
+
+. erase ccsamp.dta
+
+. erase ccd.dta
+
+. erase ccdsub.dta
+
+. 
+. log close
+       log:  C:\research\segregation\AER-DATA\programs\build-districts.log
+  log type:  text
+ closed on:  17 Nov 2010, 15:31:44
+-------------------------------------------------------------------------------------------------------------------------

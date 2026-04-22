@@ -1,0 +1,9 @@
+dictionary using 98-99/block98f.txt {
+
+_column(4)	dsl		%5.0f	"DSL"
+_column(9)	Serial		%2.0f	"DSL"
+
+_column(93)  	totalotherexp 		%12.0f 	""
+_column(141)  	purchasevsamecond 	%12.0f 	""
+
+};

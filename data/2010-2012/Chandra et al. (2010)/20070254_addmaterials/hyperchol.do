@@ -1,0 +1,1 @@
+replace specificdrug=1 if (class ==102) & hyperchol==1

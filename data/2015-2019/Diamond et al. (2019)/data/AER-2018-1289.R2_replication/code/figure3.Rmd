@@ -1,0 +1,56 @@
+---
+title: "map_rc"
+author: "Franklin Qian"
+date: "July 3, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(echo = TRUE)
+opts_knit$set(root.dir = "~/Dropbox/rent_control/Franklin/rent-control")
+rm(list=ls())
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Load Packages
+```{r eval=TRUE, warning=FALSE}
+library(devtools) 
+library(ggplot2)
+library(ggmap)
+library(data.table)
+```
+
+## Load Data
+```{r}
+parcels <- read.table("data/infutor/parcels_formap.txt", header = TRUE)
+setDT(parcels)
+parcels[, rc := ifelse(treat=="Treat" & use_code==3, 1, 2)]
+parcels[use_code!=3, rc := 3]
+parcels[, rc := as.factor(rc)]
+parcels[, opacity := ifelse(rc!=3, 1, 0.05)]
+parcels[rc==1, opacity := 0.75]
+#parcels[, pointsize := ifelse(rc==2, I(1), I(0.5))]
+```
+
+```{r}
+theme_set(theme_bw(16))
+sfmap <- qmplot(lon_assessor_sr, lat_assessor_sr, data = parcels[rc==3,], colour = rc, size = I(0.5), alpha = opacity, legend = "topleft")+
+  geom_point(data=parcels[rc==1,], aes(x = lon_assessor_sr, y = lat_assessor_sr, color = rc, alpha=opacity), size=I(0.5))+
+  geom_point(data=parcels[rc==2,], aes(x = lon_assessor_sr, y = lat_assessor_sr, color = rc, alpha=opacity), size=I(1))+
+  guides(colour=guide_legend(title=NULL, override.aes = list(size=2)),
+         alpha=FALSE,
+         size=FALSE)+ 
+  scale_colour_manual(values=c("#CC79A7", "#009E73","#999999"),
+                      labels=c("Rent-Contolled Sample", "Uncontrolled Sample", "Others"))+
+  theme(legend.background = element_rect(fill = "transparent", colour = NA),
+        legend.text = element_text(size = 10)) 
+sfmap
+ggsave("output/map_rc.pdf", sfmap, width = 9, height = 9)
+```

@@ -1,0 +1,240 @@
+-------------------------------------------------------------------------------------------------------
+       log:  T:\LSE\Raffaella_Sadun\ADIB_AER\reggmm.txt
+  log type:  text
+ opened on:  12 Oct 2010, 07:44:18
+
+. 
+. #delimit;
+delimiter now ;
+. xi: xtabond2 ln4 lag_ln4 ln_TM ln_K_not ln_N ln_khard  int_us_mu int_oth_mu du_usa_mu du_oth_mu i.man
+> uf*i.age  Hd* yy* if g_new>4 & Hdummy_far==0,
+> gmm(ln4 ln_TM ln_K_not ln_N ln_khard int_us_mu int_oth_mu du_usa_mu du_oth_mu, lag(2 5))
+> iv(yy*  i.manuf*i.age Hd*, eq(level))
+> h(1)  robust ;
+i.manuf           _Imanuf_0-1         (naturally coded; _Imanuf_0 omitted)
+i.age             _Iage_1-24          (naturally coded; _Iage_1 omitted)
+i.manuf*i.age     _ImanXage_#_#       (coded as above)
+i.manuf*i.age     _ImanXagea#_#       (coded as above)
+Favoring speed over space. See help matafavor.
+_Iage_24 dropped due to collinearity
+_ImanXage_1_8 dropped due to collinearity
+_ImanXage_1_9 dropped due to collinearity
+_ImanXage_1_10 dropped due to collinearity
+_ImanXage_1_11 dropped due to collinearity
+_ImanXage_1_12 dropped due to collinearity
+_ImanXage_1_13 dropped due to collinearity
+_ImanXage_1_14 dropped due to collinearity
+_ImanXage_1_15 dropped due to collinearity
+_ImanXage_1_16 dropped due to collinearity
+_ImanXage_1_17 dropped due to collinearity
+_ImanXage_1_18 dropped due to collinearity
+_ImanXage_1_19 dropped due to collinearity
+_ImanXage_1_20 dropped due to collinearity
+_ImanXage_1_21 dropped due to collinearity
+_ImanXage_1_22 dropped due to collinearity
+_ImanXage_1_23 dropped due to collinearity
+_ImanXage_1_24 dropped due to collinearity
+Hdummy_bsci dropped due to collinearity
+Hdummy_qice dropped due to collinearity
+Hdummy_far dropped due to collinearity
+yy1 dropped due to collinearity
+yy2 dropped due to collinearity
+yy3 dropped due to collinearity
+yy4 dropped due to collinearity
+yy5 dropped due to collinearity
+yy6 dropped due to collinearity
+yy7 dropped due to collinearity
+yy8 dropped due to collinearity
+yy9 dropped due to collinearity
+Warning: Number of instruments may be large relative to number of observations.
+
+Arellano-Bond dynamic panel-data estimation, one-step system GMM results
+------------------------------------------------------------------------------
+Group variable: ruref                           Number of obs      =       978
+Time variable : year                            Number of groups   =       256
+Number of instruments = 205                     Obs per group: min =         1
+Wald chi2(38) =  56482.91                                      avg =      3.82
+Prob > chi2   =     0.000                                      max =         5
+------------------------------------------------------------------------------
+             |               Robust
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     lag_ln4 |   .4163531   .0830272     5.01   0.000     .2536227    .5790835
+       ln_TM |   .2993254   .0539279     5.55   0.000     .1936286    .4050221
+    ln_K_not |   .0773639   .0319615     2.42   0.015     .0147206    .1400073
+        ln_N |     .17904   .0371255     4.82   0.000     .1062753    .2518047
+    ln_khard |   .0267988   .0153225     1.75   0.080    -.0032327    .0568303
+   int_us_mu |   .0524067   .0191822     2.73   0.006     .0148102    .0900032
+  int_oth_mu |    .015845   .0179647     0.88   0.378    -.0193651    .0510552
+   du_usa_mu |  -.3539837   .1142433    -3.10   0.002    -.5778965   -.1300709
+   du_oth_mu |  -.0858481   .1218369    -0.70   0.481    -.3246441    .1529478
+   _Imanuf_1 |  -.0327158   .0481265    -0.68   0.497     -.127042    .0616103
+     _Iage_2 |   .0154228   .0873798     0.18   0.860    -.1558384    .1866841
+     _Iage_3 |  -.0285276    .066198    -0.43   0.667    -.1582733    .1012182
+     _Iage_4 |  -.0209859   .0680195    -0.31   0.758    -.1543016    .1123298
+     _Iage_5 |    -.01965   .0667713    -0.29   0.769    -.1505193    .1112193
+     _Iage_6 |  -.0173881   .0677186    -0.26   0.797    -.1501142     .115338
+     _Iage_7 |  -.0366424   .0682941    -0.54   0.592    -.1704964    .0972116
+     _Iage_8 |   .0000547   .0419804     0.00   0.999    -.0822253    .0823347
+     _Iage_9 |   .0003306   .0365384     0.01   0.993    -.0712833    .0719446
+    _Iage_10 |   .0651022     .04794     1.36   0.174    -.0288584    .1590629
+    _Iage_11 |   -.005118   .0747992    -0.07   0.945    -.1517217    .1414857
+    _Iage_12 |    .094052   .0811924     1.16   0.247    -.0650823    .2531862
+    _Iage_13 |   .0156703   .0976775     0.16   0.873    -.1757741    .2071148
+    _Iage_14 |  -.0071203   .0938535    -0.08   0.940    -.1910698    .1768291
+    _Iage_15 |  -.0669688   .0648993    -1.03   0.302    -.1941691    .0602314
+    _Iage_16 |   .0202586   .0633808     0.32   0.749    -.1039654    .1444826
+    _Iage_17 |  -.0936353   .0554141    -1.69   0.091     -.202245    .0149743
+    _Iage_18 |  -.0524934   .1189318    -0.44   0.659    -.2855955    .1806087
+    _Iage_19 |   .0068742    .060331     0.11   0.909    -.1113724    .1251209
+    _Iage_20 |  -.1261128   .0785684    -1.61   0.108    -.2801039    .0278783
+    _Iage_21 |  -.0208338   .0255374    -0.82   0.415    -.0708861    .0292185
+    _Iage_22 |  -.0555844   .0214694    -2.59   0.010    -.0976637   -.0135051
+    _Iage_23 |  -.0140234   .0223138    -0.63   0.530    -.0577577    .0297108
+_ImanXa~_1_2 |   .1264406   .0931372     1.36   0.175     -.056105    .3089863
+_ImanXa~_1_3 |   .1576948   .0930976     1.69   0.090    -.0247733    .3401628
+_ImanXa~_1_4 |   .0487005   .0795035     0.61   0.540    -.1071235    .2045245
+_ImanXa~_1_5 |   .0759022   .0703176     1.08   0.280    -.0619177    .2137221
+_ImanXa~_1_6 |   .0470224   .0785787     0.60   0.550    -.1069891    .2010339
+_ImanXa~_1_7 |   .0779036   .0717179     1.09   0.277    -.0626609    .2184682
+       _cons |   1.235031    .202927     6.09   0.000     .8373011     1.63276
+------------------------------------------------------------------------------
+Hansen test of overid. restrictions: chi2(166) = 138.27   Prob > chi2 =  0.943
+
+Arellano-Bond test for AR(1) in first differences: z =  -4.55  Pr > z =  0.000
+Arellano-Bond test for AR(2) in first differences: z =   0.38  Pr > z =  0.707
+------------------------------------------------------------------------------
+
+. test int_us_mu=int_oth_mu ;
+
+ ( 1)  int_us_mu - int_oth_mu = 0
+
+           chi2(  1) =    2.83
+         Prob > chi2 =    0.0926
+
+. testnl (_b[int_us_mu])/(1 - _b[lag_ln4]) = _b[int_oth_mu]/(1- _b[lag_ln4]) ;
+
+  (1)  (_b[int_us_mu])/(1 - _b[lag_ln4]) = _b[int_oth_mu]/(1- _b[lag_ln4])
+
+               chi2(1) =        2.93
+           Prob > chi2 =        0.0871
+
+. xi: xtabond2 ln4 ln_TM ln_K_not ln_N ln_khard  int_us_mu int_oth_mu du_usa_mu du_oth_mu lag_ln_TM lag
+> _ln4 i.manuf*i.age  Hd* yy* if g_new>4 & Hdummy_far==0,
+> gmm(ln4 ln_TM ln_K_not ln_N ln_khard int_us_mu int_oth_mu du_usa_mu du_oth_mu, lag(2 5))
+> iv(yy*  i.manuf*i.age Hd*, eq(level))
+> h(1) robust ;
+i.manuf           _Imanuf_0-1         (naturally coded; _Imanuf_0 omitted)
+i.age             _Iage_1-24          (naturally coded; _Iage_1 omitted)
+i.manuf*i.age     _ImanXage_#_#       (coded as above)
+i.manuf*i.age     _ImanXagea#_#       (coded as above)
+Favoring speed over space. See help matafavor.
+_Iage_24 dropped due to collinearity
+_ImanXage_1_8 dropped due to collinearity
+_ImanXage_1_9 dropped due to collinearity
+_ImanXage_1_10 dropped due to collinearity
+_ImanXage_1_11 dropped due to collinearity
+_ImanXage_1_12 dropped due to collinearity
+_ImanXage_1_13 dropped due to collinearity
+_ImanXage_1_14 dropped due to collinearity
+_ImanXage_1_15 dropped due to collinearity
+_ImanXage_1_16 dropped due to collinearity
+_ImanXage_1_17 dropped due to collinearity
+_ImanXage_1_18 dropped due to collinearity
+_ImanXage_1_19 dropped due to collinearity
+_ImanXage_1_20 dropped due to collinearity
+_ImanXage_1_21 dropped due to collinearity
+_ImanXage_1_24 dropped due to collinearity
+Hdummy_bsci dropped due to collinearity
+Hdummy_qice dropped due to collinearity
+Hdummy_far dropped due to collinearity
+yy1 dropped due to collinearity
+yy2 dropped due to collinearity
+yy3 dropped due to collinearity
+yy4 dropped due to collinearity
+yy5 dropped due to collinearity
+yy6 dropped due to collinearity
+yy7 dropped due to collinearity
+yy8 dropped due to collinearity
+yy9 dropped due to collinearity
+Warning: Number of instruments may be large relative to number of observations.
+
+Arellano-Bond dynamic panel-data estimation, one-step system GMM results
+------------------------------------------------------------------------------
+Group variable: ruref                           Number of obs      =       978
+Time variable : year                            Number of groups   =       256
+Number of instruments = 205                     Obs per group: min =         1
+Wald chi2(41) =  72789.50                                      avg =      3.82
+Prob > chi2   =     0.000                                      max =         5
+------------------------------------------------------------------------------
+             |               Robust
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       ln_TM |   .4422632   .0579171     7.64   0.000     .3287478    .5557786
+    ln_K_not |   .0685834   .0275923     2.49   0.013     .0145035    .1226633
+        ln_N |   .1394306   .0360444     3.87   0.000     .0687849    .2100763
+    ln_khard |   .0237281   .0142177     1.67   0.095    -.0041381    .0515944
+   int_us_mu |   .0368474   .0164953     2.23   0.025     .0045172    .0691776
+  int_oth_mu |   .0070087   .0159167     0.44   0.660    -.0241875     .038205
+   du_usa_mu |  -.2630253   .0983663    -2.67   0.007    -.4558196    -.070231
+   du_oth_mu |   -.033933   .1074971    -0.32   0.752    -.2446234    .1767574
+   lag_ln_TM |  -.2010447   .0636138    -3.16   0.002    -.3257254    -.076364
+     lag_ln4 |   .5321236   .0861008     6.18   0.000     .3633692    .7008781
+   _Imanuf_1 |  -.1440709   .0745845    -1.93   0.053    -.2902539    .0021121
+     _Iage_2 |  -.1096282   .0964458    -1.14   0.256    -.2986586    .0794021
+     _Iage_3 |  -.1379803   .0855726    -1.61   0.107    -.3056995    .0297389
+     _Iage_4 |  -.1304939   .0891786    -1.46   0.143    -.3052808     .044293
+     _Iage_5 |  -.1317666   .0872224    -1.51   0.131    -.3027195    .0391862
+     _Iage_6 |  -.1236364    .088049    -1.40   0.160    -.2962092    .0489364
+     _Iage_7 |  -.1491856    .088162    -1.69   0.091    -.3219798    .0236087
+     _Iage_8 |  -.0161296   .0332503    -0.49   0.628     -.081299    .0490399
+     _Iage_9 |   .0084127   .0325952     0.26   0.796    -.0554728    .0722983
+    _Iage_10 |    .061621   .0421952     1.46   0.144      -.02108    .1443221
+    _Iage_11 |  -.0152839    .060834    -0.25   0.802    -.1345163    .1039485
+    _Iage_12 |   .0563808   .0767239     0.73   0.462    -.0939952    .2067569
+    _Iage_13 |  -.0183982   .0858184    -0.21   0.830    -.1865992    .1498027
+    _Iage_14 |   .0032884   .0790341     0.04   0.967    -.1516156    .1581925
+    _Iage_15 |  -.0239124   .0627006    -0.38   0.703    -.1468033    .0989784
+    _Iage_16 |    .019842   .0538983     0.37   0.713    -.0857967    .1254807
+    _Iage_17 |  -.0946084   .0509064    -1.86   0.063    -.1943831    .0051662
+    _Iage_18 |  -.0387768   .0912913    -0.42   0.671    -.2177045    .1401509
+    _Iage_19 |   -.000195   .0491334    -0.00   0.997    -.0964948    .0961048
+    _Iage_20 |  -.1127073   .0649756    -1.73   0.083    -.2400571    .0146425
+    _Iage_21 |  -.0146691   .0211667    -0.69   0.488     -.056155    .0268168
+    _Iage_22 |  -.2116138    .072175    -2.93   0.003    -.3530742   -.0701535
+    _Iage_23 |  -.1645555   .0908444    -1.81   0.070    -.3426073    .0134963
+_ImanXa~_1_2 |   .2602681   .1062792     2.45   0.014     .0519648    .4685715
+_ImanXa~_1_3 |   .2349104    .104806     2.24   0.025     .0294944    .4403263
+_ImanXa~_1_4 |   .1501067   .0960055     1.56   0.118    -.0380606     .338274
+_ImanXa~_1_5 |   .1829126   .0917351     1.99   0.046     .0031151    .3627101
+_ImanXa~_1_6 |   .1663513   .0954555     1.74   0.081    -.0207379    .3534406
+_ImanXa~_1_7 |   .1727134   .0920822     1.88   0.061    -.0077644    .3531911
+_ImanX~_1_22 |   .1643964   .0724156     2.27   0.023     .0224644    .3063285
+_ImanX~_1_23 |   .1635854   .0900445     1.82   0.069    -.0128986    .3400695
+       _cons |   1.037729   .2027801     5.12   0.000     .6402876    1.435171
+------------------------------------------------------------------------------
+Hansen test of overid. restrictions: chi2(163) = 130.23   Prob > chi2 =  0.972
+
+Arellano-Bond test for AR(1) in first differences: z =  -6.20  Pr > z =  0.000
+Arellano-Bond test for AR(2) in first differences: z =   0.57  Pr > z =  0.572
+------------------------------------------------------------------------------
+
+. test int_us_mu=int_oth_mu;
+
+ ( 1)  int_us_mu - int_oth_mu = 0
+
+           chi2(  1) =    2.64
+         Prob > chi2 =    0.1044
+
+. testnl (_b[int_us_mu])/(1 - _b[lag_ln4]) = _b[int_oth_mu]/(1- _b[lag_ln4]) ;
+
+  (1)  (_b[int_us_mu])/(1 - _b[lag_ln4]) = _b[int_oth_mu]/(1- _b[lag_ln4])
+
+               chi2(1) =        2.59
+           Prob > chi2 =        0.1077
+
+. log c;
+       log:  T:\LSE\Raffaella_Sadun\ADIB_AER\reggmm.txt
+  log type:  text
+ closed on:  12 Oct 2010, 07:44:25
+-------------------------------------------------------------------------------------------------------

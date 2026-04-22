@@ -1,0 +1,13 @@
+	(1)	(2)	(3)	(4)	(5)	(6)
+VARIABLES	lnwpu	lnwpu	lnwto	lnwto	lnwpr	lnwpr
+						
+disd_south		0.99*		0.96**		0.86
+		(0.524)		(0.427)		(0.668)
+disd_nonsouth		0.30		-0.33		-0.97***
+		(0.245)		(0.257)		(0.331)
+disd	0.73**		0.49*		0.19	
+	(0.331)		(0.284)		(0.501)	
+						
+Observations	313	313	313	313	313	313
+Robust standard errors in parentheses						
+*** p<0.01, ** p<0.05, * p<0.1						

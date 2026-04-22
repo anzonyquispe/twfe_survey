@@ -1,0 +1,16 @@
+	(1)	(2)	(3)	(4)	(5)	(6)
+VARIABLES	lnmwpu	lnmwpr	lnmwto	lnmbpu	lnmbpr	lnmbto
+						
+imp_post_south	-0.02	0.09	-0.04	-0.00	-0.43***	0.01
+	(0.041)	(0.067)	(0.032)	(0.025)	(0.156)	(0.023)
+imp_post_nonsouth	0.00	0.08	0.02	-0.13	-0.01	-0.10
+	(0.031)	(0.084)	(0.031)	(0.089)	(0.183)	(0.089)
+impost_4_south				-0.01	-0.33	-0.01
+				(0.034)	(0.236)	(0.045)
+impost_4_nonsouth				0.14***	-0.06	0.08**
+				(0.034)	(0.085)	(0.031)
+						
+Observations	368	368	368	368	368	368
+Number of leaid	92	92	92	92	92	92
+Robust standard errors in parentheses						
+*** p<0.01, ** p<0.05, * p<0.1						

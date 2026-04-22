@@ -1,0 +1,2764 @@
+/* Initializations.gau.  
+Contains set_paramsAndGrids function which is shared by minwageDP as well as minwageDP_2 
+and possibly other code.  The function initializes parameters and grids.  
+Note that any file that calls setParams_grids() needs to declare all the variables it wants initialized, 
+e.g. with code like "beta=0;".  
+Note that this is _not_ a standalone file, as it does not initialize the variables it needs outside setParams_grids
+itself, so it probably won't run by itself.  
+*/
+
+
+/* set_paramsAndGrids():
+--SettingsSwitch options:
+
+In order of appearance in Table 8, the runs are:
+   67, 72, 73, 74, 75, 76, 77, 80, 81
+
+For each version above, settingsSwitch
+  XX.1 is for hikeStart=16  (i.e. 16 qtrs after age 18 --> age 22)
+  XX.2 is for hikeStart=64  (age 34)
+  XX.3 is for hikeStart=128 (age 50)
+
+--hikeSwitch options: 0 means no hike, 1 means appropriate hike happens.  Note the actual hike def'n is unchanged 
+
+--Baseline 67 takes about 36 hours to run, for each age of the wage hike, due to the extra fine grids
+--Run 72 takes about 24 hours per hikeage, due to the extra fine grids
+--All other runs use a coarser grid, and take 2-6 hours to run per hikeage
+*/
+
+
+/* This is the discretization of the state and choice variables.  
+--DP interpolates _on_ state vars to get max utility.
+--Simulation allows values within this grid to be chosen
+*/
+
+//Note: Setting values too small makes precision an issue.  (very small, e.g. set delta, theta to .0001 or .00001)
+
+
+/* Some comments: 
+--I think Sstates should always begin with zero.  This will probably be a requirement for the C-code.
+So we don't have to check that S is on the sgrid.
+With slightly less force,the same is probably true for Idecs, although if you want to implement a nonzero Ifloor
+that makes some sense (who's to say how a sim wants to distribute the $$ the govt gives it).
+--The c-code never checks if you run off the bottom of the A grid.  this is fine as long as R and pigrowthR are 
+acceptably set.  if pigrowthR is too small and R too large then income can end up being negative which could be bad.
+So make sure that Y is never negative (requires checking getIncome (pigrowthR), Astates, and R).
+*/
+
+/*
+Note: Idecs MUST have zero as an element.  Am starting to incorporate negative I values, but zero must be on grid. 
+The "ifloor" is implemented actually as an "sfloor".  There is no ifloor.  Expenditure floor is the 2-tuple (Cfloor,0).
+The first element of Cdecs is defined to be the Cfloor (paid by  govt) (with I==0).
+It is recommended that Sstates have its first element be zero.  and possibly the same for Cdecs (cfloor==0).
+*/
+
+
+//There are two important questions to ask when you calibrate the grids:
+//  1) around periods t==wagehike +/- 10, how fine do i need the grids
+//  2) what are the max/mins for the 4 relevant grids.
+
+
+
+
+proc(30) = set_paramsAndGrids(settingsSwitch, hikeSwitch);
+    local upper_lev, lower_lev, c, oddNumTSvals, minAssets, maxAssets, lowStock, maxStock, 
+        highInvestment, highConsumption, 
+        Cinc, Iinc, Aincr, Sincr, Iguess, Cguess, minAssets2, midStockL, midStockH, lowInvestment, lowInvestment2,
+        newClow, newChigh, 
+        numIdecs, numCdecs,
+        logSD_TS, 
+        lowConsumption, //standardize this ..
+        Cfloor, Ifloor, //Cfloor is _not_ returned; it is defined to be the lowest value of Cdec grid.
+        Iinc1,Iinc2, Iinc3, highInvestment1, highInvestment2, highInvestment3, highStock1, highStock2, highStock3,         Sincr1, Sincr2, Sincr3, //for grids of varying fineness.
+        highConsumption1, highConsumption2, highConsumption3, Cinc1, Cinc2, Cinc3,
+        transMtester,
+//and these are the values to be returned:
+    rho, R, beta, theta, PIgrowthR, incomeLevelAtHike, downpaymentR, delta, fixedDurableCost, numPIstates, 
+    transitionM, PIstates, TSprobabilities, TSvals, Tstates, hikeStart, wageIncr, hikeLength, 
+    wageHike, PIgrowthChangeTime, AfloorFnVersion, Cdec, Idec, Astates, Sstates, 
+    CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh, IzeroIdxGAUSS, gridScale, sse, ssu, 
+    rho_paper, adjustmentterm, timeadjustment, initialPI, newSlope;
+    
+
+ 
+
+    if ( settingsSwitch == 67.1);
+    // BASELINE       extra fine grids
+
+        hikeStart = 16;           // hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;               // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;               // Sigma squared e (VAR AR1)
+        ssu = .05;                // Sigma squared u  (Trans comp)
+        rho_paper = .995;         // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  
+           print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; 
+        end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0835); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+    elseif ( settingsSwitch == 67.2);
+    // BASELINE    ,   extra fine grids
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;               // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+ 
+        sse = .005;               // Sigma squared e (VAR AR1)
+        ssu = .05;                // Sigma squared u  (Trans comp)
+        rho_paper = .995;         // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  
+           print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; 
+        end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0517); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 67.3);
+    // BASELINE    ,   extra fine grids
+
+        hikeStart = 128;          //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;               // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;               // Sigma squared e (VAR AR1)
+        ssu = 0.05;               // Sigma squared u  (Trans comp)
+        rho_paper = .995;         // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;    // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  
+           print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; 
+        end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0457); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 72.1);
+    //Differences from baseline:  downpayment=1,  (Note, grids are extra fine, as in baseline)
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = 1;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0835); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+    elseif ( settingsSwitch == 72.2);
+    //Differences from baseline:  downpayment=1,  (Note, grids are extra fine, as in baseline)
+
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = 1;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0517); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 72.3);
+    //Differences from baseline:  downpayment=1,  (Note, grids are extra fine, as in baseline)
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = 1;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0457); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+
+    elseif ( settingsSwitch == 73.1);
+    //Differences from baseline: downpayment=1, beta=.95^1/4, grids not as fine
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = 1;         // downpayment rate
+        delta= 0.034;             // depreciation rate of durables. 
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;             // Sigma squared e (VAR AR1)
+        ssu = .05;              // Sigma squared u  (Trans comp)
+        rho_paper = .995;       // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0835); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 73.2);
+    //Differences from baseline: downpayment=1, beta=.95^1/4, grids not as fine
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+ 
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = 1;         // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;             // Sigma squared e (VAR AR1)
+        ssu = .05;              // Sigma squared u  (Trans comp)
+        rho_paper = .995;       // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0517); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 73.3);
+    //Differences from baseline: downpayment=1, beta=.95^1/4, grids not as fine
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                     // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);          // discount rate. ==4th root of .95   
+
+        theta=.15;                 // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;        // Income Growth Rate (per quarter)
+        downpaymentR = 1;          // downpayment rate
+        delta= 0.034;              // depreciation rate of durables.
+        R = 1.03^(1/4);            // 1+ rate of return.    
+        fixedDurableCost = 0;      // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;                // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;                // Sigma squared e (VAR AR1)
+        ssu = .05;                 // Sigma squared u  (Trans comp)
+        rho_paper = .995;          // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0457); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 74.1);
+    //Differences from baseline: beta=.95^1/4, sse=0, ssu=0, grids not as fine
+
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;       // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0879); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 74.2);
+    //Differences from baseline: beta=.95^1/4, sse=0, ssu=0, grids not as fine
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;          // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0523); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 74.3);
+    //Differences from baseline: beta=.95^1/4, sse=0, ssu=0, grids not as fine
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;          // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0442); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+        
+    elseif ( settingsSwitch == 75.1);
+// New baseline spec: same as group 40, but now we set initialPI to .70. This makes the average income during the year before the hike 
+// for the three different age groups average out to $4500.
+//We also make wageincr depend on the age of wage hike-- to get $250 increase in income due to the wage hike
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .002;       // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.686;
+        wageIncr= ln(1.0858); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 75.2);
+// New baseline spec: same as group 40, but now we set initialPI to .70. This makes the average income during the year before the hike 
+// for the three different age groups average out to $4500.
+//We also make wageincr depend on the age of wage hike-- to get $250 increase in income due to the wage hike
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .002;       // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.686;
+        wageIncr= ln(1.0522); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 75.3);
+// New baseline spec: same as group 40, but now we set initialPI to .70. This makes the average income during the year before the hike 
+// for the three different age groups average out to $4500.
+//We also make wageincr depend on the age of wage hike-- to get $250 increase in income due to the wage hike
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.95^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .002;       // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.686;
+        wageIncr= ln(1.0452); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 76.1);
+    //Differences from baseline: fixedDurableCost = 0.05 ("adjustment cost"), grids not as fine
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0835); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 76.2);
+    //Differences from baseline: fixedDurableCost = 0.05 ("adjustment cost"), grids not as fine
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0517); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 76.3);
+    //Differences from baseline: fixedDurableCost = 0.05 ("adjustment cost"), grids not as fine
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.93^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0457); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 77.1);
+    //Differences from baseline: fixedDurableCost = 0.05 ("adjustment cost"), beta=0.91^1/4, grids not as fine
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.91^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0835); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 77.2);
+    //Differences from baseline: fixedDurableCost = 0.05 ("adjustment cost"), beta=0.91^1/4, grids not as fine
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.91^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0517); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 77.3);
+    //Differences from baseline: fixedDurableCost = 0.05 ("adjustment cost"), beta=0.91^1/4, grids not as fine
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 0.91^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = .005;       // Sigma squared e (VAR AR1)
+        ssu = .05;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        //transitionM = eye(numPIstates);
+        //"No variability!";
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.44;
+        wageIncr= ln(1.0457); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 0;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-35|-10|10|30|150, 8|.55|.35|1.5|7);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+
+
+
+    elseif ( settingsSwitch == 80.1);
+    //Differences from baseline: no borrowing constraints (AfloorFnVersion = 1), beta=1.01^1/4, sse=0, ssu=0, grids not as fine
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 1.01^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;       // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0879); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 1;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-80|-30|35|80,90|10|.45|10);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+    elseif ( settingsSwitch == 80.2);
+    //Differences from baseline: no borrowing constraints (AfloorFnVersion = 1), beta=1.01^1/4, sse=0, ssu=0, grids not as fine
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 1.01^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;          // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0523); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 1;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-80|-30|35|80,90|10|.45|10);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 80.3);
+    //Differences from baseline: no borrowing constraints (AfloorFnVersion = 1), beta=1.01^1/4, sse=0, ssu=0, grids not as fine
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 1.01^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;          // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0442); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 1;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-80|-30|35|80,90|10|.45|10);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 81.1);
+    //Differences from baseline: no borrowing constraints (AfloorFnVersion = 1), 
+    //                           adjustment cost = 0.05, beta=1.01^1/4, sse=0, ssu=0, grids not as fine
+
+        hikeStart = 16;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 1.01^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;       // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0879); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 1;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-80|-30|35|80,90|10|.45|10);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+    elseif ( settingsSwitch == 81.2);
+    //Differences from baseline: no borrowing constraints (AfloorFnVersion = 1), 
+    //                           adjustment cost = 0.05, beta=1.01^1/4, sse=0, ssu=0, grids not as fine
+
+        hikeStart = 64;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 1.01^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;          // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0523); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 1;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-80|-30|35|80,90|10|.45|10);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+    elseif ( settingsSwitch == 81.3);
+    //Differences from baseline: no borrowing constraints (AfloorFnVersion = 1), 
+    //                           adjustment cost = 0.05, beta=1.01^1/4, sse=0, ssu=0, grids not as fine
+
+
+        hikeStart = 128;           //hikeStart is the first time at which the wagehike occurs
+        rho=2;                    // CRRA  Gamma in Table 1
+
+        beta= 1.01^(1/4);         // discount rate. ==4th root of .95   
+
+        theta=.15;                // cobb-douglas exponent   (consumpt^(1-theta))*(stock^ theta) 
+        PIgrowthR = 0.0108;       // Income Growth Rate (per quarter)
+        downpaymentR = .4;        // downpayment rate
+        delta= 0.034;             // depreciation rate of durables.
+        R = 1.03^(1/4);           // 1+ rate of return.    
+        fixedDurableCost = 0.05;     // multiplier on todays stock to determine fixed cost of buying a car/house (ie I>0)
+
+    
+        numPIstates = 7; 
+
+        transitionM=0;
+        PIstates=0;             // note: here, a PI state is an AR(1) shock - like a raise, not permanent income)
+        c=0;
+
+        sse = 0;          // Sigma squared e (VAR AR1)
+        ssu = 0;          // Sigma squared u  (Trans comp)
+        rho_paper = .995; // rho as defined in the paper
+
+        adjustmentterm = (ssu + sse/(1-rho_paper^2))/2;
+
+//CAREFUL HERE!   
+
+        upper_lev=0.07;   //as these get appropriately low, grids will NEED to be expanded
+        lower_lev=0.07;    
+
+        // rho_paper is rho in table 7
+        // sse is sigma squared epsilon in table 7
+        {transitionM,PIstates,c}=tauch(sse^(1/2), rho_paper, numPIstates, upper_lev, lower_lev);//units are  logged, additive.
+        PIstates=zeros(numPIstates,1);
+        transitionM=eye(numPIstates);
+
+
+        oddNumTSvals=7;   // I prefer to keep this number odd (hence the name) so as to have 0 be a TSval
+        if ( round(oddNumTSvals/2) == oddNumTSvals/2);  print "oddNumTSvals isn't an odd number. it is " oddNumTSvals " Odd numbers allow exp(0)=1 to be an option. Comment this out if you want to keep your value. ending"; end; endif;
+        // ssu is sigma squared u in table 7
+        logSD_TS = ssu^(1/2); // .34928=.122^1/2
+
+
+//! careful, .05 v .01!
+        {TSprobabilities, TSvals, c} = tauch(logSD_TS, 0, oddNumTSvals, .05, .05); //units are NOT logged, additive.        
+//!
+        TSprobabilities = TSprobabilities[1,.]'; // all rows are identical, since the correlation coeff was set to zero
+        TSvals = exp(TSvals);
+
+Tsvals = 1;
+TSprobabilities=1;
+
+
+
+incomeLevelAtHike = exp(ln(3.6)-adjustmentterm ); //getincome still expects this, but it doesn't get used;
+
+        
+        initialPI = 0.905;
+        wageIncr= ln(1.0442); // will get us $250 
+        hikeLength = 10; //hikeLength is the number of (consecutive) time periods for which the hike is nonzero (e.g. the length of the wageHike vector)
+        Cfloor = .1;
+        PIgrowthChangeTime = 81; // Time (State var!) at which PIgrowthR changes.
+        AfloorFnVersion = 1;    //0 is paper's model.  1 is "no borrowing constraints", i.e. assets>=0 at death is only constraint.
+
+//1/5, 1/9 not good enough [can loko at sims and see lots of cases where one goes down by max and hten goes down more next time].
+//seem to be such that you can always get where you want to be after 2 periods, though.  
+        Iguess = 1/7; //on at least semifine one run, going from 1/4, 1/8 to  1/12, 1/24 gave identical results
+        Cguess = 1/11; // in general need way more cdecs than idecs.  and need a broader range of idecs than cdecs
+
+
+        Tstates = seqa(1, 1, 188);     //T goes from 1 to periods/numTstates; functions require this 
+                                       // A sim-person makes (periods-1) decisions in all, and has periods states. 
+                                       // end of final period is certain death e.g. last dec should be "eat all" */     
+        Astates = setGrid(-180|-80|-30|35|80,90|10|.45|10);  //COH states, actually! 
+                                                                    //-31 was min for 4ksims for 1.27001_agrideror 
+                                                                    //the states from 30 to 150 shoudl be very coarse, just for initial sims that are super high.
+        Sstates = setGrid(.3|2|7|25|50|90|220, .2|.25|.25|.7|4|8);  // 15 to 40 seems to be the range everyone is in around period 30; 
+        Cdec = setGrid(Cfloor|2|4|18|27, .05|.05|.05|.5);   //1.27 had max cons of 22, 4k sims.
+        Idec = setGrid(0|2|4|7|14|20, .05|.05|.05|.4|.5);   //top of igrid pretty rare
+        gridScale=1000;
+
+        numCdecs = rows(Cdec); 
+        numIdecs = rows(Idec);
+        CadjustmentLow = floor(Cguess*numCdecs);
+        CadjustmentHigh = ceil(Cguess*numCdecs);
+        IadjustmentLow = floor(Iguess*numIdecs);
+        IadjustmentHigh = ceil(Iguess*numIdecs);
+
+
+
+
+
+
+    endif;
+    
+
+
+    //Some error checking, and general parameter setting 
+
+    if (hikeSwitch == 0);
+        wageHike = zeros(hikeLength, 1);
+    elseif (hikeSwitch == 1);
+        wageHike = seqa(wageIncr, -wageIncr/hikeLength, hikeLength);
+    endif;
+
+    if (cols(Idec)>1); Idec=Idec'; endif;
+    IzeroIdxGAUSS = selif(seqa(1, 1, rows(Idec)), (Idec .== 0));
+    if ((rows(IzeroIdxGauss)*cols(IzeroIdxGAUSS) != 1) or (scalmiss(IzeroIdxGAUSS)==1)); print "IzeroIdxGAUSS is nonexistent or not a scalar: IzeroIdxGAUSS is " IzeroIdxGAUSS; end; endif;
+    
+        //This check is important: this is how i guarantee that everyone stays above agridmin(==astates[1]) in sim.
+    //Instead of having a separate check for agridmin, I just force agridmin<afloor, for any afloor value.  Thus
+    //the afloor-checking code will take care of this case as well.
+    if (Astates[1] > Sstates[rows(Sstates)*cols(Sstates)]*(downpaymentR-1));
+        "intializations.gau:  setParams_andGrids: Astates[1] is too large, can't borrow enough for Sstates_max.";
+        end;
+    endif;
+/*
+    transMtester = sumr(transitionM); if not ((transMtester >= .99999) and (transMtester<=1.00001)); print "transitionMatrix rows do not sum to 1, error. TransitionM is " transitionM; end; endif;
+    if (rows(TSprobabilities) > 1); transMtester = sumc(TSprobabilities); else; transMtester = sumr(TSprobabilities); endif; if not ((transMtester >= .99999) and (transMtester<=1.00001)); print "TSprobabilities rows do not sum to 1, error. Tsprobabilities is " TSprobabilities; end; endif; 
+*/
+    if rho==1; /* don't want division by zero */  "Rho==1, exiting"; end; endif;
+    if not (sortc(Cdec,1) == Cdec); print /flush "You've got a world of pain coming."; end; endif;
+    if not (sortc(Idec,1) == Idec); print /flush "You will meet a violent end."; end; endif;
+
+    retp(rho, R, beta, theta, PIgrowthR, incomeLevelAtHike, downpaymentR, delta, fixedDurableCost, numPIstates, 
+    transitionM, PIstates, TSprobabilities, TSvals, Tstates, hikeStart, 
+    wageHike, PIgrowthChangeTime, AfloorFnVersion, Cdec, Idec, Astates, Sstates, 
+    CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh, IzeroIdxGAUSS, gridScale, initialPI);
+endp;
+
+/*
+//compare values from two different settings.
+{rho, R, beta, theta, PIgrowthR, downpaymentR, delta, fixedDurableCost, numPIstates, 
+    transitionM, PIstates, TSprobabilities, TSvals, Tstates, hikeStart, 
+    wageHike, PIgrowthChangeTime, AfloorFnVersion, Cdec1, Idec1, Astates1, Sstates1, 
+    CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh} = set_paramsandgrids(1.2,0);
+
+
+{rho, R, beta, theta, PIgrowthR, downpaymentR, delta, fixedDurableCost, numPIstates, 
+    transitionM, PIstates, TSprobabilities, TSvals, Tstates, hikeStart, 
+    wageHike, PIgrowthChangeTime, AfloorFnVersion, Cdec2, Idec2, Astates2, Sstates2, 
+    CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh} = set_paramsandgrids(1.2,0);
+*/
+
+///////////// log scale method of grid; unfinalized ////////////////////////////////
+/*
+//////should modify Astates.  has like 20 entries bt -10 and 0 which will never get touched.
+Cfloor = 1;
+Ilow = 0.7; //ifloor is ACTUALLY 0
+Cinc = 1.05; // >1
+Iinc = 1.05; // >1
+Aincr = .9; // < 1
+Aincr2 = 2; // for seqa; >0;
+Sincr = 1.1;  // >1
+
+//seqm has first exponent be 0; so need to add 2
+Cdec = seqm(Cfloor, Cinc, log(highConsumption/Cfloor)/log(Cinc) + 2); // MAKE SURE Cfloor IS AN OPTION! or results will be a bit harder to interpret. Also Make sure Cdec stays sorted!
+Idec = 0|seqm(Ilow, Iinc, log(highInvestment/Ilow)/log(Iinc) + 2);
+//NEED ascending order for Astates, Sstates
+Astates = seqm(minAssets, Aincr, -log(-minAssets)/log(Aincr) + 2); //implict cap here is zero
+Astates = Astates|seqa(0, Aincr2, (maxAssets-0)/Aincr2 + 1);
+Sstates = (0|seqm(lowStock, Sincr, log(maxStock/lowStock)/log(Sincr) + 2)); //NEED 0 as an option, so can't fall off bottom of grid! don't change! //Tacking on 0 is slightly inefficient, know outcomes... (-INF)
+*/
+
+////////// end log-scale method////////////////////////////////
+
+
+
+
+/*setGrid: Simple function to return a grid which has multiple levels of fineness/coarseness.
+DelimitersVec is a vector of points/#s at which the Grid shoudl change fineness.  
+It should be increasing.
+The first point is the start of the grid and the last should be
+the approximate last point [the final point will be defined by the increments; it is guaranteed
+to be greater or equal to the last point of delimitersVec.
+delimitersVec should have length of onre more than that of incrVec (Every two endpoints take 1 increment).
+incrVec is vector of increments, s.t. incrVec[i] will be the increment for the arithmetic 
+interval between delimVec[i] and delimvec[i+1].
+setGrid will return a vector of arithmetic sequences appended to each other, with fineness
+varying according to incrVec, between the delimiters defined by delimitersVec.
+*/
+
+
+proc(1) = setGrid(delimitersVec, incrVec);
+    local theGrid, delimLength;
+
+    delimLength = rows(delimitersVec)*cols(delimitersVec);
+    //make sure two arguments are vectors and are the same length
+    if (( rows(delimitersVec) != 1 and cols(delimitersVec) != 1 ) or
+        ( rows(incrVec) != 1 and       cols(incrVec) != 1      ) or
+         (delimLength != (rows(incrVec)*cols(incrVec) + 1))  );
+        "error in arguments to setGrid. delimiters is " delimitersVec "and incrVec is " incrVec; end;
+    endif;
+    ///
+
+   theGrid = seqa(delimitersVec[delimLength-1], incrVec[delimLength-1], (delimitersVec[delimLength]-delimitersVec[delimLength-1])/incrVec[delimLength-1] + 1);
+    for i (delimLength-2, 1, , -1);
+        theGrid = seqa(delimitersVec[i], incrVec[i], (delimitersVec[i+1]-delimitersVec[i])/incrVec[i])|theGrid;
+    endfor;
+
+    retp(theGrid);
+endp;
+
+
+
+
+/*
+hikeLevel is something like $250; the value the hike should be.  
+rho is the autoregressive param of the PI process; varEps(ilon), varMu 
+are the variances associated iwth the normal components of PI, TS.
+*/
+
+proc(2) = getHikePercentage(incomeLevelAtHike, hikeLevel, hikeStartTime, rho, varEps, varMu);
+    local incomeLevelMeanRatio, rhoSq, basePercentIncr;
+ 
+    rhoSq = rho^2;
+    basePercentIncr = (incomeLevelAtHike+hikeLevel)/incomeLevelAtHike;
+
+    incomeLevelMeanRatio=varEps*(1/(1-rhoSq))*(1-rhoSq^hikeStartTime);
+    incomeLevelMeanRatio=exp((incomeLevelMeanRatio+varMu)/2);
+retp(basePercentIncr,incomeLevelMeanRatio);
+endp;
+
+
+
+// Most functions here.
+#include "C:\Research\minwage\minwage_functions.gau";
+
+/******************************** END FUNCTIONS ***********************************/
+

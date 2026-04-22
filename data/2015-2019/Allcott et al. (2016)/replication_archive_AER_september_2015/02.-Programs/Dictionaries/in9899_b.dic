@@ -1,0 +1,8 @@
+dictionary using 98-99/block98b.txt {
+
+_column(4)	dsl		%5.0f	"DSL"
+
+_column(12)  	inityr    	%4.0f 	"Year of Initial Production "
+
+};
+

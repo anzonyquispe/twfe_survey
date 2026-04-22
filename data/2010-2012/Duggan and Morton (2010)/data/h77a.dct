@@ -1,0 +1,20 @@
+dictionary using ../raw/H77A.DAT {
+_column(9)   str8   dupersid        %8s
+_column(53)  str50  medicationname  %50s 
+_column(133) str11  rxndc           %11s 
+_column(392) str2   gbo             %2s
+_column(436)        pd_self         %7f
+_column(443)        pd_medicare     %6f
+_column(449)        pd_medicaid     %7f
+_column(456)        pd_privins      %7f
+_column(463)        pd_veterans     %6f
+_column(469)        pd_tricare      %7f
+_column(476)        pd_otherfed     %6f
+_column(482)        pd_stateloc     %6f
+_column(488)        pd_workcomp     %6f
+_column(494)        pd_othins       %6f
+_column(500)        pd_othpriv      %7f
+_column(507)        pd_othpublic    %6f
+_column(513)        pd_total        %7f
+_column(520)        personwgt       %12f  }
+

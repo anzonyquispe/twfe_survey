@@ -1,0 +1,1161 @@
+--------------------------------------------------------------------------------------------------------------------
+       log:  Y:\Biofuels\FFV CAFE\Transactions\transactions_prices.txt
+  log type:  text
+ opened on:  30 May 2010, 12:08:05
+
+. set more off
+
+. set mem 800m
+
+Current memory allocation
+
+                    current                                 memory usage
+    settable          value     description                 (1M = 1024k)
+    --------------------------------------------------------------------
+    set maxvar         5000     max. variables allowed           1.909M
+    set memory          800M    max. data space                800.000M
+    set matsize         400     max. RHS vars in models          1.254M
+                                                            -----------
+                                                               803.163M
+
+. 
+. 
+. 
+. use transactions1
+
+. 
+. 
+. 
+. ****************************************
+. ***** TABLE 3: SUMMARY STATISTICS  *****
+. ****************************************
+. tabstat ffv price msrp manurebate daystoturn loandealer irate downpay monthly lterm tradein tradebal age female e8
+> 5pen if sample==1, s(mean sd min max n) format column(statistics)
+
+    variable |      mean        sd       min       max         N
+-------------+--------------------------------------------------
+         ffv |         0.59         0.49         0.00         1.00    587850.00
+       price |  31562.49   8390.11 -10994.38  75002.08 587850.00
+        msrp |  37513.35   8552.41      0.00 206606.53 219861.00
+  manurebate |   2406.31   2017.15         0   11409.2    587850
+  daystoturn |     72.36     84.94      1.00    805.00 569479.00
+  loandealer |      0.76      0.43      0.00      1.00 511598.00
+       irate |      5.48      4.24      0.00     29.99 382509.00
+     downpay |   7366.19   7415.64 -10908.36  54285.11 386539.00
+     monthly |    596.40    197.28     13.39   3836.90 382509.00
+       lterm |     62.34     11.15     12.00     96.00 382509.00
+     tradein |      0.51      0.50      0.00      1.00 587850.00
+    tradebal |   1354.62   2737.24 -23974.05  30170.07 301587.00
+         age |     44.68     13.33     16.00    107.00 513462.00
+      female |      0.27      0.44      0.00      1.00 526782.00
+      e85pen |      0.16      0.65      0.00      8.11 587850.00
+----------------------------------------------------------------
+
+. 
+. 
+. 
+. ***********************************************
+. ***** TABLE 4: FFVS IN ESTIMATION SAMPLE  *****
+. ***********************************************
+. tab model_num ffv if sample==1
+
+                    | Flexible-fuel vehicle
+Unique model number | Gasoline-  Flexible- |     Total
+--------------------+----------------------+----------
+             Armada |     1,165      1,506 |     2,671 
+              Aspen |       119        565 |       684 
+          Avalanche |     1,473      3,019 |     4,492 
+              B3000 |     1,350        773 |     2,123 
+            Caravan |     5,959     11,501 |    17,460 
+           Cherokee |       393      1,311 |     1,704 
+          Commander |       111        667 |       778 
+     Crown Victoria |        85        236 |       321 
+             Dakota |        39         46 |        85 
+            Durango |        46        212 |       258 
+           Explorer |    41,677     50,708 |    92,385 
+            Express |        65         58 |       123 
+               F150 |    26,579     26,322 |    52,901 
+      Grand Marquis |     1,471      4,583 |     6,054 
+             Impala |       796      8,180 |     8,976 
+        Monte Carlo |        17        232 |       249 
+        Mountaineer |     6,026      4,647 |    10,673 
+             Ranger |     4,355      1,743 |     6,098 
+                S10 |     3,245      6,986 |    10,231 
+              Sable |       870         37 |       907 
+             Savana |        62         12 |        74 
+            Sebring |     3,570        480 |     4,050 
+             Sierra |     6,536      3,289 |     9,825 
+          Silverado |    14,785      7,754 |    22,539 
+             Sonoma |       735      1,680 |     2,415 
+            Stratus |     1,681         11 |     1,692 
+           Suburban |    17,112     53,418 |    70,530 
+              Tahoe |    45,605     75,919 |   121,524 
+             Taurus |     8,454      8,523 |    16,977 
+            Terraza |       149         14 |       163 
+              Titan |    19,926     20,342 |    40,268 
+           Town Car |     1,009      2,585 |     3,594 
+    Town \& Country |     2,416      5,089 |     7,505 
+           Uplander |       125         46 |       171 
+            Voyager |     1,509      3,720 |     5,229 
+              Yukon |    24,055     38,066 |    62,121 
+--------------------+----------------------+----------
+              Total |   243,570    344,280 |   587,850 
+
+
+. 
+. * ANCILLARY INFO
+. tab model_num count if price~=.                         /* BY MODEL NAME: NUMBER OF UNIQUE VINS PER SPECIFIC VEHIC
+> LE TYPE */
+
+                    |   Number of unique VINs for vehicle type
+Unique model number |   One VIN   Two VINs  Three VIN  Four VINs |     Total
+--------------------+--------------------------------------------+----------
+             Armada |         0      2,671          0          0 |     2,671 
+              Aspen |         0        684          0          0 |       684 
+          Avalanche |     4,043     17,681          0          0 |    21,724 
+              B3000 |        43      2,123          0          0 |     2,166 
+               C320 |     2,671          0          0          0 |     2,671 
+            Caravan |         0     19,571      4,599          0 |    24,170 
+           Cherokee |         0      1,704          0          0 |     1,704 
+          Commander |         0        778          0          0 |       778 
+     Crown Victoria |         0        321          0          0 |       321 
+             Dakota |        24         85          0          0 |       109 
+            Durango |        16      2,889          0          0 |     2,905 
+           Explorer |    23,019    112,532          0          0 |   135,551 
+Explorer Sport Trac |    20,044          0          0          0 |    20,044 
+            Express |         0        123          0          0 |       123 
+               F150 |        53     52,901          0          0 |    52,954 
+      Grand Marquis |         0      6,054          0          0 |     6,054 
+             Impala |       120     20,527          0          0 |    20,647 
+        Monte Carlo |       398      1,393          0          0 |     1,791 
+        Mountaineer |     2,520     10,673          0          0 |    13,193 
+                Ram |     3,554          0          0          0 |     3,554 
+             Ranger |     8,975      6,098      5,643          0 |    20,716 
+                S10 |    17,239     10,231          0          0 |    27,470 
+              Sable |         3      1,274          0          0 |     1,277 
+             Savana |         0         74          0          0 |        74 
+            Sebring |       779      6,873          0          0 |     7,652 
+             Sierra |       113     11,148      5,040          0 |    16,301 
+          Silverado |     2,989     26,018     17,182          0 |    46,189 
+             Sonoma |     3,743      2,415          0          0 |     6,158 
+            Stratus |       436      1,883          0          0 |     2,319 
+           Suburban |    12,197     78,876          0          0 |    91,073 
+              Tahoe |    11,184    121,524          0          0 |   132,708 
+             Taurus |         4     17,200     39,380     29,924 |    86,508 
+            Terraza |         0        163          0          0 |       163 
+              Titan |         0     40,268          0          0 |    40,268 
+           Town Car |         0      3,594          0          0 |     3,594 
+    Town \& Country |     5,981     12,542          0          0 |    18,523 
+           Uplander |         0        171          0          0 |       171 
+            Voyager |     4,140      8,075          0          0 |    12,215 
+              Yukon |     4,192     64,750          0          0 |    68,942 
+--------------------+--------------------------------------------+----------
+              Total |   128,480    665,887     71,844     29,924 |   896,135 
+
+
+. tab model_num ffvvar if price~=. & count==2     /* BY MODEL NAME: DOES SPECIFIC VEHICLE TYPE HAVE VARIATION IN FFV
+> ? */
+
+                    |   Variation in FFV
+                    | capacity within group
+Unique model number |         0          1 |     Total
+--------------------+----------------------+----------
+             Armada |         0      2,671 |     2,671 
+              Aspen |         0        684 |       684 
+          Avalanche |    13,189      4,492 |    17,681 
+              B3000 |         0      2,123 |     2,123 
+            Caravan |     2,111     17,460 |    19,571 
+           Cherokee |         0      1,704 |     1,704 
+          Commander |         0        778 |       778 
+     Crown Victoria |         0        321 |       321 
+             Dakota |         0         85 |        85 
+            Durango |     2,631        258 |     2,889 
+           Explorer |    20,147     92,385 |   112,532 
+            Express |         0        123 |       123 
+               F150 |         0     52,901 |    52,901 
+      Grand Marquis |         0      6,054 |     6,054 
+             Impala |    11,551      8,976 |    20,527 
+        Monte Carlo |     1,144        249 |     1,393 
+        Mountaineer |         0     10,673 |    10,673 
+             Ranger |         0      6,098 |     6,098 
+                S10 |         0     10,231 |    10,231 
+              Sable |       367        907 |     1,274 
+             Savana |         0         74 |        74 
+            Sebring |     2,823      4,050 |     6,873 
+             Sierra |     1,323      9,825 |    11,148 
+          Silverado |     3,479     22,539 |    26,018 
+             Sonoma |         0      2,415 |     2,415 
+            Stratus |       191      1,692 |     1,883 
+           Suburban |     8,346     70,530 |    78,876 
+              Tahoe |         0    121,524 |   121,524 
+             Taurus |       223     16,977 |    17,200 
+            Terraza |         0        163 |       163 
+              Titan |         0     40,268 |    40,268 
+           Town Car |         0      3,594 |     3,594 
+    Town \& Country |     5,037      7,505 |    12,542 
+           Uplander |         0        171 |       171 
+            Voyager |     2,846      5,229 |     8,075 
+              Yukon |     2,629     62,121 |    64,750 
+--------------------+----------------------+----------
+              Total |    78,037    587,850 |   665,887 
+
+
+. tab year ffv if sample==1                               /* BY MODEL YEAR: FFVS AND GASOLINE VEHICLES IN ESTIMATION
+>  SAMPLE */
+
+Transactio | Flexible-fuel vehicle
+    n year | Gasoline-  Flexible- |     Total
+-----------+----------------------+----------
+      2000 |     8,708     14,041 |    22,749 
+      2001 |    27,117     15,161 |    42,278 
+      2002 |    42,124     67,920 |   110,044 
+      2003 |    25,619     61,467 |    87,086 
+      2004 |    28,851     68,104 |    96,955 
+      2005 |    50,578     29,167 |    79,745 
+      2006 |    51,249     65,761 |   117,010 
+      2007 |     9,324     22,659 |    31,983 
+-----------+----------------------+----------
+     Total |   243,570    344,280 |   587,850 
+
+
+. 
+. 
+. 
+. *******************************************************
+. ***** TABLE 6: FFV PREMIUM AND RELATED DISCUSSION *****
+. *******************************************************
+. * (1) MAIN RESULTS
+. codebook group_all if sample==1 & ffvvar2==1 & price~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  44824                    missing .:  0/230693
+
+                  mean:   70361.8
+              std. dev:   43911.4
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14055     34242     73061     97066    138377
+
+. xtreg price ffv if sample==1, i(group_all) fe cluster(group_all)
+warning: existing panel variable is not group_all
+
+Fixed-effects (within) regression               Number of obs      =    587850
+Group variable: group_all                       Number of groups   =     84510
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0174                                        avg =       7.0
+       overall = 0.0019                                        max =       608
+
+                                                F(1,84509)         =      0.61
+corr(u_i, Xb)  = -0.0489                        Prob > F           =    0.4353
+
+                          (Std. Err. adjusted for 84510 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -22.07096   28.29174    -0.78   0.435    -77.52254    33.38062
+       _cons |   31575.42   16.56933  1905.65   0.000     31542.94    31607.89
+-------------+----------------------------------------------------------------
+     sigma_u |  8264.9931
+     sigma_e |  3807.0643
+         rho |  .82496298   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * ALTERNATIVELY CLUSTERED SES (MENTIONED IN TABLE NOTE)
+. xtreg price ffv if sample==1, i(group_all) fe cluster(group_notimes)
+
+Fixed-effects (within) regression               Number of obs      =    587850
+Group variable: group_all                       Number of groups   =     84510
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0174                                        avg =       7.0
+       overall = 0.0019                                        max =       608
+
+                                                F(1,12567)         =      0.20
+corr(u_i, Xb)  = -0.0489                        Prob > F           =    0.6543
+
+                      (Std. Err. adjusted for 12568 clusters in group_notimes)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -22.07096   49.28917    -0.45   0.654    -118.6853    74.54335
+       _cons |   31575.42   28.86668  1093.84   0.000     31518.83       31632
+-------------+----------------------------------------------------------------
+     sigma_u |  8264.9931
+     sigma_e |  3807.0643
+         rho |  .82496298   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg price ffv if sample==1, i(group_all) fe cluster(group_nostate)
+
+Fixed-effects (within) regression               Number of obs      =    587850
+Group variable: group_all                       Number of groups   =     84510
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0174                                        avg =       7.0
+       overall = 0.0019                                        max =       608
+
+                                                F(1,7794)          =      0.34
+corr(u_i, Xb)  = -0.0489                        Prob > F           =    0.5582
+
+                       (Std. Err. adjusted for 7795 clusters in group_nostate)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -22.07096   37.69351    -0.59   0.558    -95.96037    51.81845
+       _cons |   31575.42   22.07557  1430.33   0.000     31532.14    31618.69
+-------------+----------------------------------------------------------------
+     sigma_u |  8264.9931
+     sigma_e |  3807.0643
+         rho |  .82496298   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg price ffv if sample==1, i(group_all) fe cluster(group)
+
+Fixed-effects (within) regression               Number of obs      =    587850
+Group variable: group_all                       Number of groups   =     84510
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0174                                        avg =       7.0
+       overall = 0.0019                                        max =       608
+
+                                                F(1,447)           =      0.06
+corr(u_i, Xb)  = -0.0489                        Prob > F           =    0.8086
+
+                                (Std. Err. adjusted for 448 clusters in group)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -22.07096   91.05581    -0.24   0.809    -201.0216    156.8797
+       _cons |   31575.42   53.32771   592.10   0.000     31470.61    31680.22
+-------------+----------------------------------------------------------------
+     sigma_u |  8264.9931
+     sigma_e |  3807.0643
+         rho |  .82496298   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg price ffv if sample==1, i(group_all) fe cluster(state)
+
+Fixed-effects (within) regression               Number of obs      =    587850
+Group variable: group_all                       Number of groups   =     84510
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0174                                        avg =       7.0
+       overall = 0.0019                                        max =       608
+
+                                                F(1,50)            =      0.27
+corr(u_i, Xb)  = -0.0489                        Prob > F           =    0.6084
+
+                                 (Std. Err. adjusted for 51 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -22.07096    42.8091    -0.52   0.608    -108.0556    63.91366
+       _cons |   31575.42   25.07156  1259.41   0.000     31525.06    31625.77
+-------------+----------------------------------------------------------------
+     sigma_u |  8264.9931
+     sigma_e |  3807.0643
+         rho |  .82496298   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (2) CASH SALES
+. codebook group_all if sample==1 & type==1 & ffvvar2==1 & price~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [3,150418]                   units:  1
+         unique values:  19557                    missing .:  0/51026
+
+                  mean:   70234.9
+              std. dev:   46738.2
+
+           percentiles:        10%       25%       50%       75%       90%
+                             13807     33113   63180.5    116115    138738
+
+. xtreg price ffv if sample==1 & type==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    124825
+Group variable: group_all                       Number of groups   =     44352
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0181                                        avg =       2.8
+       overall = 0.0074                                        max =       142
+
+                                                F(1,44351)         =      0.40
+corr(u_i, Xb)  = -0.0931                        Prob > F           =    0.5264
+
+                          (Std. Err. adjusted for 44352 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -38.12863   60.19184    -0.63   0.526    -156.1057    79.84842
+       _cons |   31000.82   37.44166   827.98   0.000     30927.43     31074.2
+-------------+----------------------------------------------------------------
+     sigma_u |  8181.7492
+     sigma_e |  3340.3132
+         rho |  .85713346   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. gen sample_cash = e(sample)
+
+. 
+. * ALTERNATIVELY CLUSTERED SES (MENTIONED IN TABLE NOTE)
+. xtreg price ffv if sample==1 & type==1, i(group_all) fe cluster(group_notimes)
+
+Fixed-effects (within) regression               Number of obs      =    124825
+Group variable: group_all                       Number of groups   =     44352
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0181                                        avg =       2.8
+       overall = 0.0074                                        max =       142
+
+                                                F(1,9722)          =      0.17
+corr(u_i, Xb)  = -0.0931                        Prob > F           =    0.6807
+
+                       (Std. Err. adjusted for 9723 clusters in group_notimes)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -38.12863   92.65679    -0.41   0.681    -219.7552     143.498
+       _cons |   31000.82   57.63612   537.87   0.000     30887.84     31113.8
+-------------+----------------------------------------------------------------
+     sigma_u |  8181.7492
+     sigma_e |  3340.3132
+         rho |  .85713346   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg price ffv if sample==1 & type==1, i(group_all) fe cluster(group_nostate)
+
+Fixed-effects (within) regression               Number of obs      =    124825
+Group variable: group_all                       Number of groups   =     44352
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0181                                        avg =       2.8
+       overall = 0.0074                                        max =       142
+
+                                                F(1,6249)          =      0.24
+corr(u_i, Xb)  = -0.0931                        Prob > F           =    0.6212
+
+                       (Std. Err. adjusted for 6250 clusters in group_nostate)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -38.12863   77.16076    -0.49   0.621    -189.3902     113.133
+       _cons |   31000.82   47.99699   645.89   0.000     30906.73    31094.91
+-------------+----------------------------------------------------------------
+     sigma_u |  8181.7492
+     sigma_e |  3340.3132
+         rho |  .85713346   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg price ffv if sample==1 & type==1, i(group_all) fe cluster(group)
+
+Fixed-effects (within) regression               Number of obs      =    124825
+Group variable: group_all                       Number of groups   =     44352
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0181                                        avg =       2.8
+       overall = 0.0074                                        max =       142
+
+                                                F(1,444)           =      0.05
+corr(u_i, Xb)  = -0.0931                        Prob > F           =    0.8267
+
+                                (Std. Err. adjusted for 445 clusters in group)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -38.12863   174.0043    -0.22   0.827     -380.103    303.8457
+       _cons |   31000.82   108.2374   286.41   0.000      30788.1    31213.54
+-------------+----------------------------------------------------------------
+     sigma_u |  8181.7492
+     sigma_e |  3340.3132
+         rho |  .85713346   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg price ffv if sample==1 & type==1, i(group_all) fe cluster(state)
+
+Fixed-effects (within) regression               Number of obs      =    124825
+Group variable: group_all                       Number of groups   =     44352
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0181                                        avg =       2.8
+       overall = 0.0074                                        max =       142
+
+                                                F(1,50)            =      0.15
+corr(u_i, Xb)  = -0.0931                        Prob > F           =    0.7033
+
+                                 (Std. Err. adjusted for 51 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -38.12863   99.53136    -0.38   0.703    -238.0432     161.786
+       _cons |   31000.82   61.91237   500.72   0.000     30876.46    31125.17
+-------------+----------------------------------------------------------------
+     sigma_u |  8181.7492
+     sigma_e |  3340.3132
+         rho |  .85713346   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * MSRP (MENTIONED IN FOOTNOTE 25)
+. codebook group_all if sample==1 & ffvvar2==1 & msrp~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [2,150413]                   units:  1
+         unique values:  20587                    missing .:  0/89116
+
+                  mean:   70946.2
+              std. dev:     43329
+
+           percentiles:        10%       25%       50%       75%       90%
+                             13962     34750     75521     95415    136785
+
+. xtreg msrp ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    219861
+Group variable: group_all                       Number of groups   =     47434
+
+R-sq:  within  = 0.0002                         Obs per group: min =         1
+       between = 0.0198                                        avg =       4.6
+       overall = 0.0015                                        max =       245
+
+                                                F(1,47433)         =     12.95
+corr(u_i, Xb)  = 0.0319                         Prob > F           =    0.0003
+
+                          (Std. Err. adjusted for 47434 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+        msrp |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |   154.2073   42.85026     3.60   0.000     70.22022    238.1944
+       _cons |   37430.52   23.01676  1626.23   0.000     37385.41    37475.63
+-------------+----------------------------------------------------------------
+     sigma_u |  8924.5121
+     sigma_e |  3040.0028
+         rho |  .89603139   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. gen sample_msrp = e(sample)
+
+. 
+. * MAIN RESULTS ON MSRP SAMPLES (MENTIONED IN FOOTNOTE 25)
+. xtreg price ffv if sample_msrp==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    219861
+Group variable: group_all                       Number of groups   =     47434
+
+R-sq:  within  = 0.0001                         Obs per group: min =         1
+       between = 0.0105                                        avg =       4.6
+       overall = 0.0003                                        max =       245
+
+                                                F(1,47433)         =      7.14
+corr(u_i, Xb)  = 0.0120                         Prob > F           =    0.0075
+
+                          (Std. Err. adjusted for 47434 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |   120.8474   45.22377     2.67   0.008     32.20814    209.4866
+       _cons |    31587.6   24.29167  1300.35   0.000     31539.99    31635.21
+-------------+----------------------------------------------------------------
+     sigma_u |  8245.3692
+     sigma_e |  3660.9223
+         rho |   .8353286   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * MANUFACTURER REBATE (RELEVANT TO DISCUSSION IN FOOTNOTE 23)
+. codebook group_all if sample==1 & ffvvar2==1 & manurebate~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  44824                    missing .:  0/230693
+
+                  mean:   70361.8
+              std. dev:   43911.4
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14055     34242     73061     97066    138377
+
+. xtreg manurebate ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    587850
+Group variable: group_all                       Number of groups   =     84510
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0118                                        avg =       7.0
+       overall = 0.0049                                        max =       608
+
+                                                F(1,84509)         =      3.43
+corr(u_i, Xb)  = -0.0989                        Prob > F           =    0.0640
+
+                          (Std. Err. adjusted for 84510 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+  manurebate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -18.07579   9.758754    -1.85   0.064    -37.20287     1.05129
+       _cons |   2416.894   5.715308   422.88   0.000     2405.692    2428.096
+-------------+----------------------------------------------------------------
+     sigma_u |  1839.5318
+     sigma_e |   1431.246
+         rho |  .62291312   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * MAIN RESULTS ON CASH SALES SAMPLE
+. xtreg price ffv if sample_cash==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    124825
+Group variable: group_all                       Number of groups   =     44352
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0181                                        avg =       2.8
+       overall = 0.0074                                        max =       142
+
+                                                F(1,44351)         =      0.40
+corr(u_i, Xb)  = -0.0931                        Prob > F           =    0.5264
+
+                          (Std. Err. adjusted for 44352 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -38.12863   60.19184    -0.63   0.526    -156.1057    79.84842
+       _cons |   31000.82   37.44166   827.98   0.000     30927.43     31074.2
+-------------+----------------------------------------------------------------
+     sigma_u |  8181.7492
+     sigma_e |  3340.3132
+         rho |  .85713346   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * ALL FFV MODELS (INCLUDING THOSE WITH 1 OR 3+ VINS PER SPECIFIC VEHICLE TYPE)
+. codebook group_all if ffvvar2==1 & price~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  69459                    missing .:  0/299642
+
+                  mean:   72256.9
+              std. dev:   43083.6
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14104     34493     76487    104286    132641
+
+. xtreg price ffv, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    896135
+Group variable: group_all                       Number of groups   =    138866
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0280                                        avg =       6.5
+       overall = 0.0059                                        max =       608
+
+                                                F(1,138865)        =      5.77
+corr(u_i, Xb)  = -0.0864                        Prob > F           =    0.0163
+
+                         (Std. Err. adjusted for 138866 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+       price |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -56.96045   23.70347    -2.40   0.016    -103.4188    -10.5021
+       _cons |    29585.4   15.01145  1970.86   0.000     29555.98    29614.82
+-------------+----------------------------------------------------------------
+     sigma_u |  8384.4096
+     sigma_e |  3649.7605
+         rho |  .84069721   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. ****************************************************
+. ***** TABLE 7: ARE FFV TRANSACTIONS DIFFERENT? *****
+. ****************************************************
+. * (1) DAYS ON LOT
+. codebook group_all if sample==1 & ffvvar2==1 & daystoturn~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  43257                    missing .:  0/223007
+
+                  mean:   70260.9
+              std. dev:   43797.4
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14060     34245     73057     96861    138257
+
+. xtreg daystoturn ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    569479
+Group variable: group_all                       Number of groups   =     82606
+
+R-sq:  within  = 0.0120                         Obs per group: min =         1
+       between = 0.0010                                        avg =       6.9
+       overall = 0.0010                                        max =       607
+
+                                                F(1,82605)         =    751.04
+corr(u_i, Xb)  = -0.1900                        Prob > F           =    0.0000
+
+                          (Std. Err. adjusted for 82606 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+  daystoturn |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -29.42528   1.073713   -27.41   0.000    -31.52975   -27.32081
+       _cons |   89.56298   .6276598   142.69   0.000     88.33278    90.79319
+-------------+----------------------------------------------------------------
+     sigma_u |  98.410827
+     sigma_e |  64.171907
+         rho |  .70165067   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (2) DEALER LOAN?
+. codebook group_all if sample==1 & ffvvar2==1 & loandealer~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  42091                    missing .:  0/202533
+
+                  mean:   70552.4
+              std. dev:   44105.4
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14202     34167     72978    101274    138445
+
+. xtreg loandealer ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    511598
+Group variable: group_all                       Number of groups   =     80813
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0001                                        avg =       6.3
+       overall = 0.0006                                        max =       591
+
+                                                F(1,80812)         =     15.53
+corr(u_i, Xb)  = 0.0251                         Prob > F           =    0.0001
+
+                          (Std. Err. adjusted for 80813 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+  loandealer |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |    -.01085   .0027533    -3.94   0.000    -.0162465   -.0054535
+       _cons |   .7625228   .0016528   461.34   0.000     .7592833    .7657624
+-------------+----------------------------------------------------------------
+     sigma_u |   .3637141
+     sigma_e |   .4020712
+         rho |  .45003677   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (3) INTEREST RATE
+. codebook group_all if sample==1 & ffvvar2==1 & irate~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  31795                    missing .:  0/150003
+
+                  mean:   70590.1
+              std. dev:   43092.5
+
+           percentiles:        10%       25%       50%       75%       90%
+                             16676     34454     73703     96501    138189
+
+. xtreg irate ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    382509
+Group variable: group_all                       Number of groups   =     67393
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0082                                        avg =       5.7
+       overall = 0.0036                                        max =       499
+
+                                                F(1,67392)         =      0.98
+corr(u_i, Xb)  = 0.0817                         Prob > F           =    0.3220
+
+                          (Std. Err. adjusted for 67393 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+       irate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -.0274074   .0276723    -0.99   0.322    -.0816452    .0268304
+       _cons |   5.493025   .0164132   334.67   0.000     5.460855    5.525195
+-------------+----------------------------------------------------------------
+     sigma_u |  3.5697381
+     sigma_e |  3.3566985
+         rho |  .53072839   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (4) TOTAL DOWN
+. codebook group_all if sample==1 & ffvvar2==1 & downpay~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  32068                    missing .:  0/151394
+
+                  mean:   70649.9
+              std. dev:   43173.9
+
+           percentiles:        10%       25%       50%       75%       90%
+                             16524     34454     73705     96523    138374
+
+. xtreg downpay ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    386539
+Group variable: group_all                       Number of groups   =     67822
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0004                                        avg =       5.7
+       overall = 0.0000                                        max =       499
+
+                                                F(1,67821)         =      0.86
+corr(u_i, Xb)  = -0.0045                        Prob > F           =    0.3524
+
+                          (Std. Err. adjusted for 67822 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+     downpay |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |    46.8146   50.34561     0.93   0.352    -51.86275    145.4919
+       _cons |   7338.421   29.86398   245.73   0.000     7279.888    7396.954
+-------------+----------------------------------------------------------------
+     sigma_u |  5961.7294
+     sigma_e |   6981.773
+         rho |  .42167903   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (5) MONTHLY PAYMENT
+. codebook group_all if sample==1 & ffvvar2==1 & monthly~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  31795                    missing .:  0/150003
+
+                  mean:   70590.1
+              std. dev:   43092.5
+
+           percentiles:        10%       25%       50%       75%       90%
+                             16676     34454     73703     96501    138189
+
+. xtreg monthly ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    382509
+Group variable: group_all                       Number of groups   =     67393
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0093                                        avg =       5.7
+       overall = 0.0013                                        max =       499
+
+                                                F(1,67392)         =      0.00
+corr(u_i, Xb)  = 0.0517                         Prob > F           =    0.9809
+
+                          (Std. Err. adjusted for 67393 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+     monthly |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |   .0258116    1.07561     0.02   0.981    -2.082383    2.134006
+       _cons |   596.3802   .6379721   934.81   0.000     595.1297    597.6306
+-------------+----------------------------------------------------------------
+     sigma_u |  174.96429
+     sigma_e |  153.37067
+         rho |  .56548382   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (6) LOAN TERM
+. codebook group_all if sample==1 & ffvvar2==1 & lterm~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  31795                    missing .:  0/150003
+
+                  mean:   70590.1
+              std. dev:   43092.5
+
+           percentiles:        10%       25%       50%       75%       90%
+                             16676     34454     73703     96501    138189
+
+. xtreg lterm ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    382509
+Group variable: group_all                       Number of groups   =     67393
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0013                                        avg =       5.7
+       overall = 0.0004                                        max =       499
+
+                                                F(1,67392)         =      5.06
+corr(u_i, Xb)  = 0.0206                         Prob > F           =    0.0245
+
+                          (Std. Err. adjusted for 67393 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+       lterm |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -.1744077   .0775663    -2.25   0.025    -.3264375   -.0223779
+       _cons |   62.44624   .0460066  1357.33   0.000     62.35607    62.53641
+-------------+----------------------------------------------------------------
+     sigma_u |  9.7710245
+     sigma_e |  9.5891654
+         rho |  .50939263   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (7) TRADE AUTO?
+. codebook group_all if sample==1 & ffvvar2==1 & tradein~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  44824                    missing .:  0/230693
+
+                  mean:   70361.8
+              std. dev:   43911.4
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14055     34242     73061     97066    138377
+
+. xtreg tradein ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    587850
+Group variable: group_all                       Number of groups   =     84510
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0027                                        avg =       7.0
+       overall = 0.0043                                        max =       608
+
+                                                F(1,84509)         =      0.00
+corr(u_i, Xb)  = -0.1436                        Prob > F           =    0.9491
+
+                          (Std. Err. adjusted for 84510 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+     tradein |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -.0001892   .0029643    -0.06   0.949    -.0059992    .0056208
+       _cons |   .5131566   .0017361   295.59   0.000      .509754    .5165593
+-------------+----------------------------------------------------------------
+     sigma_u |  .38092852
+     sigma_e |  .48083513
+         rho |  .38560479   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (8) TRADE BALANCE
+. codebook group_all if sample==1 & ffvvar2==1 & tradebal~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  29310                    missing .:  0/123685
+
+                  mean:   70560.8
+              std. dev:   43965.5
+
+           percentiles:        10%       25%       50%       75%       90%
+                             16764     34729     71783     97495    138519
+
+. xtreg tradebal ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    301587
+Group variable: group_all                       Number of groups   =     63859
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0028                                        avg =       4.7
+       overall = 0.0047                                        max =       349
+
+                                                F(1,63858)         =      0.82
+corr(u_i, Xb)  = -0.1306                        Prob > F           =    0.3639
+
+                          (Std. Err. adjusted for 63859 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+    tradebal |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |  -19.13025   21.06897    -0.91   0.364    -60.42545    22.16496
+       _cons |   1366.424   12.99919   105.12   0.000     1340.946    1391.902
+-------------+----------------------------------------------------------------
+     sigma_u |  2268.0782
+     sigma_e |  2573.9736
+         rho |  .43707639   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (9) AGE OF BUYER
+. codebook group_all if sample==1 & ffvvar2==1 & age~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [2,150423]                   units:  1
+         unique values:  38493                    missing .:  0/201033
+
+                  mean:   70701.2
+              std. dev:   43829.3
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14105     34472     73680     97075    138445
+
+. xtreg age ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    513462
+Group variable: group_all                       Number of groups   =     76848
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0007                                        avg =       6.7
+       overall = 0.0006                                        max =       555
+
+                                                F(1,76847)         =      3.28
+corr(u_i, Xb)  = 0.0363                         Prob > F           =    0.0703
+
+                          (Std. Err. adjusted for 76848 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+         age |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |   .1473397   .0814114     1.81   0.070    -.0122263    .3069057
+       _cons |   44.59597   .0469759   949.34   0.000      44.5039    44.68804
+-------------+----------------------------------------------------------------
+     sigma_u |  11.418137
+     sigma_e |  12.328398
+         rho |  .46172387   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * (10) FEMALE BUYER?
+. codebook group_all if sample==1 & ffvvar2==1 & female~=.
+
+--------------------------------------------------------------------------------------------------------------------
+group_all                                                                        Vehicle type-state-month identifier
+--------------------------------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+
+                 range:  [1,150423]                   units:  1
+         unique values:  41158                    missing .:  0/206776
+
+                  mean:   70392.8
+              std. dev:   43952.4
+
+           percentiles:        10%       25%       50%       75%       90%
+                             14041     34237   73150.5     97148    138426
+
+. xtreg female ffv if sample==1, i(group_all) fe cluster(group_all)
+
+Fixed-effects (within) regression               Number of obs      =    526782
+Group variable: group_all                       Number of groups   =     80235
+
+R-sq:  within  = 0.0000                         Obs per group: min =         1
+       between = 0.0002                                        avg =       6.6
+       overall = 0.0000                                        max =       541
+
+                                                F(1,80234)         =      0.19
+corr(u_i, Xb)  = -0.0088                        Prob > F           =    0.6657
+
+                          (Std. Err. adjusted for 80235 clusters in group_all)
+------------------------------------------------------------------------------
+             |               Robust
+      female |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         ffv |   -.001173    .002715    -0.43   0.666    -.0064945    .0041484
+       _cons |   .2700858   .0015876   170.12   0.000      .266974    .2731976
+-------------+----------------------------------------------------------------
+     sigma_u |  .33704254
+     sigma_e |  .43586148
+         rho |  .37420228   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. log close
+       log:  Y:\Biofuels\FFV CAFE\Transactions\transactions_prelim.txt
+  log type:  text
+ closed on:  30 May 2010, 12:20:09
+--------------------------------------------------------------------------------------------------------------------

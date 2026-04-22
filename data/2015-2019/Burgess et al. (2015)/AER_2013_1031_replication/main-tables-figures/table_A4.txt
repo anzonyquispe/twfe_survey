@@ -1,0 +1,15 @@
+Effect						
+)						
+	(1)	(2)	(3)	(4)	(5)	(6)
+VARIABLES	exp_dens_share_pop_6402	exp_dens_share_pop_6402	exp_dens_share_dist_6402	exp_dens_share_dist_6402	exp_dens_share_mp_6402	exp_dens_share_mp_6402
+						
+president	0.41	0.59	0.11	-0.16	0.40	0.11
+	[0.698]	[0.968]	[0.820]	[0.947]	[0.494]	[0.656]
+						
+presidentMP		-0.52		0.79		0.85
+		[1.348]		[1.305]		[1.500]
+						
+Observations	1,599	1,599	1,599	1,599	1,599	1,599
+Adjusted R-squared	0.020	0.019	0.034	0.033	0.031	0.030
+Robust standard errors clustered at the district level in parentheses						
+* significant at 10%; ** significant at 5%; *** significant at 1%						

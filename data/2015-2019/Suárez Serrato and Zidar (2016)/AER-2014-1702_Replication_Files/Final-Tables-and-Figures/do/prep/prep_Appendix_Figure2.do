@@ -1,0 +1,22 @@
+clear
+set more off
+
+use "$dropbox/Local_Econ_Corp_Tax/Data/FINAL DATA/state_outcome_data.dta"
+keep stateabbrev fips
+tempfile data_statenames
+rename fips fips_state
+sort fips 
+save `data_statenames'
+
+use "$dropbox/Local_Econ_Corp_Tax/Data/State Tax Rate Data/statecorptaxdata_8-23-13.dta", clear
+sort fips
+merge fips using `data_statenames'
+drop if _merge==2
+duplicates drop
+rename state statefull
+rename stateabbrev state
+
+drop property _merge
+
+
+saveold "$dtapath/Figures/Appendix_Figure2.dta", replace

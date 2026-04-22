@@ -1,0 +1,810 @@
+timeVector
+load("/Users/thiemo/Dropbox/mafundo ltd/Projects/GAZT/Forecasting Teaser/data/VAT.MONTHLY.rdata")
+ls()
+VAT
+setnames(VAT, "ISIC4_COED", "ISIC_SECTION")
+PK
+CSV<-data.table(read.dta(file="/Users/thiemo/Dropbox/Research/Conflict in Space/20150774_data/Data/PRIO.GRID.dta"))
+CSV
+write.csv(CSV, file="PRIOGRID.csv", row.names=FALSE)
+CSV<-data.table(read.dta(file="/Users/thiemo/Dropbox/Research/Conflict in Space/Raw Data/Berman2017//Data/PRIO.GRID.dta"))
+CSV
+CSV[, .N, by=everymine]
+CSV[, .N, by=c("everymine","iso_1")]
+CSV[, .N, by=c("everymine","iso_1")][everymine==1]
+AFR<-readOGR(dsn="/Users/thiemo/Dropbox/Research/Conflict in Space/Raw Data/Shapefiles" , layer="AFR1")
+CSV
+CSV.ov<-over(SpatialPoints(CSV[, list(longitude, latitude)], proj4string=CRS(proj4string(AFR))), AFR)
+head(CSV.ov)
+cbind(CSV, CSV.ov)
+cbind(CSV, CSV.ov)[!is.na(IDCON)]
+cbind(CSV, CSV.ov)[is.na(IDCON)]
+cbind(CSV, CSV.ov)[!is.na(IDCON)]
+CSV <-cbind(CSV, CSV.ov)[!is.na(IDCON)]
+CSV[everymine==1]
+CSV
+CSV[everymine==1]
+CSV[everymine==1][, .N, by=IDCON]
+CSV[IDCON=="SEN-4"]
+CSV[IDCON=="MAR-6"]
+CSV[everymine==1][, .N, by=IDCON]
+MINES<-CSV[everymine==1][, list(numberofmines=.N), by=IDCON]
+MINES
+CSV[IDCON=="COD-6"]
+CSV
+CSV[, list(gid, IDCON)]
+write.dta(CSV[, list(gid, IDCON)], file="ID1CON.dta")
+MINES
+CSV[IDCON=="ZAF-1"]
+MINES[x]
+MINES
+x=12
+sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines)
+MINES[x]
+MINES[IDCON=="ZAF-5"]
+CSV[IDCON=="ZAF-5"]
+MINES[IDCON=="ZAF-5"]
+sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines)
+data.frame(gid=sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines)
+data.frame(gid=sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines))
+RI<-lapply(1:nrow(MINES), function(x) lapply(1:100, data.frame(gid=sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines))))
+lapply(1:100, data.frame(gid=sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines)))
+lapply(1:100, data.frame(gid=sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines))
+RI<-lapply(1:nrow(MINES), function(x) lapply(1:100, function(k) data.frame(gid=sample(CSV[IDCON==MINES[x]$IDCON]$gid,  MINES[x]$numberofmines))))
+RI[[1]]
+length(RI)
+i
+i=
+i=2
+lapply(RI, function(x) x[[i]])
+TREATS<-NULL#
+#
+for(i in 1:100) {#
+#
+TREATS[[i]]<-rbindlist(lapply(RI, function(x) x[[i]]))#
+}
+TREATS[[1]]
+TREATS[[4]]
+CSDV
+CSV
+for(i in 1:100) {#
+#
+CSV<-join(CSV< TREATS[[i]][, list(gid, mine=1)])#
+CSV[is.na(mine), mine :=0]#
+setnames(CSV, "mine", paste("mine",i,sep=""))#
+#
+}
+TREATS[[1]]
+for(i in 1:100) {#
+#
+CSV<-join(CSV, TREATS[[i]][, list(gid, mine=1)])#
+CSV[is.na(mine), mine :=0]#
+setnames(CSV, "mine", paste("mine",i,sep=""))#
+#
+}
+head(CSV)
+write.dta(CSV, file="RIMINES.dta")
+rm(list=ls())#
+#
+# remove.packages("recoverNetwork") # uncomment this line if package installed#
+#
+install.packages("recoverNetwork_0.1.0.tar.gz",repos=NULL,type="source")#
+#
+library("R.matlab")#
+library("recoverNetwork")#
+#
+# small network#
+matlabFile <- readMat(paste("/Users/thiemo/Downloads/testingFiles (1)/id459_001.mat",sep=""))#
+#
+# # medium network#
+# matlabFile <- readMat(paste("id354_001.mat",sep=""))#
+# #
+# # large network#
+# matlabFile <- readMat(paste("id459_001.mat",sep=""))#
+#
+data <- data.frame(matlabFile$y,matlabFile$x,matlabFile$id,matlabFile$time)#
+#
+names(data)[1] <- "y"#
+names(data)[2] <- "x"#
+names(data)[3] <- "id"#
+names(data)[4] <- "time"#
+data$z <- data$x
+library(recoverNetwork)
+data
+param <- list()#
+param$fe <- c("id","time")#
+N <- length(unique(data$id))#
+Wfixed <- matrix(NA,nrow=N,ncol=N)#
+diag(Wfixed) <- 0#
+param$Wfixed <- Wfixed#
+param$lambdaL1 <- 0.05#
+param$lambdaL2 <- 0.02#
+param$lambdaAdaL1 <- 0.05#
+param$maxit <- 10#
+param$ncores <- 0#
+#
+hats <- recoverNetwork(data,param)
+dim(hats)
+head(hats)
+class(hats)
+hats[[1]]
+lapply(hats, function(x) dim)
+hats$time
+hats$beta
+hats$W
+dim(hats$W)
+hats$time
+options(stringsAsFactors=FALSE)
+TMP<-data.table(read_dta(file="/Users/thiemo/Dropbox/Research/Austerity and Brexit/HH.PAN.DEC.2018v2.dta"))
+nrow(TMP)
+PAN<-TMP[, list(minwave=min(wave), maxwave=max(wave),.N), by=c("pidp")]
+nrow(PAN)
+PAN
+PANS<-lapply(1:nrow(PAN), function(x) data.frame(cbind(pidp=PAN[x]$pidp, maxwave=PAN[x]$maxwave, wave=PAN[x]$minwave:8)))
+PANS<-rbindlist(PANS)#
+#
+PANS <-join(PANS, TMP[, list(pidp, hidp,year,month, wave,tenure_dv,code)])
+nrow(PANS)
+AUST<-data.table(read_dta(file="/Users/thiemo/Dropbox/Research/Austerity and Brexit/Austerity.v2.dta"))#
+PANS[, code_nalocf := na.locf(code), by="pidp"]#
+setnames(AUST, "code", "code_nalocf")#
+#
+PANS <-join(PANS, AUST)#
+PANS[tenure_dv=="", tenure_dv:= NA]#
+PANS[, tenure_dv_lacof := na.locf(tenure_dv), by="pidp"]
+head(PANS)
+PANS[, rent_ind := 0]#
+PANS[grep("rent", tenure_dv_lacof), rent_ind := 1]
+SHOCK<-data.table(read.dta(file="/Users/thiemo/Dropbox/Research/Homelessness/LOSSES_P30.dta"))
+SHOCK
+PANS <-join(PANS,SHOCK[, list(code_nalocf=code,losersperhh=Total_Lost_Year/Losers_ALL)])
+PANS
+PANS[, minwave := min(wave), by=pidp]
+PANS[ , private_rent := 0]#
+PANS[grep("rented private", tenure_dv_lacof), private_rent := 1]
+PANS[, attrition :=0]#
+PANS[wave==maxwave, attrition := as.numeric(is.na(hidp))]
+summary(felm( attrition ~ as.numeric(wave>=3)*totalimpact_finlosswapyr | pidp + wave | 0 | code_nalocf, data=PANS))
+library(lfe)
+summary(felm( attrition ~ as.numeric(wave>=3)*totalimpact_finlosswapyr | pidp + wave | 0 | code_nalocf, data=PANS))
+PANS[, attrition := as.numeric(is.na(hidp))]
+summary(felm( attrition ~ as.numeric(wave>=3)*totalimpact_finlosswapyr | pidp + wave | 0 | code_nalocf, data=PANS))
+felm(attrition ~ rent_ind*as.numeric(wave>=3)*totalimpact_finlosswapyr | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ rent_ind*as.numeric(wave>=3)*totalimpact_finlosswapyr | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ rent_ind*as.numeric(wave>=2)*totalimpact_finlosswapyr | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ rent_ind*as.numeric(wave>=2)*totalimpact_finlosswapyr | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+names(PANS)
+summary(felm(attrition ~ private_rent*as.numeric(wave>=2)*totalimpact_finlosswapyr | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>=2)* losersperhh | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>=1)*losersperhh | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>=1)*losersperhh | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>1)*losersperhh | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*losersperhh | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*log(losersperhh) | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*log(losersperhh) | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*losersperhh | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*losersperhh | code_nalocf + wave | 0 | code_nalocf, data=PANS[ind_rent==1]))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*losersperhh | code_nalocf + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*losersperhh | pidp + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+summary(felm(attrition ~ private_rent*as.numeric(wave>2)*log(losersperhh) | pidp + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+head(TMP)
+TMP[bprxy_housingben_dum==1]
+TMP[bprxy_housingben_dum==1 | housing_ben_rec==1 ]
+TMP[housing_ben_rec==1 ]
+names(TMP)
+TMP[bprxy_housingben_dum==1 | housing_ben_rec==1  | ben_housing_benefit==1]
+TMP[, .N, by= ben_housing_benefit]
+TMP[bprxy_housingben_dum==1 | housing_ben_rec==1  | ben_housing_benefit>0]
+TMP[, housingbenefitrec := as.numeric(bprxy_housingben_dum==1 | housing_ben_rec==1  | ben_housing_benefit>0)]
+PANS<-join(PANS,TMP[, list(everhousingbenefitrec =max(housingbenefitrec)), by=pidp])
+head(PANS)
+PANS[is.na(everhousingbenefitrec), everhousingbenefitrec := 0]
+summary(felm( attrition ~ as.numeric(wave>=3)*totalimpact_finlosswapyr | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>=3)*everhousingbenefitrec | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave)*everhousingbenefitrec | pidp + wave | 0 | code_nalocf, data=PANS))
+names(PANS)
+summary(felm( attrition ~ factor(wave)*everhousingbenefitrec*losersperhh | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave)*everhousingbenefitrec*losersperhh | pidp + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+summary(felm( attrition ~ factor(wave)*everhousingbenefitrec*log(losersperhh) | pidp + wave | 0 | code_nalocf, data=PANS[everhousingbenefitrec ==1]))
+summary(felm( attrition ~ factor(wave)*log(losersperhh) | pidp + wave | 0 | code_nalocf, data=PANS[everhousingbenefitrec ==1]))
+summary(felm( attrition ~ factor(wave):log(losersperhh) | pidp + wave | 0 | code_nalocf, data=PANS[everhousingbenefitrec ==1]))
+PANS
+PANS[, everhousingbenefitrec := NULL]
+PANS<-join(PANS,TMP[wave<2, list(everhousingbenefitrec =max(housingbenefitrec)), by=c("pidp")])
+summary(felm( attrition ~ factor(wave):log(losersperhh) | pidp + wave | 0 | code_nalocf, data=PANS[everhousingbenefitrec ==1]))
+summary(felm( attrition ~ factor(wave):log(losersperhh) | code_nalocf + wave | 0 | code_nalocf, data=PANS[everhousingbenefitrec ==1]))
+summary(felm( attrition ~ factor(wave):log(losersperhh) | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+names(PANS)
+summary(felm( attrition ~ factor(wave):log(losersperhh) | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent==1]))
+summary(felm( attrition ~ as.numeric(wave>1):log(losersperhh) | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent==1]))
+summary(felm( attrition ~ as.numeric(wave>1):log(losersperhh):everhousingbenefitrec  + as.numeric(wave>1):log(losersperhh) + as.numeric(wave>1):everhousingbenefitrec   | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent==1]))
+summary(felm( attrition ~ as.numeric(wave>1):log(losersperhh):everhousingbenefitrec  + as.numeric(wave>1):log(losersperhh) + as.numeric(wave>1):everhousingbenefitrec   | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):log(losersperhh):everhousingbenefitrec  + as.numeric(wave>1):log(losersperhh) + as.numeric(wave>1):everhousingbenefitrec   | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):log(losersperhh):everhousingbenefitrec  + as.numeric(wave>1):everhousingbenefitrec   | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | code_nalocf + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+names(PANS)
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec    | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec    | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec    | code_nalocf + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS[private_rent ==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec + factor(wave):private_rent    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):private_rent:everhousingbenefitrec  + factor(wave):everhousingbenefitrec + factor(wave):private_rent    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):private_rent:everhousingbenefitrec  + factor(wave):private_rent    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec  + factor(wave):private_rent    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):private_rent    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec  + factor(wave):private_rent    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):private_rent    | pidp + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec  +     | pidp + wave | 0 | code_nalocf, data=PANS[private_rent==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec   | pidp + wave | 0 | code_nalocf, data=PANS[private_rent==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec   | pidp + wave | 0 | code_nalocf, data=PANS[ind_rent==1]))
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec   | pidp + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+PANS
+summary(felm( attrition ~ factor(wave):everhousingbenefitrec   | code_nalocf + wave | 0 | code_nalocf, data=PANS[rent_ind==1]))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec   | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):everhousingbenefitrec + everhousingbenefitrec  | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):losersperhh + as.numeric(wave>1):everhousingbenefitrec + everhousingbenefitrec  | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ as.numeric(wave>1):losersperhh:everhousingbenefitrec  + as.numeric(wave>1):losersperhh + as.numeric(wave>1):everhousingbenefitrec + everhousingbenefitrec  | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave)  | code_nalocf + wave | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave)  | code_nalocf  | 0 | code_nalocf, data=PANS))
+summary(felm( attrition ~ factor(wave)  | code_nalocf  | 0 | code_nalocf, data=PANS[ind_rent==1]))
+summary(felm( attrition ~ factor(wave)  | code_nalocf  | 0 | code_nalocf, data=PANS[rent_ind==1]))
+summary(felm( attrition ~ factor(wave)  | code_nalocf  | 0 | code_nalocf, data=PANS[private_rent==1]))
+write.dta(PANS, file="ATTRITION_USOC.dta")
+DTUniqueBy <- function(data, varvec) {#
+  data <- as.data.table(data)#
+  data[!duplicated(data.frame(data[, varvec, with=F]))]#
+}#
+preProcess<-function (content, keepnum = FALSE, keepperiod = FALSE, keepcomma = FALSE, #
+    tolower = TRUE) #
+{#
+    if (keepperiod == TRUE) {#
+        content <- gsub("[^[:alnum:].,;]", " ", content)#
+    }#
+    else {#
+        content <- gsub("[^[:alnum:]]", " ", content)#
+    }#
+    content <- gsub("[[:space:]]+", " ", content)#
+    if (tolower == TRUE) {#
+        content <- tolower(content)#
+    }#
+    content <- gsub("^ *", "  ", content)#
+    if (keepnum == FALSE) {#
+        content <- gsub("([0-9])*", "", content)#
+    }#
+    content <- gsub("^-*", "", content)#
+    content <- gsub(" +", " ", content)#
+    content <- gsub(" *$", "", content)#
+    content <- gsub(" *$", "", content)#
+    content <- gsub("^ *", "", content)#
+    content#
+}#
+#
+options(stringsAsFactors=FALSE)#
+library(zoo)#
+library(foreign)#
+library(lubridate)#
+library(data.table)#
+library(plyr)#
+#
+#code written for R 3.3.3 #
+setwd("/Users/thiemo/Dropbox/Research/Austerity and Brexit/Replication V2/data files/usoc")#
+#
+ffsa<-list.files("/Users/thiemo/Dropbox/Research/Austerity and Brexit/Replication V2/data files/usoc", include.dirs=TRUE, recursive=TRUE)#
+#
+ffsa<-grep("^ukhls_w",ffsa,value=TRUE)#
+##this is loading the income tabulations for households/individual respondents -- it either reads an rdata file or it reads the raw data building the combined USOC-INCOME.rdata archive#
+#
+ffs<-grep("income.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read.dta(file=x)))
+DAT
+ffs
+#code written for R 3.3.3 #
+setwd("/Users/thiemo/Dropbox/Research/Austerity and Brexit/Replication V2/data files/usoc copy")#
+#
+ffsa<-list.files("/Users/thiemo/Dropbox/Research/Austerity and Brexit/Replication V2/data files/usoc copy", include.dirs=TRUE, recursive=TRUE)#
+#
+ffsa<-grep("^ukhls_w",ffsa,value=TRUE)#
+##this is loading the income tabulations for households/individual respondents -- it either reads an rdata file or it reads the raw data building the combined USOC-INCOME.rdata archive#
+#
+ffs<-grep("income.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read.dta(file=x)))
+##this is loading the income tabulations for households/individual respondents -- it either reads an rdata file or it reads the raw data building the combined USOC-INCOME.rdata archive#
+#
+ffs<-grep("income.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read_dta(file=x)))
+DAT[[1]]
+HH<-NULL#
+#
+for(i in 1:length(DAT)) {#
+cat(i, " ")#
+sub<-substr(ffs[i], 7,7)#
+#
+TEMP<-DAT[[i]]#
+setnames(TEMP, names(TEMP), gsub(paste(sub,"_",sep=""),"", names(TEMP)))#
+#
+#keep these variables#
+VARS<-c(grep("^hidp|^pno|pidp|^frval|^frmnth|^ficode|^frmnthimp_dv",names(DAT[[i]]),value=TRUE))#
+#
+HH[[i]]<-data.table(file=ffs[i], TEMP[, VARS,with=F])#
+#
+}#
+#
+HH<-rbindlist(HH, fill=TRUE)#
+#
+HH[, ficode := tolower(as.character(ficode))]#
+HH[, wavechar := substr(file,7,7)]#
+HH[, file := NULL]#
+HH[, ficode := tolower(as.character(ficode))]#
+HH<-join(HH,HH[, .N, by=wavechar][, list(wavechar, wavenum = 1:8)])#
+#
+FICODE<-data.table(read.csv(file="harmonization mappers/FICODE.csv"))#
+FICODE<-FICODE[!is.na(ficode_num)]#
+#
+FICODE[, ficode := tolower(ficode)]#
+#
+FICODE.POP<-HH[, .N, by=ficode]#
+FICODE.POP1<-FICODE.POP[nchar(ficode)>3]#
+#
+FICODE.POP2<-FICODE.POP[nchar(ficode)<3]#
+FICODE.POP2 <-join(FICODE.POP2[, list(ficode_num= ficode)], FICODE)[!is.na(ficode)]#
+#
+FICODES<-rbind(FICODE.POP1[, list(ficode, ficodesd=ficode)], FICODE.POP2[, list(ficode=ficode_num, ficodesd=ficode)])#
+HH <-join(HH, FICODES)#
+HH[, ficodesd := str_trim(ficodesd)]#
+HH[, ficode := ficodesd]
+ffsa<-list.files("/Users/thiemo/Dropbox/Research/Austerity and Brexit/Replication V2/data files/usoc copy", include.dirs=TRUE, recursive=TRUE)#
+#
+ffsa<-grep("^ukhls_w",ffsa,value=TRUE)#
+##this is loading the income tabulations for households/individual respondents -- it either reads an rdata file or it reads the raw data building the combined USOC-INCOME.rdata archive#
+#
+ffs<-grep("income.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read_dta(file=x)))
+DAT[[1]]
+ffs
+i=1
+sub<-substr(ffs[i], 10,10)
+sub
+HH<-NULL#
+#
+for(i in 1:length(DAT)) {#
+cat(i, " ")#
+sub<-substr(ffs[i], 10,10)#
+#
+TEMP<-DAT[[i]]#
+setnames(TEMP, names(TEMP), gsub(paste(sub,"_",sep=""),"", names(TEMP)))#
+#
+#keep these variables#
+VARS<-c(grep("^hidp|^pno|pidp|^frval|^frmnth|^ficode|^frmnthimp_dv",names(DAT[[i]]),value=TRUE))#
+#
+HH[[i]]<-data.table(file=ffs[i], TEMP[, VARS,with=F])#
+#
+}
+HH<-rbindlist(HH, fill=TRUE)#
+#
+HH[, ficode := tolower(as.character(ficode))]#
+HH[, wavechar := substr(file,7,7)]#
+HH[, file := NULL]#
+HH[, ficode := tolower(as.character(ficode))]#
+HH<-join(HH,HH[, .N, by=wavechar][, list(wavechar, wavenum = 1:8)])
+FICODE<-data.table(read.csv(file="harmonization mappers/FICODE.csv"))#
+FICODE<-FICODE[!is.na(ficode_num)]#
+#
+FICODE[, ficode := tolower(ficode)]#
+#
+FICODE.POP<-HH[, .N, by=ficode]#
+FICODE.POP1<-FICODE.POP[nchar(ficode)>3]#
+#
+FICODE.POP2<-FICODE.POP[nchar(ficode)<3]#
+FICODE.POP2 <-join(FICODE.POP2[, list(ficode_num= ficode)], FICODE)[!is.na(ficode)]#
+#
+FICODES<-rbind(FICODE.POP1[, list(ficode, ficodesd=ficode)], FICODE.POP2[, list(ficode=ficode_num, ficodesd=ficode)])#
+HH <-join(HH, FICODES)#
+HH[, ficodesd := str_trim(ficodesd)]#
+HH[, ficode := ficodesd]#
+FICODE.SD <-data.table(read.csv(file="harmonization mappers/FICODE_SD_LONG.csv"))
+HH<-join(HH, FICODE.SD)#
+BENALL <-HH[, list(sample=.N), by=c("hidp", "pidp", "wavechar")]#
+#
+for(bb in c("council_tax_benefit","housing_benefit","dla_pip")) { #
+#
+TEMP<-HH[ficode_standard==bb, list(amt=sum(frmnthimp_dv)), by=c("hidp", "pidp", "wavechar")]#
+BENALL<-join(BENALL, TEMP)#
+BENALL[is.na(amt), amt:=0]#
+#
+setnames(BENALL, "amt", paste("ben_",bb,sep=""))#
+#
+}#
+HH[, housing_ben_rec := 0]#
+HH[grep("housing benefit", ficode), housing_ben_rec := 1]#
+#
+HH[, dla_rec := 0]#
+HH[grep("disability living allowance", ficode), dla_rec := 1]#
+#
+HH[, council_tax_ben_rec := 0]#
+HH[grep("council tax benefit", ficode), council_tax_ben_rec := 1]#
+#
+bens<-c("council_tax_ben_rec", "housing_ben_rec","dla_rec")#
+#
+IN<-HH#
+#
+#remove some obviously wrong numbers #
+INCOMEALL<-HH[frmnth_dv>=0 & frmnth_dv!=999999 & frval!= 22222222 & frval!=11111111]#
+#
+INCOMEALL<-INCOMEALL[, list(incomeall = sum(frmnth_dv)), by=c("hidp","pidp","wavechar")]#
+#
+#data entry error#
+HH[frval == 18001800, frmnth_dv:= 150 ]#
+#
+CREDIT<-NULL#
+#
+i=1#
+#
+for(var in bens) {#
+#
+setnames(HH,var,"temp")#
+TEMP<-HH[temp==1 & frmnth_dv>=0 &  frmnth_dv!=999999 & frval!= 22222222 & frval!=11111111]#
+TEMP<-TEMP[, list(temp_sum = sum(frmnth_dv)), by=c("hidp","pidp","wavechar")]#
+#
+TEMP$temp<-1#
+#
+INCOMEALL<-join(INCOMEALL, TEMP)#
+#
+INCOMEALL[is.na(temp), temp_sum := 0]#
+INCOMEALL[is.na(temp), temp := 0]#
+#
+setnames(INCOMEALL, "temp", var)#
+setnames(INCOMEALL, "temp_sum", paste(var,"_sum",sep=""))#
+#
+setnames(HH, "temp", var)#
+#
+i=i+1#
+#
+}
+#household level data file#
+ffs<-grep("hhresp.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read_dta(file=x)))#
+HH<-NULL#
+#
+for(i in 1:length(DAT)) {#
+cat(i, " ")#
+sub<-substr(ffs[i], 10,10)#
+#
+TEMP<-DAT[[i]]#
+setnames(TEMP, names(TEMP), gsub(paste("^",sub,"_",sep=""),"", names(TEMP)))#
+#
+##grab the variabless to keep#
+VARS<-c(grep("^hidp|^fihhmnprben_dv|^fihhmnpen_dv|^rentg$|^rent$|^tenure_dv|^xphsdb$|^xphsdct|^fihhmngrs_dv|^fihhmnlabgrs_dv|^fihhmninv_dv|^fihhmnsben_dv|hsbeds|hhsize|nkids|hhtype_dv",names(DAT[[i]]),value=TRUE))#
+#
+HH[[i]]<-data.table(file=ffs[i], TEMP[, VARS,with=F])#
+#
+}#
+#
+HH<-rbindlist(HH, fill=TRUE)#
+HH[, wavechar := substr(file,7,7)]#
+HH[, file := NULL]#
+#
+#standardize#
+for(var in c("xphsdb","xphsdct","tenure_dv")) {#
+setnames(HH, var, "temp")#
+HH[, temp := tolower(temp)]#
+setnames(HH, "temp",var)#
+}#
+#
+for(var in c("xphsdb","xphsdct")) {#
+#
+setnames(HH, var, "temp")#
+#
+HH[temp %in% c("inapplicable","don't know","refused","missing","refusal"), temp := NA]#
+#
+setnames(HH, "temp",var)#
+#
+}
+ffsa<-list.files("/Users/thiemo/Dropbox/Research/Austerity and Brexit/Replication V2/data files/usoc copy", include.dirs=TRUE, recursive=TRUE)#
+#
+ffsa<-grep("^ukhls_w",ffsa,value=TRUE)#
+##this is loading the income tabulations for households/individual respondents -- it either reads an rdata file or it reads the raw data building the combined USOC-INCOME.rdata archive#
+#
+ffs<-grep("income.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read_dta(file=x)))#
+HH<-NULL#
+#
+for(i in 1:length(DAT)) {#
+cat(i, " ")#
+sub<-substr(ffs[i], 10,10)#
+#
+TEMP<-DAT[[i]]#
+setnames(TEMP, names(TEMP), gsub(paste(sub,"_",sep=""),"", names(TEMP)))#
+#
+#keep these variables#
+VARS<-c(grep("^hidp|^pno|pidp|^frval|^frmnth|^ficode|^frmnthimp_dv",names(DAT[[i]]),value=TRUE))#
+#
+HH[[i]]<-data.table(file=ffs[i], TEMP[, VARS,with=F])#
+#
+}#
+#
+HH<-rbindlist(HH, fill=TRUE)#
+#
+HH[, ficode := tolower(as.character(ficode))]#
+HH[, wavechar := substr(file,7,7)]#
+HH[, file := NULL]#
+HH[, ficode := tolower(as.character(ficode))]#
+HH<-join(HH,HH[, .N, by=wavechar][, list(wavechar, wavenum = 1:8)])#
+#
+FICODE<-data.table(read.csv(file="harmonization mappers/FICODE.csv"))#
+FICODE<-FICODE[!is.na(ficode_num)]#
+#
+FICODE[, ficode := tolower(ficode)]#
+#
+FICODE.POP<-HH[, .N, by=ficode]#
+FICODE.POP1<-FICODE.POP[nchar(ficode)>3]#
+#
+FICODE.POP2<-FICODE.POP[nchar(ficode)<3]#
+FICODE.POP2 <-join(FICODE.POP2[, list(ficode_num= ficode)], FICODE)[!is.na(ficode)]#
+#
+FICODES<-rbind(FICODE.POP1[, list(ficode, ficodesd=ficode)], FICODE.POP2[, list(ficode=ficode_num, ficodesd=ficode)])#
+HH <-join(HH, FICODES)#
+HH[, ficodesd := str_trim(ficodesd)]#
+HH[, ficode := ficodesd]#
+FICODE.SD <-data.table(read.csv(file="harmonization mappers/FICODE_SD_LONG.csv"))#
+#
+HH<-join(HH, FICODE.SD)#
+BENALL <-HH[, list(sample=.N), by=c("hidp", "pidp", "wavechar")]#
+#
+for(bb in c("council_tax_benefit","housing_benefit","dla_pip")) { #
+#
+TEMP<-HH[ficode_standard==bb, list(amt=sum(frmnthimp_dv)), by=c("hidp", "pidp", "wavechar")]#
+BENALL<-join(BENALL, TEMP)#
+BENALL[is.na(amt), amt:=0]#
+#
+setnames(BENALL, "amt", paste("ben_",bb,sep=""))#
+#
+}#
+HH[, housing_ben_rec := 0]#
+HH[grep("housing benefit", ficode), housing_ben_rec := 1]#
+#
+HH[, dla_rec := 0]#
+HH[grep("disability living allowance", ficode), dla_rec := 1]#
+#
+HH[, council_tax_ben_rec := 0]#
+HH[grep("council tax benefit", ficode), council_tax_ben_rec := 1]#
+#
+bens<-c("council_tax_ben_rec", "housing_ben_rec","dla_rec")#
+#
+IN<-HH#
+#
+#remove some obviously wrong numbers #
+INCOMEALL<-HH[frmnth_dv>=0 & frmnth_dv!=999999 & frval!= 22222222 & frval!=11111111]#
+#
+INCOMEALL<-INCOMEALL[, list(incomeall = sum(frmnth_dv)), by=c("hidp","pidp","wavechar")]#
+#
+#data entry error#
+HH[frval == 18001800, frmnth_dv:= 150 ]#
+#
+CREDIT<-NULL#
+#
+i=1#
+#
+for(var in bens) {#
+#
+setnames(HH,var,"temp")#
+TEMP<-HH[temp==1 & frmnth_dv>=0 &  frmnth_dv!=999999 & frval!= 22222222 & frval!=11111111]#
+TEMP<-TEMP[, list(temp_sum = sum(frmnth_dv)), by=c("hidp","pidp","wavechar")]#
+#
+TEMP$temp<-1#
+#
+INCOMEALL<-join(INCOMEALL, TEMP)#
+#
+INCOMEALL[is.na(temp), temp_sum := 0]#
+INCOMEALL[is.na(temp), temp := 0]#
+#
+setnames(INCOMEALL, "temp", var)#
+setnames(INCOMEALL, "temp_sum", paste(var,"_sum",sep=""))#
+#
+setnames(HH, "temp", var)#
+#
+i=i+1#
+#
+}#
+#household level data file#
+ffs<-grep("hhresp.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read_dta(file=x)))#
+HH<-NULL#
+#
+for(i in 1:length(DAT)) {#
+cat(i, " ")#
+sub<-substr(ffs[i], 10,10)#
+#
+TEMP<-DAT[[i]]#
+setnames(TEMP, names(TEMP), gsub(paste("^",sub,"_",sep=""),"", names(TEMP)))#
+#
+##grab the variabless to keep#
+VARS<-c(grep("^hidp|^fihhmnprben_dv|^fihhmnpen_dv|^rentg$|^rent$|^tenure_dv|^xphsdb$|^xphsdct|^fihhmngrs_dv|^fihhmnlabgrs_dv|^fihhmninv_dv|^fihhmnsben_dv|hsbeds|hhsize|nkids|hhtype_dv",names(DAT[[i]]),value=TRUE))#
+#
+HH[[i]]<-data.table(file=ffs[i], TEMP[, VARS,with=F])#
+#
+}#
+#
+HH<-rbindlist(HH, fill=TRUE)#
+HH[, wavechar := substr(file,7,7)]#
+HH[, file := NULL]#
+#
+#standardize#
+for(var in c("xphsdb","xphsdct","tenure_dv")) {#
+setnames(HH, var, "temp")#
+HH[, temp := tolower(temp)]#
+setnames(HH, "temp",var)#
+}#
+#
+for(var in c("xphsdb","xphsdct")) {#
+#
+setnames(HH, var, "temp")#
+#
+HH[temp %in% c("inapplicable","don't know","refused","missing","refusal"), temp := NA]#
+#
+setnames(HH, "temp",var)#
+#
+}#
+###now load individual respondent data which includes disability benefit status#
+ffs<-grep("indresp.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read_dta(file=x)))#
+#
+OUT<-NULL#
+for(i in 1:length(DAT)) {#
+cat(i, " ")#
+sub<-substr(ffs[i], 7,7)#
+TEMP<-DAT[[i]]#
+setnames(TEMP, names(TEMP), gsub(paste(sub,"_",sep=""),"", names(TEMP)))#
+VARS<-c("pidp","sex","hidp","dvage", grep("^btype|^pbnft|bendis",names(DAT[[i]]),value=TRUE))#
+OUT[[i]]<-data.table(file=ffs[i], TEMP[, VARS,with=F])#
+}#
+#
+INDBEN<-rbindlist(OUT, fill=TRUE)#
+#
+INDBEN[, wavechar := substr(file,7,7)]#
+INDBEN <-join(INDBEN,INDBEN[, .N, by=wavechar][order(wavechar), list(wavechar, wave=1:.N)])#
+nns<-grep("^btype|^pbnft|bendis", names(INDBEN), value=TRUE)#
+#
+for(vv in nns) {#
+cat(vv, sep="\n")#
+setnames(INDBEN, vv, "temp")#
+INDBEN[, temp := preProcess(temp)]#
+INDBEN[temp %in% c("proxy respondent","proxy"), temp := "proxy"]#
+INDBEN[temp %in% c("refused","missing","don t know","refusal"), temp := NA]#
+INDBEN[temp %in% c("yes mentioned"), temp := "mentioned"]#
+setnames(INDBEN, "temp", vv)#
+}#
+INDBEN[, bprxy_dla_pip := bendis5]#
+INDBEN[bendis5=="proxy" & !is.na(pbnft3), bprxy_dla_pip := pbnft3]#
+INDBEN[!is.na(bprxy_dla_pip), bprxy_dla_pip_dum := as.numeric(bprxy_dla_pip %in% "mentioned")]#
+INDBEN<-INDBEN[, c("pidp","hidp","wavechar",grep("bprxy",names(INDBEN), value=TRUE)), with=F]#
+ffs<-grep("indresp.dta", ffsa, value=TRUE)#
+DAT<-lapply(ffs, function(x) data.table(read_dta(file=x)))#
+#
+OUT<-NULL#
+#
+for(i in 1:length(DAT)) {#
+cat(i, " ")#
+sub<-substr(ffs[i], 7,7)#
+#
+TEMP<-DAT[[i]]#
+setnames(TEMP, names(TEMP), gsub(paste(sub,"_",sep=""),"", names(TEMP)))#
+VARS<-c("pidp","sex","hidp","dvage", grep("^hiqual_dv|hcond[0-9]+|^perpolinf|^jbstat|jbiindb_dv|voteintent|polef|^vote|colbens|^istr|^fimngrs_dv|fimnsben_dv|fimnlabgrs_dv|fimnpen|fimnlabnet_dv|fimninvnet_dv|jbseg_dv|^jbnssec5_dv|^jbnssec8_dv|^jbsic07_cc|^jbft_dv|^scghq|eumem|^jbsec",names(DAT[[i]]),value=TRUE))#
+#
+OUT[[i]]<-data.table(file=ffs[i], TEMP[, VARS,with=F])#
+#
+}#
+HH.PAN<-rbindlist(OUT, fill=TRUE)#
+HH.PAN[is.na(istrtdaty), istrtdaty := as.numeric(substr(istrtdat,5,8))]#
+HH.PAN[is.na(istrtdatm), istrtdatm := as.numeric(substr(istrtdat,3,4))]#
+#
+HH.PAN[, year := istrtdaty]#
+HH.PAN[, month := istrtdatm]#
+HH.PAN[, wavechar := substr(file,7,7)]#
+HH.PAN<-join(HH.PAN,HH.PAN[, .N, by=wavechar][, list(wavechar, wave = 1:8)])#
+HH.PAN[, jbstat := tolower(as.character(jbstat))]#
+#
+JBSTAT<-data.table(read.csv(file="harmonization mappers/JBSTAT.csv"))#
+HH.PAN <-join(HH.PAN, JBSTAT)#
+#
+QUAL<-data.table(read.csv(file="harmonization mappers/HH.QUAL.csv"))#
+#
+HH.PAN<-join(HH.PAN, QUAL)#
+#highest qualification prior to most reforms#
+HH.PAN<-join(HH.PAN, HH.PAN[, .N, by=c("pidp","hiqual_dv_sd","hiqual_dv_sd_num","year")][year<=2011][, list(maxhiqual_dv_sd_num = max(hiqual_dv_sd_num)), by= pidp])#
+#
+IND<-data.table(read.csv(file="harmonization mappers/INUDSTRY.CLASS.csv"))#
+#
+HH.PAN<-join(HH.PAN, IND[, list(jbiindb_dv, ind_label=unifiedlabel)][!is.na(jbiindb_dv)])#
+#
+#pre reform industry of employment #
+HH.PAN<- join(HH.PAN, join(HH.PAN[, .N, by=c("pidp","ind_label","year")][year<=2011][ind_label!="" & !is.na(ind_label)][, .N, by=c("pidp","ind_label")],HH.PAN[, .N, by=c("pidp","ind_label","year")][year<=2011][ind_label!=""& !is.na(ind_label)][, .N, by=c("pidp","ind_label")][, max(N), by="pidp"])[V1==N][, list(pidp, industry_sector_sd= ind_label)])#
+#cleaning#
+HH.PAN[, jbnssec8_dv := preProcess(jbnssec8_dv)]#
+HH.PAN[, jbnssec5_dv := preProcess(jbnssec5_dv)]#
+#health conditions#
+for(var in c("hcond1","hcond2","hcond3","hcond4","hcond5","hcond6","hcond7","hcond8","hcond9","hcond10","hcond11","hcond12","hcond13","hcond14","hcond15","hcond16","hcond17")) {#
+#
+setnames(HH.PAN, var, "temp")#
+HH.PAN[, temp := preProcess(as.character(temp))]#
+#
+HH.PAN[temp %in% c("missing","refusal","don't know","don t know","refused","inapplicable", "proxy","proxy respondent","not available for iemb"), temp := NA]#
+#
+HH.PAN[, temp_num := as.numeric(temp)]#
+#
+HH.PAN[temp %in% c("mentioned","yes mentioned"), temp_num := 1]#
+HH.PAN[temp %in% c("not mentioned"), temp_num := 0]#
+#
+HH.PAN <-join(HH.PAN,HH.PAN[wave==1, list(w1_temp_dum = mean(as.numeric(temp_num))), by=pidp])#
+setnames(HH.PAN, "temp", var)#
+setnames(HH.PAN, "temp_num", paste(var,"_dum",sep=""))#
+setnames(HH.PAN, "w1_temp_dum", paste("w1_",var,"_dum",sep=""))#
+}#
+for(var in c("vote1","vote2","vote3","vote4","vote5","vote6", "vote7","vote8")) {#
+#
+setnames(HH.PAN, var, "temp")#
+HH.PAN[, temp := tolower(temp)]#
+HH.PAN[temp %in% c("proxy","proxy respondent"), temp := "proxy"]#
+HH.PAN[temp %in% c("refused","refusal"), temp := "refused"]#
+setnames(HH.PAN, "temp", var)#
+#
+}#
+HH.PAN[ , jbsec := preProcess(jbsec)]#
+#
+HH.PAN[, jbsec_num := as.numeric(jbsec)]#
+HH.PAN[jbsec=="very likely", jbsec_num := 1]#
+HH.PAN[jbsec=="likely", jbsec_num := 2]#
+HH.PAN[jbsec=="unlikely", jbsec_num := 3]#
+HH.PAN[jbsec=="very unlikely", jbsec_num := 4]#
+SIC07<-data.table(data.frame(jbsic07_cc =as.character(OUT[[1]]$jbsic07_cc) , jbsic07_cc_num = as.numeric(OUT[[1]]$jbsic07_cc)))#
+#
+SIC07 <-DTUniqueBy(SIC07, names(SIC07))[jbsic07_cc_num>2]#
+#
+SIC07[, SIC2007Section := ""]#
+SIC07[jbsic07_cc_num > 5 &jbsic07_cc_num<=8,  SIC2007Section := "Agriculture, Forestry and Fishing"]#
+SIC07[jbsic07_cc_num > 8 &jbsic07_cc_num<=13,  SIC2007Section := "Mining and Quarrying"]#
+SIC07[jbsic07_cc_num > 13 &jbsic07_cc_num<=37,  SIC2007Section := "Manufacturing"]#
+SIC07[jbsic07_cc_num > 37 &jbsic07_cc_num<=38,  SIC2007Section := "Electricity, Gas, Steam and Air Conditioning Supply"]#
+SIC07[jbsic07_cc_num > 38 &jbsic07_cc_num<=42,  SIC2007Section := "Water Supply; Sewerage, Waste Management and Remediation Activities"]#
+SIC07[jbsic07_cc_num > 42 &jbsic07_cc_num<=45,  SIC2007Section := "Construction"]#
+SIC07[jbsic07_cc_num > 45 &jbsic07_cc_num<=48,  SIC2007Section := "Wholesale and Retail Trade"]#
+SIC07[jbsic07_cc_num > 48 &jbsic07_cc_num<=53,  SIC2007Section := "Transportation and Storage"]#
+SIC07[jbsic07_cc_num > 53 &jbsic07_cc_num<=55,  SIC2007Section := "Accommodation and Food Service Activities"]#
+SIC07[jbsic07_cc_num > 55 &jbsic07_cc_num<=61,  SIC2007Section := "Information and Communication"]#
+SIC07[jbsic07_cc_num > 61 &jbsic07_cc_num<=64,  SIC2007Section := "Financial and Insurance Activities"]#
+SIC07[jbsic07_cc_num > 64 &jbsic07_cc_num<=65,  SIC2007Section := "Real Estate Activities"]#
+SIC07[jbsic07_cc_num > 65 &jbsic07_cc_num<=72,  SIC2007Section := "Professional, Scientific and Technical Activities"]#
+SIC07[jbsic07_cc_num > 72 &jbsic07_cc_num<=78,  SIC2007Section := "Administrative and Support Service Activities"]#
+SIC07[jbsic07_cc_num > 78 &jbsic07_cc_num<=79,  SIC2007Section := "Public Administration and Defence; Compulsory Social Security"]#
+SIC07[jbsic07_cc_num > 79 &jbsic07_cc_num<=80,  SIC2007Section := "Education"]#
+SIC07[jbsic07_cc_num > 80 &jbsic07_cc_num<=83,  SIC2007Section := "Human Health and Social Work Activities"]#
+SIC07[jbsic07_cc_num > 83 &jbsic07_cc_num<=87,  SIC2007Section := "Arts, Entertainment and Recreation"]#
+SIC07[jbsic07_cc_num > 87 &jbsic07_cc_num<=90,  SIC2007Section := "Other Service Activities"]#
+SIC07 <-SIC07[SIC2007Section!=""]#
+#
+HH.PAN<-join(HH.PAN,SIC07)#
+#
+#PRESENT ECONOMIC#
+for(var in c("votenorm","poleff1","poleff2","poleff3","poleff4")) {#
+#
+setnames(HH.PAN, var, "temp")#
+HH.PAN[, temp := as.character(temp)]#
+HH.PAN[temp %in% c("missing","Not available for IEMB","refusal","don't know","refused","inapplicable", "proxy","proxy respondent","don't know"), temp  := NA]#
+#
+HH.PAN[temp=="strongly disagree", temp_num := 1]#
+HH.PAN[temp=="disagree", temp_num := 2]#
+HH.PAN[temp %in% c("neither agree nor disagree","neither agree/disagree"), temp_num := 3]#
+HH.PAN[temp=="agree", temp_num := 4]#
+HH.PAN[temp=="strongly agree", temp_num := 5]#
+setnames(HH.PAN,  "temp",var)#
+setnames(HH.PAN,  "temp_num",paste(var,"_num", sep=""))#
+}#
+HH.PAN[, wavechar := substr(file,7,7)]

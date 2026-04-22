@@ -1,0 +1,445 @@
+-------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\figsA1andA2.log
+  log type:  text
+ opened on:  18 Nov 2010, 10:53:20
+
+. 
+. 
+. ******************** 1. Set up Data and Sample ***************************
+. 
+. *** Establish Sample from the 70 districts panel data
+. use ../data/dis70panx.dta
+
+. 
+. *** Basic sample restrictions
+. keep if major==1
+(310 observations deleted)
+
+. drop if imp==.
+(0 observations deleted)
+
+. replace imp = imp+1900
+(368 real changes made)
+
+. 
+. *** Only keep MSAs that have both central and suburban district regions
+. drop if area==marea
+(32 observations deleted)
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1960 |         84       25.00       25.00
+       1970 |         84       25.00       50.00
+       1980 |         84       25.00       75.00
+       1990 |         84       25.00      100.00
+------------+-----------------------------------
+      Total |        336      100.00
+
+. 
+. keep msa year imp south area marea
+
+. compress
+year was float now int
+msa was float now int
+imp was float now int
+south was float now byte
+
+. sort msa year
+
+. save temp.dta, replace
+(note: file temp.dta not found)
+file temp.dta saved
+
+. 
+. *** Merge onto the tracts data to establish consistent sample
+. use ../data/tractpanx.dta
+
+. 
+. ** Drop tract area
+. drop area
+
+. 
+. ** Drop tracts for which we don't know location
+. drop if cbd_dis==999999
+(196 observations deleted)
+
+. ** Drop tracts that are put out in the Pacific Ocean (most of which are prisons with 0 school age pop)
+. drop if x_coord<-2000000 & y_coord>1350000
+(427 observations deleted)
+
+. 
+. ** Put cbd-dis in KM
+. replace cbd_dis = cbd_dis/1000
+(126346 real changes made)
+
+. 
+. sort msa year
+
+. merge msa year using temp.dta
+variables msa year do not uniquely identify observations in the master data
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     41,191       32.60       32.60
+          2 |          8        0.01       32.61
+          3 |     85,155       67.39      100.00
+------------+-----------------------------------
+      Total |    126,354      100.00
+
+. ** Merge=1 is MSAs without major plans, Merge=2 is untracted MSA/years
+. tab year _merge
+
+           |              _merge
+      year |         1          2          3 |     Total
+-----------+---------------------------------+----------
+      1960 |     6,973          7     15,045 |    22,025 
+      1970 |     9,823          1     20,155 |    29,979 
+      1980 |    11,525          0     23,362 |    34,887 
+      1990 |    12,870          0     26,593 |    39,463 
+-----------+---------------------------------+----------
+     Total |    41,191          8     85,155 |   126,354 
+
+
+. keep if _merge==3
+(41199 observations deleted)
+
+. drop _merge
+
+. 
+. *** Fix data a bit and set sample
+. gen pop = white+black
+
+. drop if white+black+other==0
+(527 observations deleted)
+
+. 
+. ******* Create Same sample as Regressions 
+. replace publicelemhsw = publicelemw+publichsw if year~=1990
+publicelemhsw was int now float
+(57835 real changes made)
+
+. replace publicelemhsb = publicelemb+publichsb if year~=1990
+publicelemhsb was int now float
+(41716 real changes made)
+
+. replace privatelemhsw = privatelemw+privatehsw if year~=1990
+privatelemhsw was int now float
+(57835 real changes made)
+
+. replace privatelemhsb = privatelemb+privatehsb if year~=1990
+privatelemhsb was int now float
+(41710 real changes made)
+
+. 
+. replace publicelemhsb = 0 if publicelemhsb==. & pop59b+pop1014b+pop1519b==0
+(12 real changes made)
+
+. replace publicelemhsb = 0 if publicelemhsb==. & black==0 
+(0 real changes made)
+
+. replace privatelemhsb = 0 if privatelemhsb==. & pop59b+pop1014b+pop1519b==0
+(12 real changes made)
+
+. replace privatelemhsb = 0 if privatelemhsb==. & black==0 
+(0 real changes made)
+
+. replace publicelemhsw = 0 if publicelemhsw==. & pop59w+pop1014w+pop1519w==0
+(9 real changes made)
+
+. replace publicelemhsw = 0 if publicelemhsw==. & white==0 
+(0 real changes made)
+
+. replace privatelemhsw = 0 if privatelemhsw==. & pop59w+pop1014w+pop1519w==0
+(9 real changes made)
+
+. replace privatelemhsw = 0 if privatelemhsw==. & white==0 
+(0 real changes made)
+
+. 
+. *** Restrict sample to tracts with data for both whites and blacks
+. drop if publicelemhsw==.|publicelemhsb==.
+(21 observations deleted)
+
+. 
+. *** Drop MSAs with only 1-6 tracts in city or suburbs in 1990 or 1960
+. egen obs90 = count(ccdis70) if year==1990 | year==1960, by(msa year ccdis70)
+(43503 missing values generated)
+
+. gen badmsa = 0
+
+. replace badmsa = 1 if obs90<6
+(12 real changes made)
+
+. egen BADMSA = max(badmsa), by(msa)
+
+. drop if BADMSA==1
+(918 observations deleted)
+
+. drop badmsa BADMSA obs90
+
+. 
+. *** Drop MSAs with no obs in city or no obs in suburbs in every year
+. egen maxcc = max(ccdis70), by(msa year)
+
+. egen mincc = min(ccdis70), by(msa year)
+
+. keep if maxcc==1 & mincc==0
+(775 observations deleted)
+
+. 
+. *** Identify MSAs with no data in 1960 
+. egen minyr = min(year), by(msa)
+
+. keep if minyr==1960
+(4367 observations deleted)
+
+. 
+. *** Record number of MSAs in dataset
+. sort msa ccdis70 year
+
+. by msa ccdis70 year: gen numsamp = _n==1
+
+. sort year
+
+. by year: tab numsamp ccdis70
+
+-------------------------------------------------------------------------------------------------------------------------
+-> year = 1960
+
+           |        ccdis70
+   numsamp |         0          1 |     Total
+-----------+----------------------+----------
+         0 |     7,055      7,280 |    14,335 
+         1 |        64         64 |       128 
+-----------+----------------------+----------
+     Total |     7,119      7,344 |    14,463 
+
+
+-------------------------------------------------------------------------------------------------------------------------
+-> year = 1970
+
+           |        ccdis70
+   numsamp |         0          1 |     Total
+-----------+----------------------+----------
+         0 |    10,847      7,858 |    18,705 
+         1 |        64         64 |       128 
+-----------+----------------------+----------
+     Total |    10,911      7,922 |    18,833 
+
+
+-------------------------------------------------------------------------------------------------------------------------
+-> year = 1980
+
+           |        ccdis70
+   numsamp |         0          1 |     Total
+-----------+----------------------+----------
+         0 |    13,194      8,151 |    21,345 
+         1 |        64         64 |       128 
+-----------+----------------------+----------
+     Total |    13,258      8,215 |    21,473 
+
+
+-------------------------------------------------------------------------------------------------------------------------
+-> year = 1990
+
+           |        ccdis70
+   numsamp |         0          1 |     Total
+-----------+----------------------+----------
+         0 |    15,389      8,261 |    23,650 
+         1 |        64         64 |       128 
+-----------+----------------------+----------
+     Total |    15,453      8,325 |    23,778 
+
+
+
+. 
+. 
+. **************** 2. Define distance metric ************************
+. 
+. *** Define distance metric using 1990 population CDFs
+. sort msa year ccdis70 cbd_dis
+
+. by msa year ccdis70: gen cumpop = sum(pop) if year==1990
+(54769 missing values generated)
+
+. egen sumpop = sum(pop) if year==1990, by(msa year ccdis70)
+(54769 missing values generated)
+
+. gen dis = cumpop/sumpop
+(54769 missing values generated)
+
+. 
+. *** Allocate locations for tracts 1960-1980
+. sort msa ccdis70 cbd_dis
+
+. by msa ccdis70: replace dis = dis[_n-1] if dis==.
+(54578 real changes made)
+
+. replace dis = .001 if dis==.|dis==0
+(191 real changes made)
+
+. 
+. *** Create Dtdis variable which is useful for graphing
+. gen Dtdis = int(dis*10)/10+.05
+
+. replace Dtdis = .95 if Dtdis>1
+(255 real changes made)
+
+. replace Dtdis = Dtdis+1 if ccdis70==0
+(46741 real changes made)
+
+. 
+. 
+. **************** 3. Create Variables Appropriate for Graphing *********************
+. 
+. *** Apply appropriate weights for the incomes
+. egen sumsampw = sum(incdw), by(msa year Dtdis)
+
+. egen sumsampb = sum(incdb), by(msa year Dtdis)
+
+. replace incw = incw*incdw/sumsampw
+(75414 real changes made)
+
+. replace incb = incb*incdb/sumsampb
+(50998 real changes made)
+
+. 
+. #delimit ;
+delimiter now ;
+. collapse (sum) white black pop incw incb 
+> (mean) cbd_dis, by(msa south year Dtdis);
+
+. #delimit cr
+delimiter now cr
+. 
+. gen fracw = white/pop
+
+. 
+. **** Observations in each group
+. table Dtdis year, contents(n pop)
+
+----------------------------------
+          |          year         
+    Dtdis | 1960  1970  1980  1990
+----------+-----------------------
+      .05 |   64    64    64    64
+      .15 |   64    64    64    64
+      .25 |   64    64    64    64
+      .35 |   64    64    64    64
+      .45 |   64    63    64    64
+      .55 |   63    64    64    64
+      .65 |   61    62    64    64
+      .75 |   58    62    63    64
+      .85 |   58    61    64    64
+      .95 |   59    63    64    64
+     1.05 |   64    64    64    64
+     1.15 |   64    63    63    64
+     1.25 |   61    63    63    64
+     1.35 |   59    62    63    64
+     1.45 |   59    62    62    64
+     1.55 |   56    60    63    64
+     1.65 |   57    63    63    64
+     1.75 |   48    60    62    64
+     1.85 |   44    61    63    64
+     1.95 |   35    56    63    64
+----------------------------------
+
+. 
+. 
+. ******************* 5. Final Results *******************************
+. 
+. table Dtdis year, contents(mean fracw)
+
+--------------------------------------------------
+          |                  year                 
+    Dtdis |     1960      1970      1980      1990
+----------+---------------------------------------
+      .05 | .7254944  .6841609  .6463031  .6192951
+      .15 | .7546093  .6866459  .6324355  .6046394
+      .25 | .8076248  .7097113  .6524866   .637182
+      .35 | .8610317  .7790694  .6947637  .6378838
+      .45 | .8945615  .8058004  .7143031  .6817791
+      .55 | .9001504  .8427404  .7524232  .7052581
+      .65 | .9269999  .8599939   .769356  .7245572
+      .75 | .9341156  .8483207  .7704337  .7320196
+      .85 | .9227248  .8870698  .7978953  .7413566
+      .95 | .9369757  .9080373  .8354951  .7787852
+     1.05 | .9221101  .9172428  .8812504  .8504099
+     1.15 | .9480014  .9587762  .9332753   .902719
+     1.25 |  .953877  .9446698  .9452175  .9125313
+     1.35 | .9694464  .9654181  .9465432  .9246089
+     1.45 |  .943858  .9566702  .9560608  .9391883
+     1.55 | .9490307  .9603806  .9512846  .9369251
+     1.65 | .9333411  .9351616  .9441688  .9419507
+     1.75 | .9161106   .956806  .9525517  .9450401
+     1.85 | .9273839  .9300179  .9352472   .936625
+     1.95 | .9668462  .9565889  .9377107   .943082
+--------------------------------------------------
+
+. table Dtdis year, contents(mean incw)
+
+--------------------------------------------------
+          |                  year                 
+    Dtdis |     1960      1970      1980      1990
+----------+---------------------------------------
+      .05 | 5010.594  3772.405  7962.586  17176.19
+      .15 | 5789.749  4013.742  8680.787  17833.02
+      .25 | 6167.588  4275.855  9025.941  18304.12
+      .35 | 6389.713   4411.56  9102.663  18558.43
+      .45 | 6735.278  4634.938  9506.333  20210.09
+      .55 | 6812.268  4855.646  10150.28  20873.33
+      .65 | 6963.759  4887.751  10273.41  21503.22
+      .75 | 6946.807  4973.436     10353  21543.15
+      .85 | 7197.321  5015.266  10964.31  23005.47
+      .95 | 6818.803  5091.708  11050.49  22485.82
+     1.05 | 6515.992  4753.212  10121.71  20657.23
+     1.15 |  6999.49  5011.511  10895.73  22106.92
+     1.25 | 6832.831  5029.775  11030.52   22490.5
+     1.35 | 6862.553  5071.775  11327.73  23205.26
+     1.45 | 6500.522  4941.745  11074.61  23069.84
+     1.55 | 6380.092  4843.179     11239  23440.63
+     1.65 | 5863.697  4472.216  10743.92  22495.91
+     1.75 | 5961.194  4446.539  10304.34  21604.91
+     1.85 | 5490.958  4231.767   9789.96   20319.6
+     1.95 | 5395.355  4035.378  9318.133  18914.02
+--------------------------------------------------
+
+. table Dtdis year, contents(mean incb)
+
+--------------------------------------------------
+          |                  year                 
+    Dtdis |     1960      1970      1980      1990
+----------+---------------------------------------
+      .05 | 3501.629  2586.201  5407.334  9504.839
+      .15 | 4017.761  2783.975  5880.054  10693.03
+      .25 |  4142.78  2995.765  6241.718  11042.72
+      .35 | 4444.488  3109.092  6693.252   11446.8
+      .45 | 4701.491  3191.437  6765.421  12362.33
+      .55 | 5234.444  3327.766  7668.378  13231.49
+      .65 | 4855.521  3378.316  7815.963  14518.34
+      .75 | 4523.081  3512.152  8519.942  14538.73
+      .85 |  4079.31   3264.64  8761.945  15169.01
+      .95 | 4524.106   3067.23  8398.038  16817.73
+     1.05 | 4264.005  3062.196  7593.185  13930.69
+     1.15 | 4593.328    3194.9  8826.055  16216.37
+     1.25 | 4550.764  2989.291  9101.274  16837.84
+     1.35 | 4526.836  3143.227  8282.991  17278.59
+     1.45 | 4751.757  2764.911  8562.746  16880.91
+     1.55 | 4049.331  3050.248  8435.466  17915.47
+     1.65 | 3474.401  2496.561  7579.871  16344.31
+     1.75 | 3475.355  2363.871   6631.16  14586.24
+     1.85 | 3318.141  2229.126  6020.748  13451.77
+     1.95 | 3482.042   2025.53  5695.259   12042.8
+--------------------------------------------------
+
+. 
+. 
+. log close
+       log:  c:\research\segregation\AER-DATA\tables\figsA1andA2.log
+  log type:  text
+ closed on:  18 Nov 2010, 10:53:33
+-------------------------------------------------------------------------------------------------------------------------

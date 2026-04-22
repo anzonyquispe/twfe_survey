@@ -1,0 +1,87 @@
+/* printmedians.gau - This file calculates the 25th, 50th, and 75th percentile of the buffer, income, durables 
+                      stock, assets, and cash on hand variables, 1 year before the hike, 
+                      for each hike-age-group, and for a pooled sample.
+
+   To update this file, change "version" value.
+   run this file after minwageSimmerGrapher has been run for all 3 hikes and nohike.
+
+
+   if changing path names, note there are 2 places where path names are used.
+
+   This file assumes the following naming convention for folders (/settingsSwitch runs) 
+       -Results_XX1_hike (settingsSwitch=XX.1 hikeSwitch=1) for hike at t=16, 
+       -Results_XX1_nohike (settingsSwitch=XX.1 hikeSwitch=0) for the nohike case
+       -Results_XX2_hike (settingsSwitch=XX.2 hikeSwitch=1) for hike at t=64,
+       -Results_XX3_hike (settingsSwitch=XX.3 hikeSwitch=1) for hike at t=128,  
+   XX is a set of runs with the same parameters, except for the time of the hike (hikeStart) and 
+   the wage growth during the hike (wageIncr, calibrated to result in a $250 increase).
+*/
+
+new; 
+cls;
+version = "671";
+v=stof(version);
+
+for n (v,v+2,1);
+  vstr=ftos(n,"%*.*lf",1,0);
+  basePath = "C:\\research\\minwage\\results\\Results_" $+ vstr $+ "_hike";
+  //basePath = "D:\\Results_minwage\\Results_" $+ vstr $+ "_hike";
+  loadPath = basePath $+ "\\sims";
+
+  load path = ^basePath;
+  load hikeStart;
+
+  period = hikeStart -4;
+  print "Period is" period ;
+
+  load path = ^loadpath;
+  load bufferM, amat, COHmat, smat, tempy2;
+
+  bufferNJ = bufferM[period,.]';
+  assets = amat[period,.]';
+  coh = COHmat[period,.]';
+  durstock = smat[period,.]';
+  income = tempy2[period,.]';
+
+  x = { .25, .5, .75};
+  a=quantile(bufferNJ,x);
+  b=quantile(income,x);
+  c=quantile(durstock,x);
+  d=quantile(assets,x);
+  e=quantile(coh,x);
+
+  print "Version " n ": buffer, income, durables stock, assets, cash on hand: 25p, 50p, 75p";
+  print a' b' c' d' e';
+endfor;
+
+print "Quantiles from Pooled Sample:";
+numsims=5000;
+bufferPooled=zeros(numsims*3,1);
+
+for n (v,v+2,1);
+  idx=n-v+1;
+  vstr=ftos(n,"%*.*lf",1,0);
+  loadpathHike="C:\\research\\minwage\\results\\Results_" $+ vstr $+ "_hike\\sims";
+  //loadpathHike="D:\\Results_minwage\\Results_" $+ vstr $+ "_hike\\sims";
+
+  load path = ^loadpathHike;
+  load bufferM;
+
+  if n==v; hikestart=16; 
+   elseif n==v+1; hikestart=64; 
+   elseif n==v+2; hikestart=128;
+  endif;
+  //print "Hike Start is" hikeStart ;
+  period = hikeStart -4;
+  //print "Period is" period ;
+
+  startn=(idx-1)*5000+1;
+  endn=idx*5000;
+  bufferPooled[startn:endn,1] = bufferM[period,.]';
+endfor;
+
+x = { .25, .5, .75};
+a=quantile(bufferPooled,x);
+print "Buffer: 25p, median, 75p";
+print a';
+

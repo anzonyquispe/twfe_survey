@@ -1,0 +1,1 @@
+replace specificdrug=1 if (class == 1| class ==5 | class ==24| class ==59| class ==63| class ==43| class ==88) & hypertension==1

@@ -1,0 +1,998 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/ivModels.log
+  log type:  text
+ opened on:   7 Jun 2010, 19:31:05
+
+. *******************************************
+. *      Robustness : IV Models
+. *******************************************
+. ** Col 1: IV for stbafl with Lags
+. xi: ivreg2 ttlDur (st_stbafl1yr = stbLagAfl) `st_controls' i.techarea i.pubCohort if (strfc & cSample), endog(st_stbafl1yr) robust cluster(wg) first
+i.techarea        _Itecharea_1-8      (naturally coded; _Itecharea_1 omitted)
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+Warning - collinearities detected
+Vars dropped:       _IpubCohort_2003
+
+First-stage regressions
+-----------------------
+
+First-stage regression of st_stbafl1yr:
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =          133                Number of obs =      773
+                                                      F( 22,   132) =    36.03
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  200322.5847                Centered R2   =   0.6182
+Total (uncentered) SS   =  4386016.161                Uncentered R2 =   0.9826
+Residual SS             =  76480.70008                Root MSE      =     10.1
+
+------------------------------------------------------------------------------
+             |               Robust
+st_stbafl1yr |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    st_lsize |   .6223578   .4187419     1.49   0.140     -.205955    1.450671
+    st_lmsgs |   2.731381   .6327766     4.32   0.000     1.479686    3.983075
+   st_lcmsgs |   -2.09121   .7927445    -2.64   0.009    -3.659337   -.5230825
+ st_lwgidnow |   -.241168   1.170372    -0.21   0.837     -2.55628    2.073944
+   st_govDum |  -.3235719   1.692534    -0.19   0.849    -3.671572    3.024428
+     st_aut2 |   .5920291    1.04554     0.57   0.572    -1.476152     2.66021
+     st_aut3 |   1.237446   1.188457     1.04   0.300     -1.11344    3.588331
+_Itecharea_3 |   4.859212    2.41747     2.01   0.046     .0772167    9.641208
+_Itecharea_4 |   10.58824    2.50272     4.23   0.000     5.637616    15.53887
+_Itecharea_5 |   6.599467   2.282558     2.89   0.004     2.084342    11.11459
+_Itecharea_6 |   .7307519   2.046042     0.36   0.722    -3.316522    4.778026
+_Itecharea_8 |   1.518207   2.337067     0.65   0.517    -3.104743    6.141158
+_IpubCo~1994 |  -16.11968   4.027191    -4.00   0.000    -24.08586     -8.1535
+_IpubCo~1995 |  -7.237188   3.311246    -2.19   0.031    -13.78716   -.6872171
+_IpubCo~1996 |  -4.519311   3.328693    -1.36   0.177     -11.1038    2.065173
+_IpubCo~1997 |   .4450762   2.903349     0.15   0.878    -5.298035    6.188188
+_IpubCo~1998 |  -1.265777   3.509839    -0.36   0.719    -8.208585    5.677032
+_IpubCo~1999 |   .1409982   2.788348     0.05   0.960    -5.374629    5.656625
+_IpubCo~2000 |   .0197106   3.311105     0.01   0.995    -6.529981    6.569403
+_IpubCo~2001 |   3.554293   3.330279     1.07   0.288    -3.033328    10.14191
+_IpubCo~2002 |   1.909617   3.276375     0.58   0.561    -4.571376    8.390611
+   stbLagAfl |   64.70615   4.536066    14.26   0.000     55.73336    73.67894
+       _cons |   16.56311    6.62301     2.50   0.014     3.462143    29.66408
+------------------------------------------------------------------------------
+Included instruments: st_lsize st_lmsgs st_lcmsgs st_lwgidnow st_govDum st_aut2
+                      st_aut3 _Itecharea_3 _Itecharea_4 _Itecharea_5
+                      _Itecharea_6 _Itecharea_8 _IpubCohort_1994
+                      _IpubCohort_1995 _IpubCohort_1996 _IpubCohort_1997
+                      _IpubCohort_1998 _IpubCohort_1999 _IpubCohort_2000
+                      _IpubCohort_2001 _IpubCohort_2002 stbLagAfl
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  1,   132) =   203.48
+  Prob > F      =   0.0000
+Angrist-Pischke multivariate F test of excluded instruments:
+  F(  1,   132) =   203.48
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,   132)  P-val | AP Chi-sq(  1) P-val | AP F(  1,   132)
+st_stbafl1yr |     203.48    0.0000 |      211.04   0.0000 |      203.48
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(1)=26.04    P-val=0.0000
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                     532.26
+Kleibergen-Paap Wald rk F statistic                               203.48
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,132)=       6.27     P-val=0.0135
+Anderson-Rubin Wald test           Chi-sq(1)=      6.50     P-val=0.0108
+Stock-Wright LM S statistic        Chi-sq(1)=      9.16     P-val=0.0025
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =        133
+Number of observations               N  =        773
+Number of regressors                 K  =         23
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =         23
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =          133                Number of obs =      773
+                                                      F( 22,   132) =    11.98
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  166065044.9                Centered R2   =   0.2023
+Total (uncentered) SS   =    547227210                Uncentered R2 =   0.7579
+Residual SS             =  132476888.9                Root MSE      =      414
+
+------------------------------------------------------------------------------
+             |               Robust
+      ttlDur |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+st_stbafl1yr |   5.696371   2.197515     2.59   0.010     1.389321    10.00342
+    st_lsize |   59.36272   20.73798     2.86   0.004     18.71702    100.0084
+    st_lmsgs |  -21.59263   20.97463    -1.03   0.303    -62.70215     19.5169
+   st_lcmsgs |   -42.5163   21.36336    -1.99   0.047    -84.38771   -.6448898
+ st_lwgidnow |   110.2746    36.5413     3.02   0.003     38.65497    181.8942
+   st_govDum |    16.6035    70.4099     0.24   0.814    -121.3974    154.6044
+     st_aut2 |   25.09762    39.5325     0.63   0.526    -52.38465    102.5799
+     st_aut3 |  -60.63421   42.14458    -1.44   0.150    -143.2361    21.96765
+_Itecharea_3 |   -111.783   63.41655    -1.76   0.078    -236.0772    12.51112
+_Itecharea_4 |  -101.4448   83.01088    -1.22   0.222    -264.1431    61.25352
+_Itecharea_5 |   193.4101   93.13291     2.08   0.038      10.8729    375.9472
+_Itecharea_6 |   44.23029   71.81582     0.62   0.538    -96.52613    184.9867
+_Itecharea_8 |   51.45055   76.39062     0.67   0.501    -98.27233    201.1734
+_IpubCo~1994 |   134.3299   118.3923     1.13   0.257    -97.71469    366.3745
+_IpubCo~1995 |   172.2645   114.1414     1.51   0.131    -51.44849    395.9775
+_IpubCo~1996 |   283.7221   127.4773     2.23   0.026     33.87121    533.5729
+_IpubCo~1997 |   60.62837   110.0126     0.55   0.582    -154.9923     276.249
+_IpubCo~1998 |  -32.09986   111.3031    -0.29   0.773    -250.2499    186.0502
+_IpubCo~1999 |   231.7746   120.3623     1.93   0.054    -4.131161    467.6804
+_IpubCo~2000 |   275.9261   118.6675     2.33   0.020     43.34207    508.5101
+_IpubCo~2001 |   385.6954   119.8339     3.22   0.001     150.8253    620.5656
+_IpubCo~2002 |   340.7847   113.6149     3.00   0.003     118.1036    563.4657
+       _cons |  -336.1584   255.7085    -1.31   0.189    -837.3379    165.0211
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):             26.036
+                                                   Chi-sq(1) P-val =    0.0000
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):              532.257
+                         (Kleibergen-Paap rk Wald F statistic):        203.485
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+-endog- option:
+Endogeneity test of endogenous regressors:                               0.948
+                                                   Chi-sq(1) P-val =    0.3302
+Regressors tested:    st_stbafl1yr
+------------------------------------------------------------------------------
+Instrumented:         st_stbafl1yr
+Included instruments: st_lsize st_lmsgs st_lcmsgs st_lwgidnow st_govDum st_aut2
+                      st_aut3 _Itecharea_3 _Itecharea_4 _Itecharea_5
+                      _Itecharea_6 _Itecharea_8 _IpubCohort_1994
+                      _IpubCohort_1995 _IpubCohort_1996 _IpubCohort_1997
+                      _IpubCohort_1998 _IpubCohort_1999 _IpubCohort_2000
+                      _IpubCohort_2001 _IpubCohort_2002
+Excluded instruments: stbLagAfl
+Dropped collinear:    _IpubCohort_2003
+------------------------------------------------------------------------------
+
+. est store col1
+
+. 
+. ** Col 2: IV Diff in Diffs
+. xi: ivreg2 ttlDur (st_stbafl1yr stbafl1yr = stbLagAfl st_stbLagAfl) `st_controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc) & match_samp2 & cSample), endog(st_stbafl1yr stbafl1yr) ro
+> bust cluster(wg) first
+i.techarea        _Itecharea_1-8      (naturally coded; _Itecharea_1 omitted)
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+Warning - collinearities detected
+Vars dropped:       _IpubCohort_2003
+
+First-stage regressions
+-----------------------
+
+First-stage regression of st_stbafl1yr:
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =          152                Number of obs =      956
+                                                      F( 31,   151) =  1088.58
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  1256881.262                Centered R2   =   0.9521
+Total (uncentered) SS   =  3763975.543                Uncentered R2 =   0.9840
+Residual SS             =  60217.03347                Root MSE      =    8.073
+
+------------------------------------------------------------------------------
+             |               Robust
+st_stbafl1yr |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    st_lsize |   .4011675   .6588992     0.61   0.544    -.9006848     1.70302
+    st_lmsgs |   2.096674   .6315066     3.32   0.001     .8489435    3.344403
+   st_lcmsgs |  -2.294883   .8025308    -2.86   0.005    -3.880522   -.7092434
+ st_lwgidnow |    1.75321   1.155663     1.52   0.131    -.5301479    4.036568
+   st_govDum |  -2.092109   1.986359    -1.05   0.294    -6.016754    1.832536
+     st_aut2 |   1.299418   1.220472     1.06   0.289    -1.111989    3.710826
+     st_aut3 |   2.731865   1.218882     2.24   0.026     .3236003     5.14013
+       lsize |  -.0439602   .3610936    -0.12   0.903    -.7574085     .669488
+       lmsgs |   .4257422   .3633946     1.17   0.243    -.2922524    1.143737
+      lcmsgs |  -.2143205    .365448    -0.59   0.558    -.9363722    .5077312
+    lwgidnow |  -1.918369   .6798055    -2.82   0.005    -3.261528   -.5752097
+      govDum |   1.230249   .8125753     1.51   0.132    -.3752365    2.835734
+        aut2 |  -.0563811   .5185038    -0.11   0.914     -1.08084    .9680782
+        aut3 |  -.9185706   .5718069    -1.61   0.110    -2.048346    .2112048
+_Itecharea_3 |    3.10469   1.695768     1.83   0.069     -.245808    6.455187
+_Itecharea_4 |   5.460104   1.584906     3.45   0.001     2.328649    8.591559
+_Itecharea_5 |   5.238797   1.535776     3.41   0.001     2.204412    8.273182
+_Itecharea_6 |   .3748986     1.4407     0.26   0.795    -2.471635    3.221433
+_Itecharea_8 |   1.459065   1.594279     0.92   0.362     -1.69091     4.60904
+_IpubCo~1994 |   -10.7393   3.194755    -3.36   0.001    -17.05149   -4.427102
+_IpubCo~1995 |  -5.660577   2.585832    -2.19   0.030    -10.76966   -.5514924
+_IpubCo~1996 |  -3.712376   2.488054    -1.49   0.138    -8.628271    1.203519
+_IpubCo~1997 |   1.501718   2.210394     0.68   0.498    -2.865576    5.869011
+_IpubCo~1998 |  -.2940463   2.602197    -0.11   0.910    -5.435464    4.847371
+_IpubCo~1999 |   .5535602   2.163978     0.26   0.798    -3.722025    4.829145
+_IpubCo~2000 |   1.155527   2.655243     0.44   0.664    -4.090699    6.401753
+_IpubCo~2001 |    3.76376   2.436226     1.54   0.124    -1.049733    8.577253
+_IpubCo~2002 |   2.726576   2.487425     1.10   0.275    -2.188076    7.641228
+       strfc |   16.23885   8.718597     1.86   0.064    -.9873407    33.46505
+   stbLagAfl |  -4.289591   2.656036    -1.62   0.108    -9.537384    .9582016
+st_stbLagAfl |   74.55718   4.358561    17.11   0.000     65.94554    83.16882
+       _cons |   3.309838   3.555854     0.93   0.353    -3.715814    10.33549
+------------------------------------------------------------------------------
+Included instruments: st_lsize st_lmsgs st_lcmsgs st_lwgidnow st_govDum st_aut2
+                      st_aut3 lsize lmsgs lcmsgs lwgidnow govDum aut2 aut3
+                      _Itecharea_3 _Itecharea_4 _Itecharea_5 _Itecharea_6
+                      _Itecharea_8 _IpubCohort_1994 _IpubCohort_1995
+                      _IpubCohort_1996 _IpubCohort_1997 _IpubCohort_1998
+                      _IpubCohort_1999 _IpubCohort_2000 _IpubCohort_2001
+                      _IpubCohort_2002 strfc stbLagAfl st_stbLagAfl
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  2,   151) =   168.78
+  Prob > F      =   0.0000
+Angrist-Pischke multivariate F test of excluded instruments:
+  F(  1,   151) =   286.49
+  Prob > F      =   0.0000
+
+First-stage regression of stbafl1yr:
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =          152                Number of obs =      956
+                                                      F( 31,   151) =    36.68
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  244523.7841                Centered R2   =   0.6261
+Total (uncentered) SS   =  5382363.213                Uncentered R2 =   0.9830
+Residual SS             =  91416.99179                Root MSE      =    9.947
+
+------------------------------------------------------------------------------
+             |               Robust
+   stbafl1yr |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    st_lsize |  -.2199304   1.015313    -0.22   0.829    -2.225985    1.786124
+    st_lmsgs |  -.1356575   .8207156    -0.17   0.869    -1.757227    1.485911
+   st_lcmsgs |   .2203092   1.022713     0.22   0.830    -1.800366    2.240984
+ st_lwgidnow |    .748435   1.772485     0.42   0.673     -2.75364     4.25051
+   st_govDum |   4.712401   3.758446     1.25   0.212    -2.713534    12.13834
+     st_aut2 |  -.6785494   2.172751    -0.31   0.755    -4.971469     3.61437
+     st_aut3 |   2.784076   2.018762     1.38   0.170    -1.204592    6.772744
+       lsize |   .0023982   .9757495     0.00   0.998    -1.925487    1.930283
+       lmsgs |   2.842544   .6683431     4.25   0.000     1.522033    4.163056
+      lcmsgs |  -2.914065   .8517703    -3.42   0.001    -4.596992   -1.231138
+    lwgidnow |  -2.160711   1.630766    -1.32   0.187    -5.382777    1.061355
+      govDum |  -3.776627   3.112775    -1.21   0.227    -9.926844     2.37359
+        aut2 |   1.521854   2.008105     0.76   0.450    -2.445758    5.489466
+        aut3 |  -1.076441   1.832435    -0.59   0.558    -4.696964    2.544083
+_Itecharea_3 |   3.350945     2.5173     1.33   0.185    -1.622734    8.324624
+_Itecharea_4 |   6.594543   2.499995     2.64   0.009     1.655055    11.53403
+_Itecharea_5 |   7.813332   2.534553     3.08   0.002     2.805564     12.8211
+_Itecharea_6 |   .1765443   2.295197     0.08   0.939    -4.358304    4.711392
+_Itecharea_8 |   1.125777   2.326414     0.48   0.629    -3.470749    5.722303
+_IpubCo~1994 |  -11.30413   5.419989    -2.09   0.039    -22.01294   -.5953208
+_IpubCo~1995 |   -2.72681   3.609426    -0.76   0.451     -9.85831    4.404691
+_IpubCo~1996 |   1.489705    3.42863     0.43   0.665    -5.284578    8.263988
+_IpubCo~1997 |   7.915526   3.286598     2.41   0.017      1.42187    14.40918
+_IpubCo~1998 |   6.614117   3.688744     1.79   0.075    -.6740994    13.90233
+_IpubCo~1999 |    8.07201    3.40637     2.37   0.019     1.341707    14.80231
+_IpubCo~2000 |   7.955896   3.679226     2.16   0.032     .6864857    15.22531
+_IpubCo~2001 |    9.67322   3.518277     2.75   0.007     2.721813    16.62463
+_IpubCo~2002 |    10.7925   3.611459     2.99   0.003     3.656982    17.92802
+       strfc |  -2.469547   11.41478    -0.22   0.829    -25.02286    20.08377
+   stbLagAfl |   64.73832   5.693687    11.37   0.000     53.48874     75.9879
+st_stbLagAfl |   3.123347   5.847384     0.53   0.594    -8.429907     14.6766
+       _cons |   25.80003   9.720358     2.65   0.009     6.594556     45.0055
+------------------------------------------------------------------------------
+Included instruments: st_lsize st_lmsgs st_lcmsgs st_lwgidnow st_govDum st_aut2
+                      st_aut3 lsize lmsgs lcmsgs lwgidnow govDum aut2 aut3
+                      _Itecharea_3 _Itecharea_4 _Itecharea_5 _Itecharea_6
+                      _Itecharea_8 _IpubCohort_1994 _IpubCohort_1995
+                      _IpubCohort_1996 _IpubCohort_1997 _IpubCohort_1998
+                      _IpubCohort_1999 _IpubCohort_2000 _IpubCohort_2001
+                      _IpubCohort_2002 strfc stbLagAfl st_stbLagAfl
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  2,   151) =   149.95
+  Prob > F      =   0.0000
+Angrist-Pischke multivariate F test of excluded instruments:
+  F(  1,   151) =   141.80
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  2,   151)  P-val | AP Chi-sq(  1) P-val | AP F(  1,   151)
+st_stbafl1yr |     168.78    0.0000 |      298.06   0.0000 |      286.49
+stbafl1yr    |     149.95    0.0000 |      147.53   0.0000 |      141.80
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(1)=23.73    P-val=0.0000
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                     293.59
+Kleibergen-Paap Wald rk F statistic                                89.15
+
+Stock-Yogo weak ID test critical values for K1=2 and L1=2:
+                                   10% maximal IV size              7.03
+                                   15% maximal IV size              4.58
+                                   20% maximal IV size              3.95
+                                   25% maximal IV size              3.63
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(2,151)=       5.49     P-val=0.0050
+Anderson-Rubin Wald test           Chi-sq(2)=     11.41     P-val=0.0033
+Stock-Wright LM S statistic        Chi-sq(2)=     14.48     P-val=0.0007
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =        152
+Number of observations               N  =        956
+Number of regressors                 K  =         32
+Number of endogenous regressors      K1 =          2
+Number of instruments                L  =         32
+Number of excluded instruments       L1 =          2
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =          152                Number of obs =      956
+                                                      F( 31,   151) =     9.78
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  201606257.9                Centered R2   =   0.1978
+Total (uncentered) SS   =    620388801                Uncentered R2 =   0.7393
+Residual SS             =  161728241.4                Root MSE      =    411.3
+
+------------------------------------------------------------------------------
+             |               Robust
+      ttlDur |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+st_stbafl1yr |   9.100786   2.863822     3.18   0.001     3.487797    14.71378
+   stbafl1yr |   -3.34091   2.377384    -1.41   0.160    -8.000497    1.318677
+    st_lsize |   58.48602   30.29727     1.93   0.054    -.8955296    117.8676
+    st_lmsgs |   12.65268   32.78641     0.39   0.700    -51.60751    76.91286
+   st_lcmsgs |  -23.56346   34.53739    -0.68   0.495     -91.2555    44.12857
+ st_lwgidnow |     28.631   49.29632     0.58   0.561    -67.98801      125.25
+   st_govDum |   41.97384   108.1713     0.39   0.698     -170.038    253.9856
+     st_aut2 |  -79.68636   73.99992    -1.08   0.282    -224.7235    65.35082
+     st_aut3 |  -89.84564   80.04608    -1.12   0.262    -246.7331    67.04179
+       lsize |   23.30839   26.86122     0.87   0.386    -29.33865    75.95542
+       lmsgs |  -25.78036   30.48106    -0.85   0.398    -85.52215    33.96142
+      lcmsgs |  -18.39276   29.96955    -0.61   0.539    -77.13199    40.34647
+    lwgidnow |   75.74058   37.66134     2.01   0.044     1.925701    149.5555
+      govDum |  -25.54413   89.86604    -0.28   0.776    -201.6783    150.5901
+        aut2 |   110.3126   61.05399     1.81   0.071    -9.351046    229.9762
+        aut3 |   18.44189   60.27909     0.31   0.760    -99.70296    136.5867
+_Itecharea_3 |  -72.50714   49.29654    -1.47   0.141    -169.1266     24.1123
+_Itecharea_4 |  -128.7134     64.062    -2.01   0.045    -254.2726   -3.154164
+_Itecharea_5 |   73.14837   71.57395     1.02   0.307    -67.13399    213.4307
+_Itecharea_6 |   53.69194   64.65273     0.83   0.406    -73.02509     180.409
+_Itecharea_8 |   25.56033   62.51436     0.41   0.683    -96.96556    148.0862
+_IpubCo~1994 |   187.5266   105.0454     1.79   0.074    -18.35852    393.4118
+_IpubCo~1995 |   190.0473    94.8729     2.00   0.045     4.099849    375.9948
+_IpubCo~1996 |   307.9907   105.0387     2.93   0.003     102.1187    513.8627
+_IpubCo~1997 |   134.5419   87.29985     1.54   0.123    -36.56264    305.6465
+_IpubCo~1998 |   91.55608   91.98002     1.00   0.320    -88.72145    271.8336
+_IpubCo~1999 |    287.044   103.0164     2.79   0.005     85.13568    488.9524
+_IpubCo~2000 |   328.3478   102.3488     3.21   0.001     127.7478    528.9478
+_IpubCo~2001 |   444.0975   101.0095     4.40   0.000     246.1225    642.0725
+_IpubCo~2002 |    382.059   98.03341     3.90   0.000      189.917    574.2009
+       strfc |  -1036.948   373.1292    -2.78   0.005    -1768.268   -305.6284
+       _cons |   391.1924   299.7032     1.31   0.192    -196.2151    978.5999
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):             23.725
+                                                   Chi-sq(1) P-val =    0.0000
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):              293.588
+                         (Kleibergen-Paap rk Wald F statistic):         89.152
+Stock-Yogo weak ID test critical values: 10% maximal IV size              7.03
+                                         15% maximal IV size              4.58
+                                         20% maximal IV size              3.95
+                                         25% maximal IV size              3.63
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+-endog- option:
+Endogeneity test of endogenous regressors:                               1.713
+                                                   Chi-sq(2) P-val =    0.4246
+Regressors tested:    st_stbafl1yr stbafl1yr
+------------------------------------------------------------------------------
+Instrumented:         st_stbafl1yr stbafl1yr
+Included instruments: st_lsize st_lmsgs st_lcmsgs st_lwgidnow st_govDum st_aut2
+                      st_aut3 lsize lmsgs lcmsgs lwgidnow govDum aut2 aut3
+                      _Itecharea_3 _Itecharea_4 _Itecharea_5 _Itecharea_6
+                      _Itecharea_8 _IpubCohort_1994 _IpubCohort_1995
+                      _IpubCohort_1996 _IpubCohort_1997 _IpubCohort_1998
+                      _IpubCohort_1999 _IpubCohort_2000 _IpubCohort_2001
+                      _IpubCohort_2002 strfc
+Excluded instruments: stbLagAfl st_stbLagAfl
+Dropped collinear:    _IpubCohort_2003
+------------------------------------------------------------------------------
+
+. est store col2
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        289       30.23       30.23
+          1 |        667       69.77      100.00
+------------+-----------------------------------
+      Total |        956      100.00
+
+. 
+. ** Col 3: XTIV for stbafl with areaGrowth
+. xi: xtivreg2 ttlDur (st_stbafl1yr = areaAflGrowth stbLagAfl) `st_controls' i.pubCohort if (strfc & cSample), fe i(wg) endog(st_stbafl1yr) cluster(wg) first
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+Warning - singleton groups detected.  36 observation(s) not used.
+Warning - collinearities detected
+Vars dropped:  _IpubCohort_2003
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        97                    Obs per group: min =         2
+                                                               avg =       7.6
+                                                               max =        38
+
+First-stage regressions
+-----------------------
+
+First-stage regression of st_stbafl1yr:
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        97                    Obs per group: min =         2
+                                                               avg =       7.6
+                                                               max =        38
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =           97                Number of obs =      737
+                                                      F( 18,    96) =     5.65
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  32729.48519                Centered R2   =   0.3499
+Total (uncentered) SS   =  32729.48519                Uncentered R2 =   0.3499
+Residual SS             =   21278.1393                Root MSE      =    5.849
+
+------------------------------------------------------------------------------
+             |               Robust
+st_stbafl1yr |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    st_lsize |    .185174   .3241779     0.57   0.569     -.458314     .828662
+    st_lmsgs |   2.958295   .8173699     3.62   0.000     1.335829    4.580762
+   st_lcmsgs |  -3.164818   1.012202    -3.13   0.002    -5.174023   -1.155613
+ st_lwgidnow |   .8189517   1.210295     0.68   0.500    -1.583466    3.221369
+   st_govDum |  -1.320402   .9046595    -1.46   0.148    -3.116136    .4753332
+     st_aut2 |   .2643812   .5851155     0.45   0.652    -.8970639    1.425826
+     st_aut3 |   .6106005   .6472888     0.94   0.348    -.6742577    1.895459
+_IpubCo~1994 |  -.5686032   4.940628    -0.12   0.909    -10.37567    9.238465
+_IpubCo~1995 |   1.675714   4.224259     0.40   0.692    -6.709374     10.0608
+_IpubCo~1996 |   1.453382   4.525542     0.32   0.749    -7.529748    10.43651
+_IpubCo~1997 |   6.900742    4.41811     1.56   0.122    -1.869137    15.67062
+_IpubCo~1998 |   8.908041   4.920755     1.81   0.073      -.85958    18.67566
+_IpubCo~1999 |   9.272238   4.746864     1.95   0.054    -.1502133    18.69469
+_IpubCo~2000 |   10.40218   4.965212     2.10   0.039      .546314    20.25805
+_IpubCo~2001 |   12.15014   5.275386     2.30   0.023     1.678577    22.62169
+_IpubCo~2002 |   12.55114    5.64405     2.22   0.029     1.347784    23.75449
+areaAflGro~h |   .0034474   .0014781     2.33   0.022     .0005135    .0063813
+   stbLagAfl |   3.082376   6.399328     0.48   0.631     -9.62019    15.78494
+------------------------------------------------------------------------------
+Included instruments: st_lsize st_lmsgs st_lcmsgs st_lwgidnow st_govDum st_aut2
+                      st_aut3 _IpubCohort_1994 _IpubCohort_1995 _IpubCohort_1996
+                      _IpubCohort_1997 _IpubCohort_1998 _IpubCohort_1999
+                      _IpubCohort_2000 _IpubCohort_2001 _IpubCohort_2002
+                      areaAflGrowth stbLagAfl
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  2,    96) =     2.75
+  Prob > F      =   0.0692
+Angrist-Pischke multivariate F test of excluded instruments:
+  F(  2,    96) =     2.75
+  Prob > F      =   0.0692
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  2,    96)  P-val | AP Chi-sq(  2) P-val | AP F(  2,    96)
+st_stbafl1yr |       2.75    0.0692 |        5.68   0.0584 |        2.75
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             19.93
+                                   15% maximal IV size             11.59
+                                   20% maximal IV size              8.75
+                                   25% maximal IV size              7.25
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(2)=2.63     P-val=0.2683
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                      14.81
+Kleibergen-Paap Wald rk F statistic                                 2.75
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=2:
+                                   10% maximal IV size             19.93
+                                   15% maximal IV size             11.59
+                                   20% maximal IV size              8.75
+                                   25% maximal IV size              7.25
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(2,96)=        1.50     P-val=0.2274
+Anderson-Rubin Wald test           Chi-sq(2)=      3.11     P-val=0.2111
+Stock-Wright LM S statistic        Chi-sq(2)=      3.64     P-val=0.1621
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =         97
+Number of observations               N  =        737
+Number of regressors                 K  =         17
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =         18
+Number of excluded instruments       L1 =          2
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =           97                Number of obs =      737
+                                                      F( 17,    96) =     6.34
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  96650661.53                Centered R2   =   0.0410
+Total (uncentered) SS   =  96650661.53                Uncentered R2 =   0.0410
+Residual SS             =  92686853.58                Root MSE      =    380.6
+
+------------------------------------------------------------------------------
+             |               Robust
+      ttlDur |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+st_stbafl1yr |   15.88946   11.24889     1.41   0.158    -6.157959    37.93687
+    st_lsize |    53.9677   20.06796     2.69   0.007     14.63521    93.30019
+    st_lmsgs |  -73.00734   50.87157    -1.44   0.151    -172.7138    26.69911
+   st_lcmsgs |    35.0992   53.88238     0.65   0.515    -70.50833    140.7067
+ st_lwgidnow |   64.84216   44.38685     1.46   0.144    -22.15448    151.8388
+   st_govDum |   72.43979    88.1674     0.82   0.411    -100.3651    245.2447
+     st_aut2 |   9.520988   39.79947     0.24   0.811    -68.48454    87.52651
+     st_aut3 |  -94.94438   39.24251    -2.42   0.016    -171.8583   -18.03047
+_IpubCo~1994 |   231.8199   161.9608     1.43   0.152    -85.61745    549.2573
+_IpubCo~1995 |   50.24124   164.9046     0.30   0.761    -272.9659    373.4484
+_IpubCo~1996 |   157.1051   196.6684     0.80   0.424    -228.3579    542.5681
+_IpubCo~1997 |   -95.1819   192.9898    -0.49   0.622     -473.435    283.0712
+_IpubCo~1998 |  -242.8181   218.8303    -1.11   0.267    -671.7176    186.0815
+_IpubCo~1999 |  -54.82013   229.3131    -0.24   0.811    -504.2656    394.6254
+_IpubCo~2000 |  -67.18017   264.7476    -0.25   0.800    -586.0759    451.7155
+_IpubCo~2001 |   -9.36418   286.7613    -0.03   0.974     -571.406    552.6776
+_IpubCo~2002 |  -109.9553   295.5526    -0.37   0.710    -689.2277    469.3172
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              2.631
+                                                   Chi-sq(2) P-val =    0.2683
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):               14.811
+                         (Kleibergen-Paap rk Wald F statistic):          2.746
+Stock-Yogo weak ID test critical values: 10% maximal IV size             19.93
+                                         15% maximal IV size             11.59
+                                         20% maximal IV size              8.75
+                                         25% maximal IV size              7.25
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         1.010
+                                                   Chi-sq(1) P-val =    0.3149
+-endog- option:
+Endogeneity test of endogenous regressors:                               1.035
+                                                   Chi-sq(1) P-val =    0.3089
+Regressors tested:    st_stbafl1yr
+------------------------------------------------------------------------------
+Instrumented:         st_stbafl1yr
+Included instruments: st_lsize st_lmsgs st_lcmsgs st_lwgidnow st_govDum st_aut2
+                      st_aut3 _IpubCohort_1994 _IpubCohort_1995 _IpubCohort_1996
+                      _IpubCohort_1997 _IpubCohort_1998 _IpubCohort_1999
+                      _IpubCohort_2000 _IpubCohort_2001 _IpubCohort_2002
+Excluded instruments: areaAflGrowth stbLagAfl
+Dropped collinear:    _IpubCohort_2003
+------------------------------------------------------------------------------
+
+. est store col3
+
+. 
+. *******************************
+. /*   Set up WG-Year Data     */
+. *******************************
+. keep if (strfc | nsrfc) & ttlDur <= 2007
+(1054 observations deleted)
+
+. 
+. g cellSize = 1
+
+. collapse (mean) ttlDur lnDur age stbafl1yr st_stbafl1yr lwgipr st_lwgipr lwgidnow lwgidttl lwgorgs lmsgs lcmsgs rfcDum (max) techarea (sum) cellSize, by(wg strfc pubCohort)
+
+. egen wgType = group(wg strfc)
+
+. tab cellSize
+
+      (sum) |
+   cellSize |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        428       54.66       54.66
+          2 |        174       22.22       76.88
+          3 |         84       10.73       87.61
+          4 |         40        5.11       92.72
+          5 |         29        3.70       96.42
+          6 |          8        1.02       97.45
+          7 |         11        1.40       98.85
+          8 |          5        0.64       99.49
+          9 |          1        0.13       99.62
+         11 |          1        0.13       99.74
+         13 |          1        0.13       99.87
+         16 |          1        0.13      100.00
+------------+-----------------------------------
+      Total |        783      100.00
+
+. 
+. bysort wg strfc : egen wgTypCnt = sum(1)
+
+. by wg strfc : gen wgFlag = (_n== 1)
+
+. tab wgTypCnt strfc if wgFlag 
+
+           |   1/0: Published as
+           |   Proposed Standard
+  wgTypCnt |         0          1 |     Total
+-----------+----------------------+----------
+         1 |        88         77 |       165 
+         2 |        40         31 |        71 
+         3 |        19         20 |        39 
+         4 |        10         17 |        27 
+         5 |         6         13 |        19 
+         6 |         3          5 |         8 
+         7 |         0          3 |         3 
+         8 |         1          5 |         6 
+         9 |         1          1 |         2 
+        10 |         0          1 |         1 
+        11 |         0          1 |         1 
+-----------+----------------------+----------
+     Total |       168        174 |       342 
+
+
+. 
+. ***************************
+. /*        XTREG          */
+. ***************************
+. xi: xtreg ttlDur strfc st_stbafl1yr stbafl1yr lwgidnow lwgidttl lwgorgs lmsgs lcmsgs i.pubCohort, fe i(wg) robust
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       666
+Group variable: wg                              Number of groups   =       191
+
+R-sq:  within  = 0.1031                         Obs per group: min =         1
+       between = 0.0163                                        avg =       3.5
+       overall = 0.0642                                        max =        18
+
+                                                F(18,190)          =      3.88
+corr(u_i, Xb)  = -0.0614                        Prob > F           =    0.0000
+
+                                   (Std. Err. adjusted for 191 clusters in wg)
+------------------------------------------------------------------------------
+             |               Robust
+      ttlDur |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       strfc |  -213.1379   117.8688    -1.81   0.072    -445.6375    19.36163
+st_stbafl1yr |   4.798557   1.664417     2.88   0.004     1.515448    8.081666
+   stbafl1yr |  -1.764298   2.824481    -0.62   0.533    -7.335667    3.807071
+    lwgidnow |    4.17091   71.48482     0.06   0.954    -136.8349    145.1767
+    lwgidttl |   24.04583    75.1812     0.32   0.749    -124.2512    172.3429
+     lwgorgs |   25.42915   27.84906     0.91   0.362     -29.5039     80.3622
+       lmsgs |  -18.87941   32.67408    -0.58   0.564    -83.32996    45.57113
+      lcmsgs |  -3.917751   42.10958    -0.09   0.926    -86.98008    79.14458
+_IpubCo~1994 |   179.8646    145.838     1.23   0.219    -107.8049    467.5341
+_IpubCo~1995 |   107.2238   154.2256     0.70   0.488    -196.9905    411.4382
+_IpubCo~1996 |   64.64205   148.4267     0.44   0.664    -228.1338    357.4179
+_IpubCo~1997 |   10.75971   154.8895     0.07   0.945    -294.7643    316.2837
+_IpubCo~1998 |  -75.89044   161.4729    -0.47   0.639    -394.4003    242.6194
+_IpubCo~1999 |   37.77905   166.4954     0.23   0.821    -290.6378    366.1959
+_IpubCo~2000 |   90.22397    169.914     0.53   0.596    -244.9362    425.3841
+_IpubCo~2001 |   101.0175   187.5223     0.54   0.591    -268.8755    470.9105
+_IpubCo~2002 |   51.30406   197.2762     0.26   0.795    -337.8288    440.4369
+_IpubCo~2003 |  -97.99264   207.6004    -0.47   0.637    -507.4903     311.505
+       _cons |   671.8737   205.7205     3.27   0.001     266.0843    1077.663
+-------------+----------------------------------------------------------------
+     sigma_u |  330.81686
+     sigma_e |  327.47437
+         rho |  .50507738   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. est store col4
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        281       42.19       42.19
+          1 |        385       57.81      100.00
+------------+-----------------------------------
+      Total |        666      100.00
+
+. 
+. xtset wgType pubCohort
+       panel variable:  wgType (unbalanced)
+        time variable:  pubCohort, 1993 to 2003, but with gaps
+                delta:  1 unit
+
+. xi: xtreg ttlDur st_stbafl1yr stbafl1yr lwgidnow lwgidttl lwgorgs lmsgs lcmsgs i.pubCohort, fe i(wgType) robust
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       666
+Group variable: wgType                          Number of groups   =       291
+
+R-sq:  within  = 0.0733                         Obs per group: min =         1
+       between = 0.0493                                        avg =       2.3
+       overall = 0.0596                                        max =        11
+
+                                                F(17,290)          =      2.25
+corr(u_i, Xb)  = -0.2413                        Prob > F           =    0.0036
+
+                               (Std. Err. adjusted for 291 clusters in wgType)
+------------------------------------------------------------------------------
+             |               Robust
+      ttlDur |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+st_stbafl1yr |   3.721924   4.289526     0.87   0.386    -4.720626    12.16447
+   stbafl1yr |  -.1440332   4.048723    -0.04   0.972     -8.11264    7.824574
+    lwgidnow |   -17.8763   81.30772    -0.22   0.826    -177.9043    142.1518
+    lwgidttl |   48.58068   74.04287     0.66   0.512    -97.14886    194.3102
+     lwgorgs |   7.782891   31.82083     0.24   0.807    -54.84617    70.41195
+       lmsgs |  -19.95466   31.32517    -0.64   0.525    -81.60818    41.69885
+      lcmsgs |  -2.947079   39.82902    -0.07   0.941    -81.33767    75.44351
+_IpubCo~1994 |    209.536   121.8522     1.72   0.087    -30.29079    449.3628
+_IpubCo~1995 |   187.9949   132.9739     1.41   0.159    -73.72142    449.7113
+_IpubCo~1996 |   192.9039   135.3342     1.43   0.155    -73.45796    459.2658
+_IpubCo~1997 |   94.37005   145.2278     0.65   0.516     -191.464    380.2041
+_IpubCo~1998 |   5.884975     155.73     0.04   0.970    -300.6194    312.3894
+_IpubCo~1999 |   125.9602    165.509     0.76   0.447     -199.791    451.7115
+_IpubCo~2000 |   143.6842   169.7518     0.85   0.398    -190.4175     477.786
+_IpubCo~2001 |   175.8358   186.9388     0.94   0.348    -192.0929    543.7646
+_IpubCo~2002 |   121.5831   194.3823     0.63   0.532    -260.9959    504.1621
+_IpubCo~2003 |  -50.73828   208.3413    -0.24   0.808     -460.791    359.3144
+       _cons |    420.306   162.4396     2.59   0.010     100.5959    740.0161
+-------------+----------------------------------------------------------------
+     sigma_u |  369.76503
+     sigma_e |  315.00438
+         rho |  .57946131   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. est store col5
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        281       42.19       42.19
+          1 |        385       57.81      100.00
+------------+-----------------------------------
+      Total |        666      100.00
+
+. 
+. ***************************
+. /*   Arellano Bond       */
+. ***************************
+. 
+. xtset wgType pubCohort
+       panel variable:  wgType (unbalanced)
+        time variable:  pubCohort, 1993 to 2003, but with gaps
+                delta:  1 unit
+
+. xi: xtabond ttlDur i.pubCohort if strfc, lags(1) endog(st_stbafl1yr)
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+note: _IpubCohort_1994 dropped because of collinearity
+
+Arellano-Bond dynamic panel-data estimation  Number of obs         =       118
+Group variable: wgType                       Number of groups      =        49
+Time variable: pubCohort
+                                             Obs per group:    min =         1
+                                                               avg =  2.408163
+                                                               max =         9
+
+Number of instruments =     84               Wald chi2(11)         =     29.21
+                                             Prob > chi2           =    0.0021
+One-step results
+------------------------------------------------------------------------------
+      ttlDur |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      ttlDur |
+         L1. |  -.0831567   .1116895    -0.74   0.457    -.3020641    .1357506
+             |
+st_stbafl1yr |   10.53262   5.745964     1.83   0.067    -.7292616     21.7945
+_IpubCo~1995 |    112.914   250.3563     0.45   0.652    -377.7753    603.6033
+_IpubCo~1996 |  -77.65908   238.8547    -0.33   0.745    -545.8057    390.4875
+_IpubCo~1997 |  -87.99776   241.4557    -0.36   0.716    -561.2422    385.2466
+_IpubCo~1998 |  -245.3503   244.9748    -1.00   0.317    -725.4921    234.7915
+_IpubCo~1999 |  -135.8399   256.4856    -0.53   0.596    -638.5423    366.8625
+_IpubCo~2000 |  -67.04458   259.8222    -0.26   0.796    -576.2868    442.1976
+_IpubCo~2001 |   132.8459   259.7409     0.51   0.609    -376.2369    641.9288
+_IpubCo~2002 |  -32.45657   261.0438    -0.12   0.901     -544.093    479.1798
+_IpubCo~2003 |  -186.1744   259.3514    -0.72   0.473    -694.4937     322.145
+       _cons |   43.36877     445.33     0.10   0.922    -829.4621    916.1996
+------------------------------------------------------------------------------
+Instruments for differenced equation
+        GMM-type: L(2/.).ttlDur L(2/.).st_stbafl1yr
+        Standard: D._IpubCohort_1994 D._IpubCohort_1995 D._IpubCohort_1996 D._IpubCohort_1997 D._IpubCohort_1998 D._IpubCohort_1999 D._IpubCohort_2000 D._IpubCohort_2001 D._IpubCohort_2002
+                  D._IpubCohort_2003
+Instruments for level equation
+        Standard: _cons
+
+. est store col6
+
+. 
+. xi: xtabond ttlDur i.pubCohort, lags(1) endog(stbafl1yr st_stbafl1yr)
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+note: _IpubCohort_1994 dropped because of collinearity
+
+Arellano-Bond dynamic panel-data estimation  Number of obs         =       169
+Group variable: wgType                       Number of groups      =        76
+Time variable: pubCohort
+                                             Obs per group:    min =         1
+                                                               avg =  2.223684
+                                                               max =         9
+
+Number of instruments =    113               Wald chi2(12)         =     25.24
+                                             Prob > chi2           =    0.0137
+One-step results
+------------------------------------------------------------------------------
+      ttlDur |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      ttlDur |
+         L1. |   .0117083   .0847386     0.14   0.890    -.1543764    .1777929
+             |
+   stbafl1yr |   .5425524    7.33496     0.07   0.941    -13.83371    14.91881
+st_stbafl1yr |   11.52252   8.805525     1.31   0.191     -5.73599    28.78103
+_IpubCo~1995 |   107.4045   214.4171     0.50   0.616    -312.8453    527.6543
+_IpubCo~1996 |   21.47242   205.3368     0.10   0.917    -380.9802    423.9251
+_IpubCo~1997 |  -34.72751   209.4516    -0.17   0.868    -445.2451    375.7901
+_IpubCo~1998 |  -106.5013    206.075    -0.52   0.605    -510.4008    297.3981
+_IpubCo~1999 |   84.90356   213.4948     0.40   0.691    -333.5386    503.3458
+_IpubCo~2000 |   51.57798    219.076     0.24   0.814    -377.8031    480.9591
+_IpubCo~2001 |   124.3166   220.5166     0.56   0.573    -307.8881    556.5212
+_IpubCo~2002 |  -32.08884   226.3828    -0.14   0.887     -475.791    411.6134
+_IpubCo~2003 |  -155.3628   224.1639    -0.69   0.488     -594.716    283.9903
+       _cons |   56.81431   364.5941     0.16   0.876    -657.7769    771.4055
+------------------------------------------------------------------------------
+Instruments for differenced equation
+        GMM-type: L(2/.).ttlDur L(2/.).stbafl1yr L(2/.).st_stbafl1yr
+        Standard: D._IpubCohort_1994 D._IpubCohort_1995 D._IpubCohort_1996 D._IpubCohort_1997 D._IpubCohort_1998 D._IpubCohort_1999 D._IpubCohort_2000 D._IpubCohort_2001 D._IpubCohort_2002
+                  D._IpubCohort_2003
+Instruments for level equation
+        Standard: _cons
+
+. est store col7
+
+. 
+. estout  _all, cells(b(fmt(1)) se(par fmt(1) star)) stats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) drop(`st_controls' `controls' _I* _cons) style(tex) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001)
+
+            &        col1   &        col2   &        col3   &        col4   &        col5   &        col6   &        col7   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   \\
+st_stbafl1yr&         5.7   &         9.1   &        15.9   &         4.8   &         3.7   &        10.5   &        11.5   \\
+            &       (2.2)** &       (2.9)** &      (11.2)   &       (1.7)** &       (4.3)   &       (5.7)+  &       (8.8)   \\
+stbafl1yr   &               &        -3.3   &               &        -1.8   &        -0.1   &               &         0.5   \\
+            &               &       (2.4)   &               &       (2.8)   &       (4.0)   &               &       (7.3)   \\
+strfc       &               &     -1036.9   &               &      -213.1   &               &               &               \\
+            &               &     (373.1)** &               &     (117.9)+  &               &               &               \\
+lwgidttl    &               &               &               &        24.0   &        48.6   &               &               \\
+            &               &               &               &      (75.2)   &      (74.0)   &               &               \\
+lwgorgs     &               &               &               &        25.4   &         7.8   &               &               \\
+            &               &               &               &      (27.8)   &      (31.8)   &               &               \\
+L.ttlDur    &               &               &               &               &               &        -0.1   &         0.0   \\
+            &               &               &               &               &               &       (0.1)   &       (0.1)   \\
+N           &         773   &         956   &         737   &         666   &         666   &         118   &         169   \\
+r2          &        0.20   &        0.20   &        0.04   &        0.10   &        0.07   &               &               \\
+df_m        &          22   &          31   &          17   &          17   &          16   &          11   &          12   \\
+N_g         &               &               &          97   &         191   &         291   &          49   &          76   \\
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/ivModels.log
+  log type:  text
+ closed on:   7 Jun 2010, 19:31:09
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

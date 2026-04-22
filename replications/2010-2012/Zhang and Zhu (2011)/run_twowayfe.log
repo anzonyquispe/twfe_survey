@@ -1,0 +1,843 @@
+-----------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/run_twowayfe.log
+  log type:  text
+ opened on:  17 Apr 2026, 00:20:02
+
+. 
+. * Install packages if needed
+. cap which estout
+
+. if _rc ssc install estout, replace
+
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. 
+. /*==============================================================================
+>   STEP 0: DATA PREPARATION (replicate main.do data construction)
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "STEP 0: DATA PREPARATION"
+STEP 0: DATA PREPARATION
+
+. di    "=============================================="
+==============================================
+
+. 
+. use "$datadir/daily_contribution.dta", clear
+
+. 
+. * Create join and last dates
+. egen joindate = min(date), by(id)
+
+. egen lastdate = max(date) if (date < mdy(10, 10, 2006) | date > mdy(11, 17, 2006)) & Total > 0, by(id)
+(7,323,462 missing values generated)
+
+. egen temp = max(lastdate), by(id)
+(215,184 missing values generated)
+
+. replace lastdate = temp if lastdate==.
+(7,108,278 real changes made)
+
+. drop temp
+
+. format lastdate %d
+
+. 
+. * Identify contributors during 1st block
+. gen contributed_during_1st_block = Total > 0 & Total!=. & (date >= mdy(6, 2, 2004) & date <= mdy(6, 17, 2004))
+
+. egen temp = max(contributed_during_1st_block), by(id)
+
+. replace contributed_during_1st_block = temp
+(201,423 real changes made)
+
+. drop temp
+
+. 
+. * Identify nonblocked contributors
+. gen nonblocked = 0
+
+. replace nonblocked = 1 if joindate < mdy(10, 19, 2005) & lastdate >= mdy(11, 1, 2005) & lastdate !=.
+(1,027,806 real changes made)
+
+. replace nonblocked = 1 if joindate < mdy(10, 19, 2005) & contributed_during_1st_block == 1
+(145,091 real changes made)
+
+. drop contributed_during_1st_block
+
+. 
+. * Merge language statistics
+. sort id
+
+. merge id using "$datadir/userlangstat_percentage.dta"
+(you are using old merge syntax; see [D] merge for new syntax)
+variable id does not uniquely identify observations in the master data
+
+. drop if _merge == 2
+(108 observations deleted)
+
+. drop _merge
+
+. 
+. gen overseas = .
+(7,494,072 missing values generated)
+
+. replace overseas = percentage > 0.5 & percentage!=.
+(7,494,072 real changes made)
+
+. drop percentage
+
+. replace nonblocked = 1 if overseas==1 & joindate < mdy(10, 19, 2005)
+(58,584 real changes made)
+
+. 
+. * Generate week variable
+. gen week = .
+(7,494,072 missing values generated)
+
+. quietly do "$datadir/genweek.do"
+
+. 
+. * Keep nonblocked contributors only
+. drop if nonblocked == 0
+(6,262,591 observations deleted)
+
+. 
+. * Create weekly aggregates
+. gen id_week = string(id) + "_" + string(week)
+
+. egen weekly_Addition = total(Addition), by(id_week)
+
+. egen weekly_Deletion = total(Deletion), by(id_week)
+
+. egen min_date = min(date), by(id_week)
+
+. duplicates drop id_week, force
+
+Duplicates in terms of id_week
+
+(1,055,322 observations deleted)
+
+. replace date = min_date
+(0 real changes made)
+
+. drop min_date
+
+. format joindate %d
+
+. 
+. * Create analysis variables
+. gen age = round((date - joindate)/7)
+
+. gen agesqr = age^2
+
+. gen logAddition = log(weekly_Addition + 1)
+
+. gen logDeletion = log(weekly_Deletion + 1)
+
+. gen logTotal = log(weekly_Addition + weekly_Deletion + 1)
+
+. gen after = week > 0
+
+. 
+. * Merge social participation data (for Table 3)
+. sort id
+
+. merge id using "$datadir/userpagestat2005.dta"
+(you are using old merge syntax; see [D] merge for new syntax)
+variable id does not uniquely identify observations in the master data
+
+. drop if _merge==2
+(1,451 observations deleted)
+
+. drop _merge
+
+. sort id
+
+. merge id using "$datadir/usertalkstat2005.dta"
+(you are using old merge syntax; see [D] merge for new syntax)
+variable id does not uniquely identify observations in the master data
+
+. drop if _merge==2
+(1,085 observations deleted)
+
+. drop _merge
+
+. 
+. replace userpage2005_add = 0 if userpage2005_add==.
+(85,840 real changes made)
+
+. replace userpage2005_deleted = 0 if userpage2005_deleted ==.
+(85,840 real changes made)
+
+. replace usertalk2005_add = 0 if usertalk2005_add ==.
+(110,191 real changes made)
+
+. replace usertalk2005_deleted = 0 if usertalk2005_deleted ==.
+(110,191 real changes made)
+
+. 
+. gen social_participation = userpage2005_add + userpage2005_deleted + usertalk2005_add + usertalk2005_deleted
+
+. replace social_participation = 0 if social_participation == .
+(0 real changes made)
+
+. 
+. gen temp = age if week == 0
+(174,452 missing values generated)
+
+. egen age_to_block = max(temp), by(id)
+
+. replace social_participation = social_participation/(age_to_block+1)
+(100,526 real changes made)
+
+. replace social_participation = log(social_participation+1)
+(100,739 real changes made)
+
+. drop temp age_to_block
+
+. 
+. gen social_participation_after = social_participation * after
+
+. 
+. * Merge percent_blocked data (for Table 4)
+. sort id
+
+. merge id using "$datadir/percent_blocked.dta"
+(you are using old merge syntax; see [D] merge for new syntax)
+variable id does not uniquely identify observations in the master data
+
+. drop if _merge==2
+(4,432 observations deleted)
+
+. drop _merge
+
+. 
+. gen percent_blocked_after = percent_blocked * after
+
+. 
+. * Sample restriction: weeks -4 to 4, excluding week 0
+. gen insample = ((week >= -4 & week < 0) | (week > 0 & week <= 4))
+
+. 
+. di "Total observations in sample: "
+Total observations in sample: 
+
+. count if insample == 1
+  13,376
+
+. di "Unique contributors: "
+Unique contributors: 
+
+. qui tab id if insample == 1
+
+. di r(r)
+1707
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1: TABLE 3 - COLS 4-6 (Individual FE with social participation)
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 3: COLS 4-6 (Individual FE)"
+TABLE 3: COLS 4-6 (Individual FE)
+
+. di    "=============================================="
+==============================================
+
+. 
+. * Col 4: logTotal
+. di _n "--- Table 3, Column 4: Log(Total Contributions) ---"
+
+--- Table 3, Column 4: Log(Total Contributions) ---
+
+. xtreg logTotal after social_participation_after social_participation ///
+>     age agesqr if insample == 1, i(id) fe r
+note: social_participation omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =     13,376
+Group variable: id                              Number of groups  =      1,707
+
+R-squared:                                      Obs per group:
+     Within  = 0.0547                                         min =          5
+     Between = 0.0286                                         avg =        7.8
+     Overall = 0.0053                                         max =          8
+
+                                                F(4,1706)         =      52.22
+corr(u_i, Xb) = -0.5450                         Prob > F          =     0.0000
+
+                                               (Std. err. adjusted for 1,707 clusters in id)
+--------------------------------------------------------------------------------------------
+                           |               Robust
+                  logTotal | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                     after |  -.2123229   .0856191    -2.48   0.013    -.3802524   -.0443935
+social_participation_after |  -.1899138   .0240112    -7.91   0.000    -.2370083   -.1428193
+      social_participation |          0  (omitted)
+                       age |  -.0620709   .0153722    -4.04   0.000    -.0922213   -.0319205
+                    agesqr |   .0008433   .0001105     7.63   0.000     .0006266      .00106
+                     _cons |   1.903201   .4005707     4.75   0.000     1.117539    2.688862
+---------------------------+----------------------------------------------------------------
+                   sigma_u |   2.393397
+                   sigma_e |  1.7062398
+                       rho |  .66303381   (fraction of variance due to u_i)
+--------------------------------------------------------------------------------------------
+
+. est store t3c4
+
+. estadd local idfe "Yes" : t3c4
+
+. estadd local sample "Weeks [-4,4]" : t3c4
+
+. 
+. * Col 5: logAddition
+. di _n "--- Table 3, Column 5: Log(Additions) ---"
+
+--- Table 3, Column 5: Log(Additions) ---
+
+. xtreg logAddition after social_participation_after social_participation ///
+>     age agesqr if insample == 1, i(id) fe r
+note: social_participation omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =     13,376
+Group variable: id                              Number of groups  =      1,707
+
+R-squared:                                      Obs per group:
+     Within  = 0.0527                                         min =          5
+     Between = 0.0252                                         avg =        7.8
+     Overall = 0.0040                                         max =          8
+
+                                                F(4,1706)         =      48.24
+corr(u_i, Xb) = -0.5205                         Prob > F          =     0.0000
+
+                                               (Std. err. adjusted for 1,707 clusters in id)
+--------------------------------------------------------------------------------------------
+                           |               Robust
+               logAddition | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                     after |  -.1696689   .0821785    -2.06   0.039    -.3308502   -.0084876
+social_participation_after |   -.181731    .023404    -7.76   0.000    -.2276346   -.1358273
+      social_participation |          0  (omitted)
+                       age |  -.0623646   .0148181    -4.21   0.000    -.0914281    -.033301
+                    agesqr |   .0008016   .0001053     7.61   0.000     .0005951    .0010082
+                     _cons |   1.887985   .3875686     4.87   0.000     1.127825    2.648144
+---------------------------+----------------------------------------------------------------
+                   sigma_u |  2.2440449
+                   sigma_e |  1.6403129
+                       rho |  .65176033   (fraction of variance due to u_i)
+--------------------------------------------------------------------------------------------
+
+. est store t3c5
+
+. estadd local idfe "Yes" : t3c5
+
+. estadd local sample "Weeks [-4,4]" : t3c5
+
+. 
+. * Col 6: logDeletion
+. di _n "--- Table 3, Column 6: Log(Deletions) ---"
+
+--- Table 3, Column 6: Log(Deletions) ---
+
+. xtreg logDeletion after social_participation_after social_participation ///
+>     age agesqr if insample == 1, i(id) fe r
+note: social_participation omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =     13,376
+Group variable: id                              Number of groups  =      1,707
+
+R-squared:                                      Obs per group:
+     Within  = 0.0453                                         min =          5
+     Between = 0.0371                                         avg =        7.8
+     Overall = 0.0100                                         max =          8
+
+                                                F(4,1706)         =      37.04
+corr(u_i, Xb) = -0.6041                         Prob > F          =     0.0000
+
+                                               (Std. err. adjusted for 1,707 clusters in id)
+--------------------------------------------------------------------------------------------
+                           |               Robust
+               logDeletion | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                     after |  -.1311459   .0616325    -2.13   0.033    -.2520292   -.0102626
+social_participation_after |  -.1504254   .0197636    -7.61   0.000    -.1891887    -.111662
+      social_participation |          0  (omitted)
+                       age |  -.0260468   .0113232    -2.30   0.022    -.0482556    -.003838
+                    agesqr |   .0005015   .0000803     6.25   0.000      .000344     .000659
+                     _cons |   .7773985   .2913513     2.67   0.008     .2059551    1.348842
+---------------------------+----------------------------------------------------------------
+                   sigma_u |  1.7794895
+                   sigma_e |  1.2553167
+                       rho |  .66771696   (fraction of variance due to u_i)
+--------------------------------------------------------------------------------------------
+
+. est store t3c6
+
+. estadd local idfe "Yes" : t3c6
+
+. estadd local sample "Weeks [-4,4]" : t3c6
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1b: TABLE 4 - COLS 4-6 (Individual FE with percent blocked)
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 4: COLS 4-6 (Individual FE)"
+TABLE 4: COLS 4-6 (Individual FE)
+
+. di    "=============================================="
+==============================================
+
+. 
+. * Col 4: logTotal
+. di _n "--- Table 4, Column 4: Log(Total Contributions) ---"
+
+--- Table 4, Column 4: Log(Total Contributions) ---
+
+. xtreg logTotal after percent_blocked_after percent_blocked ///
+>     age agesqr if insample == 1, i(id) fe r
+note: percent_blocked omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =     13,376
+Group variable: id                              Number of groups  =      1,707
+
+R-squared:                                      Obs per group:
+     Within  = 0.0457                                         min =          5
+     Between = 0.0118                                         avg =        7.8
+     Overall = 0.0024                                         max =          8
+
+                                                F(4,1706)         =      50.66
+corr(u_i, Xb) = -0.6084                         Prob > F          =     0.0000
+
+                                          (Std. err. adjusted for 1,707 clusters in id)
+---------------------------------------------------------------------------------------
+                      |               Robust
+             logTotal | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+----------------------+----------------------------------------------------------------
+                after |  -.1633397   .0998837    -1.64   0.102    -.3592471    .0325676
+percent_blocked_after |  -2.505788   .3984857    -6.29   0.000     -3.28736   -1.724216
+      percent_blocked |          0  (omitted)
+                  age |  -.0790123   .0159191    -4.96   0.000    -.1102353   -.0477892
+               agesqr |   .0011038   .0001198     9.22   0.000     .0008689    .0013387
+                _cons |   1.965004   .4028756     4.88   0.000     1.174821    2.755186
+----------------------+----------------------------------------------------------------
+              sigma_u |  2.5227229
+              sigma_e |  1.7143287
+                  rho |  .68409054   (fraction of variance due to u_i)
+---------------------------------------------------------------------------------------
+
+. est store t4c4
+
+. estadd local idfe "Yes" : t4c4
+
+. estadd local sample "Weeks [-4,4]" : t4c4
+
+. 
+. * Col 5: logAddition
+. di _n "--- Table 4, Column 5: Log(Additions) ---"
+
+--- Table 4, Column 5: Log(Additions) ---
+
+. xtreg logAddition after percent_blocked_after percent_blocked ///
+>     age agesqr if insample == 1, i(id) fe r
+note: percent_blocked omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =     13,376
+Group variable: id                              Number of groups  =      1,707
+
+R-squared:                                      Obs per group:
+     Within  = 0.0434                                         min =          5
+     Between = 0.0094                                         avg =        7.8
+     Overall = 0.0016                                         max =          8
+
+                                                F(4,1706)         =      46.63
+corr(u_i, Xb) = -0.5845                         Prob > F          =     0.0000
+
+                                          (Std. err. adjusted for 1,707 clusters in id)
+---------------------------------------------------------------------------------------
+                      |               Robust
+          logAddition | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+----------------------+----------------------------------------------------------------
+                after |  -.1338561   .0957671    -1.40   0.162    -.3216894    .0539771
+percent_blocked_after |  -2.327056   .3855521    -6.04   0.000    -3.083261   -1.570851
+      percent_blocked |          0  (omitted)
+                  age |  -.0781075    .015379    -5.08   0.000    -.1082712   -.0479438
+               agesqr |   .0010436   .0001154     9.04   0.000     .0008173      .00127
+                _cons |   1.945619   .3899165     4.99   0.000     1.180854    2.710384
+----------------------+----------------------------------------------------------------
+              sigma_u |  2.3549199
+              sigma_e |  1.6483449
+                  rho |  .67116746   (fraction of variance due to u_i)
+---------------------------------------------------------------------------------------
+
+. est store t4c5
+
+. estadd local idfe "Yes" : t4c5
+
+. estadd local sample "Weeks [-4,4]" : t4c5
+
+. 
+. * Col 6: logDeletion
+. di _n "--- Table 4, Column 6: Log(Deletions) ---"
+
+--- Table 4, Column 6: Log(Deletions) ---
+
+. xtreg logDeletion after percent_blocked_after percent_blocked ///
+>     age agesqr if insample == 1, i(id) fe r
+note: percent_blocked omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =     13,376
+Group variable: id                              Number of groups  =      1,707
+
+R-squared:                                      Obs per group:
+     Within  = 0.0356                                         min =          5
+     Between = 0.0171                                         avg =        7.8
+     Overall = 0.0054                                         max =          8
+
+                                                F(4,1706)         =      35.77
+corr(u_i, Xb) = -0.6664                         Prob > F          =     0.0000
+
+                                          (Std. err. adjusted for 1,707 clusters in id)
+---------------------------------------------------------------------------------------
+                      |               Robust
+          logDeletion | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+----------------------+----------------------------------------------------------------
+                after |  -.0759567    .074104    -1.03   0.306    -.2213011    .0693877
+percent_blocked_after |  -2.089639    .334878    -6.24   0.000    -2.746454   -1.432824
+      percent_blocked |          0  (omitted)
+                  age |  -.0401598   .0118433    -3.39   0.001    -.0633888   -.0169308
+               agesqr |   .0007187   .0000903     7.96   0.000     .0005415    .0008959
+                _cons |   .8285829   .2930589     2.83   0.005     .2537902    1.403376
+----------------------+----------------------------------------------------------------
+              sigma_u |  1.8991082
+              sigma_e |  1.2616654
+                  rho |  .69379118   (fraction of variance due to u_i)
+---------------------------------------------------------------------------------------
+
+. est store t4c6
+
+. estadd local idfe "Yes" : t4c6
+
+. estadd local sample "Weeks [-4,4]" : t4c6
+
+. 
+. di _n "=== SUMMARY ==="
+
+=== SUMMARY ===
+
+. di "Table 3 Col 4 (logTotal, after):     " %9.4f _b[after]
+Table 3 Col 4 (logTotal, after):       -0.0760
+
+. est restore t3c5
+(results t3c5 are active now)
+
+. di "Table 3 Col 5 (logAddition, after):  " %9.4f _b[after]
+Table 3 Col 5 (logAddition, after):    -0.1697
+
+. est restore t3c6
+(results t3c6 are active now)
+
+. di "Table 3 Col 6 (logDeletion, after):  " %9.4f _b[after]
+Table 3 Col 6 (logDeletion, after):    -0.1311
+
+. est restore t4c4
+(results t4c4 are active now)
+
+. di "Table 4 Col 4 (logTotal, after):     " %9.4f _b[after]
+Table 4 Col 4 (logTotal, after):       -0.1633
+
+. est restore t4c5
+(results t4c5 are active now)
+
+. di "Table 4 Col 5 (logAddition, after):  " %9.4f _b[after]
+Table 4 Col 5 (logAddition, after):    -0.1339
+
+. est restore t4c6
+(results t4c6 are active now)
+
+. di "Table 4 Col 6 (logDeletion, after):  " %9.4f _b[after]
+Table 4 Col 6 (logDeletion, after):    -0.0760
+
+. 
+. 
+. /*==============================================================================
+>   STEP 2: TWOWAYFEWEIGHTS DECOMPOSITION
+>   The regression has individual FE. Treatment = after (blocking event).
+>   G = id (contributor), T = week, D = after
+>   Note: This is a one-way FE regression (no time FE), so twowayfeweights
+>   results should be interpreted carefully.
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TWOWAYFEWEIGHTS DECOMPOSITION"
+TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di    "=============================================="
+==============================================
+
+. 
+. preserve
+
+. keep if insample == 1
+(162,783 observations deleted)
+
+. 
+. * Create numeric week variable centered (week is already numeric -4 to 4 excl 0)
+. * Need a positive integer for T
+. gen week_num = week + 5
+
+. replace week_num = week + 4 if week > 0
+(6,828 real changes made)
+
+. * Now week_num: 1,2,3,4 for weeks -4,-3,-2,-1 and 5,6,7,8 for weeks 1,2,3,4
+. 
+. di _n "--- feTR: logTotal ~ after | id + week FE ---"
+
+--- feTR: logTotal ~ after | id + week FE ---
+
+. cap noisily twowayfeweights logTotal id week_num after, type(feTR)
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.0000, estimates a weighted sum of 6828 ATTs. 
+6828 ATTs receive a positive weight, and 0 receive a negative weight.
+------------------------------------------------
+Treat. var: after       # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        6828        1.0000      
+Negative weights        0           0.0000      
+------------------------------------------------
+Total                   6828        1.0000      
+------------------------------------------------
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. di _n "--- fdTR: logTotal ~ after | id + week FD ---"
+
+--- fdTR: logTotal ~ after | id + week FD ---
+
+. cap noisily twowayfeweights logTotal id week_num after, type(fdTR)
+invalid syntax
+
+. 
+. restore
+
+. 
+. 
+. /*==============================================================================
+>   STEP 3: LATEX EXPORT
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "LaTeX TABLE EXPORT"
+LaTeX TABLE EXPORT
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- Table 3: Cols 4-6 (AER format) ---
+. esttab t3c4 t3c5 t3c6 using "$outdir/table3_fe.tex", replace ///
+>     keep(after social_participation_after age agesqr) ///
+>     order(after social_participation_after age agesqr) ///
+>     cells(b(star fmt(3)) se(par([ ]) fmt(3))) ///
+>     starlevels(* 0.10 ** 0.05 *** 0.01) ///
+>     stats(r2_w N, ///
+>         fmt(2 %9,0gc) ///
+>         labels("R\$^2\$" "Observations")) ///
+>     varlabels(after "AfterBlock" ///
+>               social_participation_after "SocialParticipation \$\times\$ AfterBlock" ///
+>               age "Age" ///
+>               agesqr "Age\$^2\$") ///
+>     collabels(none) nomtitles nonumbers nonotes ///
+>     prehead("\begin{table}[htbp]" ///
+>             "\centering" ///
+>             "\small" ///
+>             "\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}" ///
+>             "\caption{Difference-in-Differences Estimations of the Impact of the Block on" ///
+>             "Contributors with Different Levels of Social Participation}" ///
+>             "\label{tab:table3}" ///
+>             "\begin{tabular}{l*{3}{c}}" ///
+>             "\toprule") ///
+>     posthead("& \multicolumn{1}{c}{Total}" ///
+>              "& \multicolumn{1}{c}{Addition}" ///
+>              "& \multicolumn{1}{c}{Deletion} \\" ///
+>              "& (4) & (5) & (6) \\" ///
+>              "\midrule") ///
+>     prefoot("\midrule") ///
+>     postfoot("Specification & FE & FE & FE \\" ///
+>              "\bottomrule" ///
+>              "\multicolumn{4}{p{0.92\linewidth}}{\footnotesize \textit{Notes:}" ///
+>              " SocialParticipation is the logarithm of the weekly average of total" ///
+>              " addition and total deletion in user pages or user-talk pages by each" ///
+>              " contributor before the block. The variable SocialParticipation drops" ///
+>              " in the fixed-effect specifications as its value is fixed for each" ///
+>              " contributor. Heteroskedasticity-adjusted standard errors in brackets.} \\" ///
+>              "\multicolumn{4}{l}{\footnotesize *** Significant at the 1 percent level," ///
+>              " ** 5 percent level, * 10 percent level.} \\" ///
+>              "\end{tabular}" ///
+>              "\end{table}")
+(output written to C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/table3_fe.tex)
+
+. 
+. di "  -> table3_fe.tex created"
+  -> table3_fe.tex created
+
+. 
+. * --- Table 4: Cols 4-6 (AER format) ---
+. esttab t4c4 t4c5 t4c6 using "$outdir/table4_fe.tex", replace ///
+>     keep(after percent_blocked_after age agesqr) ///
+>     order(after percent_blocked_after age agesqr) ///
+>     cells(b(star fmt(3)) se(par([ ]) fmt(3))) ///
+>     starlevels(* 0.10 ** 0.05 *** 0.01) ///
+>     stats(r2_w N, ///
+>         fmt(2 %9,0gc) ///
+>         labels("R\$^2\$" "Observations")) ///
+>     varlabels(after "AfterBlock" ///
+>               percent_blocked_after "PercentageBlocked \$\times\$ AfterBlock" ///
+>               age "Age" ///
+>               agesqr "Age\$^2\$") ///
+>     collabels(none) nomtitles nonumbers nonotes ///
+>     prehead("\begin{table}[htbp]" ///
+>             "\centering" ///
+>             "\small" ///
+>             "\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}" ///
+>             "\caption{Difference-in-Differences Estimations of the Impact of the Block on" ///
+>             "Contributors with Different Percentages of Collaborators Blocked}" ///
+>             "\label{tab:table4}" ///
+>             "\begin{tabular}{l*{3}{c}}" ///
+>             "\toprule") ///
+>     posthead("& \multicolumn{1}{c}{Total}" ///
+>              "& \multicolumn{1}{c}{Addition}" ///
+>              "& \multicolumn{1}{c}{Deletion} \\" ///
+>              "& (4) & (5) & (6) \\" ///
+>              "\midrule") ///
+>     prefoot("\midrule") ///
+>     postfoot("Specification & FE & FE & FE \\" ///
+>              "\bottomrule" ///
+>              "\multicolumn{4}{p{0.92\linewidth}}{\footnotesize \textit{Notes:}" ///
+>              " PercentageBlocked is the percentage of collaborators blocked after the" ///
+>              " third block for each contributor. The variable PercentageBlocked drops" ///
+>              " in the fixed-effect specifications as its value is fixed for each" ///
+>              " contributor. Heteroskedasticity-adjusted standard errors in brackets.} \\" ///
+>              "\multicolumn{4}{l}{\footnotesize *** Significant at the 1 percent level," ///
+>              " ** 5 percent level, * 10 percent level.} \\" ///
+>              "\end{tabular}" ///
+>              "\end{table}")
+(output written to C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/table4_fe.tex)
+
+. 
+. di "  -> table4_fe.tex created"
+  -> table4_fe.tex created
+
+. 
+. * --- Master document ---
+. cap file close texfile
+
+. file open texfile using "$outdir/zhang_zhu_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write texfile "\geometry{margin=1in}" _n
+
+. file write texfile "\captionsetup{labelsep=emdash, font=normalsize, justification=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Zhang \& Zhu (2011)}\\" _n
+
+. file write texfile "{\large Group Size and Incentives to Contribute:" _n
+
+. file write texfile "A Natural Experiment at Chinese Wikipedia}\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}, 101(4), 1601--1615}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. file write texfile "\vspace{1em}" _n _n
+
+. 
+. file write texfile "\input{table3_fe}" _n _n
+
+. file write texfile "\clearpage" _n _n
+
+. file write texfile "\input{table4_fe}" _n _n
+
+. 
+. file write texfile "\end{document}" _n
+
+. file close texfile
+
+. 
+. di "  -> zhang_zhu_tables.tex created"
+  -> zhang_zhu_tables.tex created
+
+. 
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "ALL DONE - Zhang & Zhu (2011)"
+ALL DONE - Zhang & Zhu (2011)
+
+. di    "=============================================="
+==============================================
+
+. di "Output files:"
+Output files:
+
+. di "  1. $outdir/table3_fe.tex"
+  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/table3_fe.tex
+
+. di "  2. $outdir/table4_fe.tex"
+  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/table4_fe.tex
+
+. di "  3. $outdir/zhang_zhu_tables.tex (compilable)"
+  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/zhang_zhu_tables.tex (compilable)
+
+. di "  4. $outdir/run_twowayfe.log"
+  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/run_twowayfe.log
+
+. di "=============================================="
+==============================================
+
+. 
+. log close _all
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)/run_twowayfe.log
+  log type:  text
+ closed on:  17 Apr 2026, 00:23:38
+-----------------------------------------------------------------------------------------------------------------

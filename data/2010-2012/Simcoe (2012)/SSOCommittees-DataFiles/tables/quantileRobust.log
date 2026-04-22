@@ -1,0 +1,59 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/quantileRobust.log
+  log type:  text
+ opened on:   9 Jun 2010, 20:42:45
+
+. ***************************
+. *  Quantile Regressions (Diff-diffs & Standards Only)
+. ***************************
+. ** Median/75th/90th
+. qui xi: qreg ttlDur st_stbafl1yr st_lwgipr st_othDum `st_controls' i.techarea i.pubCohort if ((strfc) & cSample & match_samp2), quantile(0.5) 
+
+. est store col1
+
+. qui xi: bsqreg ttlDur st_stbafl1yr st_lwgipr st_othDum `st_controls' i.techarea i.pubCohort if ((strfc) & cSample & match_samp2), quantile(.75) reps(200)
+
+. est store col2
+
+. 
+. qui xi: qreg ttlDur stbafl1yr lwgipr othDum `controls' i.techarea i.pubCohort if ((nsrfc) & cSample & match_samp2), quantile(0.5) 
+
+. est store col3
+
+. qui xi: bsqreg ttlDur stbafl1yr lwgipr othDum `controls' i.techarea i.pubCohort if ((nsrfc) & cSample & match_samp2), quantile(.75) reps(200)
+
+. est store col4
+
+. 
+. estout  _all, cells(b(fmt(2)) se(par fmt(2) star)) stats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) drop(`st_controls' `controls' _I*) style(tex) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001)
+
+            &        col1   &        col2   &        col3   &        col4   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   \\
+st_stbafl1yr&        3.78   &        6.58   &               &               \\
+            &      (1.51)*  &      (2.27)** &               &               \\
+st_lwgipr   &       -0.46   &        9.16   &               &               \\
+            &      (8.03)   &     (11.18)   &               &               \\
+st_othDum   &       60.79   &       87.70   &               &               \\
+            &     (49.34)   &     (70.01)   &               &               \\
+stbafl1yr   &               &               &        0.36   &       -2.21   \\
+            &               &               &      (2.68)   &      (3.33)   \\
+lwgipr      &               &               &       -3.23   &      -13.75   \\
+            &               &               &     (14.71)   &     (19.41)   \\
+othDum      &               &               &      -68.01   &      -57.64   \\
+            &               &               &     (89.90)   &     (99.65)   \\
+_cons       &     -785.78   &     -506.52   &       90.86   &      189.89   \\
+            &    (274.41)** &    (375.35)   &    (469.43)   &    (606.54)   \\
+N           &         662   &         662   &         290   &         290   \\
+r2          &               &               &               &               \\
+df_m        &          22   &               &          22   &               \\
+N_g         &               &               &               &               \\
+
+. est clear
+
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/quantileRobust.log
+  log type:  text
+ closed on:   9 Jun 2010, 20:42:56
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

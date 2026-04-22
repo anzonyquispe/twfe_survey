@@ -1,0 +1,23 @@
+-----------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/collardwexler/Dropbox/India_Power_Shortages/matlab/elast_results.log
+  log type:  text
+ opened on:   6 Aug 2015, 11:16:32
+
+. sum output_elast material_elast labor_elast self_gen_share_elast diff_tfp [aweight=mult
+> ]
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+output_elast |  33,870  97264.2171    .9123526   .8195865          0   4.070048
+material_e~t |  33,870  97264.2171      .91262   .8194969          0   4.054408
+ labor_elast |  33,870  97264.2171     .912241    .819455          0   4.043866
+self_gen_s~t |  33,870  97264.2171   -.2917656   .3239544  -.7920116          0
+    diff_tfp |  33,870  97264.2171    .1973893   4.537151    -7.8125        500
+
+. log close
+      name:  <unnamed>
+       log:  /Users/collardwexler/Dropbox/India_Power_Shortages/matlab/elast_results.log
+  log type:  text
+ closed on:   6 Aug 2015, 11:16:32
+-----------------------------------------------------------------------------------------

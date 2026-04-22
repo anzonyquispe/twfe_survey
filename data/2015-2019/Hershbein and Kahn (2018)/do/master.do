@@ -1,0 +1,94 @@
+/****************************************************************************
+** Set macros		 					     	
+****************************************************************************/
+**server paths
+
+global path="/disk/homedirs/nber/kahnl/"
+global raw_BG = "bulk/Burning_Glass/extract2_16"
+global raw_MSA = "bulk/Burning_Glass/MSA_data"
+global raw_comp = "bulk/Burning_Glass/COMPUSTAT_data"
+global do = "Burning_Glass/AER Final/do"
+global log = "Burning_Glass/AER Final/log"
+global tables = "Burning_Glass/AER Final/tables"
+global graphs = "Burning_Glass/AER Final/graphs"
+global data_output = "bulk/Burning_Glass/working_data"
+global CPS_data = "bulk/Burning_Glass/CPS_data"
+global raw_OES = "bulk/Burning_Glass/OES_data/txtfiles"
+global raw_ONET = "bulk/Burning_Glass/ONET"
+global HH = "bulk/Burning_Glass/HH"
+global public = "Burning_Glass/AER Final/publicdatafiles"
+
+cd "$path"
+
+
+/****************************************************************************
+** Precursor  		 					     	
+****************************************************************************/
+version 13.1
+clear
+capture clear mata
+capture clear matrix
+capture log close
+program drop _all
+set matsize 11000
+pause on
+set more off
+
+
+capture log close
+log using "$log/step1_clean_supp_data.log", replace
+******************************************************************
+**Step 1: clean supplemental datasets datasets
+**1. ACSvars0506_msa.dta: MSA control vars in levels from IPUMS
+**2. msa_LF_2006.dta: size of MSA labor force in 2006 from BLS
+**3. bartiks.dta: Bartik shocks, uses CBP and CES data
+**4. msa_unemps2000_2015.dta: from BLS LAUS
+**5. msa_emps1999_2015.dta: from BLS CES 
+**6. onet_routine_harmonized_4d.dta: from ONET
+**7. make workingOES.dta: uses raw data from https://www.bls.gov/oes/tables.htm and IPUMS
+**8a. make workingCPS.dta: MSA-year level data with epop_high, epop_low and bartiks at metareag level (IPUMS)
+**8b. make workingCPS_layoffs.dta: occ-MSA-year level data with involseps and bartiks 
+*******************************************************************
+do "$do/step1_clean_supp_data.do"
+
+capture log close
+log using "$log/step2_cleanBGdata.log", replace
+******************************************************************
+**Step 2: clean BG datasets
+*******************************************************************
+do "$do/step2_cleanBGdata.do"
+
+capture log close
+log using "$log/step3_cleanHHdata.log", replace
+******************************************************************
+**Step 3: clean Harte Hanks datasets -- obtained from Nick Bloom
+**1. workingHH_msa_year.dta: for figure4
+**2. firm crosswalk
+**3. workingHH_firm.dta: for figure5a
+*******************************************************************
+do "$do/step3_cleanHHdata.do"
+
+capture log close
+log using "$log/step4_cleanCOMPdata.log", replace
+******************************************************************
+**Step 4: clean Compustat datasets -- obtained from WRDS
+**1. firm crosswalk
+**2. workingCOMP_firm.dta: for figure5b
+*******************************************************************
+do "$do/step4_cleanCOMPUSTATdata.do"
+
+
+capture log close
+log using "$log/step5_paper_results.log", replace
+******************************************************************
+**Step 5: paper results 
+** + figure A5 and Tables C1-C4
+*******************************************************************
+do "$do/step5_paper_results.do"
+
+capture log close
+log using "$log/step6_online_appendix.log", replace
+******************************************************************
+**Step 6: Online Appendix (except Figure A5 and Tables C1-C4)
+*******************************************************************
+do "$do/step6_online_appendix.do

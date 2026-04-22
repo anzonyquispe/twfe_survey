@@ -1,0 +1,25 @@
+dictionary using 97-98/P979831C.RAW {
+
+_column(1)	nic87		%4.0f	"Industry - NIC-87 Industry Code"
+_column(5)	runslno		%6.0f	"Running Serial No. "
+_column(11)	stcode		%2.0f	"State Code (ST)"
+_column(13)	permid		%5.0f	"Permanent Serial No.
+_column(18)	schcode   	%1.0f  	"Scheme Code"
+
+_column(21)	linkcode	%3.0f	"Link Code"
+
+_column(24)     work_men_avg        %7.0f        "WORKERS (MEN) AVERAGE NO."
+_column(31)     work_men_wage        %12.0f        "WORKERS (MEN) WAGES."
+_column(43)     work_men_bonus        %12.0f        "WORKERS (MEN) BONUS"
+_column(55)     work_women_avg        %7.0f        "WORKERS (WOMEN) AVERAGE NO."
+_column(62)     work_women_wage        %12.0f        "WORKERS (WOMEN) WAGES."
+_column(74)     work_women_bonus        %12.0f        "WORKERS (WOMEN) BONUS"
+_column(86)     work_child_avg        %7.0f        "WORKERS (CHILDREN) AVARAGE NO."
+_column(93)     work_child_wage        %12.0f        "WORKERS (CHILDREN) WAGES."
+_column(105)     work_child_bonus        %12.0f        "WORKERS (CHILDREN) BONUS"
+
+
+};
+
+
+

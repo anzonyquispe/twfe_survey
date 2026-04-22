@@ -1,0 +1,472 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\table1.log
+  log type:  text
+ opened on:  17 Nov 2010, 16:02:22
+
+. 
+. *** Establish Sample
+. use ../data/dis70panx.dta
+
+. keep if major==1
+(310 observations deleted)
+
+. drop if imp==.
+(0 observations deleted)
+
+. replace imp = imp+1900
+(368 real changes made)
+
+. 
+. replace publicelemhsw = publicelemw+publichsw if year~=1990
+(276 real changes made)
+
+. replace publicelemhsb = publicelemb+publichsb if year~=1990
+(276 real changes made)
+
+. replace privatelemhsw = privatelemw+privatehsw if year~=1990
+(276 real changes made)
+
+. replace privatelemhsb = privatelemb+privatehsb if year~=1990
+(276 real changes made)
+
+. 
+. gen p_privatew = privatelemhsw / (publicelemhsw + privatelemhsw)
+
+. gen p_privateb = privatelemhsb / (publicelemhsb + privatelemhsb)
+
+. 
+. gen imp_postw = (year>=imp)
+
+. gen imp_postb = (year>=imp+4)
+
+. 
+. **** PANEL A BOTTOM *******
+. tab year imp_postw
+
+           |       imp_postw
+      year |         0          1 |     Total
+-----------+----------------------+----------
+      1960 |        92          0 |        92 
+      1970 |        64         28 |        92 
+      1980 |         4         88 |        92 
+      1990 |         0         92 |        92 
+-----------+----------------------+----------
+     Total |       160        208 |       368 
+
+
+. tab year imp_postb
+
+           |       imp_postb
+      year |         0          1 |     Total
+-----------+----------------------+----------
+      1960 |        92          0 |        92 
+      1970 |        88          4 |        92 
+      1980 |        23         69 |        92 
+      1990 |         0         92 |        92 
+-----------+----------------------+----------
+     Total |       203        165 |       368 
+
+
+. ***************************
+. 
+. ********** PANEL B ***********************
+. tabstat  p_privatew  p_privateb,               stat(mean) by(year)
+
+Summary statistics: mean
+  by categories of: year 
+
+    year |  p_priv~w  p_priv~b
+---------+--------------------
+    1960 |  .1713393  .0743533
+    1970 |  .1641906  .0353015
+    1980 |  .2153224  .0524497
+    1990 |  .2116326  .0516361
+---------+--------------------
+   Total |  .1906212  .0534352
+------------------------------
+
+. tabstat  p_privatew  p_privateb if south == 1, stat(mean) by(year)
+
+Summary statistics: mean
+  by categories of: year 
+
+    year |  p_priv~w  p_priv~b
+---------+--------------------
+    1960 |   .108508  .0410865
+    1970 |  .1042792  .0239113
+    1980 |   .179745  .0341531
+    1990 |  .1801093  .0350483
+---------+--------------------
+   Total |  .1431604  .0335498
+------------------------------
+
+. tabstat  p_privatew  p_privateb if south ~= 1, stat(mean) by(year) 
+
+Summary statistics: mean
+  by categories of: year 
+
+    year |  p_priv~w  p_priv~b
+---------+--------------------
+    1960 |  .2398825  .1106444
+    1970 |  .2295485  .0477273
+    1980 |  .2541341  .0724097
+    1990 |  .2460217   .069732
+---------+--------------------
+   Total |  .2423967  .0751283
+------------------------------
+
+. ********************************************
+. 
+. keep leaid msa year imp_* public* private* white black area marea numdis
+
+. compress
+year was float now int
+msa was float now int
+imp_postw was float now byte
+imp_postb was float now byte
+white was double now long
+black was double now long
+publicelemhst was double now long
+publicelemt was double now long
+publichst was double now long
+privatelemhst was double now long
+privatelemt was double now long
+privatehst was double now long
+numdis was double now int
+leaid was double now long
+
+. sort msa year
+
+. save tempss.dta, replace
+(note: file tempss.dta not found)
+file tempss.dta saved
+
+. 
+. gen x1 = log(publicelemhsw)
+
+. gen x2 = log(privatelemhsw)
+
+. gen x3 = log(publicelemhsb)
+
+. gen x4 = log(privatelemhsb)
+(1 missing value generated)
+
+. gen x5 = log(white)
+
+. gen x6 = log(black)
+
+. gen x7 = area/marea 
+
+. gen x8 = numdis
+(92 missing values generated)
+
+. 
+. keep x* leaid year
+
+. 
+. reshape long x, i(leaid year) j(varnum)
+(note: j = 1 2 3 4 5 6 7 8)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                      368   ->    2944
+Number of variables                  10   ->       4
+j variable (8 values)                     ->   varnum
+xij variables:
+                           x1 x2 ... x8   ->   x
+-----------------------------------------------------------------------------
+
+. 
+. ************ PANEL A TOP *****************
+. table varnum year, contents(mean x sd x)
+
+--------------------------------------------------
+          |                  year                 
+   varnum |     1960      1970      1980      1990
+----------+---------------------------------------
+        1 | 10.51611  10.59315  10.07443  9.943768
+          | .7157927  .7084069  .7518942   .821931
+          | 
+        2 | 8.663267  8.669856  8.599732  8.473939
+          | 1.398162  1.283239  1.047366    .96198
+          | 
+        3 | 8.996588  9.528578  9.517443  9.589011
+          |   1.2044  1.158866  1.098649  1.027704
+          | 
+        4 | 6.046615  6.020596  6.403813   6.48614
+          | 1.753637  1.575152  1.512422  1.428239
+          | 
+        5 | 12.34601  12.34404  12.28485  12.25313
+          | .8248514  .7635217  .7395743  .7807745
+          | 
+        6 | 10.55533  10.77713  11.00432  11.12986
+          | 1.196084  1.177825  1.110152  1.053818
+          | 
+        7 |  .198029   .198029   .198029   .198029
+          | .2871708  .2871708  .2871708  .2871708
+          | 
+        8 |           35.20652     34.25  33.96739
+          |           46.04359  43.23095  42.55558
+--------------------------------------------------
+
+. ******************************************
+. 
+. 
+. use tempss,clear
+
+. keep msa year imp_post* 
+
+. sort msa year
+
+. save tempss, replace
+file tempss.dta saved
+
+. 
+. use ../data/tractpanx.dta
+
+. 
+. ** Drop tract area
+. drop area
+
+. 
+. ** Drop tracts for which we don't know location
+. drop if cbd_dis==999999
+(196 observations deleted)
+
+. 
+. ** Put cbd-dis in KM
+. replace cbd_dis = cbd_dis/1000
+(126773 real changes made)
+
+. sort msa year
+
+. merge msa year using tempss.dta
+variables msa year do not uniquely identify observations in the master data
+
+. tab _merge 
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     38,819       30.62       30.62
+          2 |         17        0.01       30.63
+          3 |     87,954       69.37      100.00
+------------+-----------------------------------
+      Total |    126,790      100.00
+
+. ** Merge=1 is MSAs without major plans, Merge=2 is untracted MSA/years
+. keep if _merge==3
+(38836 observations deleted)
+
+. drop _merge
+
+. 
+. *** Fix data a bit and set sample
+. drop if black+white+other==0
+(537 observations deleted)
+
+. 
+. *** We're Only Doing Central District Tracts
+. keep if ccdis70==1
+(48751 observations deleted)
+
+. 
+. *** Define pop variable
+. gen pop = white+black
+
+. 
+. *** Build Distance metric for 1990
+. egen sumpop = sum(pop) if year==1990, by(msa year)
+(27908 missing values generated)
+
+. sort msa year cbd_dis
+
+. by msa year: gen cumpop = sum(pop) if year==1990
+(27908 missing values generated)
+
+. gen dis = cumpop/sumpop if year==1990
+(27908 missing values generated)
+
+. 
+. *** Allocate locations for tracts 1960-1980
+. sort msa cbd_dis
+
+. by msa: replace dis = dis[_n-1] if dis==.
+(27758 real changes made)
+
+. gsort msa -cbd_dis
+
+. by msa: replace dis = dis[_n-1] if dis==.
+(150 real changes made)
+
+. drop cumpop
+
+. 
+. replace publicelemhsw = publicelemw+publichsw if year~=1990
+publicelemhsw was int now float
+(27298 real changes made)
+
+. replace publicelemhsb = publicelemb+publichsb if year~=1990
+publicelemhsb was int now float
+(22128 real changes made)
+
+. replace privatelemhsw = privatelemw+privatehsw if year~=1990
+privatelemhsw was int now float
+(27298 real changes made)
+
+. replace privatelemhsb = privatelemb+privatehsb if year~=1990
+privatelemhsb was int now float
+(22127 real changes made)
+
+. 
+. replace publicelemhsb = 0 if publicelemhsb==. & pop59b+pop1014b+pop1519b==0
+(7 real changes made)
+
+. replace publicelemhsb = 0 if publicelemhsb==. & black==0
+(0 real changes made)
+
+. replace privatelemhsb = 0 if privatelemhsb==. & pop59b+pop1014b+pop1519b==0
+(7 real changes made)
+
+. replace privatelemhsb = 0 if privatelemhsb==. & black==0
+(0 real changes made)
+
+. replace publicelemhsw = 0 if publicelemhsw==. & pop59w+pop1014w+pop1519w==0
+(3 real changes made)
+
+. replace publicelemhsw = 0 if publicelemhsw==. & white==0
+(0 real changes made)
+
+. replace privatelemhsw = 0 if privatelemhsw==. & pop59w+pop1014w+pop1519w==0
+(3 real changes made)
+
+. replace privatelemhsw = 0 if privatelemhsw==. & white==0
+(0 real changes made)
+
+. 
+. *** Restrict sample to tracts with data for both whites and blacks
+. drop if publicelemhsw==.|publicelemhsb==.
+(16 observations deleted)
+
+. 
+. *** Only keep needed variables
+. keep msa year dis white black pop imp*
+
+. 
+. gen DIS = 1 if dis>0 & dis<=.25 
+(24534 missing values generated)
+
+. replace DIS = 2 if dis>.25 & dis<=.5
+(9490 real changes made)
+
+. replace DIS = 3 if dis>.5 & dis<=.75 
+(7965 real changes made)
+
+. replace DIS = 4 if dis>.75 & dis<=1
+(7079 real changes made)
+
+. 
+. ********** PANEL C **************
+. replace pop=pop/1000000
+(38611 real changes made)
+
+. replace white=white/1000000
+white was long now double
+(37831 real changes made)
+
+. replace black = black/1000000
+black was int now float
+(32241 real changes made)
+
+. table DIS year, contents(sum white)
+
+--------------------------------------------------
+          |                  year                 
+      DIS |     1960      1970      1980      1990
+----------+---------------------------------------
+        1 | 9.590345  8.089344  6.526515   5.77142
+        2 | 7.855826   7.55735  6.668905  6.323437
+        3 | 6.588347  7.168136  7.029431  7.092502
+        4 | 5.140557  6.384433  6.799683  7.673444
+--------------------------------------------------
+
+. table DIS year, contents(sum black)
+
+--------------------------------------------------
+          |                  year                 
+      DIS |     1960      1970      1980      1990
+----------+---------------------------------------
+        1 | 4.284047  4.257359  3.889582  3.541326
+        2 | 1.577713  2.535843  3.028145  3.140566
+        3 |  .634548  1.317501  2.030243  2.416424
+        4 |  .380963   .893325  1.624218  2.072565
+--------------------------------------------------
+
+. 
+. tab imp_postw year
+
+           |                    year
+ imp_postw |      1960       1970       1980       1990 |     Total
+-----------+--------------------------------------------+----------
+         0 |     8,044      7,753        965          0 |    16,762 
+         1 |         0      1,802      9,328     10,758 |    21,888 
+-----------+--------------------------------------------+----------
+     Total |     8,044      9,555     10,293     10,758 |    38,650 
+
+
+. tab imp_postb year
+
+           |                    year
+ imp_postb |      1960       1970       1980       1990 |     Total
+-----------+--------------------------------------------+----------
+         0 |     8,044      9,139      3,750          0 |    20,933 
+         1 |         0        416      6,543     10,758 |    17,717 
+-----------+--------------------------------------------+----------
+     Total |     8,044      9,555     10,293     10,758 |    38,650 
+
+
+. 
+. sort msa year
+
+. by msa year: keep if _n==1
+(38299 observations deleted)
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1960 |         78       22.22       22.22
+       1970 |         89       25.36       47.58
+       1980 |         92       26.21       73.79
+       1990 |         92       26.21      100.00
+------------+-----------------------------------
+      Total |        351      100.00
+
+. tab imp_postw year
+
+           |                    year
+ imp_postw |      1960       1970       1980       1990 |     Total
+-----------+--------------------------------------------+----------
+         0 |        78         64          4          0 |       146 
+         1 |         0         25         88         92 |       205 
+-----------+--------------------------------------------+----------
+     Total |        78         89         92         92 |       351 
+
+
+. tab imp_postb year
+
+           |                    year
+ imp_postb |      1960       1970       1980       1990 |     Total
+-----------+--------------------------------------------+----------
+         0 |        78         85         23          0 |       186 
+         1 |         0          4         69         92 |       165 
+-----------+--------------------------------------------+----------
+     Total |        78         89         92         92 |       351 
+
+
+. 
+. 
+. log close
+       log:  c:\research\segregation\AER-DATA\tables\table1.log
+  log type:  text
+ closed on:  17 Nov 2010, 16:02:26
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

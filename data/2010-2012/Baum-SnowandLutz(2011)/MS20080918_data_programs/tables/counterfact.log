@@ -1,0 +1,295 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\counterfact.log
+  log type:  text
+ opened on:  17 Nov 2010, 16:04:34
+
+. 
+. use ../data/dis70panx.dta
+
+. 
+. ** Only keep major plan MSAs
+. keep if major==1
+(310 observations deleted)
+
+. 
+. replace black = black/1000000
+(368 real changes made)
+
+. replace white = white/1000000
+(368 real changes made)
+
+. replace other = other/1000000
+(368 real changes made)
+
+. 
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1960 |         92       25.00       25.00
+       1970 |         92       25.00       50.00
+       1980 |         92       25.00       75.00
+       1990 |         92       25.00      100.00
+------------+-----------------------------------
+      Total |        368      100.00
+
+. 
+. *Enrolled Children Counts
+. gen ewhitepub = (publicelemw+publichsw)/1000000
+(92 missing values generated)
+
+. replace ewhitepub = (publicelemhsw)/1000000 if year==1990
+(92 real changes made)
+
+. gen ewhitepri = (privatelemw+privatehsw)/1000000
+(92 missing values generated)
+
+. replace ewhitepri = (privatelemhsw)/1000000 if year==1990
+(92 real changes made)
+
+. gen eblackpub = (publicelemb+publichsb)/1000000
+(92 missing values generated)
+
+. replace eblackpub = (publicelemhsb)/1000000 if year==1990
+(92 real changes made)
+
+. gen eblackpri = (privatelemb+privatehsb)/1000000
+(92 missing values generated)
+
+. replace eblackpri = (privatelemhsb)/1000000 if year==1990
+(92 real changes made)
+
+. gen eotherpub = (publicelemt+publichst)/1000000-ewhitepub-eblackpub
+(92 missing values generated)
+
+. replace eotherpub = (publicelemhst)/1000000-ewhitepub-eblackpub if year==1990
+(92 real changes made)
+
+. gen eotherpri = (privatelemt+privatehst)/1000000-ewhitepri-eblackpri
+(92 missing values generated)
+
+. replace eotherpri = (privatelemhst)/1000000-ewhitepri-eblackpri if year==1990
+(92 real changes made)
+
+. gen eother = (publicelemt+publichst+privatelemt+privatehst)/1000000-ewhitepub-ewhitepri-eblackpub-eblackpri
+(92 missing values generated)
+
+. replace eother = (publicelemhst+privatelemhst)/1000000-ewhitepub-ewhitepri-eblackpub-eblackpri if year==1990
+(92 real changes made)
+
+. 
+. **** Actual Numbers
+. *Total Pop
+. gen pop = white+black+other
+
+. table year, contents(sum white sum black sum pop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |      sum(white)       sum(black)         sum(pop)
+----------+--------------------------------------------------
+     1960 |         31.0171           7.2730          38.6333
+     1970 |         29.4409           9.0637          39.1116
+     1980 |         26.9897          10.5662          40.5111
+     1990 |         26.8608          11.1709          42.9023
+-------------------------------------------------------------
+
+. drop pop
+
+. *Enrolled Pop
+. gen ewhite = ewhitepub+ewhitepri
+
+. gen eblack = eblackpub+eblackpri
+
+. gen epop = ewhite+eblack+eother
+
+. table year, contents(sum ewhite sum eblack sum epop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |     sum(ewhite)      sum(eblack)        sum(epop)
+----------+--------------------------------------------------
+     1960 |          5.8312           1.6469           7.5493
+     1970 |          6.0041           2.6344           8.7673
+     1980 |          3.8251           2.4858           7.2185
+     1990 |          3.4464           2.4581           7.0315
+-------------------------------------------------------------
+
+. drop ewhite eblack epop
+
+. *Private Enrolled Pop
+. gen epoppri = ewhitepri+eblackpri+eotherpri
+
+. table year, contents(sum ewhitepri sum eblackpri sum epoppri) format(%15.4f)
+
+-------------------------------------------------------------
+     year |  sum(ewhitepri)   sum(eblackpri)     sum(epoppri)
+----------+--------------------------------------------------
+     1960 |          1.3170           0.1401           1.4684
+     1970 |          1.1873           0.1240           1.3252
+     1980 |          0.8763           0.1778           1.1841
+     1990 |          0.7145           0.1657           0.9780
+-------------------------------------------------------------
+
+. drop epoppri
+
+. *Public Enrolled Pop
+. gen epoppub = ewhitepub+eblackpub+eotherpub
+
+. table year, contents(sum ewhitepub sum eblackpub sum epoppub) format(%15.4f)
+
+-------------------------------------------------------------
+     year |  sum(ewhitepub)   sum(eblackpub)     sum(epoppub)
+----------+--------------------------------------------------
+     1960 |          4.5143           1.5068           6.0809
+     1970 |          4.8168           2.5104           7.4421
+     1980 |          2.9487           2.3080           6.0344
+     1990 |          2.7318           2.2924           6.0535
+-------------------------------------------------------------
+
+. drop epoppub
+
+. 
+. **** Generate Counterfactual Estimates
+. replace imp = imp+1900
+(368 real changes made)
+
+. gen imp_postw = (year>=imp)
+
+. gen imp_postb = (year>imp+3)
+
+. 
+. *** Compute Counterfactuals for MSA/YEAR Combos
+. replace white = white+.12*white if imp_postw==1 & south==1
+(117 real changes made)
+
+. replace white = white-.04*white if imp_postw==1 & south==0
+(91 real changes made)
+
+. replace black = black+.01*black if imp_postb==1 & south==1
+(91 real changes made)
+
+. replace black = black-.12*black if imp_postb==1 & south==0
+(74 real changes made)
+
+. 
+. replace ewhitepub = ewhitepub+.14*ewhitepub if imp_postw==1 & south==1
+(117 real changes made)
+
+. replace ewhitepub = ewhitepub+.08*ewhitepub if imp_postw==1 & south==0
+(91 real changes made)
+
+. replace eblackpub = eblackpub-.00*eblackpub if imp_postb==1 & south==1
+(0 real changes made)
+
+. replace eblackpub = eblackpub-.20*eblackpub if imp_postb==1 & south==0
+(74 real changes made)
+
+. 
+. replace ewhitepri = ewhitepri+.04*ewhitepri if imp_postw==1 & south==1
+(117 real changes made)
+
+. replace ewhitepri = ewhitepri-.16*ewhitepri if imp_postw==1 & south==0
+(91 real changes made)
+
+. replace eblackpri = eblackpri+.45*eblackpri if imp_postw==1 & south==1
+(117 real changes made)
+
+. replace eblackpri = eblackpri+.10*eblackpri if imp_postw==1 & south==0
+(91 real changes made)
+
+. 
+. *Total Pop Counts
+. gen pop = white+black+other
+
+. table year, contents(sum white sum black sum pop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |      sum(white)       sum(black)         sum(pop)
+----------+--------------------------------------------------
+     1960 |         31.0171           7.2730          38.6333
+     1970 |         29.9807           9.0225          39.6101
+     1980 |         27.9406          10.3114          41.2073
+     1990 |         27.9131          10.4864          43.2701
+-------------------------------------------------------------
+
+. 
+. *Enrolled Pop Counts
+. gen ewhite = ewhitepub+ewhitepri
+
+. gen eblack = eblackpub+eblackpri
+
+. gen epop = ewhite+eblack+eother
+
+. table year, contents(sum ewhite sum eblack sum epop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |     sum(ewhite)      sum(eblack)        sum(epop)
+----------+--------------------------------------------------
+     1960 |          5.8312           1.6469           7.5493
+     1970 |          6.1406           2.6218           8.8911
+     1980 |          4.0742           2.4018           7.3836
+     1990 |          3.6970           2.2527           7.0767
+-------------------------------------------------------------
+
+. 
+. *Private School Enrolled Counts
+. gen epoppri = ewhitepri+eblackpri+eotherpri
+
+. table year, contents(sum ewhitepri sum eblackpri sum epoppri) format(%15.4f)
+
+-------------------------------------------------------------
+     year |  sum(ewhitepri)   sum(eblackpri)     sum(epoppri)
+----------+--------------------------------------------------
+     1960 |          1.3170           0.1401           1.4684
+     1970 |          1.1842           0.1317           1.3298
+     1980 |          0.8153           0.2085           1.1537
+     1990 |          0.6582           0.2002           0.9562
+-------------------------------------------------------------
+
+. 
+. *Public School Enrolled Counts
+. gen epoppub = ewhitepub+eblackpub+eotherpub
+
+. table year, contents(sum ewhitepub sum eblackpub sum epoppub) format(%15.4f)
+
+-------------------------------------------------------------
+     year |  sum(ewhitepub)   sum(eblackpub)     sum(epoppub)
+----------+--------------------------------------------------
+     1960 |          4.5143           1.5068           6.0809
+     1970 |          4.9564           2.4901           7.5613
+     1980 |          3.2590           2.1933           6.2299
+     1990 |          3.0388           2.0525           6.1205
+-------------------------------------------------------------
+
+. 
+. 
+. 
+end of do-file
+
+. do foot-text
+
+. /**foot-text.do
+> 
+> This do-file describes various elements of the
+> data not evident in tables or figures
+> for footnotes or the body of the text
+> 
+> **/
+. 
+. clear all
+
+. set mem 300m
+
+Current memory allocation
+
+                    current                                 memory usage
+    settable          value     description                 (1M = 1024k)
+    --------------------------------------------------------------------
+    set maxvar         5000     max. variables allowed           1.909M
+    set memory          300M    max. data space                300.000M
+    set matsize        2000     max. RHS vars in models         30.685M
+                                                            -----------
+                                                               332.594M
+
+. set more off
+
+. capture log close

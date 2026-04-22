@@ -1,0 +1,10 @@
+dictionary using ../raw/H79.DAT {
+_column(9)    str8   dupersid   %8s  "person id"
+_column(206)  byte   age03x     %2f  "age as of 12/31/03"
+_column(200)  byte   age31x     %2f
+_column(202)  byte   age42x     %2f
+_column(204)  byte   age53x     %2f
+_column(1999) str1   mcrev03    %1s  "ever have medicare in 2003?"   
+_column(2000) str1   mcdev03    %1s  "ever have medicaid/schip in 2003?" 
+_column(4412) double perwt02f   %12f "final person weight" }
+

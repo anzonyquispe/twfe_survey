@@ -1,0 +1,191 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/olsInteractions.log
+  log type:  text
+ opened on:   9 Jun 2010, 21:14:52
+
+. **************************************
+. *      STB-DotOrg Interactions              *
+. **************************************
+. *qui xi: reg ttlDur st_stbafl1yr st_othDum st_stboth `st_controls' i.pubCohort i.techarea if ((strfc) & cSample==1), cluster(wg)
+. qui xi: reg ttlDur st_stbafl1yr st_orgDum st_stborg st_eduDum st_stbedu `st_controls' i.pubCohort i.techarea if ((strfc) & cSample==1), cluster(wg)
+
+. est store col1 
+
+. 
+. *qui xi: reg ttlDur st_stbafl1yr st_othDum st_stboth stbafl1yr othDum strfc stb_oth `controls' `st_controls' i.pubCohort*strfc i.techarea*strfc if ((strfc|nsrfc) & cSample==1), cluster(wg)
+. *test st_stboth
+. *test stb_oth
+. qui xi: reg ttlDur st_stbafl1yr st_orgDum st_stborg st_eduDum st_stbedu stbafl1yr orgDum eduDum strfc stb_org stb_edu `controls' `st_controls' i.pubCohort*strfc i.techarea*strfc if ((strfc|nsrfc) & 
+> cSample==1), cluster(wg)
+
+. testparm stb_org stb_edu
+
+ ( 1)  stb_org = 0
+ ( 2)  stb_edu = 0
+
+       F(  2,   174) =    0.14
+            Prob > F =    0.8730
+
+. est store col2
+
+. 
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        393       33.70       33.70
+          1 |        773       66.30      100.00
+------------+-----------------------------------
+      Total |      1,166      100.00
+
+. 
+. *qui xi: xtreg ttlDur st_stbafl1yr st_othDum st_stboth stbafl1yr othDum strfc stb_oth `controls' `st_controls' i.pubCohort*strfc i.techarea*strfc if ((strfc|nsrfc) & cSample==1), fe i(wg) r
+. *qui xi: xtreg ttlDur st_stbafl1yr st_orgDum st_stborg st_eduDum st_stbedu stbafl1yr orgDum eduDum strfc stb_org stb_edu `controls' `st_controls' i.pubCohort*strfc i.techarea*strfc if ((strfc|nsrfc)
+>  & cSample==1), fe i(wg) r
+. *est store col2FE
+. 
+. 
+. **************************************
+. *      TechArea Interactions         *
+. **************************************
+. qui xi: reg ttlDur stX* st_othDum `st_controls' i.pubCohort i.techarea if ((strfc) & cSample), cluster(wg)
+
+. est store col3
+
+. 
+. qui xi: reg ttlDur stX* nsX* othDum st_othDum `controls' `st_controls' i.pubCohort*strfc i.techarea*strfc if ((strfc|nsrfc) & cSample), cluster(wg)
+
+. est store col4 
+
+. testparm nsX*
+
+ ( 1)  nsXapp = 0
+ ( 2)  nsXint = 0
+ ( 3)  nsXops = 0
+ ( 4)  nsXrtg = 0
+ ( 5)  nsXsec = 0
+ ( 6)  nsXtsv = 0
+
+       F(  6,   174) =    2.20
+            Prob > F =    0.0452
+
+. *foreach area in app ops rtg sec tsv {
+. *       test stXint = stX`area'
+. *}
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        393       33.70       33.70
+          1 |        773       66.30      100.00
+------------+-----------------------------------
+      Total |      1,166      100.00
+
+. 
+. *qui xi: xtreg ttlDur stX* nsX* `controls' `st_controls' i.pubCohort*strfc i.techarea*strfc if ((strfc|nsrfc) & cSample), fe i(wg) r
+. *est store col4FE
+. *tab strfc if e(sample)
+. 
+. 
+. ************************************
+. *      Cohort Interactions         *
+. ************************************
+. qui xi: reg ttlDur stStb_* othDum  `controls' i.pubCohort i.techarea if (strfc & cSample), cluster(wg)
+
+. est store col5
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        773      100.00      100.00
+------------+-----------------------------------
+      Total |        773      100.00
+
+. 
+. * Models with Time-Varying Baseline
+. qui xi: reg ttlDur stStb_* nsStb_* othDum st_othDum `controls' `st_controls' i.pubCohort*strfc i.techarea if ((strfc|nsrfc) & cSample), cluster(wg)
+
+. est store col6
+
+. testparm nsStb_*
+
+ ( 1)  nsStb_1993 = 0
+ ( 2)  nsStb_1995 = 0
+ ( 3)  nsStb_1997 = 0
+ ( 4)  nsStb_1999 = 0
+ ( 5)  nsStb_2001 = 0
+
+       F(  5,   174) =    1.34
+            Prob > F =    0.2488
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        393       33.70       33.70
+          1 |        773       66.30      100.00
+------------+-----------------------------------
+      Total |      1,166      100.00
+
+. 
+. estout _all, cells(b(fmt(1)) se(par fmt(1) star)) stats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) drop(strfc st_stbafl1yr stbafl1yr st_orgDum st_eduDum orgDum eduDum othDum st_othDum stb_* _I* _cons `control
+> s' `st_controls' nsX* nsStb_*) order(st_stborg st_stbedu stXapp stXtsv stXint stXrtg stXsec stXops stStb_1993 stStb_1995 stStb_1997 stStb_1999 stStb_2001) style(tex) starlevels(+ 0.1 * 0.05 ** 0.01 
+> *** 0.001)
+
+            &        col1   &        col2   &        col3   &        col4   &        col5   &        col6   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   \\
+st_stborg   &         9.4   &        10.5   &               &               &               &               \\
+            &       (3.7)*  &       (6.1)+  &               &               &               &               \\
+st_stbedu   &        -0.1   &         1.1   &               &               &               &               \\
+            &       (2.4)   &       (3.8)   &               &               &               &               \\
+stXapp      &               &               &         9.0   &         7.5   &               &               \\
+            &               &               &       (2.3)***&       (3.4)*  &               &               \\
+stXtsv      &               &               &         5.0   &        11.7   &               &               \\
+            &               &               &       (2.7)+  &       (3.2)***&               &               \\
+stXint      &               &               &         3.5   &         1.6   &               &               \\
+            &               &               &       (3.2)   &       (4.3)   &               &               \\
+stXrtg      &               &               &        -1.1   &         6.0   &               &               \\
+            &               &               &       (3.3)   &       (5.6)   &               &               \\
+stXsec      &               &               &        -0.8   &         6.5   &               &               \\
+            &               &               &       (5.9)   &       (6.6)   &               &               \\
+stXops      &               &               &         3.2   &         7.9   &               &               \\
+            &               &               &       (3.5)   &       (6.0)   &               &               \\
+stStb_1993  &               &               &               &               &         0.1   &        -1.6   \\
+            &               &               &               &               &       (3.7)   &       (4.9)   \\
+stStb_1995  &               &               &               &               &         4.8   &         5.6   \\
+            &               &               &               &               &       (2.5)+  &       (4.5)   \\
+stStb_1997  &               &               &               &               &         0.9   &         5.7   \\
+            &               &               &               &               &       (2.6)   &       (4.1)   \\
+stStb_1999  &               &               &               &               &         6.4   &         7.5   \\
+            &               &               &               &               &       (2.4)** &       (3.4)*  \\
+stStb_2001  &               &               &               &               &         5.7   &        12.0   \\
+            &               &               &               &               &       (3.5)   &       (3.4)***\\
+N           &         773   &        1166   &         773   &        1166   &         773   &        1166   \\
+r2          &        0.22   &        0.20   &        0.22   &        0.21   &        0.21   &        0.19   \\
+df_m        &          24   &          49   &          26   &          53   &          25   &          46   \\
+N_g         &               &               &               &               &               &               \\
+
+. 
+. drop stX* nsX* stStb_* nsStb_* stb_* st_stb*
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/olsInteractions.log
+  log type:  text
+ closed on:   9 Jun 2010, 21:14:53
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

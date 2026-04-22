@@ -1,0 +1,5732 @@
+
+**make confidence intervals 95%
+local ci = 1.96
+*local ci = 1.645
+local ci_label = "95%"
+*local ci_label = "90%"
+
+
+/****************************************************************************
+** Figure A1: Ind distributions in BG and JOLTS							  **
+****************************************************************************/
+*{{{
+***distribution in BG
+use "$data_output/BG_hasfirm_sector_msa_year", clear
+
+keep if year==2007 | (year>=2010 & year<=2015)
+collapse (sum) npostings, by(sector)
+egen total = sum(npostings)
+gen BG_share = npostings/total
+display "share of BG ads with missing industry"
+sum BG_share if sector==-99 | sector==99
+drop BG_share total
+drop if sector==-99 | sector==99
+egen total = sum(npostings)
+gen BG_share = npostings/total
+drop total
+
+**need to make sectors 2-digit and align w JOLTS
+**recode govt
+replace sector = 90 if sector==92
+**JOLTS includes utilities in transport and warehousing
+replace sector = 48 if sector==22 | sector==49
+**no agg in JOLTS
+drop if sector==11
+***mining is 11 in JOLTS
+replace sector = 11 if sector==21
+***aggregate manu
+replace sector = 30 if sector>=31 & sector<=33
+***group all retail together
+replace sector=44 if sector==45
+**lump all professional together
+replace sector = 54 if sector==55 | sector==56
+
+collapse (sum) npostings, by(sector)
+egen total = sum(npostings)
+gen BG_share = npostings/total
+drop total
+tempfile BGsectors
+save `BGsectors', replace
+
+****Clean JOLTS data from BLS 
+**	--- data are monthly sa bc they do not release annual data (even nsa)
+clear
+import delim using "$raw_MSA/JOLTSvacancies_bysector2007_2017.txt"
+gen sector = substr(v1,4,2)
+drop v1
+destring sector, replace
+assert sector!=.
+reshape long v, i(sector) j(date)
+replace date = date-1
+gen year = 2007 + floor((date-1)/12)
+tab year
+gen month = date - (year-2007)*12
+keep if year==2007 | (year>=2010 & year<=2015)
+collapse v, by(sector)
+egen total = sum(v)
+gen JOLTS_share = v/total
+drop v total
+
+merge 1:1 sector using `BGsectors'
+assert _merge==3 
+drop _merge
+
+gsort -BG_share
+display "data for Figure A1"
+display "distribution of sectors v JOLTS, 2007 2010-2015"
+display "sorted by highest in BG"
+list, sep(0)
+
+*}}}
+
+/****************************************************************************
+** Figure A2: Occupation Distributions in CPS, BG and OES				  **
+****************************************************************************/
+*{{{
+***distribution in BG
+use "$data_output/BG_hasfirm_soc_msa_year", clear
+assert year==2007 | (year>=2010 & year<=2015)
+replace soc = floor(soc/100)
+tab soc
+collapse (sum) npostings, by(soc year)
+bysort year: egen total = sum(npostings)
+gen shareBG = npostings/total
+**get unweighted average across years
+collapse shareBG, by(soc)
+tempfile BGdist
+save `BGdist', replace
+
+***OES data over same years
+foreach year of numlist 2007 2010/2015 {
+	clear
+	import delim using "$raw_OES/national_M`year'_dl.txt", varnames(1)
+	if `year'<=2011 {
+		keep occ_code occ_title group tot_emp
+	}
+	if `year'>=2012 {
+		keep occ_code occ_title occ_group tot_emp
+		ren occ_group group
+		**I think we still only want to keep detailed, there are minor and broad in these...
+		replace group="" if group=="detailed"
+	}
+	
+	***just doing 2-digit so keep only "major" codes
+	keep if group=="major" | occ_code=="00-0000"
+	gen soc_2digit = substr(occ_code,1,2)
+	tab soc_2digit
+	destring soc_2digit, replace	
+	**group = "major" are the super category, want only sub categories
+	destring tot_emp, replace force ignore(",")
+
+	**all occs are in 0
+	gen temp = tot_emp if soc_2digit==0
+	egen total = mean(temp)
+	drop if soc==0
+
+	keep soc_2digit tot_emp total
+	egen total_actual = sum(total)
+	gen OESshare_emp = tot_emp/total_actual
+	gen year = `year'
+	tempfile raw`year'
+	save `raw`year'', replace
+}
+
+use `raw2007', clear
+foreach year of numlist 2010/2015 {
+	append using `raw`year''
+}
+
+**get average in data years
+drop total
+assert tot_emp!=. 
+assert OESshare_emp!=.
+ren tot_emp npostings_OES
+ren OESshare_emp share_OES
+keep npostings_OES share_OES soc_2digit year
+
+keep if year==2007 | (year>=2010 & year<=2015)
+ren soc_2digit soc
+bysort year: egen total = sum(npostings)
+gen shareOES = npostings/total
+keep shareOES year soc
+tab year
+collapse shareOES, by(soc)
+tempfile OESdist
+save `OESdist', replace
+
+**CPS new job starts
+***dataset created by Brad
+use "$CPS_data/newjob_cps9816Q1", clear
+****keep all job starts, including occ switchers
+assert lfs2<=2
+**keep same sample
+keep if year==2007 | (year>=2010 & year<=2015)
+collapse (sum) pwgt2, by(soc2 year)
+bysort year: egen total = sum(pwgt2)
+gen shareCPS = pwgt/total
+ren soc2 soc
+destring soc, replace
+collapse shareCPS, by(soc)
+
+
+
+merge 1:1 soc using `BGdist'
+assert _merge==3
+drop _merge
+merge 1:1 soc using `OESdist'
+assert _merge==3
+drop _merge
+
+
+gsort -shareBG
+display "data for Figure A2"
+display "occupation distributions 2007, 2010-2015"
+display "sorted by highest in BG"
+list soc shareBG shareCPS shareOES, sep(0)
+
+*}}}
+
+/************************************************
+**Figure A3: CPS-BG-Representativeness over time
+************************************************/
+*{{{
+use "$data_output/BG_hasfirm_soc_msa_year", clear
+replace soc = floor(soc/100)
+tab soc
+collapse (sum) npostings, by(soc year)
+bysort year: egen total = sum(npostings)
+gen shareBG = npostings/total
+keep shareBG soc year
+tempfile BGdist
+save `BGdist', replace
+
+**CPS new job starts created by Brad
+use "$CPS_data/newjob_cps9816Q1", clear
+****keep all job starts, including occ switchers
+assert lfs2<=2
+**keep same sample
+keep if year==2007 | (year>=2010 & year<=2015)
+collapse (sum) pwgt2, by(soc2 year)
+bysort year: egen total = sum(pwgt)
+gen shareCPS = pwgt/total
+ren soc2 soc
+keep shareCPS soc year
+destring soc, replace
+
+merge 1:1 soc year using `BGdist'
+assert _merge==3
+drop _merge
+
+reshape wide shareCPS shareBG, i(soc) j(year)
+label define soc 11 "MGT" 13 "BusFin" 15 "CompMath" 17 "ArchEng" 19 " " 21 " " 23 " " 25 "Ed" 27 "ArtEnt" 29 "Health" 31 " " 33 " " 35 "Food" 37 " " 39 "Prsnl" 41 "Sales" 43 "AdminSupport" 45 " " 47 "Constn" 49 " " 51 "Prodn" 53 "Transp"
+label values soc soc
+
+foreach year of numlist 2007 2010/2015 {
+	gen diff`year' = shareBG`year' - shareCPS`year'
+}
+
+twoway (line diff2007 diff2007, lcolor(black) lpattern(dash)) (scatter diff2010 diff2007, mcolor(purple) ) (scatter diff2011 diff2007, mcolor(purple*.9)) (scatter diff2012 diff2007, mcolor(purple*.7)) (scatter diff2013 diff2007, mcolor(purple*.5)) (scatter diff2014 diff2007, mcolor(purple*.4) mlabel(soc) mlabsize(vsmall) mlabcolor(black) )  (scatter diff2015 diff2007, mcolor(purple*.2)), legend(off) xtitle(Deviation from CPS 2007) ytitle(Deviation from CPS 2010-2015) note("The x-axis is the BG ad share in an occupation in 2007 minus the CPS new job share in the same occupation in 2007. The y-axis" "is these differences for each year from 2010-2015. Darker shades are earlier years, lighter shades are later. As a benchmark," "the 45 degree line (black dash) indicates occupations where representation in BG, relative to CPS, did not change from 2007.", size(vsmall)) xlabel(-.09(.03).15) graphregion(color(white)) bgcolor(white)
+graph export "$graphs/figureA3.pdf", as(pdf) replace
+
+
+
+*}}}
+
+/******************************************************************************
+***Figure A4: Correlation between ed requirements and employment at MSA-SOC level
+*******************************************************************************/
+*{{{
+
+***get ventiles of education of employed workers by msa and occ
+*{{{
+set more off
+
+clear
+quietly infix              ///
+ int     year      1-4    ///
+  byte    datanum   5-6    ///
+  double  serial    7-14   ///
+  double  hhwt      15-24  ///
+  byte    statefip  25-26  ///
+  long    met2013   27-31  ///
+  byte    gq        32-32  ///
+  int     pernum    33-36  ///
+  double  perwt     37-46  ///
+  int     age       47-49  ///
+  byte    educ      50-51  ///
+  int     educd     52-54  ///
+  byte    empstat   55-55  ///
+  byte    empstatd  56-57  ///
+  int     occ2010   58-61  ///
+  str     occsoc    62-67  ///
+  byte    wkswork2  68-68  ///
+  byte    uhrswork  69-70  ///
+  long    incwage   71-76  ///
+  byte    quhrswor  77-77  ///
+  byte    qwkswork  78-78  ///
+  byte    qincwage  79-79  ///
+using "$raw_MSA/usa_00055.dat"
+
+assert year==2007 | (year>=2010 & year<=2015)
+
+replace hhwt     = hhwt     / 100
+replace perwt    = perwt    / 100
+
+format serial   %8.0f
+format hhwt     %10.2f
+format perwt    %10.2f
+
+**label vars
+*{{{
+label var year     `"Census year"'
+label var datanum  `"Data set number"'
+label var serial   `"Household serial number"'
+label var hhwt     `"Household weight"'
+label var statefip `"State (FIPS code)"'
+label var met2013  `"Metropolitan area, 2013 OMB delineations"'
+label var gq       `"Group quarters status"'
+label var pernum   `"Person number in sample unit"'
+label var perwt    `"Person weight"'
+label var age      `"Age"'
+label var educ     `"Educational attainment [general version]"'
+label var educd    `"Educational attainment [detailed version]"'
+label var empstat  `"Employment status [general version]"'
+label var empstatd `"Employment status [detailed version]"'
+label var occ2010  `"Occupation, 2010 basis"'
+label var occsoc   `"Occupation, SOC classification"'
+label var wkswork2 `"Weeks worked last year, intervalled"'
+label var uhrswork `"Usual hours worked per week"'
+label var incwage  `"Wage and salary income"'
+label var quhrswor `"Flag for Uhrswork"'
+label var qwkswork `"Flag for Wkswork1, Wkswork2"'
+label var qincwage `"Flag for Incwage, Inctot, Incearn"'
+
+label define year_lbl 1850 `"1850"'
+label define year_lbl 1860 `"1860"', add
+label define year_lbl 1870 `"1870"', add
+label define year_lbl 1880 `"1880"', add
+label define year_lbl 1900 `"1900"', add
+label define year_lbl 1910 `"1910"', add
+label define year_lbl 1920 `"1920"', add
+label define year_lbl 1930 `"1930"', add
+label define year_lbl 1940 `"1940"', add
+label define year_lbl 1950 `"1950"', add
+label define year_lbl 1960 `"1960"', add
+label define year_lbl 1970 `"1970"', add
+label define year_lbl 1980 `"1980"', add
+label define year_lbl 1990 `"1990"', add
+label define year_lbl 2000 `"2000"', add
+label define year_lbl 2001 `"2001"', add
+label define year_lbl 2002 `"2002"', add
+label define year_lbl 2003 `"2003"', add
+label define year_lbl 2004 `"2004"', add
+label define year_lbl 2005 `"2005"', add
+label define year_lbl 2006 `"2006"', add
+label define year_lbl 2007 `"2007"', add
+label define year_lbl 2008 `"2008"', add
+label define year_lbl 2009 `"2009"', add
+label define year_lbl 2010 `"2010"', add
+label define year_lbl 2011 `"2011"', add
+label define year_lbl 2012 `"2012"', add
+label define year_lbl 2013 `"2013"', add
+label define year_lbl 2014 `"2014"', add
+label define year_lbl 2015 `"2015"', add
+label values year year_lbl
+
+label define statefip_lbl 01 `"Alabama"'
+label define statefip_lbl 02 `"Alaska"', add
+label define statefip_lbl 04 `"Arizona"', add
+label define statefip_lbl 05 `"Arkansas"', add
+label define statefip_lbl 06 `"California"', add
+label define statefip_lbl 08 `"Colorado"', add
+label define statefip_lbl 09 `"Connecticut"', add
+label define statefip_lbl 10 `"Delaware"', add
+label define statefip_lbl 11 `"District of Columbia"', add
+label define statefip_lbl 12 `"Florida"', add
+label define statefip_lbl 13 `"Georgia"', add
+label define statefip_lbl 15 `"Hawaii"', add
+label define statefip_lbl 16 `"Idaho"', add
+label define statefip_lbl 17 `"Illinois"', add
+label define statefip_lbl 18 `"Indiana"', add
+label define statefip_lbl 19 `"Iowa"', add
+label define statefip_lbl 20 `"Kansas"', add
+label define statefip_lbl 21 `"Kentucky"', add
+label define statefip_lbl 22 `"Louisiana"', add
+label define statefip_lbl 23 `"Maine"', add
+label define statefip_lbl 24 `"Maryland"', add
+label define statefip_lbl 25 `"Massachusetts"', add
+label define statefip_lbl 26 `"Michigan"', add
+label define statefip_lbl 27 `"Minnesota"', add
+label define statefip_lbl 28 `"Mississippi"', add
+label define statefip_lbl 29 `"Missouri"', add
+label define statefip_lbl 30 `"Montana"', add
+label define statefip_lbl 31 `"Nebraska"', add
+label define statefip_lbl 32 `"Nevada"', add
+label define statefip_lbl 33 `"New Hampshire"', add
+label define statefip_lbl 34 `"New Jersey"', add
+label define statefip_lbl 35 `"New Mexico"', add
+label define statefip_lbl 36 `"New York"', add
+label define statefip_lbl 37 `"North Carolina"', add
+label define statefip_lbl 38 `"North Dakota"', add
+label define statefip_lbl 39 `"Ohio"', add
+label define statefip_lbl 40 `"Oklahoma"', add
+label define statefip_lbl 41 `"Oregon"', add
+label define statefip_lbl 42 `"Pennsylvania"', add
+label define statefip_lbl 44 `"Rhode Island"', add
+label define statefip_lbl 45 `"South Carolina"', add
+label define statefip_lbl 46 `"South Dakota"', add
+label define statefip_lbl 47 `"Tennessee"', add
+label define statefip_lbl 48 `"Texas"', add
+label define statefip_lbl 49 `"Utah"', add
+label define statefip_lbl 50 `"Vermont"', add
+label define statefip_lbl 51 `"Virginia"', add
+label define statefip_lbl 53 `"Washington"', add
+label define statefip_lbl 54 `"West Virginia"', add
+label define statefip_lbl 55 `"Wisconsin"', add
+label define statefip_lbl 56 `"Wyoming"', add
+label define statefip_lbl 61 `"Maine-New Hampshire-Vermont"', add
+label define statefip_lbl 62 `"Massachusetts-Rhode Island"', add
+label define statefip_lbl 63 `"Minnesota-Iowa-Missouri-Kansas-Nebraska-S.Dakota-N.Dakota"', add
+label define statefip_lbl 64 `"Maryland-Delaware"', add
+label define statefip_lbl 65 `"Montana-Idaho-Wyoming"', add
+label define statefip_lbl 66 `"Utah-Nevada"', add
+label define statefip_lbl 67 `"Arizona-New Mexico"', add
+label define statefip_lbl 68 `"Alaska-Hawaii"', add
+label define statefip_lbl 72 `"Puerto Rico"', add
+label define statefip_lbl 97 `"Military/Mil. Reservation"', add
+label define statefip_lbl 99 `"State not identified"', add
+label values statefip statefip_lbl
+
+label define met2013_lbl 00000 `"Not in identifiable area"'
+label define met2013_lbl 10420 `"Akron, OH"', add
+label define met2013_lbl 10580 `"Albany-Schenectady-Troy, NY"', add
+label define met2013_lbl 10740 `"Albuquerque, NM"', add
+label define met2013_lbl 10780 `"Alexandria, LA"', add
+label define met2013_lbl 10900 `"Allentown-Bethlehem-Easton, PA-NJ"', add
+label define met2013_lbl 11020 `"Altoona, PA"', add
+label define met2013_lbl 11100 `"Amarillo, TX"', add
+label define met2013_lbl 11260 `"Anchorage, AK"', add
+label define met2013_lbl 11460 `"Ann Arbor, MI"', add
+label define met2013_lbl 11500 `"Anniston-Oxford-Jacksonville, AL"', add
+label define met2013_lbl 11700 `"Asheville, NC"', add
+label define met2013_lbl 12020 `"Athens-Clarke County, GA"', add
+label define met2013_lbl 12060 `"Atlanta-Sandy Springs-Roswell, GA"', add
+label define met2013_lbl 12100 `"Atlantic City-Hammonton, NJ"', add
+label define met2013_lbl 12220 `"Auburn-Opelika, AL"', add
+label define met2013_lbl 12260 `"Augusta-Richmond County, GA-SC"', add
+label define met2013_lbl 12420 `"Austin-Round Rock, TX"', add
+label define met2013_lbl 12540 `"Bakersfield, CA"', add
+label define met2013_lbl 12580 `"Baltimore-Columbia-Towson, MD"', add
+label define met2013_lbl 12620 `"Bangor, ME"', add
+label define met2013_lbl 12700 `"Barnstable Town, MA"', add
+label define met2013_lbl 12940 `"Baton Rouge, LA"', add
+label define met2013_lbl 12980 `"Battle Creek, MI"', add
+label define met2013_lbl 13140 `"Beaumont-Port Arthur, TX"', add
+label define met2013_lbl 13380 `"Bellingham, WA"', add
+label define met2013_lbl 13460 `"Bend-Redmond, OR"', add
+label define met2013_lbl 13740 `"Billings, MT"', add
+label define met2013_lbl 13780 `"Binghamton, NY"', add
+label define met2013_lbl 13820 `"Birmingham-Hoover, AL"', add
+label define met2013_lbl 13900 `"Bismarck, ND"', add
+label define met2013_lbl 13980 `"Blacksburg-Christiansburg-Radford, VA"', add
+label define met2013_lbl 14010 `"Bloomington, IL"', add
+label define met2013_lbl 14020 `"Bloomington, IN"', add
+label define met2013_lbl 14260 `"Boise City, ID"', add
+label define met2013_lbl 14460 `"Boston-Cambridge-Newton, MA-NH"', add
+label define met2013_lbl 14740 `"Bremerton-Silverdale, WA"', add
+label define met2013_lbl 14860 `"Bridgeport-Stamford-Norwalk, CT"', add
+label define met2013_lbl 15180 `"Brownsville-Harlingen, TX"', add
+label define met2013_lbl 15380 `"Buffalo-Cheektowaga-Niagara Falls, NY"', add
+label define met2013_lbl 15500 `"Burlington, NC"', add
+label define met2013_lbl 15540 `"Burlington-South Burlington, VT"', add
+label define met2013_lbl 15940 `"Canton-Massillon, OH"', add
+label define met2013_lbl 15980 `"Cape Coral-Fort Myers, FL"', add
+label define met2013_lbl 16580 `"Champaign-Urbana, IL"', add
+label define met2013_lbl 16620 `"Charleston, WV"', add
+label define met2013_lbl 16700 `"Charleston-North Charleston, SC"', add
+label define met2013_lbl 16740 `"Charlotte-Concord-Gastonia, NC-SC"', add
+label define met2013_lbl 16820 `"Charlottesville, VA"', add
+label define met2013_lbl 16860 `"Chattanooga, TN-GA"', add
+label define met2013_lbl 16980 `"Chicago-Naperville-Elgin, IL-IN-WI"', add
+label define met2013_lbl 17020 `"Chico, CA"', add
+label define met2013_lbl 17140 `"Cincinnati, OH-KY-IN"', add
+label define met2013_lbl 17300 `"Clarksville, TN-KY"', add
+label define met2013_lbl 17460 `"Cleveland-Elyria, OH"', add
+label define met2013_lbl 17660 `"Coeur d'Alene, ID"', add
+label define met2013_lbl 17780 `"College Station-Bryan, TX"', add
+label define met2013_lbl 17820 `"Colorado Springs, CO"', add
+label define met2013_lbl 17860 `"Columbia, MO"', add
+label define met2013_lbl 17900 `"Columbia, SC"', add
+label define met2013_lbl 18140 `"Columbus, OH"', add
+label define met2013_lbl 18580 `"Corpus Christi, TX"', add
+label define met2013_lbl 19100 `"Dallas-Fort Worth-Arlington, TX"', add
+label define met2013_lbl 19300 `"Daphne-Fairhope-Foley, AL"', add
+label define met2013_lbl 19340 `"Davenport-Moline-Rock Island, IA-IL"', add
+label define met2013_lbl 19380 `"Dayton, OH"', add
+label define met2013_lbl 19460 `"Decatur, AL"', add
+label define met2013_lbl 19500 `"Decatur, IL"', add
+label define met2013_lbl 19660 `"Deltona-Daytona Beach-Ormond Beach, FL"', add
+label define met2013_lbl 19740 `"Denver-Aurora-Lakewood, CO"', add
+label define met2013_lbl 19780 `"Des Moines-West Des Moines, IA"', add
+label define met2013_lbl 19820 `"Detroit-Warren-Dearborn, MI"', add
+label define met2013_lbl 20100 `"Dover, DE"', add
+label define met2013_lbl 20500 `"Durham-Chapel Hill, NC"', add
+label define met2013_lbl 20700 `"East Stroudsburg, PA"', add
+label define met2013_lbl 20740 `"Eau Claire, WI"', add
+label define met2013_lbl 20940 `"El Centro, CA"', add
+label define met2013_lbl 21060 `"Elizabethtown-Fort Knox, KY"', add
+label define met2013_lbl 21140 `"Elkhart-Goshen, IN"', add
+label define met2013_lbl 21340 `"El Paso, TX"', add
+label define met2013_lbl 21500 `"Erie, PA"', add
+label define met2013_lbl 21660 `"Eugene, OR"', add
+label define met2013_lbl 21780 `"Evansville, IN-KY"', add
+label define met2013_lbl 22140 `"Farmington, NM"', add
+label define met2013_lbl 22180 `"Fayetteville, NC"', add
+label define met2013_lbl 22220 `"Fayetteville-Springdale-Rogers, AR-MO"', add
+label define met2013_lbl 22380 `"Flagstaff, AZ"', add
+label define met2013_lbl 22420 `"Flint, MI"', add
+label define met2013_lbl 22500 `"Florence, SC"', add
+label define met2013_lbl 22520 `"Florence-Muscle Shoals, AL"', add
+label define met2013_lbl 22660 `"Fort Collins, CO"', add
+label define met2013_lbl 23060 `"Fort Wayne, IN"', add
+label define met2013_lbl 23420 `"Fresno, CA"', add
+label define met2013_lbl 23460 `"Gadsden, AL"', add
+label define met2013_lbl 23540 `"Gainesville, FL"', add
+label define met2013_lbl 23580 `"Gainesville, GA"', add
+label define met2013_lbl 24020 `"Glens Falls, NY"', add
+label define met2013_lbl 24140 `"Goldsboro, NC"', add
+label define met2013_lbl 24300 `"Grand Junction, CO"', add
+label define met2013_lbl 24340 `"Grand Rapids-Wyoming, MI"', add
+label define met2013_lbl 24540 `"Greeley, CO"', add
+label define met2013_lbl 24660 `"Greensboro-High Point, NC"', add
+label define met2013_lbl 24780 `"Greenville, NC"', add
+label define met2013_lbl 24860 `"Greenville-Anderson-Mauldin, SC"', add
+label define met2013_lbl 25060 `"Gulfport-Biloxi-Pascagoula, MS"', add
+label define met2013_lbl 25220 `"Hammond, LA"', add
+label define met2013_lbl 25260 `"Hanford-Corcoran, CA"', add
+label define met2013_lbl 25420 `"Harrisburg-Carlisle, PA"', add
+label define met2013_lbl 25500 `"Harrisonburg, VA"', add
+label define met2013_lbl 25540 `"Hartford-West Hartford-East Hartford, CT"', add
+label define met2013_lbl 25620 `"Hattiesburg, MS"', add
+label define met2013_lbl 25860 `"Hickory-Lenoir-Morganton, NC"', add
+label define met2013_lbl 25940 `"Hilton Head Island-Bluffton-Beaufort, SC"', add
+label define met2013_lbl 26140 `"Homosassa Springs, FL"', add
+label define met2013_lbl 26380 `"Houma-Thibodaux, LA"', add
+label define met2013_lbl 26420 `"Houston-The Woodlands-Sugar Land, TX"', add
+label define met2013_lbl 26620 `"Huntsville, AL"', add
+label define met2013_lbl 26900 `"Indianapolis-Carmel-Anderson, IN"', add
+label define met2013_lbl 26980 `"Iowa City, IA"', add
+label define met2013_lbl 27060 `"Ithaca, NY"', add
+label define met2013_lbl 27100 `"Jackson, MI"', add
+label define met2013_lbl 27140 `"Jackson, MS"', add
+label define met2013_lbl 27180 `"Jackson, TN"', add
+label define met2013_lbl 27260 `"Jacksonville, FL"', add
+label define met2013_lbl 27340 `"Jacksonville, NC"', add
+label define met2013_lbl 27500 `"Janesville-Beloit, WI"', add
+label define met2013_lbl 27620 `"Jefferson City, MO"', add
+label define met2013_lbl 27780 `"Johnstown, PA"', add
+label define met2013_lbl 27900 `"Joplin, MO"', add
+label define met2013_lbl 28020 `"Kalamazoo-Portage, MI"', add
+label define met2013_lbl 28100 `"Kankakee, IL"', add
+label define met2013_lbl 28140 `"Kansas City, MO-KS"', add
+label define met2013_lbl 28420 `"Kennewick-Richland, WA"', add
+label define met2013_lbl 28660 `"Killeen-Temple, TX"', add
+label define met2013_lbl 28700 `"Kingsport-Bristol-Bristol, TN-VA"', add
+label define met2013_lbl 28940 `"Knoxville, TN"', add
+label define met2013_lbl 29100 `"La Crosse-Onalaska, WI-MN"', add
+label define met2013_lbl 29180 `"Lafayette, LA"', add
+label define met2013_lbl 29200 `"Lafayette-West Lafayette, IN"', add
+label define met2013_lbl 29340 `"Lake Charles, LA"', add
+label define met2013_lbl 29420 `"Lake Havasu City-Kingman, AZ"', add
+label define met2013_lbl 29460 `"Lakeland-Winter Haven, FL"', add
+label define met2013_lbl 29540 `"Lancaster, PA"', add
+label define met2013_lbl 29620 `"Lansing-East Lansing, MI"', add
+label define met2013_lbl 29700 `"Laredo, TX"', add
+label define met2013_lbl 29740 `"Las Cruces, NM"', add
+label define met2013_lbl 29820 `"Las Vegas-Henderson-Paradise, NV"', add
+label define met2013_lbl 29940 `"Lawrence, KS"', add
+label define met2013_lbl 30140 `"Lebanon, PA"', add
+label define met2013_lbl 30340 `"Lewiston-Auburn, ME"', add
+label define met2013_lbl 30620 `"Lima, OH"', add
+label define met2013_lbl 30700 `"Lincoln, NE"', add
+label define met2013_lbl 30780 `"Little Rock-North Little Rock-Conway, AR"', add
+label define met2013_lbl 31080 `"Los Angeles-Long Beach-Anaheim, CA"', add
+label define met2013_lbl 31140 `"Louisville/Jefferson County, KY-IN"', add
+label define met2013_lbl 31180 `"Lubbock, TX"', add
+label define met2013_lbl 31340 `"Lynchburg, VA"', add
+label define met2013_lbl 31460 `"Madera, CA"', add
+label define met2013_lbl 31700 `"Manchester-Nashua, NH"', add
+label define met2013_lbl 31900 `"Mansfield, OH"', add
+label define met2013_lbl 32420 `"Mayagüez, PR"', add
+label define met2013_lbl 32580 `"McAllen-Edinburg-Mission, TX"', add
+label define met2013_lbl 32780 `"Medford, OR"', add
+label define met2013_lbl 32820 `"Memphis, TN-MS-AR"', add
+label define met2013_lbl 32900 `"Merced, CA"', add
+label define met2013_lbl 33100 `"Miami-Fort Lauderdale-West Palm Beach, FL"', add
+label define met2013_lbl 33140 `"Michigan City-La Porte, IN"', add
+label define met2013_lbl 33260 `"Midland, TX"', add
+label define met2013_lbl 33340 `"Milwaukee-Waukesha-West Allis, WI"', add
+label define met2013_lbl 33460 `"Minneapolis-St. Paul-Bloomington, MN-WI"', add
+label define met2013_lbl 33660 `"Mobile, AL"', add
+label define met2013_lbl 33700 `"Modesto, CA"', add
+label define met2013_lbl 33740 `"Monroe, LA"', add
+label define met2013_lbl 33780 `"Monroe, MI"', add
+label define met2013_lbl 33860 `"Montgomery, AL"', add
+label define met2013_lbl 34060 `"Morgantown, WV"', add
+label define met2013_lbl 34620 `"Muncie, IN"', add
+label define met2013_lbl 34740 `"Muskegon, MI"', add
+label define met2013_lbl 34820 `"Myrtle Beach-Conway-North Myrtle Beach, SC-NC"', add
+label define met2013_lbl 34900 `"Napa, CA"', add
+label define met2013_lbl 34940 `"Naples-Immokalee-Marco Island, FL"', add
+label define met2013_lbl 34980 `"Nashville-Davidson--Murfreesboro--Franklin, TN"', add
+label define met2013_lbl 35300 `"New Haven-Milford, CT"', add
+label define met2013_lbl 35380 `"New Orleans-Metairie, LA"', add
+label define met2013_lbl 35620 `"New York-Newark-Jersey City, NY-NJ-PA"', add
+label define met2013_lbl 35660 `"Niles-Benton Harbor, MI"', add
+label define met2013_lbl 35840 `"North Port-Sarasota-Bradenton, FL"', add
+label define met2013_lbl 35980 `"Norwich-New London, CT"', add
+label define met2013_lbl 36100 `"Ocala, FL"', add
+label define met2013_lbl 36140 `"Ocean City, NJ"', add
+label define met2013_lbl 36220 `"Odessa, TX"', add
+label define met2013_lbl 36260 `"Ogden-Clearfield, UT"', add
+label define met2013_lbl 36420 `"Oklahoma City, OK"', add
+label define met2013_lbl 36500 `"Olympia-Tumwater, WA"', add
+label define met2013_lbl 36540 `"Omaha-Council Bluffs, NE-IA"', add
+label define met2013_lbl 36740 `"Orlando-Kissimmee-Sanford, FL"', add
+label define met2013_lbl 36780 `"Oshkosh-Neenah, WI"', add
+label define met2013_lbl 36980 `"Owensboro, KY"', add
+label define met2013_lbl 37100 `"Oxnard-Thousand Oaks-Ventura, CA"', add
+label define met2013_lbl 37340 `"Palm Bay-Melbourne-Titusville, FL"', add
+label define met2013_lbl 37460 `"Panama City, FL"', add
+label define met2013_lbl 37620 `"Parkersburg-Vienna, WV"', add
+label define met2013_lbl 37860 `"Pensacola-Ferry Pass-Brent, FL"', add
+label define met2013_lbl 37900 `"Peoria, IL"', add
+label define met2013_lbl 37980 `"Philadelphia-Camden-Wilmington, PA-NJ-DE-MD"', add
+label define met2013_lbl 38060 `"Phoenix-Mesa-Scottsdale, AZ"', add
+label define met2013_lbl 38300 `"Pittsburgh, PA"', add
+label define met2013_lbl 38340 `"Pittsfield, MA"', add
+label define met2013_lbl 38660 `"Ponce, PR"', add
+label define met2013_lbl 38860 `"Portland-South Portland, ME"', add
+label define met2013_lbl 38900 `"Portland-Vancouver-Hillsboro, OR-WA"', add
+label define met2013_lbl 38940 `"Port St. Lucie, FL"', add
+label define met2013_lbl 39140 `"Prescott, AZ"', add
+label define met2013_lbl 39300 `"Providence-Warwick, RI-MA"', add
+label define met2013_lbl 39340 `"Provo-Orem, UT"', add
+label define met2013_lbl 39380 `"Pueblo, CO"', add
+label define met2013_lbl 39460 `"Punta Gorda, FL"', add
+label define met2013_lbl 39540 `"Racine, WI"', add
+label define met2013_lbl 39580 `"Raleigh, NC"', add
+label define met2013_lbl 39740 `"Reading, PA"', add
+label define met2013_lbl 39820 `"Redding, CA"', add
+label define met2013_lbl 39900 `"Reno, NV"', add
+label define met2013_lbl 40060 `"Richmond, VA"', add
+label define met2013_lbl 40140 `"Riverside-San Bernardino-Ontario, CA"', add
+label define met2013_lbl 40220 `"Roanoke, VA"', add
+label define met2013_lbl 40380 `"Rochester, NY"', add
+label define met2013_lbl 40420 `"Rockford, IL"', add
+label define met2013_lbl 40580 `"Rocky Mount, NC"', add
+label define met2013_lbl 40900 `"Sacramento--Roseville--Arden-Arcade, CA"', add
+label define met2013_lbl 40980 `"Saginaw, MI"', add
+label define met2013_lbl 41060 `"St. Cloud, MN"', add
+label define met2013_lbl 41100 `"St. George, UT"', add
+label define met2013_lbl 41140 `"St. Joseph, MO-KS"', add
+label define met2013_lbl 41180 `"St. Louis, MO-IL"', add
+label define met2013_lbl 41500 `"Salinas, CA"', add
+label define met2013_lbl 41540 `"Salisbury, MD-DE"', add
+label define met2013_lbl 41620 `"Salt Lake City, UT"', add
+label define met2013_lbl 41660 `"San Angelo, TX"', add
+label define met2013_lbl 41700 `"San Antonio-New Braunfels, TX"', add
+label define met2013_lbl 41740 `"San Diego-Carlsbad, CA"', add
+label define met2013_lbl 41860 `"San Francisco-Oakland-Hayward, CA"', add
+label define met2013_lbl 41900 `"San Germán, PR"', add
+label define met2013_lbl 41940 `"San Jose-Sunnyvale-Santa Clara, CA"', add
+label define met2013_lbl 41980 `"San Juan-Carolina-Caguas, PR"', add
+label define met2013_lbl 42020 `"San Luis Obispo-Paso Robles-Arroyo Grande, CA"', add
+label define met2013_lbl 42100 `"Santa Cruz-Watsonville, CA"', add
+label define met2013_lbl 42140 `"Santa Fe, NM"', add
+label define met2013_lbl 42200 `"Santa Maria-Santa Barbara, CA"', add
+label define met2013_lbl 42220 `"Santa Rosa, CA"', add
+label define met2013_lbl 42540 `"Scranton--Wilkes-Barre--Hazleton, PA"', add
+label define met2013_lbl 42660 `"Seattle-Tacoma-Bellevue, WA"', add
+label define met2013_lbl 42680 `"Sebastian-Vero Beach, FL"', add
+label define met2013_lbl 43100 `"Sheboygan, WI"', add
+label define met2013_lbl 43340 `"Shreveport-Bossier City, LA"', add
+label define met2013_lbl 43900 `"Spartanburg, SC"', add
+label define met2013_lbl 44060 `"Spokane-Spokane Valley, WA"', add
+label define met2013_lbl 44100 `"Springfield, IL"', add
+label define met2013_lbl 44140 `"Springfield, MA"', add
+label define met2013_lbl 44180 `"Springfield, MO"', add
+label define met2013_lbl 44220 `"Springfield, OH"', add
+label define met2013_lbl 44300 `"State College, PA"', add
+label define met2013_lbl 44700 `"Stockton-Lodi, CA"', add
+label define met2013_lbl 44940 `"Sumter, SC"', add
+label define met2013_lbl 45060 `"Syracuse, NY"', add
+label define met2013_lbl 45220 `"Tallahassee, FL"', add
+label define met2013_lbl 45300 `"Tampa-St. Petersburg-Clearwater, FL"', add
+label define met2013_lbl 45460 `"Terre Haute, IN"', add
+label define met2013_lbl 45780 `"Toledo, OH"', add
+label define met2013_lbl 45820 `"Topeka, KS"', add
+label define met2013_lbl 45940 `"Trenton, NJ"', add
+label define met2013_lbl 46060 `"Tucson, AZ"', add
+label define met2013_lbl 46220 `"Tuscaloosa, AL"', add
+label define met2013_lbl 46340 `"Tyler, TX"', add
+label define met2013_lbl 46520 `"Urban Honolulu, HI"', add
+label define met2013_lbl 46540 `"Utica-Rome, NY"', add
+label define met2013_lbl 46660 `"Valdosta, GA"', add
+label define met2013_lbl 46700 `"Vallejo-Fairfield, CA"', add
+label define met2013_lbl 47220 `"Vineland-Bridgeton, NJ"', add
+label define met2013_lbl 47260 `"Virginia Beach-Norfolk-Newport News, VA-NC"', add
+label define met2013_lbl 47300 `"Visalia-Porterville, CA"', add
+label define met2013_lbl 47380 `"Waco, TX"', add
+label define met2013_lbl 47900 `"Washington-Arlington-Alexandria, DC-VA-MD-WV"', add
+label define met2013_lbl 48140 `"Wausau, WI"', add
+label define met2013_lbl 48300 `"Wenatchee, WA"', add
+label define met2013_lbl 48620 `"Wichita, KS"', add
+label define met2013_lbl 48660 `"Wichita Falls, TX"', add
+label define met2013_lbl 48700 `"Williamsport, PA"', add
+label define met2013_lbl 48900 `"Wilmington, NC"', add
+label define met2013_lbl 49180 `"Winston-Salem, NC"', add
+label define met2013_lbl 49340 `"Worcester, MA-CT"', add
+label define met2013_lbl 49420 `"Yakima, WA"', add
+label define met2013_lbl 49620 `"York-Hanover, PA"', add
+label define met2013_lbl 49660 `"Youngstown-Warren-Boardman, OH-PA"', add
+label define met2013_lbl 49700 `"Yuba City, CA"', add
+label define met2013_lbl 49740 `"Yuma, AZ"', add
+label values met2013 met2013_lbl
+
+label define gq_lbl 0 `"Vacant unit"'
+label define gq_lbl 1 `"Households under 1970 definition"', add
+label define gq_lbl 2 `"Additional households under 1990 definition"', add
+label define gq_lbl 3 `"Group quarters--Institutions"', add
+label define gq_lbl 4 `"Other group quarters"', add
+label define gq_lbl 5 `"Additional households under 2000 definition"', add
+label define gq_lbl 6 `"Fragment"', add
+label values gq gq_lbl
+
+label define age_lbl 000 `"Less than 1 year old"'
+label define age_lbl 001 `"1"', add
+label define age_lbl 002 `"2"', add
+label define age_lbl 003 `"3"', add
+label define age_lbl 004 `"4"', add
+label define age_lbl 005 `"5"', add
+label define age_lbl 006 `"6"', add
+label define age_lbl 007 `"7"', add
+label define age_lbl 008 `"8"', add
+label define age_lbl 009 `"9"', add
+label define age_lbl 010 `"10"', add
+label define age_lbl 011 `"11"', add
+label define age_lbl 012 `"12"', add
+label define age_lbl 013 `"13"', add
+label define age_lbl 014 `"14"', add
+label define age_lbl 015 `"15"', add
+label define age_lbl 016 `"16"', add
+label define age_lbl 017 `"17"', add
+label define age_lbl 018 `"18"', add
+label define age_lbl 019 `"19"', add
+label define age_lbl 020 `"20"', add
+label define age_lbl 021 `"21"', add
+label define age_lbl 022 `"22"', add
+label define age_lbl 023 `"23"', add
+label define age_lbl 024 `"24"', add
+label define age_lbl 025 `"25"', add
+label define age_lbl 026 `"26"', add
+label define age_lbl 027 `"27"', add
+label define age_lbl 028 `"28"', add
+label define age_lbl 029 `"29"', add
+label define age_lbl 030 `"30"', add
+label define age_lbl 031 `"31"', add
+label define age_lbl 032 `"32"', add
+label define age_lbl 033 `"33"', add
+label define age_lbl 034 `"34"', add
+label define age_lbl 035 `"35"', add
+label define age_lbl 036 `"36"', add
+label define age_lbl 037 `"37"', add
+label define age_lbl 038 `"38"', add
+label define age_lbl 039 `"39"', add
+label define age_lbl 040 `"40"', add
+label define age_lbl 041 `"41"', add
+label define age_lbl 042 `"42"', add
+label define age_lbl 043 `"43"', add
+label define age_lbl 044 `"44"', add
+label define age_lbl 045 `"45"', add
+label define age_lbl 046 `"46"', add
+label define age_lbl 047 `"47"', add
+label define age_lbl 048 `"48"', add
+label define age_lbl 049 `"49"', add
+label define age_lbl 050 `"50"', add
+label define age_lbl 051 `"51"', add
+label define age_lbl 052 `"52"', add
+label define age_lbl 053 `"53"', add
+label define age_lbl 054 `"54"', add
+label define age_lbl 055 `"55"', add
+label define age_lbl 056 `"56"', add
+label define age_lbl 057 `"57"', add
+label define age_lbl 058 `"58"', add
+label define age_lbl 059 `"59"', add
+label define age_lbl 060 `"60"', add
+label define age_lbl 061 `"61"', add
+label define age_lbl 062 `"62"', add
+label define age_lbl 063 `"63"', add
+label define age_lbl 064 `"64"', add
+label define age_lbl 065 `"65"', add
+label define age_lbl 066 `"66"', add
+label define age_lbl 067 `"67"', add
+label define age_lbl 068 `"68"', add
+label define age_lbl 069 `"69"', add
+label define age_lbl 070 `"70"', add
+label define age_lbl 071 `"71"', add
+label define age_lbl 072 `"72"', add
+label define age_lbl 073 `"73"', add
+label define age_lbl 074 `"74"', add
+label define age_lbl 075 `"75"', add
+label define age_lbl 076 `"76"', add
+label define age_lbl 077 `"77"', add
+label define age_lbl 078 `"78"', add
+label define age_lbl 079 `"79"', add
+label define age_lbl 080 `"80"', add
+label define age_lbl 081 `"81"', add
+label define age_lbl 082 `"82"', add
+label define age_lbl 083 `"83"', add
+label define age_lbl 084 `"84"', add
+label define age_lbl 085 `"85"', add
+label define age_lbl 086 `"86"', add
+label define age_lbl 087 `"87"', add
+label define age_lbl 088 `"88"', add
+label define age_lbl 089 `"89"', add
+label define age_lbl 090 `"90 (90+ in 1980 and 1990)"', add
+label define age_lbl 091 `"91"', add
+label define age_lbl 092 `"92"', add
+label define age_lbl 093 `"93"', add
+label define age_lbl 094 `"94"', add
+label define age_lbl 095 `"95"', add
+label define age_lbl 096 `"96"', add
+label define age_lbl 097 `"97"', add
+label define age_lbl 098 `"98"', add
+label define age_lbl 099 `"99"', add
+label define age_lbl 100 `"100 (100+ in 1960-1970)"', add
+label define age_lbl 101 `"101"', add
+label define age_lbl 102 `"102"', add
+label define age_lbl 103 `"103"', add
+label define age_lbl 104 `"104"', add
+label define age_lbl 105 `"105"', add
+label define age_lbl 106 `"106"', add
+label define age_lbl 107 `"107"', add
+label define age_lbl 108 `"108"', add
+label define age_lbl 109 `"109"', add
+label define age_lbl 110 `"110"', add
+label define age_lbl 111 `"111"', add
+label define age_lbl 112 `"112 (112+ in the 1980 internal data)"', add
+label define age_lbl 113 `"113"', add
+label define age_lbl 114 `"114"', add
+label define age_lbl 115 `"115 (115+ in the 1990 internal data)"', add
+label define age_lbl 116 `"116"', add
+label define age_lbl 117 `"117"', add
+label define age_lbl 118 `"118"', add
+label define age_lbl 119 `"119"', add
+label define age_lbl 120 `"120"', add
+label define age_lbl 121 `"121"', add
+label define age_lbl 122 `"122"', add
+label define age_lbl 123 `"123"', add
+label define age_lbl 124 `"124"', add
+label define age_lbl 125 `"125"', add
+label define age_lbl 126 `"126"', add
+label define age_lbl 129 `"129"', add
+label define age_lbl 130 `"130"', add
+label define age_lbl 135 `"135"', add
+label values age age_lbl
+
+label define educ_lbl 00 `"N/A or no schooling"'
+label define educ_lbl 01 `"Nursery school to grade 4"', add
+label define educ_lbl 02 `"Grade 5, 6, 7, or 8"', add
+label define educ_lbl 03 `"Grade 9"', add
+label define educ_lbl 04 `"Grade 10"', add
+label define educ_lbl 05 `"Grade 11"', add
+label define educ_lbl 06 `"Grade 12"', add
+label define educ_lbl 07 `"1 year of college"', add
+label define educ_lbl 08 `"2 years of college"', add
+label define educ_lbl 09 `"3 years of college"', add
+label define educ_lbl 10 `"4 years of college"', add
+label define educ_lbl 11 `"5+ years of college"', add
+label values educ educ_lbl
+
+label define educd_lbl 000 `"N/A or no schooling"'
+label define educd_lbl 001 `"N/A"', add
+label define educd_lbl 002 `"No schooling completed"', add
+label define educd_lbl 010 `"Nursery school to grade 4"', add
+label define educd_lbl 011 `"Nursery school, preschool"', add
+label define educd_lbl 012 `"Kindergarten"', add
+label define educd_lbl 013 `"Grade 1, 2, 3, or 4"', add
+label define educd_lbl 014 `"Grade 1"', add
+label define educd_lbl 015 `"Grade 2"', add
+label define educd_lbl 016 `"Grade 3"', add
+label define educd_lbl 017 `"Grade 4"', add
+label define educd_lbl 020 `"Grade 5, 6, 7, or 8"', add
+label define educd_lbl 021 `"Grade 5 or 6"', add
+label define educd_lbl 022 `"Grade 5"', add
+label define educd_lbl 023 `"Grade 6"', add
+label define educd_lbl 024 `"Grade 7 or 8"', add
+label define educd_lbl 025 `"Grade 7"', add
+label define educd_lbl 026 `"Grade 8"', add
+label define educd_lbl 030 `"Grade 9"', add
+label define educd_lbl 040 `"Grade 10"', add
+label define educd_lbl 050 `"Grade 11"', add
+label define educd_lbl 060 `"Grade 12"', add
+label define educd_lbl 061 `"12th grade, no diploma"', add
+label define educd_lbl 062 `"High school graduate or GED"', add
+label define educd_lbl 063 `"Regular high school diploma"', add
+label define educd_lbl 064 `"GED or alternative credential"', add
+label define educd_lbl 065 `"Some college, but less than 1 year"', add
+label define educd_lbl 070 `"1 year of college"', add
+label define educd_lbl 071 `"1 or more years of college credit, no degree"', add
+label define educd_lbl 080 `"2 years of college"', add
+label define educd_lbl 081 `"Associate's degree, type not specified"', add
+label define educd_lbl 082 `"Associate's degree, occupational program"', add
+label define educd_lbl 083 `"Associate's degree, academic program"', add
+label define educd_lbl 090 `"3 years of college"', add
+label define educd_lbl 100 `"4 years of college"', add
+label define educd_lbl 101 `"Bachelor's degree"', add
+label define educd_lbl 110 `"5+ years of college"', add
+label define educd_lbl 111 `"6 years of college (6+ in 1960-1970)"', add
+label define educd_lbl 112 `"7 years of college"', add
+label define educd_lbl 113 `"8+ years of college"', add
+label define educd_lbl 114 `"Master's degree"', add
+label define educd_lbl 115 `"Professional degree beyond a bachelor's degree"', add
+label define educd_lbl 116 `"Doctoral degree"', add
+label define educd_lbl 999 `"Missing"', add
+label values educd educd_lbl
+
+label define empstat_lbl 0 `"N/A"'
+label define empstat_lbl 1 `"Employed"', add
+label define empstat_lbl 2 `"Unemployed"', add
+label define empstat_lbl 3 `"Not in labor force"', add
+label values empstat empstat_lbl
+
+label define empstatd_lbl 00 `"N/A"'
+label define empstatd_lbl 10 `"At work"', add
+label define empstatd_lbl 11 `"At work, public emerg"', add
+label define empstatd_lbl 12 `"Has job, not working"', add
+label define empstatd_lbl 13 `"Armed forces"', add
+label define empstatd_lbl 14 `"Armed forces--at work"', add
+label define empstatd_lbl 15 `"Armed forces--not at work but with job"', add
+label define empstatd_lbl 20 `"Unemployed"', add
+label define empstatd_lbl 21 `"Unemp, exper worker"', add
+label define empstatd_lbl 22 `"Unemp, new worker"', add
+label define empstatd_lbl 30 `"Not in Labor Force"', add
+label define empstatd_lbl 31 `"NILF, housework"', add
+label define empstatd_lbl 32 `"NILF, unable to work"', add
+label define empstatd_lbl 33 `"NILF, school"', add
+label define empstatd_lbl 34 `"NILF, other"', add
+label values empstatd empstatd_lbl
+
+label define occ2010_lbl 0010 `"Chief executives and legislators/public administration"'
+label define occ2010_lbl 0020 `"General and Operations Managers"', add
+label define occ2010_lbl 0030 `"Managers in Marketing, Advertising, and Public Relations"', add
+label define occ2010_lbl 0100 `"Administrative Services Managers"', add
+label define occ2010_lbl 0110 `"Computer and Information Systems Managers"', add
+label define occ2010_lbl 0120 `"Financial Managers"', add
+label define occ2010_lbl 0130 `"Human Resources Managers"', add
+label define occ2010_lbl 0140 `"Industrial Production Managers"', add
+label define occ2010_lbl 0150 `"Purchasing Managers"', add
+label define occ2010_lbl 0160 `"Transportation, Storage, and Distribution Managers"', add
+label define occ2010_lbl 0205 `"Farmers, Ranchers, and Other Agricultural Managers"', add
+label define occ2010_lbl 0220 `"Constructions Managers"', add
+label define occ2010_lbl 0230 `"Education Administrators"', add
+label define occ2010_lbl 0300 `"Architectural and Engineering Managers"', add
+label define occ2010_lbl 0310 `"Food Service and Lodging Managers"', add
+label define occ2010_lbl 0320 `"Funeral Directors"', add
+label define occ2010_lbl 0330 `"Gaming Managers"', add
+label define occ2010_lbl 0350 `"Medical and Health Services Managers"', add
+label define occ2010_lbl 0360 `"Natural Science Managers"', add
+label define occ2010_lbl 0410 `"Property, Real Estate, and Community Association Managers"', add
+label define occ2010_lbl 0420 `"Social and Community Service Managers"', add
+label define occ2010_lbl 0430 `"Managers, nec (including Postmasters)"', add
+label define occ2010_lbl 0500 `"Agents and Business Managers of Artists, Performers, and Athletes"', add
+label define occ2010_lbl 0510 `"Buyers and Purchasing Agents, Farm Products"', add
+label define occ2010_lbl 0520 `"Wholesale and Retail Buyers, Except Farm Products"', add
+label define occ2010_lbl 0530 `"Purchasing Agents, Except Wholesale, Retail, and Farm Products"', add
+label define occ2010_lbl 0540 `"Claims Adjusters, Appraisers, Examiners, and Investigators"', add
+label define occ2010_lbl 0560 `"Compliance Officers, Except Agriculture"', add
+label define occ2010_lbl 0600 `"Cost Estimators"', add
+label define occ2010_lbl 0620 `"Human Resources, Training, and Labor Relations Specialists"', add
+label define occ2010_lbl 0700 `"Logisticians"', add
+label define occ2010_lbl 0710 `"Management Analysts"', add
+label define occ2010_lbl 0720 `"Meeting and Convention Planners"', add
+label define occ2010_lbl 0730 `"Other Business Operations and Management Specialists"', add
+label define occ2010_lbl 0800 `"Accountants and Auditors"', add
+label define occ2010_lbl 0810 `"Appraisers and Assessors of Real Estate"', add
+label define occ2010_lbl 0820 `"Budget Analysts"', add
+label define occ2010_lbl 0830 `"Credit Analysts"', add
+label define occ2010_lbl 0840 `"Financial Analysts"', add
+label define occ2010_lbl 0850 `"Personal Financial Advisors"', add
+label define occ2010_lbl 0860 `"Insurance Underwriters"', add
+label define occ2010_lbl 0900 `"Financial Examiners"', add
+label define occ2010_lbl 0910 `"Credit Counselors and Loan Officers"', add
+label define occ2010_lbl 0930 `"Tax Examiners and Collectors, and Revenue Agents"', add
+label define occ2010_lbl 0940 `"Tax Preparers"', add
+label define occ2010_lbl 0950 `"Financial Specialists, nec"', add
+label define occ2010_lbl 1000 `"Computer Scientists and Systems Analysts/Network systems Analysts/Web Developers"', add
+label define occ2010_lbl 1010 `"Computer Programmers"', add
+label define occ2010_lbl 1020 `"Software Developers, Applications and Systems Software"', add
+label define occ2010_lbl 1050 `"Computer Support Specialists"', add
+label define occ2010_lbl 1060 `"Database Administrators"', add
+label define occ2010_lbl 1100 `"Network and Computer Systems Administrators"', add
+label define occ2010_lbl 1200 `"Actuaries"', add
+label define occ2010_lbl 1220 `"Operations Research Analysts"', add
+label define occ2010_lbl 1230 `"Statisticians"', add
+label define occ2010_lbl 1240 `"Mathematical science occupations, nec"', add
+label define occ2010_lbl 1300 `"Architects, Except Naval"', add
+label define occ2010_lbl 1310 `"Surveyors, Cartographers, and Photogrammetrists"', add
+label define occ2010_lbl 1320 `"Aerospace Engineers"', add
+label define occ2010_lbl 1350 `"Chemical Engineers"', add
+label define occ2010_lbl 1360 `"Civil Engineers"', add
+label define occ2010_lbl 1400 `"Computer Hardware Engineers"', add
+label define occ2010_lbl 1410 `"Electrical and Electronics Engineers"', add
+label define occ2010_lbl 1420 `"Environmental Engineers"', add
+label define occ2010_lbl 1430 `"Industrial Engineers, including Health and Safety"', add
+label define occ2010_lbl 1440 `"Marine Engineers and Naval Architects"', add
+label define occ2010_lbl 1450 `"Materials Engineers"', add
+label define occ2010_lbl 1460 `"Mechanical Engineers"', add
+label define occ2010_lbl 1520 `"Petroleum, mining and geological engineers, including mining safety engineers"', add
+label define occ2010_lbl 1530 `"Engineers, nec"', add
+label define occ2010_lbl 1540 `"Drafters"', add
+label define occ2010_lbl 1550 `"Engineering Technicians, Except Drafters"', add
+label define occ2010_lbl 1560 `"Surveying and Mapping Technicians"', add
+label define occ2010_lbl 1600 `"Agricultural and Food Scientists"', add
+label define occ2010_lbl 1610 `"Biological Scientists"', add
+label define occ2010_lbl 1640 `"Conservation Scientists and Foresters"', add
+label define occ2010_lbl 1650 `"Medical Scientists, and Life Scientists, All Other"', add
+label define occ2010_lbl 1700 `"Astronomers and Physicists"', add
+label define occ2010_lbl 1710 `"Atmospheric and Space Scientists"', add
+label define occ2010_lbl 1720 `"Chemists and Materials Scientists"', add
+label define occ2010_lbl 1740 `"Environmental Scientists and Geoscientists"', add
+label define occ2010_lbl 1760 `"Physical Scientists, nec"', add
+label define occ2010_lbl 1800 `"Economists and market researchers"', add
+label define occ2010_lbl 1810 `"1810"', add
+label define occ2010_lbl 1820 `"Psychologists"', add
+label define occ2010_lbl 1830 `"Urban and Regional Planners"', add
+label define occ2010_lbl 1840 `"Social Scientists, nec"', add
+label define occ2010_lbl 1900 `"Agricultural and Food Science Technicians"', add
+label define occ2010_lbl 1910 `"Biological Technicians"', add
+label define occ2010_lbl 1920 `"Chemical Technicians"', add
+label define occ2010_lbl 1930 `"Geological and Petroleum Technicians, and Nuclear Technicians"', add
+label define occ2010_lbl 1960 `"Life, Physical, and Social Science Technicians, nec"', add
+label define occ2010_lbl 1980 `"Professional, Research, or Technical Workers, nec"', add
+label define occ2010_lbl 2000 `"Counselors"', add
+label define occ2010_lbl 2010 `"Social Workers"', add
+label define occ2010_lbl 2020 `"Community and Social Service Specialists, nec"', add
+label define occ2010_lbl 2040 `"Clergy"', add
+label define occ2010_lbl 2050 `"Directors, Religious Activities and Education"', add
+label define occ2010_lbl 2060 `"Religious Workers, nec"', add
+label define occ2010_lbl 2100 `"Lawyers, and judges, magistrates, and other judicial workers"', add
+label define occ2010_lbl 2140 `"Paralegals and Legal Assistants"', add
+label define occ2010_lbl 2150 `"Legal Support Workers, nec"', add
+label define occ2010_lbl 2200 `"Postsecondary Teachers"', add
+label define occ2010_lbl 2300 `"Preschool and Kindergarten Teachers"', add
+label define occ2010_lbl 2310 `"Elementary and Middle School Teachers"', add
+label define occ2010_lbl 2320 `"Secondary School Teachers"', add
+label define occ2010_lbl 2330 `"Special Education Teachers"', add
+label define occ2010_lbl 2340 `"Other Teachers and Instructors"', add
+label define occ2010_lbl 2400 `"Archivists, Curators, and Museum Technicians"', add
+label define occ2010_lbl 2430 `"Librarians"', add
+label define occ2010_lbl 2440 `"Library Technicians"', add
+label define occ2010_lbl 2540 `"Teacher Assistants"', add
+label define occ2010_lbl 2550 `"Education, Training, and Library Workers, nec"', add
+label define occ2010_lbl 2600 `"Artists and Related Workers"', add
+label define occ2010_lbl 2630 `"Designers"', add
+label define occ2010_lbl 2700 `"Actors, Producers, and Directors"', add
+label define occ2010_lbl 2720 `"Athletes, Coaches, Umpires, and Related Workers"', add
+label define occ2010_lbl 2740 `"Dancers and Choreographers"', add
+label define occ2010_lbl 2750 `"Musicians, Singers, and Related Workers"', add
+label define occ2010_lbl 2760 `"Entertainers and Performers, Sports and Related Workers, All Other"', add
+label define occ2010_lbl 2800 `"Announcers"', add
+label define occ2010_lbl 2810 `"Editors, News Analysts, Reporters, and Correspondents"', add
+label define occ2010_lbl 2825 `"Public Relations Specialists"', add
+label define occ2010_lbl 2840 `"Technical Writers"', add
+label define occ2010_lbl 2850 `"Writers and Authors"', add
+label define occ2010_lbl 2860 `"Media and Communication Workers, nec"', add
+label define occ2010_lbl 2900 `"Broadcast and Sound Engineering Technicians and Radio Operators, and media and communication equipment workers, all other"', add
+label define occ2010_lbl 2910 `"Photographers"', add
+label define occ2010_lbl 2920 `"Television, Video, and Motion Picture Camera Operators and Editors"', add
+label define occ2010_lbl 3000 `"Chiropractors"', add
+label define occ2010_lbl 3010 `"Dentists"', add
+label define occ2010_lbl 3030 `"Dieticians and Nutritionists"', add
+label define occ2010_lbl 3040 `"Optometrists"', add
+label define occ2010_lbl 3050 `"Pharmacists"', add
+label define occ2010_lbl 3060 `"Physicians and Surgeons"', add
+label define occ2010_lbl 3110 `"Physician Assistants"', add
+label define occ2010_lbl 3120 `"Podiatrists"', add
+label define occ2010_lbl 3130 `"Registered Nurses"', add
+label define occ2010_lbl 3140 `"Audiologists"', add
+label define occ2010_lbl 3150 `"Occupational Therapists"', add
+label define occ2010_lbl 3160 `"Physical Therapists"', add
+label define occ2010_lbl 3200 `"Radiation Therapists"', add
+label define occ2010_lbl 3210 `"Recreational Therapists"', add
+label define occ2010_lbl 3220 `"Respiratory Therapists"', add
+label define occ2010_lbl 3230 `"Speech Language Pathologists"', add
+label define occ2010_lbl 3240 `"Therapists, nec"', add
+label define occ2010_lbl 3250 `"Veterinarians"', add
+label define occ2010_lbl 3260 `"Health Diagnosing and Treating Practitioners, nec"', add
+label define occ2010_lbl 3300 `"Clinical Laboratory Technologists and Technicians"', add
+label define occ2010_lbl 3310 `"Dental Hygienists"', add
+label define occ2010_lbl 3320 `"Diagnostic Related Technologists and Technicians"', add
+label define occ2010_lbl 3400 `"Emergency Medical Technicians and Paramedics"', add
+label define occ2010_lbl 3410 `"Health Diagnosing and Treating Practitioner Support Technicians"', add
+label define occ2010_lbl 3500 `"Licensed Practical and Licensed Vocational Nurses"', add
+label define occ2010_lbl 3510 `"Medical Records and Health Information Technicians"', add
+label define occ2010_lbl 3520 `"Opticians, Dispensing"', add
+label define occ2010_lbl 3530 `"Health Technologists and Technicians, nec"', add
+label define occ2010_lbl 3540 `"Healthcare Practitioners and Technical Occupations, nec"', add
+label define occ2010_lbl 3600 `"Nursing, Psychiatric, and Home Health Aides"', add
+label define occ2010_lbl 3610 `"Occupational Therapy Assistants and Aides"', add
+label define occ2010_lbl 3620 `"Physical Therapist Assistants and Aides"', add
+label define occ2010_lbl 3630 `"Massage Therapists"', add
+label define occ2010_lbl 3640 `"Dental Assistants"', add
+label define occ2010_lbl 3650 `"Medical Assistants and Other Healthcare Support Occupations, nec"', add
+label define occ2010_lbl 3700 `"First-Line Supervisors of Correctional Officers"', add
+label define occ2010_lbl 3710 `"First-Line Supervisors of Police and Detectives"', add
+label define occ2010_lbl 3720 `"First-Line Supervisors of Fire Fighting and Prevention Workers"', add
+label define occ2010_lbl 3730 `"Supervisors, Protective Service Workers, All Other"', add
+label define occ2010_lbl 3740 `"Firefighters"', add
+label define occ2010_lbl 3750 `"Fire Inspectors"', add
+label define occ2010_lbl 3800 `"Sheriffs, Bailiffs, Correctional Officers, and Jailers"', add
+label define occ2010_lbl 3820 `"Police Officers and Detectives"', add
+label define occ2010_lbl 3900 `"Animal Control"', add
+label define occ2010_lbl 3910 `"Private Detectives and Investigators"', add
+label define occ2010_lbl 3930 `"Security Guards and Gaming Surveillance Officers"', add
+label define occ2010_lbl 3940 `"Crossing Guards"', add
+label define occ2010_lbl 3950 `"Law enforcement workers, nec"', add
+label define occ2010_lbl 4000 `"Chefs and Cooks"', add
+label define occ2010_lbl 4010 `"First-Line Supervisors of Food Preparation and Serving Workers"', add
+label define occ2010_lbl 4030 `"Food Preparation Workers"', add
+label define occ2010_lbl 4040 `"Bartenders"', add
+label define occ2010_lbl 4050 `"Combined Food Preparation and Serving Workers, Including Fast Food"', add
+label define occ2010_lbl 4060 `"Counter Attendant, Cafeteria, Food Concession, and Coffee Shop"', add
+label define occ2010_lbl 4110 `"Waiters and Waitresses"', add
+label define occ2010_lbl 4120 `"Food Servers, Nonrestaurant"', add
+label define occ2010_lbl 4130 `"Food preparation and serving related workers, nec"', add
+label define occ2010_lbl 4140 `"Dishwashers"', add
+label define occ2010_lbl 4150 `"Host and Hostesses, Restaurant, Lounge, and Coffee Shop"', add
+label define occ2010_lbl 4200 `"First-Line Supervisors of Housekeeping and Janitorial Workers"', add
+label define occ2010_lbl 4210 `"First-Line Supervisors of Landscaping, Lawn Service, and Groundskeeping Workers"', add
+label define occ2010_lbl 4220 `"Janitors and Building Cleaners"', add
+label define occ2010_lbl 4230 `"Maids and Housekeeping Cleaners"', add
+label define occ2010_lbl 4240 `"Pest Control Workers"', add
+label define occ2010_lbl 4250 `"Grounds Maintenance Workers"', add
+label define occ2010_lbl 4300 `"First-Line Supervisors of Gaming Workers"', add
+label define occ2010_lbl 4320 `"First-Line Supervisors of Personal Service Workers"', add
+label define occ2010_lbl 4340 `"Animal Trainers"', add
+label define occ2010_lbl 4350 `"Nonfarm Animal Caretakers"', add
+label define occ2010_lbl 4400 `"Gaming Services Workers"', add
+label define occ2010_lbl 4420 `"Ushers, Lobby Attendants, and Ticket Takers"', add
+label define occ2010_lbl 4430 `"Entertainment Attendants and Related Workers, nec"', add
+label define occ2010_lbl 4460 `"Funeral Service Workers and Embalmers"', add
+label define occ2010_lbl 4500 `"Barbers"', add
+label define occ2010_lbl 4510 `"Hairdressers, Hairstylists, and Cosmetologists"', add
+label define occ2010_lbl 4520 `"Personal Appearance Workers, nec"', add
+label define occ2010_lbl 4530 `"Baggage Porters, Bellhops, and Concierges"', add
+label define occ2010_lbl 4540 `"Tour and Travel Guides"', add
+label define occ2010_lbl 4600 `"Childcare Workers"', add
+label define occ2010_lbl 4610 `"Personal Care Aides"', add
+label define occ2010_lbl 4620 `"Recreation and Fitness Workers"', add
+label define occ2010_lbl 4640 `"Residential Advisors"', add
+label define occ2010_lbl 4650 `"Personal Care and Service Workers, All Other"', add
+label define occ2010_lbl 4700 `"First-Line Supervisors of Sales Workers"', add
+label define occ2010_lbl 4720 `"Cashiers"', add
+label define occ2010_lbl 4740 `"Counter and Rental Clerks"', add
+label define occ2010_lbl 4750 `"Parts Salespersons"', add
+label define occ2010_lbl 4760 `"Retail Salespersons"', add
+label define occ2010_lbl 4800 `"Advertising Sales Agents"', add
+label define occ2010_lbl 4810 `"Insurance Sales Agents"', add
+label define occ2010_lbl 4820 `"Securities, Commodities, and Financial Services Sales Agents"', add
+label define occ2010_lbl 4830 `"Travel Agents"', add
+label define occ2010_lbl 4840 `"Sales Representatives, Services, All Other"', add
+label define occ2010_lbl 4850 `"Sales Representatives, Wholesale and Manufacturing"', add
+label define occ2010_lbl 4900 `"Models, Demonstrators, and Product Promoters"', add
+label define occ2010_lbl 4920 `"Real Estate Brokers and Sales Agents"', add
+label define occ2010_lbl 4930 `"Sales Engineers"', add
+label define occ2010_lbl 4940 `"Telemarketers"', add
+label define occ2010_lbl 4950 `"Door-to-Door Sales Workers, News and Street Vendors, and Related Workers"', add
+label define occ2010_lbl 4965 `"Sales and Related Workers, All Other"', add
+label define occ2010_lbl 5000 `"First-Line Supervisors of Office and Administrative Support Workers"', add
+label define occ2010_lbl 5010 `"Switchboard Operators, Including Answering Service"', add
+label define occ2010_lbl 5020 `"Telephone Operators"', add
+label define occ2010_lbl 5030 `"Communications Equipment Operators, All Other"', add
+label define occ2010_lbl 5100 `"Bill and Account Collectors"', add
+label define occ2010_lbl 5110 `"Billing and Posting Clerks"', add
+label define occ2010_lbl 5120 `"Bookkeeping, Accounting, and Auditing Clerks"', add
+label define occ2010_lbl 5130 `"Gaming Cage Workers"', add
+label define occ2010_lbl 5140 `"Payroll and Timekeeping Clerks"', add
+label define occ2010_lbl 5150 `"Procurement Clerks"', add
+label define occ2010_lbl 5160 `"Bank Tellers"', add
+label define occ2010_lbl 5165 `"Financial Clerks, nec"', add
+label define occ2010_lbl 5200 `"Brokerage Clerks"', add
+label define occ2010_lbl 5220 `"Court, Municipal, and License Clerks"', add
+label define occ2010_lbl 5230 `"Credit Authorizers, Checkers, and Clerks"', add
+label define occ2010_lbl 5240 `"Customer Service Representatives"', add
+label define occ2010_lbl 5250 `"Eligibility Interviewers, Government Programs"', add
+label define occ2010_lbl 5260 `"File Clerks"', add
+label define occ2010_lbl 5300 `"Hotel, Motel, and Resort Desk Clerks"', add
+label define occ2010_lbl 5310 `"Interviewers, Except Eligibility and Loan"', add
+label define occ2010_lbl 5320 `"Library Assistants, Clerical"', add
+label define occ2010_lbl 5330 `"Loan Interviewers and Clerks"', add
+label define occ2010_lbl 5340 `"New Account Clerks"', add
+label define occ2010_lbl 5350 `"Correspondent clerks and order clerks"', add
+label define occ2010_lbl 5360 `"Human Resources Assistants, Except Payroll and Timekeeping"', add
+label define occ2010_lbl 5400 `"Receptionists and Information Clerks"', add
+label define occ2010_lbl 5410 `"Reservation and Transportation Ticket Agents and Travel Clerks"', add
+label define occ2010_lbl 5420 `"Information and Record Clerks, All Other"', add
+label define occ2010_lbl 5500 `"Cargo and Freight Agents"', add
+label define occ2010_lbl 5510 `"Couriers and Messengers"', add
+label define occ2010_lbl 5520 `"Dispatchers"', add
+label define occ2010_lbl 5530 `"Meter Readers, Utilities"', add
+label define occ2010_lbl 5540 `"Postal Service Clerks"', add
+label define occ2010_lbl 5550 `"Postal Service Mail Carriers"', add
+label define occ2010_lbl 5560 `"Postal Service Mail Sorters, Processors, and Processing Machine Operators"', add
+label define occ2010_lbl 5600 `"Production, Planning, and Expediting Clerks"', add
+label define occ2010_lbl 5610 `"Shipping, Receiving, and Traffic Clerks"', add
+label define occ2010_lbl 5620 `"Stock Clerks and Order Fillers"', add
+label define occ2010_lbl 5630 `"Weighers, Measurers, Checkers, and Samplers, Recordkeeping"', add
+label define occ2010_lbl 5700 `"Secretaries and Administrative Assistants"', add
+label define occ2010_lbl 5800 `"Computer Operators"', add
+label define occ2010_lbl 5810 `"Data Entry Keyers"', add
+label define occ2010_lbl 5820 `"Word Processors and Typists"', add
+label define occ2010_lbl 5840 `"Insurance Claims and Policy Processing Clerks"', add
+label define occ2010_lbl 5850 `"Mail Clerks and Mail Machine Operators, Except Postal Service"', add
+label define occ2010_lbl 5860 `"Office Clerks, General"', add
+label define occ2010_lbl 5900 `"Office Machine Operators, Except Computer"', add
+label define occ2010_lbl 5910 `"Proofreaders and Copy Markers"', add
+label define occ2010_lbl 5920 `"Statistical Assistants"', add
+label define occ2010_lbl 5940 `"Office and administrative support workers, nec"', add
+label define occ2010_lbl 6005 `"First-Line Supervisors of Farming, Fishing, and Forestry Workers"', add
+label define occ2010_lbl 6010 `"Agricultural Inspectors"', add
+label define occ2010_lbl 6040 `"Graders and Sorters, Agricultural Products"', add
+label define occ2010_lbl 6050 `"Agricultural workers, nec"', add
+label define occ2010_lbl 6100 `"Fishing and hunting workers"', add
+label define occ2010_lbl 6120 `"Forest and Conservation Workers"', add
+label define occ2010_lbl 6130 `"Logging Workers"', add
+label define occ2010_lbl 6200 `"First-Line Supervisors of Construction Trades and Extraction Workers"', add
+label define occ2010_lbl 6210 `"Boilermakers"', add
+label define occ2010_lbl 6220 `"Brickmasons, Blockmasons, and Stonemasons"', add
+label define occ2010_lbl 6230 `"Carpenters"', add
+label define occ2010_lbl 6240 `"Carpet, Floor, and Tile Installers and Finishers"', add
+label define occ2010_lbl 6250 `"Cement Masons, Concrete Finishers, and Terrazzo Workers"', add
+label define occ2010_lbl 6260 `"Construction Laborers"', add
+label define occ2010_lbl 6300 `"Paving, Surfacing, and Tamping Equipment Operators"', add
+label define occ2010_lbl 6320 `"Construction equipment operators except paving, surfacing, and tamping equipment operators"', add
+label define occ2010_lbl 6330 `"Drywall Installers, Ceiling Tile Installers, and Tapers"', add
+label define occ2010_lbl 6355 `"Electricians"', add
+label define occ2010_lbl 6360 `"Glaziers"', add
+label define occ2010_lbl 6400 `"Insulation Workers"', add
+label define occ2010_lbl 6420 `"Painters, Construction and Maintenance"', add
+label define occ2010_lbl 6430 `"Paperhangers"', add
+label define occ2010_lbl 6440 `"Pipelayers, Plumbers, Pipefitters, and Steamfitters"', add
+label define occ2010_lbl 6460 `"Plasterers and Stucco Masons"', add
+label define occ2010_lbl 6500 `"Reinforcing Iron and Rebar Workers"', add
+label define occ2010_lbl 6515 `"Roofers"', add
+label define occ2010_lbl 6520 `"Sheet Metal Workers, metal-working"', add
+label define occ2010_lbl 6530 `"Structural Iron and Steel Workers"', add
+label define occ2010_lbl 6600 `"Helpers, Construction Trades"', add
+label define occ2010_lbl 6660 `"Construction and Building Inspectors"', add
+label define occ2010_lbl 6700 `"Elevator Installers and Repairers"', add
+label define occ2010_lbl 6710 `"Fence Erectors"', add
+label define occ2010_lbl 6720 `"Hazardous Materials Removal Workers"', add
+label define occ2010_lbl 6730 `"Highway Maintenance Workers"', add
+label define occ2010_lbl 6740 `"Rail-Track Laying and Maintenance Equipment Operators"', add
+label define occ2010_lbl 6765 `"Construction workers, nec"', add
+label define occ2010_lbl 6800 `"Derrick, rotary drill, and service unit operators, and roustabouts, oil, gas, and mining"', add
+label define occ2010_lbl 6820 `"Earth Drillers, Except Oil and Gas"', add
+label define occ2010_lbl 6830 `"Explosives Workers, Ordnance Handling Experts, and Blasters"', add
+label define occ2010_lbl 6840 `"Mining Machine Operators"', add
+label define occ2010_lbl 6940 `"Extraction workers, nec"', add
+label define occ2010_lbl 7000 `"First-Line Supervisors of Mechanics, Installers, and Repairers"', add
+label define occ2010_lbl 7010 `"Computer, Automated Teller, and Office Machine Repairers"', add
+label define occ2010_lbl 7020 `"Radio and Telecommunications Equipment Installers and Repairers"', add
+label define occ2010_lbl 7030 `"Avionics Technicians"', add
+label define occ2010_lbl 7040 `"Electric Motor, Power Tool, and Related Repairers"', add
+label define occ2010_lbl 7100 `"Electrical and electronics repairers, transportation equipment, and industrial and utility"', add
+label define occ2010_lbl 7110 `"Electronic Equipment Installers and Repairers, Motor Vehicles"', add
+label define occ2010_lbl 7120 `"Electronic Home Entertainment Equipment Installers and Repairers"', add
+label define occ2010_lbl 7125 `"Electronic Repairs, nec"', add
+label define occ2010_lbl 7130 `"Security and Fire Alarm Systems Installers"', add
+label define occ2010_lbl 7140 `"Aircraft Mechanics and Service Technicians"', add
+label define occ2010_lbl 7150 `"Automotive Body and Related Repairers"', add
+label define occ2010_lbl 7160 `"Automotive Glass Installers and Repairers"', add
+label define occ2010_lbl 7200 `"Automotive Service Technicians and Mechanics"', add
+label define occ2010_lbl 7210 `"Bus and Truck Mechanics and Diesel Engine Specialists"', add
+label define occ2010_lbl 7220 `"Heavy Vehicle and Mobile Equipment Service Technicians and Mechanics"', add
+label define occ2010_lbl 7240 `"Small Engine Mechanics"', add
+label define occ2010_lbl 7260 `"Vehicle and Mobile Equipment Mechanics, Installers, and Repairers, nec"', add
+label define occ2010_lbl 7300 `"Control and Valve Installers and Repairers"', add
+label define occ2010_lbl 7315 `"Heating, Air Conditioning, and Refrigeration Mechanics and Installers"', add
+label define occ2010_lbl 7320 `"Home Appliance Repairers"', add
+label define occ2010_lbl 7330 `"Industrial and Refractory Machinery Mechanics"', add
+label define occ2010_lbl 7340 `"Maintenance and Repair Workers, General"', add
+label define occ2010_lbl 7350 `"Maintenance Workers, Machinery"', add
+label define occ2010_lbl 7360 `"Millwrights"', add
+label define occ2010_lbl 7410 `"Electrical Power-Line Installers and Repairers"', add
+label define occ2010_lbl 7420 `"Telecommunications Line Installers and Repairers"', add
+label define occ2010_lbl 7430 `"Precision Instrument and Equipment Repairers"', add
+label define occ2010_lbl 7510 `"Coin, Vending, and Amusement Machine Servicers and Repairers"', add
+label define occ2010_lbl 7540 `"Locksmiths and Safe Repairers"', add
+label define occ2010_lbl 7550 `"Manufactured Building and Mobile Home Installers"', add
+label define occ2010_lbl 7560 `"Riggers"', add
+label define occ2010_lbl 7610 `"Helpers--Installation, Maintenance, and Repair Workers"', add
+label define occ2010_lbl 7630 `"Other Installation, Maintenance, and Repair Workers Including Wind Turbine Service Technicians, and Commercial Divers, and Signal and Track Switch Repairers"', add
+label define occ2010_lbl 7700 `"First-Line Supervisors of Production and Operating Workers"', add
+label define occ2010_lbl 7710 `"Aircraft Structure, Surfaces, Rigging, and Systems Assemblers"', add
+label define occ2010_lbl 7720 `"Electrical, Electronics, and Electromechanical Assemblers"', add
+label define occ2010_lbl 7730 `"Engine and Other Machine Assemblers"', add
+label define occ2010_lbl 7740 `"Structural Metal Fabricators and Fitters"', add
+label define occ2010_lbl 7750 `"Assemblers and Fabricators, nec"', add
+label define occ2010_lbl 7800 `"Bakers"', add
+label define occ2010_lbl 7810 `"Butchers and Other Meat, Poultry, and Fish Processing Workers"', add
+label define occ2010_lbl 7830 `"Food and Tobacco Roasting, Baking, and Drying Machine Operators and Tenders"', add
+label define occ2010_lbl 7840 `"Food Batchmakers"', add
+label define occ2010_lbl 7850 `"Food Cooking Machine Operators and Tenders"', add
+label define occ2010_lbl 7855 `"Food Processing, nec"', add
+label define occ2010_lbl 7900 `"Computer Control Programmers and Operators"', add
+label define occ2010_lbl 7920 `"Extruding and Drawing Machine Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 7930 `"Forging Machine Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 7940 `"Rolling Machine Setters, Operators, and Tenders, metal and Plastic"', add
+label define occ2010_lbl 7950 `"Cutting, Punching, and Press Machine Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 7960 `"Drilling and Boring Machine Tool Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 8000 `"Grinding, Lapping, Polishing, and Buffing Machine Tool Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 8010 `"Lathe and Turning Machine Tool Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 8030 `"Machinists"', add
+label define occ2010_lbl 8040 `"Metal Furnace Operators, Tenders, Pourers, and Casters"', add
+label define occ2010_lbl 8060 `"Model Makers and Patternmakers, Metal and Plastic"', add
+label define occ2010_lbl 8100 `"Molders and Molding Machine Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 8130 `"Tool and Die Makers"', add
+label define occ2010_lbl 8140 `"Welding, Soldering, and Brazing Workers"', add
+label define occ2010_lbl 8150 `"Heat Treating Equipment Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 8200 `"Plating and Coating Machine Setters, Operators, and Tenders, Metal and Plastic"', add
+label define occ2010_lbl 8210 `"Tool Grinders, Filers, and Sharpeners"', add
+label define occ2010_lbl 8220 `"Metal workers and plastic workers, nec"', add
+label define occ2010_lbl 8230 `"Bookbinders, Printing Machine Operators, and Job Printers"', add
+label define occ2010_lbl 8250 `"Prepress Technicians and Workers"', add
+label define occ2010_lbl 8300 `"Laundry and Dry-Cleaning Workers"', add
+label define occ2010_lbl 8310 `"Pressers, Textile, Garment, and Related Materials"', add
+label define occ2010_lbl 8320 `"Sewing Machine Operators"', add
+label define occ2010_lbl 8330 `"Shoe and Leather Workers and Repairers"', add
+label define occ2010_lbl 8340 `"Shoe Machine Operators and Tenders"', add
+label define occ2010_lbl 8350 `"Tailors, Dressmakers, and Sewers"', add
+label define occ2010_lbl 8400 `"Textile bleaching and dyeing, and cutting machine setters, operators, and tenders"', add
+label define occ2010_lbl 8410 `"Textile Knitting and Weaving Machine Setters, Operators, and Tenders"', add
+label define occ2010_lbl 8420 `"Textile Winding, Twisting, and Drawing Out Machine Setters, Operators, and Tenders"', add
+label define occ2010_lbl 8450 `"Upholsterers"', add
+label define occ2010_lbl 8460 `"Textile, Apparel, and Furnishings workers, nec"', add
+label define occ2010_lbl 8500 `"Cabinetmakers and Bench Carpenters"', add
+label define occ2010_lbl 8510 `"Furniture Finishers"', add
+label define occ2010_lbl 8530 `"Sawing Machine Setters, Operators, and Tenders, Wood"', add
+label define occ2010_lbl 8540 `"Woodworking Machine Setters, Operators, and Tenders, Except Sawing"', add
+label define occ2010_lbl 8550 `"Woodworkers including model makers and patternmakers, nec"', add
+label define occ2010_lbl 8600 `"Power Plant Operators, Distributors, and Dispatchers"', add
+label define occ2010_lbl 8610 `"Stationary Engineers and Boiler Operators"', add
+label define occ2010_lbl 8620 `"Water Wastewater Treatment Plant and System Operators"', add
+label define occ2010_lbl 8630 `"Plant and System Operators, nec"', add
+label define occ2010_lbl 8640 `"Chemical Processing Machine Setters, Operators, and Tenders"', add
+label define occ2010_lbl 8650 `"Crushing, Grinding, Polishing, Mixing, and Blending Workers"', add
+label define occ2010_lbl 8710 `"Cutting Workers"', add
+label define occ2010_lbl 8720 `"Extruding, Forming, Pressing, and Compacting Machine Setters, Operators, and Tenders"', add
+label define occ2010_lbl 8730 `"Furnace, Kiln, Oven, Drier, and Kettle Operators and Tenders"', add
+label define occ2010_lbl 8740 `"Inspectors, Testers, Sorters, Samplers, and Weighers"', add
+label define occ2010_lbl 8750 `"Jewelers and Precious Stone and Metal Workers"', add
+label define occ2010_lbl 8760 `"Medical, Dental, and Ophthalmic Laboratory Technicians"', add
+label define occ2010_lbl 8800 `"Packaging and Filling Machine Operators and Tenders"', add
+label define occ2010_lbl 8810 `"Painting Workers and Dyers"', add
+label define occ2010_lbl 8830 `"Photographic Process Workers and Processing Machine Operators"', add
+label define occ2010_lbl 8850 `"Adhesive Bonding Machine Operators and Tenders"', add
+label define occ2010_lbl 8860 `"Cleaning, Washing, and Metal Pickling Equipment Operators and Tenders"', add
+label define occ2010_lbl 8910 `"Etchers, Engravers, and Lithographers"', add
+label define occ2010_lbl 8920 `"Molders, Shapers, and Casters, Except Metal and Plastic"', add
+label define occ2010_lbl 8930 `"Paper Goods Machine Setters, Operators, and Tenders"', add
+label define occ2010_lbl 8940 `"Tire Builders"', add
+label define occ2010_lbl 8950 `"Helpers--Production Workers"', add
+label define occ2010_lbl 8965 `"Other production workers including semiconductor processors and cooling and freezing equipment operators"', add
+label define occ2010_lbl 9000 `"Supervisors of Transportation and Material Moving Workers"', add
+label define occ2010_lbl 9030 `"Aircraft Pilots and Flight Engineers"', add
+label define occ2010_lbl 9040 `"Air Traffic Controllers and Airfield Operations Specialists"', add
+label define occ2010_lbl 9050 `"Flight Attendants and Transportation Workers and Attendants"', add
+label define occ2010_lbl 9100 `"Bus and Ambulance Drivers and Attendants"', add
+label define occ2010_lbl 9130 `"Driver/Sales Workers and Truck Drivers"', add
+label define occ2010_lbl 9140 `"Taxi Drivers and Chauffeurs"', add
+label define occ2010_lbl 9150 `"Motor Vehicle Operators, All Other"', add
+label define occ2010_lbl 9200 `"Locomotive Engineers and Operators"', add
+label define occ2010_lbl 9230 `"Railroad Brake, Signal, and Switch Operators"', add
+label define occ2010_lbl 9240 `"Railroad Conductors and Yardmasters"', add
+label define occ2010_lbl 9260 `"Subway, Streetcar, and Other Rail Transportation Workers"', add
+label define occ2010_lbl 9300 `"Sailors and marine oilers, and ship engineers"', add
+label define occ2010_lbl 9310 `"Ship and Boat Captains and Operators"', add
+label define occ2010_lbl 9350 `"Parking Lot Attendants"', add
+label define occ2010_lbl 9360 `"Automotive and Watercraft Service Attendants"', add
+label define occ2010_lbl 9410 `"Transportation Inspectors"', add
+label define occ2010_lbl 9420 `"Transportation workers, nec"', add
+label define occ2010_lbl 9510 `"Crane and Tower Operators"', add
+label define occ2010_lbl 9520 `"Dredge, Excavating, and Loading Machine Operators"', add
+label define occ2010_lbl 9560 `"Conveyor operators and tenders, and hoist and winch operators"', add
+label define occ2010_lbl 9600 `"Industrial Truck and Tractor Operators"', add
+label define occ2010_lbl 9610 `"Cleaners of Vehicles and Equipment"', add
+label define occ2010_lbl 9620 `"Laborers and Freight, Stock, and Material Movers, Hand"', add
+label define occ2010_lbl 9630 `"Machine Feeders and Offbearers"', add
+label define occ2010_lbl 9640 `"Packers and Packagers, Hand"', add
+label define occ2010_lbl 9650 `"Pumping Station Operators"', add
+label define occ2010_lbl 9720 `"Refuse and Recyclable Material Collectors"', add
+label define occ2010_lbl 9750 `"Material moving workers, nec"', add
+label define occ2010_lbl 9800 `"Military Officer Special and Tactical Operations Leaders"', add
+label define occ2010_lbl 9810 `"First-Line Enlisted Military Supervisors"', add
+label define occ2010_lbl 9820 `"Military Enlisted Tactical Operations and Air/Weapons Specialists and Crew Members"', add
+label define occ2010_lbl 9830 `"Military, Rank Not Specified"', add
+label define occ2010_lbl 9920 `"Unemployed, with No Work Experience in the Last 5 Years or Earlier or Never Worked"', add
+label values occ2010 occ2010_lbl
+
+label define wkswork2_lbl 0 `"N/A"'
+label define wkswork2_lbl 1 `"1-13 weeks"', add
+label define wkswork2_lbl 2 `"14-26 weeks"', add
+label define wkswork2_lbl 3 `"27-39 weeks"', add
+label define wkswork2_lbl 4 `"40-47 weeks"', add
+label define wkswork2_lbl 5 `"48-49 weeks"', add
+label define wkswork2_lbl 6 `"50-52 weeks"', add
+label values wkswork2 wkswork2_lbl
+
+label define uhrswork_lbl 00 `"N/A"'
+label define uhrswork_lbl 01 `"1"', add
+label define uhrswork_lbl 02 `"2"', add
+label define uhrswork_lbl 03 `"3"', add
+label define uhrswork_lbl 04 `"4"', add
+label define uhrswork_lbl 05 `"5"', add
+label define uhrswork_lbl 06 `"6"', add
+label define uhrswork_lbl 07 `"7"', add
+label define uhrswork_lbl 08 `"8"', add
+label define uhrswork_lbl 09 `"9"', add
+label define uhrswork_lbl 10 `"10"', add
+label define uhrswork_lbl 11 `"11"', add
+label define uhrswork_lbl 12 `"12"', add
+label define uhrswork_lbl 13 `"13"', add
+label define uhrswork_lbl 14 `"14"', add
+label define uhrswork_lbl 15 `"15"', add
+label define uhrswork_lbl 16 `"16"', add
+label define uhrswork_lbl 17 `"17"', add
+label define uhrswork_lbl 18 `"18"', add
+label define uhrswork_lbl 19 `"19"', add
+label define uhrswork_lbl 20 `"20"', add
+label define uhrswork_lbl 21 `"21"', add
+label define uhrswork_lbl 22 `"22"', add
+label define uhrswork_lbl 23 `"23"', add
+label define uhrswork_lbl 24 `"24"', add
+label define uhrswork_lbl 25 `"25"', add
+label define uhrswork_lbl 26 `"26"', add
+label define uhrswork_lbl 27 `"27"', add
+label define uhrswork_lbl 28 `"28"', add
+label define uhrswork_lbl 29 `"29"', add
+label define uhrswork_lbl 30 `"30"', add
+label define uhrswork_lbl 31 `"31"', add
+label define uhrswork_lbl 32 `"32"', add
+label define uhrswork_lbl 33 `"33"', add
+label define uhrswork_lbl 34 `"34"', add
+label define uhrswork_lbl 35 `"35"', add
+label define uhrswork_lbl 36 `"36"', add
+label define uhrswork_lbl 37 `"37"', add
+label define uhrswork_lbl 38 `"38"', add
+label define uhrswork_lbl 39 `"39"', add
+label define uhrswork_lbl 40 `"40"', add
+label define uhrswork_lbl 41 `"41"', add
+label define uhrswork_lbl 42 `"42"', add
+label define uhrswork_lbl 43 `"43"', add
+label define uhrswork_lbl 44 `"44"', add
+label define uhrswork_lbl 45 `"45"', add
+label define uhrswork_lbl 46 `"46"', add
+label define uhrswork_lbl 47 `"47"', add
+label define uhrswork_lbl 48 `"48"', add
+label define uhrswork_lbl 49 `"49"', add
+label define uhrswork_lbl 50 `"50"', add
+label define uhrswork_lbl 51 `"51"', add
+label define uhrswork_lbl 52 `"52"', add
+label define uhrswork_lbl 53 `"53"', add
+label define uhrswork_lbl 54 `"54"', add
+label define uhrswork_lbl 55 `"55"', add
+label define uhrswork_lbl 56 `"56"', add
+label define uhrswork_lbl 57 `"57"', add
+label define uhrswork_lbl 58 `"58"', add
+label define uhrswork_lbl 59 `"59"', add
+label define uhrswork_lbl 60 `"60"', add
+label define uhrswork_lbl 61 `"61"', add
+label define uhrswork_lbl 62 `"62"', add
+label define uhrswork_lbl 63 `"63"', add
+label define uhrswork_lbl 64 `"64"', add
+label define uhrswork_lbl 65 `"65"', add
+label define uhrswork_lbl 66 `"66"', add
+label define uhrswork_lbl 67 `"67"', add
+label define uhrswork_lbl 68 `"68"', add
+label define uhrswork_lbl 69 `"69"', add
+label define uhrswork_lbl 70 `"70"', add
+label define uhrswork_lbl 71 `"71"', add
+label define uhrswork_lbl 72 `"72"', add
+label define uhrswork_lbl 73 `"73"', add
+label define uhrswork_lbl 74 `"74"', add
+label define uhrswork_lbl 75 `"75"', add
+label define uhrswork_lbl 76 `"76"', add
+label define uhrswork_lbl 77 `"77"', add
+label define uhrswork_lbl 78 `"78"', add
+label define uhrswork_lbl 79 `"79"', add
+label define uhrswork_lbl 80 `"80"', add
+label define uhrswork_lbl 81 `"81"', add
+label define uhrswork_lbl 82 `"82"', add
+label define uhrswork_lbl 83 `"83"', add
+label define uhrswork_lbl 84 `"84"', add
+label define uhrswork_lbl 85 `"85"', add
+label define uhrswork_lbl 86 `"86"', add
+label define uhrswork_lbl 87 `"87"', add
+label define uhrswork_lbl 88 `"88"', add
+label define uhrswork_lbl 89 `"89"', add
+label define uhrswork_lbl 90 `"90"', add
+label define uhrswork_lbl 91 `"91"', add
+label define uhrswork_lbl 92 `"92"', add
+label define uhrswork_lbl 93 `"93"', add
+label define uhrswork_lbl 94 `"94"', add
+label define uhrswork_lbl 95 `"95"', add
+label define uhrswork_lbl 96 `"96"', add
+label define uhrswork_lbl 97 `"97"', add
+label define uhrswork_lbl 98 `"98"', add
+label define uhrswork_lbl 99 `"99 (Topcode)"', add
+label values uhrswork uhrswork_lbl
+
+
+*}}}
+
+assert age>=16
+gen employed = (empstat==1)
+gen unemployed = (empstat==2)
+**dropout includes 12th grade no dip
+gen dropout = (educd<=61)
+gen hs = (educd>61 & educd<=64)
+gen sc = (educd>=65 & educd<101)
+gen ba = (educd==101)
+gen more_ba = (educd>101 & educd<999)
+
+gen educ_cat = 1 if dropout==1
+replace educ_cat = 2 if hs==1
+replace educ_cat = 3 if sc==1
+replace educ_cat = 4 if ba==1
+replace educ_cat = 5 if more_ba==1
+assert educ_cat!=.
+
+gen ba_plus = educ_cat==4 | educ_cat==5
+
+gen yrschl = 0 if educd<=2
+replace yrschl = 2 if educd>=10 & educd<=17
+replace yrschl = 5.5 if educd>=21 & educd<=23
+replace yrschl = 7.5 if educd>=24 & educd<=26
+replace yrschl = 9 if educd==30
+replace yrschl = 10 if educd==40
+replace yrschl = 11 if educd==50
+replace yrschl = 12 if educd>=61 & educd<=64
+replace yrschl = 13 if educd==65
+replace yrschl = 13 if educd==71
+replace yrschl = 14 if educd==81
+replace yrschl = 16 if educd==101
+replace yrschl = 18 if educd==114
+replace yrschl = 19 if educd==115
+replace yrschl = 20 if educd==116
+assert yrschl!=.
+gen exp = age - yrschl - 6
+
+gen full_time = (wkswork2>=5 & wkswork2!=. & uhrswork>=35 & uhrswork!=.)
+gen yrschl_emp = yrschl if employed==1 
+gen yrschl_ft = yrschl if full_time==1
+gen hs_emp = hs if employed==1
+gen ba_emp = ba if employed==1
+
+ren met2013 msa
+replace msa = . if msa==0
+
+**get four-digit occsoc
+gen soc_4digit = substr(occsoc,1,4)
+tab soc_4digit
+
+***some variables have "X" in them. they are for misc categories that won't match to my data
+*119X = misc managers
+**434X = misc clerks
+**439X = misc office/admin support
+**etc., they don't help explain any other missing ones and won't be in my data
+destring soc_4digit, replace force
+count if soc_4digit==.
+
+**drop military and missing
+replace soc_4digit=. if soc_4digit==0 | soc_4digit>=5500
+
+tempfile working_data
+save `working_data', replace
+
+
+**collapse and get ventiles.
+**1. msa-level
+	use `working_data', clear
+	collapse yrschl yrschl_emp yrschl_ft hs ba hs_emp ba_emp [fw=perwt], by(msa)
+	tempfile data1
+	save `data1', replace
+	use `working_data', clear
+	collapse (sum) perwt, by(msa)
+	ren perwt weightACS
+	merge 1:1 msa using `data1'
+	assert _merge==3
+	drop _merge
+	***get ventiles
+	foreach var in yrschl yrschl_emp yrschl_ft hs ba hs_emp ba_emp {
+		xtile Q`var' = `var' [fw=weightACS], nquantiles(20)
+	}
+	drop if msa==.
+	save "$data_output/ed_msa", replace
+	save "$public/ed_msa_figA4a", replace
+
+**2. occ-level	
+use `working_data', clear
+collapse yrschl yrschl_emp yrschl_ft hs ba hs_emp ba_emp [fw=perwt], by(soc_4digit)
+tempfile data1
+save `data1', replace
+use `working_data', clear
+collapse (sum) perwt, by(soc_4digit)
+ren perwt weightACS
+merge 1:1 soc_4digit using `data1'
+assert _merge==3
+drop _merge
+	
+foreach var in yrschl yrschl_emp yrschl_ft hs ba hs_emp ba_emp {
+	xtile Q`var' = `var' [fw=weightACS], nquantiles(20)
+}
+
+ren soc_4digit soc
+
+**need to add subcategory of post-secondary teachers, use general postsec cat
+local count = _N + 1
+set obs `count'
+replace soc = 2511 in `count'
+foreach var in yrschl yrschl_emp yrschl_ft hs ba hs_emp ba_emp Qyrschl Qyrschl_emp Qyrschl_ft Qhs Qba Qhs_emp Qba_emp {
+	gen temp = `var' if soc==2510
+	egen helper = mean(temp)
+	replace `var' = helper if soc==2511
+	drop temp helper
+}
+drop if soc==.
+save "$data_output/ed_soc", replace
+save "$public/ed_soc_figA4b_B2", replace
+*}}}
+
+***figure A4a: MSA-level, bring in BG data
+*{{{
+use "$data_output/BG_hasfirm_msa_year", clear
+merge m:1 msa using "$data_output/ed_msa"
+tab _merge
+***not all MSAs will match to ACS
+keep if _merge==3
+drop _merge
+
+**keep only matching years
+keep if year==2007 | (year>=2010 & year<=2015)
+
+preserve
+collapse ed yed yrschl_emp [aw=weight], by(Qyrschl_emp)
+twoway (lpoly ed yrschl_emp , lcolor(navy)), saving("$graphs/polyed", replace) xtitle("") ytitle("") title("Any Education Requirement") legend(off)  graphregion(color(white)) bgcolor(white) 
+twoway (lpoly yed yrschl_emp, lcolor(navy)), saving("$graphs/polyyed", replace) xtitle("") ytitle("") title("Years Required, Conditional") legend(off)  graphregion(color(white)) bgcolor(white) ylabel(14.3 14.5 14.7 14.9)
+restore, preserve
+collapse share12 hs_emp [aw=weight], by(Qhs_emp)
+twoway (lpoly share12 hs_emp, lcolor(navy)), saving("$graphs/polyhs", replace) xtitle("") ytitle("") title("High School") legend(off)  graphregion(color(white)) bgcolor(white) 
+restore
+collapse share16 ba_emp [aw=weight], by(Qba_emp)
+twoway (lpoly share16 ba_emp, lcolor(navy)), saving("$graphs/polyba", replace) xtitle("") ytitle("") title("College") legend(off)  graphregion(color(white)) bgcolor(white) 
+graph combine "$graphs/polyed.gph"   "$graphs/polyyed" "$graphs/polyhs"  "$graphs/polyba", l1title("Average (BG)") b1title("Average Education of Employed in Occupation (ACS)") note("Smoothed local linear regression of occupation-level education requirement on ACS education percentile. Top panel uses average years of" "schooling for employed workers in the MSA as the ACS variable; BG variable is the share of ads with any education requirement (left) or" "average years required conditional on any (right). Bottom panel uses the share of employed workers with exactly a high school diploma" "(left) or college degree (right) as the ACS variable; BG variables are the share of ads requiring the specified degree.", size(vsmall))  graphregion(color(white))
+graph export "$graphs/figureA4a.pdf", as(pdf) replace
+*}}}
+
+***figure A4b: occ-level, bring in BG data
+*{{{
+use "$data_output/BG_hasfirm_soc_msa_year", clear
+merge m:1 soc using "$data_output/ed_soc"
+tab _merge
+assert _merge!=1
+drop if _merge==2
+drop _merge
+
+**keep only matching years
+keep if year==2007 | (year>=2010 & year<=2015)
+
+preserve
+***Qyrschl_emp is the ventile of yrschl for the occ in the ACS data
+collapse ed yed yrschl_emp [aw=weight], by(Qyrschl_emp)
+twoway (lpoly ed yrschl_emp , lcolor(navy)), saving("$graphs/polyed", replace) xtitle("") ytitle("") title("Any Education Requirement") legend(off)  graphregion(color(white)) bgcolor(white) 
+twoway (lpoly yed yrschl_emp, lcolor(navy)), saving("$graphs/polyyed", replace) xtitle("") ytitle("") title("Years Required, Conditional") legend(off)  graphregion(color(white)) bgcolor(white)
+restore, preserve
+collapse share12 hs_emp [aw=weight], by(Qhs_emp)
+twoway (lpoly share12 hs_emp, lcolor(navy)), saving("$graphs/polyhs", replace) xtitle("") ytitle("") title("High School") legend(off)  graphregion(color(white)) bgcolor(white) 
+restore
+collapse share16 ba_emp [aw=weight], by(Qba_emp)
+twoway (lpoly share16 ba_emp, lcolor(navy)), saving("$graphs/polyba", replace) xtitle("") ytitle("") title("College") legend(off)  graphregion(color(white)) bgcolor(white) 
+graph combine "$graphs/polyed.gph"   "$graphs/polyyed" "$graphs/polyhs"  "$graphs/polyba", l1title("Average (BG)") b1title("See notes to sub-figure (a). Here ACS variables are average education requirements in the occupation (instead of MSA).", size(vsmall))  graphregion(color(white))
+graph export "$graphs/figureA4b.pdf", as(pdf) replace
+
+
+
+*}}}
+
+*}}}
+
+/********************************************************************************
+**Table A1: Probability of meeting sample criteria
+***1. Firm sample (BG)
+***2. 07-10 match at firm level (BG)
+***3. pre-post (07 - 2010/15 pd) at firm level (BG)
+***4. match to Harte Hanks and firm level (BG)
+***5. match to Compustat at firm level (BG)
+***6. match to site pre-recession (HH)
+*******************************************************************************/
+*{{{
+************************************************
+**1. Firm sample (BG)
+************************************************
+*{{{
+use "$data_output/BG_all_msa_year", clear
+
+sum share_Mfirm [aw=weight]
+sum share_Mfirm [aw=npostings]
+sum share_Mfirm [aw=weight] if year!=2007
+sum share_Mfirm [aw=npostings] if year!=2007
+sum share_Mfirm [aw=weight] if year==2007
+sum share_Mfirm [aw=npostings] if year==2007
+
+sum chshare_Mfirm [aw=weight] if year!=2007
+sum chshare_Mfirm [aw=npostings] if year!=2007
+
+reg chshare_Mfirm shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 ACS* M_ACS i.year  [aw=weight] if year!=2007 ,  cluster(msa) 
+outreg2  shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableA1", replace stats(coef, se) excel  
+
+*}}}
+
+************************************************
+*****2. 07-10 match at firm level (BG)
+************************************************
+*{{{
+use "$data_output/BG_hasfirm_employer_msa_year", clear
+
+collapse ed exp cog comp_all (rawsum) npostings [aw=npostings], by(emp_nospace year)
+
+reshape wide npostings ed exp cog comp_all, i(emp_nospace) j(year)
+gen insample = (npostings2007>=5 & npostings2010>=5 & npostings2007!=. & npostings2010!=.)
+
+keep emp_nospace insample
+tempfile firms
+save`firms'
+
+use "$data_output/BG_hasfirm_employer_msa_year", clear
+merge m:1 emp_nospace using `firms'
+assert _merge==3
+
+tab insample
+tab insample [aw=npostings]
+tab insample [aw=weight]
+
+collapse insample lf2006 shock90102010 shock90102011 shock90102012 shock90102013  shock90102014 shock90102015 ACS* M_ACS (rawsum) npostings [aw=npostings], by(msa year)
+
+gen weight = lf2006
+
+gen outsample = 1- insample
+
+sum outsample [aw=weight]
+sum outsample [aw=npostings]
+sum outsample [aw=weight] if year!=2007
+sum outsample [aw=npostings] if year!=2007
+sum outsample [aw=weight] if year==2007
+sum outsample [aw=npostings] if year==2007
+
+gen temp = outsample if year==2007
+bysort msa: egen mtemp = mean(temp)
+gen chshare_no0710 = outsample - mtemp
+
+sum chshare_no0710 [aw=weight] if year!=2007
+sum chshare_no0710 [aw=npostings] if year!=2007
+
+reg chshare_no0710 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 ACS* M_ACS i.year  [aw=weight] if year!=2007 ,  cluster(msa) 
+outreg2  shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableA1", append stats(coef, se) excel  
+
+
+*}}}
+
+
+************************************************
+**3.-5. match to pre-post, HH, COMP
+************************************************
+*{{{
+**in Compustat sample
+use "$data_output/working_capital_allyrs2", clear
+keep if comp_prepost_fill!=.
+keep emp_nospace comp_prepost_fill
+duplicates drop
+bysort emp_nospace: assert _n==_N
+tempfile COMPvars
+save `COMPvars', replace
+
+**in HH sample
+use "$data_output/working_capital_allyrs2", clear
+keep if chprepost_fill!=.
+keep emp_nospace chprepost_fill
+duplicates drop
+bysort emp_nospace: assert _n==_N
+tempfile HHvars
+save `HHvars', replace
+
+use "$data_output/BG_hasfirm_employer_msa_year", clear
+gen temp = (year==2007)
+bysort emp_nospace: egen has07 = mean(temp)
+bysort emp_nospace: egen Nyrs = nvals(year)
+gen innit = (has07>0 & Nyrs>=2)
+
+display "firms with match back to 2007 -- pre/post match"
+sum innit [aw=weight] if year!=2007
+gen noinnit = 1-innit
+
+merge m:1 emp_nospace using `COMPvars'
+assert _merge!=2
+gen noCOMP = (_merge==1)
+drop _merge
+
+merge m:1 emp_nospace using `HHvars'
+assert _merge!=2
+gen noHH = (_merge==1)
+drop _merge
+
+collapse noinnit noCOMP noHH  lf2006 shock90102010 shock90102011 shock90102012 shock90102013  shock90102014 shock90102015 ACS* M_ACS (rawsum) npostings [aw=npostings], by(msa year)
+
+gen weight = lf2006
+
+sum noinnit noCOMP noHH [aw=weight]
+sum noinnit noCOMP noHH [aw=npostings]
+sum noinnit noCOMP noHH [aw=weight] if year!=2007
+sum noinnit noCOMP noHH [aw=npostings] if year!=2007
+sum noinnit noCOMP noHH [aw=weight] if year==2007
+sum noinnit noCOMP noHH [aw=npostings] if year==2007
+
+foreach var in noinnit noCOMP noHH {
+	gen temp = `var' if year==2007
+	bysort msa: egen mtemp = mean(temp)
+	gen ch`var' = `var' - mtemp
+	drop temp mtemp
+}
+
+sum ch* [aw=weight] if year!=2007
+sum ch* [aw=npostings] if year!=2007
+
+reg chnoinnit shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 ACS* M_ACS i.year  [aw=weight] if year!=2007 ,  cluster(msa) 
+outreg2  shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableA1", append stats(coef, se) excel  
+reg chnoHH shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 ACS* M_ACS i.year  [aw=weight] if year!=2007 ,  cluster(msa) 
+outreg2  shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableA1", append stats(coef, se) excel  
+reg chnoCOMP shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 ACS* M_ACS i.year  [aw=weight] if year!=2007 ,  cluster(msa) 
+outreg2  shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableA1", append stats(coef, se) excel  
+
+
+
+*}}}
+
+
+************************************************
+*****6. match to site in 2006 (HH)
+************************************************
+*{{{
+use "$HH/HH_firm_MSA_year.dta", clear
+append using "$HH/HH_firm_MSA_year_9909"
+
+***using this version of the data bc need to keep totals
+
+***recode NECTAs
+*{{{
+			qui replace msa = 	70600	if msa==	12300	//Augusta-Waterville, ME
+			qui replace msa = 	70750	if msa==	12620	//Bangor, ME
+			qui replace msa = 	70900	if msa==	12700	//Barnstable Town, MA
+			qui replace msa = 	71050	if msa==	12740	//Barre, VT
+			qui replace msa = 	71350	if msa==	13540	//Bennington, VT
+			qui replace msa = 	71500	if msa==	13620	//Berlin, NH-VT
+			qui replace msa = 	71500	if msa==	13620	//Berlin, NH-VT
+			qui replace msa = 	71650	if msa==	14460	//Boston-Cambridge-Quincy, MA-NH
+			qui replace msa = 	71950	if msa==	14860	//Bridgeport-Stamford-Norwalk, CT
+			qui replace msa = 	72400	if msa==	15540	//Burlington-South Burlington, VT
+			qui replace msa = 	72500	if msa==	17200	//Claremont, NH
+			qui replace msa = 	72700	if msa==	18180	//Concord, NH
+			qui replace msa = 	73450	if msa==	25540	//Hartford-West Hartford-East Hartford, CT
+			qui replace msa = 	73750	if msa==	28300	//Keene, NH
+			qui replace msa = 	73900	if msa==	29060	//Laconia, NH
+			qui replace msa = 	74350	if msa==	30100	//Lebanon, NH-VT
+			qui replace msa = 	74650	if msa==	30340	//Lewiston-Auburn, ME
+			qui replace msa = 	74950	if msa==	31700	//Manchester-Nashua, NH
+			qui replace msa = 	75700	if msa==	35300	//New Haven-Milford, CT
+			qui replace msa = 	76450	if msa==	35980	//Norwich-New London, CT
+			qui replace msa = 	76600	if msa==	38340	//Pittsfield, MA
+			qui replace msa = 	76750	if msa==	38860	//Portland-South Portland-Biddeford, ME
+			qui replace msa = 	77200	if msa==	39300	//Providence-New Bedford-Fall River, RI-MA
+			qui replace msa = 	77500	if msa==	40500	//Rockland, ME
+			qui replace msa = 	77650	if msa==	40860	//Rutland, VT
+			qui replace msa = 	78100	if msa==	44140	//Springfield, MA
+			qui replace msa = 	78400	if msa==	45860	//Torrington, CT
+			qui replace msa = 	79300	if msa==	48740	//Willimantic, CT
+			qui replace msa = 	79600	if msa==	49340	//Worcester, MA
+
+*}}}
+ren emple sum_emp
+
+keep if year==2000 | year==2002 | year==2004 | year==2006 | year==2008 | year==2010 | year==2012 | year==2014
+
+gen temp = sum_emp if year==2002 | year==2004 | year==2006
+bysort siteid: egen mtemp = mean(temp)
+
+gen pc_norm_fill = totpc/mtemp
+
+gen HHMSA_nomatch = pc_norm_fill==.
+
+tab HHMSA_nomatch
+tab HHMSA_nomatch [aw=sum_emp]
+
+collapse HHMSA_nomatch (rawsum) sum_emp [aw=sum_emp], by(msa year)
+
+merge m:1 msa using "$data_output/msa_LF_2006"
+**merge equals 1 or 2 only for micro areas
+drop if _merge==2
+drop _merge
+
+merge m:1 msa using "$data_output/bartiks", keepusing(shock_mean_sa_bartik9010)
+assert _merge!=2
+**_merge=1 for micro areas, drop them
+keep if _merge==3
+egen helper = nvals(msa)
+sum helper
+assert r(mean)==381
+drop helper
+drop _merge
+
+ren shock_mean_sa_bartik9010 shock9010
+foreach year of numlist 2000 2002 2004 2006 2008 2010 2012 2014 {
+	gen shock9010`year' = shock9010*(year==`year')
+}
+
+***bring in ACS controls again so they are available in all years
+merge m:1 msa using "$data_output/ACSvars0506_msa"
+	drop if _merge==2
+	gen M_ACS = (_merge==1)
+	foreach var of varlist ACS* {
+		replace `var' = 0 if M_ACS==1
+	}
+	capture drop miss_ACS
+	drop _merge
+
+foreach var in HHMSA_nomatch {
+	gen temp = `var' if year==2006
+	bysort msa: egen mtemp = mean(temp)
+	gen ch`var' = `var' - mtemp
+	drop temp mtemp
+}
+
+gen weight = lf2006
+
+sum HHMSA_nomatch [aw=weight]
+sum HHMSA_nomatch [aw=sum_emp]
+sum HHMSA_nomatch [aw=weight] if year!=2006
+sum HHMSA_nomatch [aw=sum_emp] if year!=2006
+sum HHMSA_nomatch [aw=weight] if year==2006
+sum HHMSA_nomatch [aw=sum_emp] if year==2006
+
+
+sum chHHMSA_nomatch [aw=weight] if year!=2006
+sum chHHMSA_nomatch [aw=sum_emp] if year!=2006
+
+reg chHHMSA_nomatch shock90102000 shock90102002 shock90102004 shock90102008 shock90102010  shock90102012  shock90102014  ACS* M_ACS i.year  [aw=weight] if year!=2006 ,  cluster(msa) 
+outreg2  shock90102000 shock90102002 shock90102004 shock90102008 shock90102010  shock90102012  shock90102014 using "$tables/tableA1", append stats(coef, se) excel  
+
+
+*}}}
+
+
+
+*}}}
+
+
+*******************************************************************************
+**Figure B1: Education and Experience Intensive margin results
+********************************************************************************
+*{{{
+use "$data_output/BG_hasfirm_soc_msa_year", clear
+foreach stem in share12 share16 ed_more yed exp_low share3_5 exp_more yexp  {
+	preserve
+	**base reg	
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 i.year ACS* M_ACS [aw=weight] if year!=2007,  cluster(msa)
+	matrix Tcoeffs = e(b)
+	matrix Tses = e(V)
+	mata: coeffs = st_matrix("Tcoeffs")'
+	mata: ses = diagonal(st_matrix("Tses"))
+	mata: coeffs = coeffs[1..6]
+	mata: ses = ses[1..6]:^.5
+	clear
+	getmata coeffs ses
+	gen year = 2009+_n
+	gen ci_plus = coeffs + `ci'*ses
+	gen ci_minus = coeffs - `ci'*ses
+		
+	local obs = _N
+	local new = `obs' + 1
+	set obs `new'
+	replace year = 2007 in `new'
+	foreach var of varlist coeffs ci_plus ci_minus {
+		replace `var' = 0 if year==2007
+	}
+	sort year
+
+	**get graph title for each dep var
+	if "`stem'" =="share12" {
+		local title = "High School Requirement"
+	}
+	if "`stem'" =="share16" {
+		local title = "College Requirement"
+	}
+	if "`stem'" =="ed_more" {
+		local title = "> College Requirement"
+	}
+	if "`stem'" =="yed" {
+		local title = "Years Schooling, Cond'l on Any"
+	}
+	if "`stem'" =="exp_low" {
+		local title = "Up to 2 Years Experience"
+	}
+	if "`stem'" =="share3_5" {
+		local title = "3 to 5 Years Experience"
+	}
+	if "`stem'" =="exp_more" {
+		local title = "> 5 Years Experience"
+	}
+	if "`stem'" =="yexp" {
+		local title = "Years Experience, Cond'l on Any"
+	}
+	
+	twoway (scatter coeffs year, mcolor(navy)) (line coeffs year, lcolor(navy)) (rcap ci_minus ci_plus year, lcolor(navy) lpattern(dash) lwidth(vvthin)), xtitle("") ytitle("") title("`title'") saving("$graphs/g`stem'", replace) legend(off) yline(0,lcolor(black)) graphregion(color(white)) bgcolor(white) xlabel(2007 2009 2011 2013 2015) 
+	
+	restore
+	
+	local counter = `counter' + 1
+}
+*title(Share of Ads with an Education Requirement)
+graph combine "$graphs/gshare12.gph" "$graphs/gshare16.gph" "$graphs/ged_more.gph"  "$graphs/gyed.gph", l1title(Coefficient) b1title(Year)  note("Dependent variables are the occupation-MSA change in the share of ads requiring exactly a high school diploma (top left), college degree" "(top right), more than a college degree (bottom left), or the average years required conditional on any (bottom right). We regress the" "occupation-MSA change in BG skill requirements from 2007 on an exhaustive set of MSA employment shock-by-year interactions," "controlling for year fixed effects and MSA characteristics (see equation 1). Graph plots the coefficients on Bartik shock*year and `ci_label' CIs.", size(vsmall)) graphregion(color(white))
+graph export "$graphs/figureB1a.pdf", as(pdf) replace
+graph combine "$graphs/gexp_low.gph" "$graphs/gshare3_5.gph" "$graphs/gexp_more.gph"  "$graphs/gyexp.gph", l1title(Coefficient) b1title(Year)  note("See sub-figure (a). Dependent variables are the occupation-MSA change in the share of ads requiring up to 2 years experience (top left)," "3 to 5 years (top right), more than 5 years (bottom left), or the average years required conditional on any (bottom right).", size(vsmall)) graphregion(color(white)) 
+graph export "$graphs/figureB1b.pdf", as(pdf) replace
+
+*}}}
+
+******************************************************************************
+** Figure B2: Upskilling effects by average education in the occupation
+**Does the high school requirement reflect "upskilling"? 
+*******************************************************************************
+*{{{
+
+use "$data_output/ed_soc", clear
+xtile Vyrschl = yrschl_emp, nq(20)
+
+keep soc Vyrschl yrschl_emp
+
+tempfile ventiles
+save `ventiles', replace
+
+collapse yrschl_emp, by(Vyrschl)
+ren yrschl_emp AVEyrschl_emp
+ren Vyrschl occ
+tempfile AVEyrschl_emp
+save `AVEyrschl_emp', replace
+
+**Get propensity to specify hs in 07
+use "$data_output/BG_hasfirm_soc_msa_year", clear
+collapse share12 (rawsum) npostings [aw=weight], by(soc)
+foreach q in 20 {
+	foreach var of varlist share12 {
+		xtile V`var'`q'_unwt = `var', nq(`q')
+		xtile V`var'`q'_wt = `var' [aw=npostings], nq(`q')
+	}
+}
+tempfile posts
+save `posts', replace
+collapse share12, by(Vshare1220_unwt)
+ren share12 AVEshare12
+ren Vshare1220_unwt occ
+tempfile AVEshare12
+save `AVEshare12', replace
+
+use "$data_output/BG_hasfirm_soc_msa_year", clear
+merge m:1 soc using `ventiles'
+assert _merge!=1
+keep if _merge==3
+drop _merge
+merge m:1 soc using `posts'
+assert _merge==3
+drop _merge
+
+**Graphs by quantile
+foreach stem in share12 share16 {
+	foreach q in 20 {
+			preserve
+
+			mata: coeff2010 = J(`q',1,.)
+			mata: coeff2015 = J(`q',1,.)
+			mata: se2010 = J(`q',1,.)
+			mata: se2015 = J(`q',1,.)
+			foreach msa of numlist 1/`q' {
+				reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 ACS* M_ACS  i.year [aw=weight] if year!=2007 & Vyrschl==`msa',  cluster(msa)
+				foreach year of numlist 2010 2015 {
+					local coeff`msa'`year' = _b[shock9010`year']
+					mata: coeff`year'[`msa',1] = `coeff`msa'`year''
+					local se`msa'`year' = _se[shock9010`year']
+					mata: se`year'[`msa',1] = `se`msa'`year''
+				}		
+			}
+			clear
+			getmata coeff2010 coeff2015 se2010 se2015
+			gen occ = _n
+				
+			merge 1:1 occ using `AVEyrschl_emp'
+			assert _merge==3
+			drop _merge
+				
+			gen ci_plus2010 = coeff2010 + `ci'*se2010
+			gen ci_minus2010 = coeff2010 - `ci'*se2010
+			gen ci_plus2015 = coeff2015 + `ci'*se2015
+			gen ci_minus2015 = coeff2015 - `ci'*se2015
+	
+				
+			if "`stem'"=="share12" {
+				local BGtitle = "High School Requirement"
+			}
+	
+			if "`stem'"=="share16" {
+				local BGtitle = "College Requirement"
+			}
+
+				
+				
+			twoway (lpoly coeff2010 AVEyrschl, lcolor(navy)) (lpoly coeff2015 AVEyrschl, lcolor(maroon) lpattern(dash)), saving("$graphs/g`stem'", replace) xtitle("") ytitle("") title("`BGtitle'") legend(off)  graphregion(color(white)) bgcolor(white) yline(0, lcolor(black))
+
+			restore
+			}
+	
+}
+graph combine "$graphs/gshare12" "$graphs/gshare16", l1title(Coefficient)   b1title("Average Education in Quantile") note("Blue solid = 2007-2010 change, Maroon dash = 2007-2015.") caption("We estimate separate within-occupation upskilling regressions for each ventile of the average years of schooling in the occupation (ACS" "2005-06 average). Dependent variables are the change in the probability of specifying a high school diploma (left) or a college degree" "(right). We plot the coefficients on the Bartik*2010 and Bartik*2015 year interactions for each ventile and smooth with local linear regression." "Regressions also control for year fixed effects and MSA characteristics.", size(vsmall)) graphregion(color(white))  ycommon graphregion(color(white))
+graph export "$graphs/figureB2.pdf", as(pdf) replace
+
+*}}}
+*}}}
+
+
+/********************************************************************************
+**Tables B1-B4: Main reg table and Robustness Regression tables (within occs)
+*******************************************************************************/
+*{{{
+**********************************************************************
+** Create supplemental datasets used for controls in robustness regs
+** 1. changes in ACS 0506 level controls from 2000
+** 2. ACS demographic controls of employed at MSA-year level
+** 3. MSA-year quit rates from CPS
+**********************************************************************
+
+**1. changes in ACS0506 level controls from 2000 -- CHACSvars0506_msa
+*{{{
+
+* NOTE: You need to set the Stata working directory to the path
+* where the data file is located.
+
+set more off
+
+clear
+quietly infix               ///
+  int     year       1-4    ///
+  byte    datanum    5-6    ///
+  double  serial     7-14   ///
+  float   hhwt       15-24  ///
+  byte    statefip   25-26  ///
+  long    met2013    27-31  ///
+  byte    gq         32-32  ///
+  int     pernum     33-36  ///
+  float   perwt      37-46  ///
+  byte    sex        47-47  ///
+  int     age        48-50  ///
+  byte    marst      51-51  ///
+  byte    race       52-52  ///
+  int     raced      53-55  ///
+  byte    hispan     56-56  ///
+  int     hispand    57-59  ///
+  byte    school     60-60  ///
+  byte    educ       61-62  ///
+  int     educd      63-65  ///
+  byte    empstat    66-66  ///
+  byte    empstatd   67-68  ///
+  byte    wkswork1   69-70  ///
+  byte    uhrswork   71-72  ///
+  long    incwage    73-78  ///
+  byte    migrate1   79-79  ///
+  byte    migrate1d  80-81  ///
+  byte    quhrswor   82-82  ///
+  byte    qwkswork   83-83  ///
+  byte    qincwage   84-84  ///
+   using "$raw_MSA/usa_00043.dat"
+
+replace hhwt     = hhwt     / 100
+replace perwt    = perwt    / 100
+
+format serial   %8.0f
+format hhwt     %10.2f
+format perwt    %10.2f
+
+
+**label vars
+*{{{
+label var year      `"Census year"'
+label var datanum   `"Data set number"'
+label var serial    `"Household serial number"'
+label var hhwt      `"Household weight"'
+label var statefip  `"State (FIPS code)"'
+label var met2013   `"Metropolitan area, 2013 OMB delineations"'
+label var gq        `"Group quarters status"'
+label var pernum    `"Person number in sample unit"'
+label var perwt     `"Person weight"'
+label var sex       `"Sex"'
+label var age       `"Age"'
+label var marst     `"Marital status"'
+label var race      `"Race [general version]"'
+label var raced     `"Race [detailed version]"'
+label var hispan    `"Hispanic origin [general version]"'
+label var hispand   `"Hispanic origin [detailed version]"'
+label var school    `"School attendance"'
+label var educ      `"Educational attainment [general version]"'
+label var educd     `"Educational attainment [detailed version]"'
+label var empstat   `"Employment status [general version]"'
+label var empstatd  `"Employment status [detailed version]"'
+label var wkswork1  `"Weeks worked last year"'
+label var uhrswork  `"Usual hours worked per week"'
+label var incwage   `"Wage and salary income"'
+label var migrate1  `"Migration status, 1 year [general version]"'
+label var migrate1d `"Migration status, 1 year [detailed version]"'
+label var quhrswor  `"Flag for Uhrswork"'
+label var qwkswork  `"Flag for Wkswork1, Wkswork2"'
+label var qincwage  `"Flag for Incwage, Inctot, Incearn"'
+
+label define year_lbl 1850 `"1850"'
+label define year_lbl 1860 `"1860"', add
+label define year_lbl 1870 `"1870"', add
+label define year_lbl 1880 `"1880"', add
+label define year_lbl 1900 `"1900"', add
+label define year_lbl 1910 `"1910"', add
+label define year_lbl 1920 `"1920"', add
+label define year_lbl 1930 `"1930"', add
+label define year_lbl 1940 `"1940"', add
+label define year_lbl 1950 `"1950"', add
+label define year_lbl 1960 `"1960"', add
+label define year_lbl 1970 `"1970"', add
+label define year_lbl 1980 `"1980"', add
+label define year_lbl 1990 `"1990"', add
+label define year_lbl 2000 `"2000"', add
+label define year_lbl 2001 `"2001"', add
+label define year_lbl 2002 `"2002"', add
+label define year_lbl 2003 `"2003"', add
+label define year_lbl 2004 `"2004"', add
+label define year_lbl 2005 `"2005"', add
+label define year_lbl 2006 `"2006"', add
+label define year_lbl 2007 `"2007"', add
+label define year_lbl 2008 `"2008"', add
+label define year_lbl 2009 `"2009"', add
+label define year_lbl 2010 `"2010"', add
+label define year_lbl 2011 `"2011"', add
+label define year_lbl 2012 `"2012"', add
+label define year_lbl 2013 `"2013"', add
+label define year_lbl 2014 `"2014"', add
+label define year_lbl 2015 `"2015"', add
+label values year year_lbl
+
+label define statefip_lbl 01 `"Alabama"'
+label define statefip_lbl 02 `"Alaska"', add
+label define statefip_lbl 04 `"Arizona"', add
+label define statefip_lbl 05 `"Arkansas"', add
+label define statefip_lbl 06 `"California"', add
+label define statefip_lbl 08 `"Colorado"', add
+label define statefip_lbl 09 `"Connecticut"', add
+label define statefip_lbl 10 `"Delaware"', add
+label define statefip_lbl 11 `"District of Columbia"', add
+label define statefip_lbl 12 `"Florida"', add
+label define statefip_lbl 13 `"Georgia"', add
+label define statefip_lbl 15 `"Hawaii"', add
+label define statefip_lbl 16 `"Idaho"', add
+label define statefip_lbl 17 `"Illinois"', add
+label define statefip_lbl 18 `"Indiana"', add
+label define statefip_lbl 19 `"Iowa"', add
+label define statefip_lbl 20 `"Kansas"', add
+label define statefip_lbl 21 `"Kentucky"', add
+label define statefip_lbl 22 `"Louisiana"', add
+label define statefip_lbl 23 `"Maine"', add
+label define statefip_lbl 24 `"Maryland"', add
+label define statefip_lbl 25 `"Massachusetts"', add
+label define statefip_lbl 26 `"Michigan"', add
+label define statefip_lbl 27 `"Minnesota"', add
+label define statefip_lbl 28 `"Mississippi"', add
+label define statefip_lbl 29 `"Missouri"', add
+label define statefip_lbl 30 `"Montana"', add
+label define statefip_lbl 31 `"Nebraska"', add
+label define statefip_lbl 32 `"Nevada"', add
+label define statefip_lbl 33 `"New Hampshire"', add
+label define statefip_lbl 34 `"New Jersey"', add
+label define statefip_lbl 35 `"New Mexico"', add
+label define statefip_lbl 36 `"New York"', add
+label define statefip_lbl 37 `"North Carolina"', add
+label define statefip_lbl 38 `"North Dakota"', add
+label define statefip_lbl 39 `"Ohio"', add
+label define statefip_lbl 40 `"Oklahoma"', add
+label define statefip_lbl 41 `"Oregon"', add
+label define statefip_lbl 42 `"Pennsylvania"', add
+label define statefip_lbl 44 `"Rhode Island"', add
+label define statefip_lbl 45 `"South Carolina"', add
+label define statefip_lbl 46 `"South Dakota"', add
+label define statefip_lbl 47 `"Tennessee"', add
+label define statefip_lbl 48 `"Texas"', add
+label define statefip_lbl 49 `"Utah"', add
+label define statefip_lbl 50 `"Vermont"', add
+label define statefip_lbl 51 `"Virginia"', add
+label define statefip_lbl 53 `"Washington"', add
+label define statefip_lbl 54 `"West Virginia"', add
+label define statefip_lbl 55 `"Wisconsin"', add
+label define statefip_lbl 56 `"Wyoming"', add
+label define statefip_lbl 61 `"Maine-New Hampshire-Vermont"', add
+label define statefip_lbl 62 `"Massachusetts-Rhode Island"', add
+label define statefip_lbl 63 `"Minnesota-Iowa-Missouri-Kansas-Nebraska-S.Dakota-N.Dakota"', add
+label define statefip_lbl 64 `"Maryland-Delaware"', add
+label define statefip_lbl 65 `"Montana-Idaho-Wyoming"', add
+label define statefip_lbl 66 `"Utah-Nevada"', add
+label define statefip_lbl 67 `"Arizona-New Mexico"', add
+label define statefip_lbl 68 `"Alaska-Hawaii"', add
+label define statefip_lbl 72 `"Puerto Rico"', add
+label define statefip_lbl 97 `"Military/Mil. Reservation"', add
+label define statefip_lbl 99 `"State not identified"', add
+label values statefip statefip_lbl
+
+label define met2013_lbl 00000 `"Not in identifiable area"'
+label define met2013_lbl 10420 `"Akron, OH"', add
+label define met2013_lbl 10580 `"Albany-Schenectady-Troy, NY"', add
+label define met2013_lbl 10740 `"Albuquerque, NM"', add
+label define met2013_lbl 10780 `"Alexandria, LA"', add
+label define met2013_lbl 10900 `"Allentown-Bethlehem-Easton, PA-NJ"', add
+label define met2013_lbl 11020 `"Altoona, PA"', add
+label define met2013_lbl 11100 `"Amarillo, TX"', add
+label define met2013_lbl 11260 `"Anchorage, AK"', add
+label define met2013_lbl 11460 `"Ann Arbor, MI"', add
+label define met2013_lbl 11500 `"Anniston-Oxford-Jacksonville, AL"', add
+label define met2013_lbl 11700 `"Asheville, NC"', add
+label define met2013_lbl 12020 `"Athens-Clarke County, GA"', add
+label define met2013_lbl 12060 `"Atlanta-Sandy Springs-Roswell, GA"', add
+label define met2013_lbl 12100 `"Atlantic City-Hammonton, NJ"', add
+label define met2013_lbl 12220 `"Auburn-Opelika, AL"', add
+label define met2013_lbl 12260 `"Augusta-Richmond County, GA-SC"', add
+label define met2013_lbl 12420 `"Austin-Round Rock, TX"', add
+label define met2013_lbl 12540 `"Bakersfield, CA"', add
+label define met2013_lbl 12580 `"Baltimore-Columbia-Towson, MD"', add
+label define met2013_lbl 12620 `"Bangor, ME"', add
+label define met2013_lbl 12700 `"Barnstable Town, MA"', add
+label define met2013_lbl 12940 `"Baton Rouge, LA"', add
+label define met2013_lbl 12980 `"Battle Creek, MI"', add
+label define met2013_lbl 13140 `"Beaumont-Port Arthur, TX"', add
+label define met2013_lbl 13380 `"Bellingham, WA"', add
+label define met2013_lbl 13460 `"Bend-Redmond, OR"', add
+label define met2013_lbl 13740 `"Billings, MT"', add
+label define met2013_lbl 13780 `"Binghamton, NY"', add
+label define met2013_lbl 13820 `"Birmingham-Hoover, AL"', add
+label define met2013_lbl 13900 `"Bismarck, ND"', add
+label define met2013_lbl 13980 `"Blacksburg-Christiansburg-Radford, VA"', add
+label define met2013_lbl 14010 `"Bloomington, IL"', add
+label define met2013_lbl 14020 `"Bloomington, IN"', add
+label define met2013_lbl 14260 `"Boise City, ID"', add
+label define met2013_lbl 14460 `"Boston-Cambridge-Newton, MA-NH"', add
+label define met2013_lbl 14740 `"Bremerton-Silverdale, WA"', add
+label define met2013_lbl 14860 `"Bridgeport-Stamford-Norwalk, CT"', add
+label define met2013_lbl 15180 `"Brownsville-Harlingen, TX"', add
+label define met2013_lbl 15380 `"Buffalo-Cheektowaga-Niagara Falls, NY"', add
+label define met2013_lbl 15500 `"Burlington, NC"', add
+label define met2013_lbl 15540 `"Burlington-South Burlington, VT"', add
+label define met2013_lbl 15940 `"Canton-Massillon, OH"', add
+label define met2013_lbl 15980 `"Cape Coral-Fort Myers, FL"', add
+label define met2013_lbl 16580 `"Champaign-Urbana, IL"', add
+label define met2013_lbl 16620 `"Charleston, WV"', add
+label define met2013_lbl 16700 `"Charleston-North Charleston, SC"', add
+label define met2013_lbl 16740 `"Charlotte-Concord-Gastonia, NC-SC"', add
+label define met2013_lbl 16820 `"Charlottesville, VA"', add
+label define met2013_lbl 16860 `"Chattanooga, TN-GA"', add
+label define met2013_lbl 16980 `"Chicago-Naperville-Elgin, IL-IN-WI"', add
+label define met2013_lbl 17020 `"Chico, CA"', add
+label define met2013_lbl 17140 `"Cincinnati, OH-KY-IN"', add
+label define met2013_lbl 17300 `"Clarksville, TN-KY"', add
+label define met2013_lbl 17460 `"Cleveland-Elyria, OH"', add
+label define met2013_lbl 17660 `"Coeur d'Alene, ID"', add
+label define met2013_lbl 17780 `"College Station-Bryan, TX"', add
+label define met2013_lbl 17820 `"Colorado Springs, CO"', add
+label define met2013_lbl 17860 `"Columbia, MO"', add
+label define met2013_lbl 17900 `"Columbia, SC"', add
+label define met2013_lbl 18140 `"Columbus, OH"', add
+label define met2013_lbl 18580 `"Corpus Christi, TX"', add
+label define met2013_lbl 19100 `"Dallas-Fort Worth-Arlington, TX"', add
+label define met2013_lbl 19300 `"Daphne-Fairhope-Foley, AL"', add
+label define met2013_lbl 19340 `"Davenport-Moline-Rock Island, IA-IL"', add
+label define met2013_lbl 19380 `"Dayton, OH"', add
+label define met2013_lbl 19460 `"Decatur, AL"', add
+label define met2013_lbl 19500 `"Decatur, IL"', add
+label define met2013_lbl 19660 `"Deltona-Daytona Beach-Ormond Beach, FL"', add
+label define met2013_lbl 19740 `"Denver-Aurora-Lakewood, CO"', add
+label define met2013_lbl 19780 `"Des Moines-West Des Moines, IA"', add
+label define met2013_lbl 19820 `"Detroit-Warren-Dearborn, MI"', add
+label define met2013_lbl 20100 `"Dover, DE"', add
+label define met2013_lbl 20500 `"Durham-Chapel Hill, NC"', add
+label define met2013_lbl 20700 `"East Stroudsburg, PA"', add
+label define met2013_lbl 20740 `"Eau Claire, WI"', add
+label define met2013_lbl 20940 `"El Centro, CA"', add
+label define met2013_lbl 21060 `"Elizabethtown-Fort Knox, KY"', add
+label define met2013_lbl 21140 `"Elkhart-Goshen, IN"', add
+label define met2013_lbl 21340 `"El Paso, TX"', add
+label define met2013_lbl 21500 `"Erie, PA"', add
+label define met2013_lbl 21660 `"Eugene, OR"', add
+label define met2013_lbl 21780 `"Evansville, IN-KY"', add
+label define met2013_lbl 22140 `"Farmington, NM"', add
+label define met2013_lbl 22180 `"Fayetteville, NC"', add
+label define met2013_lbl 22220 `"Fayetteville-Springdale-Rogers, AR-MO"', add
+label define met2013_lbl 22380 `"Flagstaff, AZ"', add
+label define met2013_lbl 22420 `"Flint, MI"', add
+label define met2013_lbl 22500 `"Florence, SC"', add
+label define met2013_lbl 22520 `"Florence-Muscle Shoals, AL"', add
+label define met2013_lbl 22660 `"Fort Collins, CO"', add
+label define met2013_lbl 23060 `"Fort Wayne, IN"', add
+label define met2013_lbl 23420 `"Fresno, CA"', add
+label define met2013_lbl 23460 `"Gadsden, AL"', add
+label define met2013_lbl 23540 `"Gainesville, FL"', add
+label define met2013_lbl 23580 `"Gainesville, GA"', add
+label define met2013_lbl 24020 `"Glens Falls, NY"', add
+label define met2013_lbl 24140 `"Goldsboro, NC"', add
+label define met2013_lbl 24300 `"Grand Junction, CO"', add
+label define met2013_lbl 24340 `"Grand Rapids-Wyoming, MI"', add
+label define met2013_lbl 24540 `"Greeley, CO"', add
+label define met2013_lbl 24660 `"Greensboro-High Point, NC"', add
+label define met2013_lbl 24780 `"Greenville, NC"', add
+label define met2013_lbl 24860 `"Greenville-Anderson-Mauldin, SC"', add
+label define met2013_lbl 25060 `"Gulfport-Biloxi-Pascagoula, MS"', add
+label define met2013_lbl 25220 `"Hammond, LA"', add
+label define met2013_lbl 25260 `"Hanford-Corcoran, CA"', add
+label define met2013_lbl 25420 `"Harrisburg-Carlisle, PA"', add
+label define met2013_lbl 25500 `"Harrisonburg, VA"', add
+label define met2013_lbl 25540 `"Hartford-West Hartford-East Hartford, CT"', add
+label define met2013_lbl 25620 `"Hattiesburg, MS"', add
+label define met2013_lbl 25860 `"Hickory-Lenoir-Morganton, NC"', add
+label define met2013_lbl 25940 `"Hilton Head Island-Bluffton-Beaufort, SC"', add
+label define met2013_lbl 26140 `"Homosassa Springs, FL"', add
+label define met2013_lbl 26380 `"Houma-Thibodaux, LA"', add
+label define met2013_lbl 26420 `"Houston-The Woodlands-Sugar Land, TX"', add
+label define met2013_lbl 26620 `"Huntsville, AL"', add
+label define met2013_lbl 26900 `"Indianapolis-Carmel-Anderson, IN"', add
+label define met2013_lbl 26980 `"Iowa City, IA"', add
+label define met2013_lbl 27060 `"Ithaca, NY"', add
+label define met2013_lbl 27100 `"Jackson, MI"', add
+label define met2013_lbl 27140 `"Jackson, MS"', add
+label define met2013_lbl 27180 `"Jackson, TN"', add
+label define met2013_lbl 27260 `"Jacksonville, FL"', add
+label define met2013_lbl 27340 `"Jacksonville, NC"', add
+label define met2013_lbl 27500 `"Janesville-Beloit, WI"', add
+label define met2013_lbl 27620 `"Jefferson City, MO"', add
+label define met2013_lbl 27780 `"Johnstown, PA"', add
+label define met2013_lbl 27900 `"Joplin, MO"', add
+label define met2013_lbl 28020 `"Kalamazoo-Portage, MI"', add
+label define met2013_lbl 28100 `"Kankakee, IL"', add
+label define met2013_lbl 28140 `"Kansas City, MO-KS"', add
+label define met2013_lbl 28420 `"Kennewick-Richland, WA"', add
+label define met2013_lbl 28660 `"Killeen-Temple, TX"', add
+label define met2013_lbl 28700 `"Kingsport-Bristol-Bristol, TN-VA"', add
+label define met2013_lbl 28940 `"Knoxville, TN"', add
+label define met2013_lbl 29100 `"La Crosse-Onalaska, WI-MN"', add
+label define met2013_lbl 29180 `"Lafayette, LA"', add
+label define met2013_lbl 29200 `"Lafayette-West Lafayette, IN"', add
+label define met2013_lbl 29340 `"Lake Charles, LA"', add
+label define met2013_lbl 29420 `"Lake Havasu City-Kingman, AZ"', add
+label define met2013_lbl 29460 `"Lakeland-Winter Haven, FL"', add
+label define met2013_lbl 29540 `"Lancaster, PA"', add
+label define met2013_lbl 29620 `"Lansing-East Lansing, MI"', add
+label define met2013_lbl 29700 `"Laredo, TX"', add
+label define met2013_lbl 29740 `"Las Cruces, NM"', add
+label define met2013_lbl 29820 `"Las Vegas-Henderson-Paradise, NV"', add
+label define met2013_lbl 29940 `"Lawrence, KS"', add
+label define met2013_lbl 30140 `"Lebanon, PA"', add
+label define met2013_lbl 30340 `"Lewiston-Auburn, ME"', add
+label define met2013_lbl 30620 `"Lima, OH"', add
+label define met2013_lbl 30700 `"Lincoln, NE"', add
+label define met2013_lbl 30780 `"Little Rock-North Little Rock-Conway, AR"', add
+label define met2013_lbl 31080 `"Los Angeles-Long Beach-Anaheim, CA"', add
+label define met2013_lbl 31140 `"Louisville/Jefferson County, KY-IN"', add
+label define met2013_lbl 31180 `"Lubbock, TX"', add
+label define met2013_lbl 31340 `"Lynchburg, VA"', add
+label define met2013_lbl 31460 `"Madera, CA"', add
+label define met2013_lbl 31700 `"Manchester-Nashua, NH"', add
+label define met2013_lbl 31900 `"Mansfield, OH"', add
+label define met2013_lbl 32420 `"Mayagüez, PR"', add
+label define met2013_lbl 32580 `"McAllen-Edinburg-Mission, TX"', add
+label define met2013_lbl 32780 `"Medford, OR"', add
+label define met2013_lbl 32820 `"Memphis, TN-MS-AR"', add
+label define met2013_lbl 32900 `"Merced, CA"', add
+label define met2013_lbl 33100 `"Miami-Fort Lauderdale-West Palm Beach, FL"', add
+label define met2013_lbl 33140 `"Michigan City-La Porte, IN"', add
+label define met2013_lbl 33260 `"Midland, TX"', add
+label define met2013_lbl 33340 `"Milwaukee-Waukesha-West Allis, WI"', add
+label define met2013_lbl 33460 `"Minneapolis-St. Paul-Bloomington, MN-WI"', add
+label define met2013_lbl 33660 `"Mobile, AL"', add
+label define met2013_lbl 33700 `"Modesto, CA"', add
+label define met2013_lbl 33740 `"Monroe, LA"', add
+label define met2013_lbl 33780 `"Monroe, MI"', add
+label define met2013_lbl 33860 `"Montgomery, AL"', add
+label define met2013_lbl 34060 `"Morgantown, WV"', add
+label define met2013_lbl 34620 `"Muncie, IN"', add
+label define met2013_lbl 34740 `"Muskegon, MI"', add
+label define met2013_lbl 34820 `"Myrtle Beach-Conway-North Myrtle Beach, SC-NC"', add
+label define met2013_lbl 34900 `"Napa, CA"', add
+label define met2013_lbl 34940 `"Naples-Immokalee-Marco Island, FL"', add
+label define met2013_lbl 34980 `"Nashville-Davidson--Murfreesboro--Franklin, TN"', add
+label define met2013_lbl 35300 `"New Haven-Milford, CT"', add
+label define met2013_lbl 35380 `"New Orleans-Metairie, LA"', add
+label define met2013_lbl 35620 `"New York-Newark-Jersey City, NY-NJ-PA"', add
+label define met2013_lbl 35660 `"Niles-Benton Harbor, MI"', add
+label define met2013_lbl 35840 `"North Port-Sarasota-Bradenton, FL"', add
+label define met2013_lbl 35980 `"Norwich-New London, CT"', add
+label define met2013_lbl 36100 `"Ocala, FL"', add
+label define met2013_lbl 36140 `"Ocean City, NJ"', add
+label define met2013_lbl 36220 `"Odessa, TX"', add
+label define met2013_lbl 36260 `"Ogden-Clearfield, UT"', add
+label define met2013_lbl 36420 `"Oklahoma City, OK"', add
+label define met2013_lbl 36500 `"Olympia-Tumwater, WA"', add
+label define met2013_lbl 36540 `"Omaha-Council Bluffs, NE-IA"', add
+label define met2013_lbl 36740 `"Orlando-Kissimmee-Sanford, FL"', add
+label define met2013_lbl 36780 `"Oshkosh-Neenah, WI"', add
+label define met2013_lbl 36980 `"Owensboro, KY"', add
+label define met2013_lbl 37100 `"Oxnard-Thousand Oaks-Ventura, CA"', add
+label define met2013_lbl 37340 `"Palm Bay-Melbourne-Titusville, FL"', add
+label define met2013_lbl 37460 `"Panama City, FL"', add
+label define met2013_lbl 37620 `"Parkersburg-Vienna, WV"', add
+label define met2013_lbl 37860 `"Pensacola-Ferry Pass-Brent, FL"', add
+label define met2013_lbl 37900 `"Peoria, IL"', add
+label define met2013_lbl 37980 `"Philadelphia-Camden-Wilmington, PA-NJ-DE-MD"', add
+label define met2013_lbl 38060 `"Phoenix-Mesa-Scottsdale, AZ"', add
+label define met2013_lbl 38300 `"Pittsburgh, PA"', add
+label define met2013_lbl 38340 `"Pittsfield, MA"', add
+label define met2013_lbl 38660 `"Ponce, PR"', add
+label define met2013_lbl 38860 `"Portland-South Portland, ME"', add
+label define met2013_lbl 38900 `"Portland-Vancouver-Hillsboro, OR-WA"', add
+label define met2013_lbl 38940 `"Port St. Lucie, FL"', add
+label define met2013_lbl 39140 `"Prescott, AZ"', add
+label define met2013_lbl 39300 `"Providence-Warwick, RI-MA"', add
+label define met2013_lbl 39340 `"Provo-Orem, UT"', add
+label define met2013_lbl 39380 `"Pueblo, CO"', add
+label define met2013_lbl 39460 `"Punta Gorda, FL"', add
+label define met2013_lbl 39540 `"Racine, WI"', add
+label define met2013_lbl 39580 `"Raleigh, NC"', add
+label define met2013_lbl 39740 `"Reading, PA"', add
+label define met2013_lbl 39820 `"Redding, CA"', add
+label define met2013_lbl 39900 `"Reno, NV"', add
+label define met2013_lbl 40060 `"Richmond, VA"', add
+label define met2013_lbl 40140 `"Riverside-San Bernardino-Ontario, CA"', add
+label define met2013_lbl 40220 `"Roanoke, VA"', add
+label define met2013_lbl 40380 `"Rochester, NY"', add
+label define met2013_lbl 40420 `"Rockford, IL"', add
+label define met2013_lbl 40580 `"Rocky Mount, NC"', add
+label define met2013_lbl 40900 `"Sacramento--Roseville--Arden-Arcade, CA"', add
+label define met2013_lbl 40980 `"Saginaw, MI"', add
+label define met2013_lbl 41060 `"St. Cloud, MN"', add
+label define met2013_lbl 41100 `"St. George, UT"', add
+label define met2013_lbl 41140 `"St. Joseph, MO-KS"', add
+label define met2013_lbl 41180 `"St. Louis, MO-IL"', add
+label define met2013_lbl 41500 `"Salinas, CA"', add
+label define met2013_lbl 41540 `"Salisbury, MD-DE"', add
+label define met2013_lbl 41620 `"Salt Lake City, UT"', add
+label define met2013_lbl 41660 `"San Angelo, TX"', add
+label define met2013_lbl 41700 `"San Antonio-New Braunfels, TX"', add
+label define met2013_lbl 41740 `"San Diego-Carlsbad, CA"', add
+label define met2013_lbl 41860 `"San Francisco-Oakland-Hayward, CA"', add
+label define met2013_lbl 41900 `"San Germán, PR"', add
+label define met2013_lbl 41940 `"San Jose-Sunnyvale-Santa Clara, CA"', add
+label define met2013_lbl 41980 `"San Juan-Carolina-Caguas, PR"', add
+label define met2013_lbl 42020 `"San Luis Obispo-Paso Robles-Arroyo Grande, CA"', add
+label define met2013_lbl 42100 `"Santa Cruz-Watsonville, CA"', add
+label define met2013_lbl 42140 `"Santa Fe, NM"', add
+label define met2013_lbl 42200 `"Santa Maria-Santa Barbara, CA"', add
+label define met2013_lbl 42220 `"Santa Rosa, CA"', add
+label define met2013_lbl 42540 `"Scranton--Wilkes-Barre--Hazleton, PA"', add
+label define met2013_lbl 42660 `"Seattle-Tacoma-Bellevue, WA"', add
+label define met2013_lbl 42680 `"Sebastian-Vero Beach, FL"', add
+label define met2013_lbl 43100 `"Sheboygan, WI"', add
+label define met2013_lbl 43340 `"Shreveport-Bossier City, LA"', add
+label define met2013_lbl 43900 `"Spartanburg, SC"', add
+label define met2013_lbl 44060 `"Spokane-Spokane Valley, WA"', add
+label define met2013_lbl 44100 `"Springfield, IL"', add
+label define met2013_lbl 44140 `"Springfield, MA"', add
+label define met2013_lbl 44180 `"Springfield, MO"', add
+label define met2013_lbl 44220 `"Springfield, OH"', add
+label define met2013_lbl 44300 `"State College, PA"', add
+label define met2013_lbl 44700 `"Stockton-Lodi, CA"', add
+label define met2013_lbl 44940 `"Sumter, SC"', add
+label define met2013_lbl 45060 `"Syracuse, NY"', add
+label define met2013_lbl 45220 `"Tallahassee, FL"', add
+label define met2013_lbl 45300 `"Tampa-St. Petersburg-Clearwater, FL"', add
+label define met2013_lbl 45460 `"Terre Haute, IN"', add
+label define met2013_lbl 45780 `"Toledo, OH"', add
+label define met2013_lbl 45820 `"Topeka, KS"', add
+label define met2013_lbl 45940 `"Trenton, NJ"', add
+label define met2013_lbl 46060 `"Tucson, AZ"', add
+label define met2013_lbl 46220 `"Tuscaloosa, AL"', add
+label define met2013_lbl 46340 `"Tyler, TX"', add
+label define met2013_lbl 46520 `"Urban Honolulu, HI"', add
+label define met2013_lbl 46540 `"Utica-Rome, NY"', add
+label define met2013_lbl 46660 `"Valdosta, GA"', add
+label define met2013_lbl 46700 `"Vallejo-Fairfield, CA"', add
+label define met2013_lbl 47220 `"Vineland-Bridgeton, NJ"', add
+label define met2013_lbl 47260 `"Virginia Beach-Norfolk-Newport News, VA-NC"', add
+label define met2013_lbl 47300 `"Visalia-Porterville, CA"', add
+label define met2013_lbl 47380 `"Waco, TX"', add
+label define met2013_lbl 47900 `"Washington-Arlington-Alexandria, DC-VA-MD-WV"', add
+label define met2013_lbl 48140 `"Wausau, WI"', add
+label define met2013_lbl 48300 `"Wenatchee, WA"', add
+label define met2013_lbl 48620 `"Wichita, KS"', add
+label define met2013_lbl 48660 `"Wichita Falls, TX"', add
+label define met2013_lbl 48700 `"Williamsport, PA"', add
+label define met2013_lbl 48900 `"Wilmington, NC"', add
+label define met2013_lbl 49180 `"Winston-Salem, NC"', add
+label define met2013_lbl 49340 `"Worcester, MA-CT"', add
+label define met2013_lbl 49420 `"Yakima, WA"', add
+label define met2013_lbl 49620 `"York-Hanover, PA"', add
+label define met2013_lbl 49660 `"Youngstown-Warren-Boardman, OH-PA"', add
+label define met2013_lbl 49700 `"Yuba City, CA"', add
+label define met2013_lbl 49740 `"Yuma, AZ"', add
+label values met2013 met2013_lbl
+
+label define gq_lbl 0 `"Vacant unit"'
+label define gq_lbl 1 `"Households under 1970 definition"', add
+label define gq_lbl 2 `"Additional households under 1990 definition"', add
+label define gq_lbl 3 `"Group quarters--Institutions"', add
+label define gq_lbl 4 `"Other group quarters"', add
+label define gq_lbl 5 `"Additional households under 2000 definition"', add
+label define gq_lbl 6 `"Fragment"', add
+label values gq gq_lbl
+
+label define sex_lbl 1 `"Male"'
+label define sex_lbl 2 `"Female"', add
+label values sex sex_lbl
+
+label define age_lbl 000 `"Less than 1 year old"'
+label define age_lbl 001 `"1"', add
+label define age_lbl 002 `"2"', add
+label define age_lbl 003 `"3"', add
+label define age_lbl 004 `"4"', add
+label define age_lbl 005 `"5"', add
+label define age_lbl 006 `"6"', add
+label define age_lbl 007 `"7"', add
+label define age_lbl 008 `"8"', add
+label define age_lbl 009 `"9"', add
+label define age_lbl 010 `"10"', add
+label define age_lbl 011 `"11"', add
+label define age_lbl 012 `"12"', add
+label define age_lbl 013 `"13"', add
+label define age_lbl 014 `"14"', add
+label define age_lbl 015 `"15"', add
+label define age_lbl 016 `"16"', add
+label define age_lbl 017 `"17"', add
+label define age_lbl 018 `"18"', add
+label define age_lbl 019 `"19"', add
+label define age_lbl 020 `"20"', add
+label define age_lbl 021 `"21"', add
+label define age_lbl 022 `"22"', add
+label define age_lbl 023 `"23"', add
+label define age_lbl 024 `"24"', add
+label define age_lbl 025 `"25"', add
+label define age_lbl 026 `"26"', add
+label define age_lbl 027 `"27"', add
+label define age_lbl 028 `"28"', add
+label define age_lbl 029 `"29"', add
+label define age_lbl 030 `"30"', add
+label define age_lbl 031 `"31"', add
+label define age_lbl 032 `"32"', add
+label define age_lbl 033 `"33"', add
+label define age_lbl 034 `"34"', add
+label define age_lbl 035 `"35"', add
+label define age_lbl 036 `"36"', add
+label define age_lbl 037 `"37"', add
+label define age_lbl 038 `"38"', add
+label define age_lbl 039 `"39"', add
+label define age_lbl 040 `"40"', add
+label define age_lbl 041 `"41"', add
+label define age_lbl 042 `"42"', add
+label define age_lbl 043 `"43"', add
+label define age_lbl 044 `"44"', add
+label define age_lbl 045 `"45"', add
+label define age_lbl 046 `"46"', add
+label define age_lbl 047 `"47"', add
+label define age_lbl 048 `"48"', add
+label define age_lbl 049 `"49"', add
+label define age_lbl 050 `"50"', add
+label define age_lbl 051 `"51"', add
+label define age_lbl 052 `"52"', add
+label define age_lbl 053 `"53"', add
+label define age_lbl 054 `"54"', add
+label define age_lbl 055 `"55"', add
+label define age_lbl 056 `"56"', add
+label define age_lbl 057 `"57"', add
+label define age_lbl 058 `"58"', add
+label define age_lbl 059 `"59"', add
+label define age_lbl 060 `"60"', add
+label define age_lbl 061 `"61"', add
+label define age_lbl 062 `"62"', add
+label define age_lbl 063 `"63"', add
+label define age_lbl 064 `"64"', add
+label define age_lbl 065 `"65"', add
+label define age_lbl 066 `"66"', add
+label define age_lbl 067 `"67"', add
+label define age_lbl 068 `"68"', add
+label define age_lbl 069 `"69"', add
+label define age_lbl 070 `"70"', add
+label define age_lbl 071 `"71"', add
+label define age_lbl 072 `"72"', add
+label define age_lbl 073 `"73"', add
+label define age_lbl 074 `"74"', add
+label define age_lbl 075 `"75"', add
+label define age_lbl 076 `"76"', add
+label define age_lbl 077 `"77"', add
+label define age_lbl 078 `"78"', add
+label define age_lbl 079 `"79"', add
+label define age_lbl 080 `"80"', add
+label define age_lbl 081 `"81"', add
+label define age_lbl 082 `"82"', add
+label define age_lbl 083 `"83"', add
+label define age_lbl 084 `"84"', add
+label define age_lbl 085 `"85"', add
+label define age_lbl 086 `"86"', add
+label define age_lbl 087 `"87"', add
+label define age_lbl 088 `"88"', add
+label define age_lbl 089 `"89"', add
+label define age_lbl 090 `"90 (90+ in 1980 and 1990)"', add
+label define age_lbl 091 `"91"', add
+label define age_lbl 092 `"92"', add
+label define age_lbl 093 `"93"', add
+label define age_lbl 094 `"94"', add
+label define age_lbl 095 `"95"', add
+label define age_lbl 096 `"96"', add
+label define age_lbl 097 `"97"', add
+label define age_lbl 098 `"98"', add
+label define age_lbl 099 `"99"', add
+label define age_lbl 100 `"100 (100+ in 1960-1970)"', add
+label define age_lbl 101 `"101"', add
+label define age_lbl 102 `"102"', add
+label define age_lbl 103 `"103"', add
+label define age_lbl 104 `"104"', add
+label define age_lbl 105 `"105"', add
+label define age_lbl 106 `"106"', add
+label define age_lbl 107 `"107"', add
+label define age_lbl 108 `"108"', add
+label define age_lbl 109 `"109"', add
+label define age_lbl 110 `"110"', add
+label define age_lbl 111 `"111"', add
+label define age_lbl 112 `"112 (112+ in the 1980 internal data)"', add
+label define age_lbl 113 `"113"', add
+label define age_lbl 114 `"114"', add
+label define age_lbl 115 `"115 (115+ in the 1990 internal data)"', add
+label define age_lbl 116 `"116"', add
+label define age_lbl 117 `"117"', add
+label define age_lbl 118 `"118"', add
+label define age_lbl 119 `"119"', add
+label define age_lbl 120 `"120"', add
+label define age_lbl 121 `"121"', add
+label define age_lbl 122 `"122"', add
+label define age_lbl 123 `"123"', add
+label define age_lbl 124 `"124"', add
+label define age_lbl 125 `"125"', add
+label define age_lbl 126 `"126"', add
+label define age_lbl 129 `"129"', add
+label define age_lbl 130 `"130"', add
+label define age_lbl 135 `"135"', add
+label values age age_lbl
+
+label define marst_lbl 1 `"Married, spouse present"'
+label define marst_lbl 2 `"Married, spouse absent"', add
+label define marst_lbl 3 `"Separated"', add
+label define marst_lbl 4 `"Divorced"', add
+label define marst_lbl 5 `"Widowed"', add
+label define marst_lbl 6 `"Never married/single"', add
+label values marst marst_lbl
+
+label define race_lbl 1 `"White"'
+label define race_lbl 2 `"Black/Negro"', add
+label define race_lbl 3 `"American Indian or Alaska Native"', add
+label define race_lbl 4 `"Chinese"', add
+label define race_lbl 5 `"Japanese"', add
+label define race_lbl 6 `"Other Asian or Pacific Islander"', add
+label define race_lbl 7 `"Other race, nec"', add
+label define race_lbl 8 `"Two major races"', add
+label define race_lbl 9 `"Three or more major races"', add
+label values race race_lbl
+
+label define raced_lbl 100 `"White"'
+label define raced_lbl 110 `"Spanish write_in"', add
+label define raced_lbl 120 `"Blank (white) (1850)"', add
+label define raced_lbl 130 `"Portuguese"', add
+label define raced_lbl 140 `"Mexican (1930)"', add
+label define raced_lbl 150 `"Puerto Rican (1910 Hawaii)"', add
+label define raced_lbl 200 `"Black/Negro"', add
+label define raced_lbl 210 `"Mulatto"', add
+label define raced_lbl 300 `"American Indian/Alaska Native"', add
+label define raced_lbl 302 `"Apache"', add
+label define raced_lbl 303 `"Blackfoot"', add
+label define raced_lbl 304 `"Cherokee"', add
+label define raced_lbl 305 `"Cheyenne"', add
+label define raced_lbl 306 `"Chickasaw"', add
+label define raced_lbl 307 `"Chippewa"', add
+label define raced_lbl 308 `"Choctaw"', add
+label define raced_lbl 309 `"Comanche"', add
+label define raced_lbl 310 `"Creek"', add
+label define raced_lbl 311 `"Crow"', add
+label define raced_lbl 312 `"Iroquois"', add
+label define raced_lbl 313 `"Kiowa"', add
+label define raced_lbl 314 `"Lumbee"', add
+label define raced_lbl 315 `"Navajo"', add
+label define raced_lbl 316 `"Osage"', add
+label define raced_lbl 317 `"Paiute"', add
+label define raced_lbl 318 `"Pima"', add
+label define raced_lbl 319 `"Potawatomi"', add
+label define raced_lbl 320 `"Pueblo"', add
+label define raced_lbl 321 `"Seminole"', add
+label define raced_lbl 322 `"Shoshone"', add
+label define raced_lbl 323 `"Sioux"', add
+label define raced_lbl 324 `"Tlingit (Tlingit_Haida, 2000/ACS)"', add
+label define raced_lbl 325 `"Tohono O Odham"', add
+label define raced_lbl 326 `"All other tribes (1990)"', add
+label define raced_lbl 328 `"Hopi"', add
+label define raced_lbl 329 `"Central American Indian"', add
+label define raced_lbl 330 `"Spanish American Indian"', add
+label define raced_lbl 350 `"Delaware"', add
+label define raced_lbl 351 `"Latin American Indian"', add
+label define raced_lbl 352 `"Puget Sound Salish"', add
+label define raced_lbl 353 `"Yakama"', add
+label define raced_lbl 354 `"Yaqui"', add
+label define raced_lbl 355 `"Colville"', add
+label define raced_lbl 356 `"Houma"', add
+label define raced_lbl 357 `"Menominee"', add
+label define raced_lbl 358 `"Yuman"', add
+label define raced_lbl 359 `"South American Indian"', add
+label define raced_lbl 360 `"Mexican American Indian"', add
+label define raced_lbl 361 `"Other Amer. Indian tribe (2000,ACS)"', add
+label define raced_lbl 362 `"2+ Amer. Indian tribes (2000,ACS)"', add
+label define raced_lbl 370 `"Alaskan Athabaskan"', add
+label define raced_lbl 371 `"Aleut"', add
+label define raced_lbl 372 `"Eskimo"', add
+label define raced_lbl 373 `"Alaskan mixed"', add
+label define raced_lbl 374 `"Inupiat"', add
+label define raced_lbl 375 `"Yup'ik"', add
+label define raced_lbl 379 `"Other Alaska Native tribe(s) (2000,ACS)"', add
+label define raced_lbl 398 `"Both Am. Ind. and Alaska Native (2000,ACS)"', add
+label define raced_lbl 399 `"Tribe not specified"', add
+label define raced_lbl 400 `"Chinese"', add
+label define raced_lbl 410 `"Taiwanese"', add
+label define raced_lbl 420 `"Chinese and Taiwanese"', add
+label define raced_lbl 500 `"Japanese"', add
+label define raced_lbl 600 `"Filipino"', add
+label define raced_lbl 610 `"Asian Indian (Hindu 1920_1940)"', add
+label define raced_lbl 620 `"Korean"', add
+label define raced_lbl 630 `"Hawaiian"', add
+label define raced_lbl 631 `"Hawaiian and Asian (1900,1920)"', add
+label define raced_lbl 632 `"Hawaiian and European (1900,1920)"', add
+label define raced_lbl 634 `"Hawaiian mixed"', add
+label define raced_lbl 640 `"Vietnamese"', add
+label define raced_lbl 641 `"   Bhutanese"', add
+label define raced_lbl 642 `"   Mongolian "', add
+label define raced_lbl 643 `"   Nepalese"', add
+label define raced_lbl 650 `"Other Asian or Pacific Islander (1920,1980)"', add
+label define raced_lbl 651 `"Asian only (CPS)"', add
+label define raced_lbl 652 `"Pacific Islander only (CPS)"', add
+label define raced_lbl 653 `"Asian or Pacific Islander, n.s. (1990 Internal Census files)"', add
+label define raced_lbl 660 `"Cambodian"', add
+label define raced_lbl 661 `"Hmong"', add
+label define raced_lbl 662 `"Laotian"', add
+label define raced_lbl 663 `"Thai"', add
+label define raced_lbl 664 `"Bangladeshi"', add
+label define raced_lbl 665 `"Burmese"', add
+label define raced_lbl 666 `"Indonesian"', add
+label define raced_lbl 667 `"Malaysian"', add
+label define raced_lbl 668 `"Okinawan"', add
+label define raced_lbl 669 `"Pakistani"', add
+label define raced_lbl 670 `"Sri Lankan"', add
+label define raced_lbl 671 `"Other Asian, n.e.c."', add
+label define raced_lbl 672 `"Asian, not specified"', add
+label define raced_lbl 673 `"Chinese and Japanese"', add
+label define raced_lbl 674 `"Chinese and Filipino"', add
+label define raced_lbl 675 `"Chinese and Vietnamese"', add
+label define raced_lbl 676 `"Chinese and Asian write_in"', add
+label define raced_lbl 677 `"Japanese and Filipino"', add
+label define raced_lbl 678 `"Asian Indian and Asian write_in"', add
+label define raced_lbl 679 `"Other Asian race combinations"', add
+label define raced_lbl 680 `"Samoan"', add
+label define raced_lbl 681 `"Tahitian"', add
+label define raced_lbl 682 `"Tongan"', add
+label define raced_lbl 683 `"Other Polynesian (1990)"', add
+label define raced_lbl 684 `"1+ other Polynesian races (2000,ACS)"', add
+label define raced_lbl 685 `"Guamanian/Chamorro"', add
+label define raced_lbl 686 `"Northern Mariana Islander"', add
+label define raced_lbl 687 `"Palauan"', add
+label define raced_lbl 688 `"Other Micronesian (1990)"', add
+label define raced_lbl 689 `"1+ other Micronesian races (2000,ACS)"', add
+label define raced_lbl 690 `"Fijian"', add
+label define raced_lbl 691 `"Other Melanesian (1990)"', add
+label define raced_lbl 692 `"1+ other Melanesian races (2000,ACS)"', add
+label define raced_lbl 698 `"2+ PI races from 2+ PI regions"', add
+label define raced_lbl 699 `"Pacific Islander, n.s."', add
+label define raced_lbl 700 `"Other race, n.e.c."', add
+label define raced_lbl 801 `"White and Black"', add
+label define raced_lbl 802 `"White and AIAN"', add
+label define raced_lbl 810 `"White and Asian"', add
+label define raced_lbl 811 `"White and Chinese"', add
+label define raced_lbl 812 `"White and Japanese"', add
+label define raced_lbl 813 `"White and Filipino"', add
+label define raced_lbl 814 `"White and Asian Indian"', add
+label define raced_lbl 815 `"White and Korean"', add
+label define raced_lbl 816 `"White and Vietnamese"', add
+label define raced_lbl 817 `"White and Asian write_in"', add
+label define raced_lbl 818 `"White and other Asian race(s)"', add
+label define raced_lbl 819 `"White and two or more Asian groups"', add
+label define raced_lbl 820 `"White and PI  "', add
+label define raced_lbl 821 `"White and Native Hawaiian"', add
+label define raced_lbl 822 `"White and Samoan"', add
+label define raced_lbl 823 `"White and Guamanian"', add
+label define raced_lbl 824 `"White and PI write_in"', add
+label define raced_lbl 825 `"White and other PI race(s)"', add
+label define raced_lbl 826 `"White and other race write_in"', add
+label define raced_lbl 827 `"White and other race, n.e.c."', add
+label define raced_lbl 830 `"Black and AIAN"', add
+label define raced_lbl 831 `"Black and Asian"', add
+label define raced_lbl 832 `"Black and Chinese"', add
+label define raced_lbl 833 `"Black and Japanese"', add
+label define raced_lbl 834 `"Black and Filipino"', add
+label define raced_lbl 835 `"Black and Asian Indian"', add
+label define raced_lbl 836 `"Black and Korean"', add
+label define raced_lbl 837 `"Black and Asian write_in"', add
+label define raced_lbl 838 `"Black and other Asian race(s)"', add
+label define raced_lbl 840 `"Black and PI"', add
+label define raced_lbl 841 `"Black and PI write_in"', add
+label define raced_lbl 842 `"Black and other PI race(s)"', add
+label define raced_lbl 845 `"Black and other race write_in"', add
+label define raced_lbl 850 `"AIAN and Asian"', add
+label define raced_lbl 851 `"AIAN and Filipino (2000 1%)"', add
+label define raced_lbl 852 `"AIAN and Asian Indian"', add
+label define raced_lbl 853 `"AIAN and Asian write_in (2000 1%)"', add
+label define raced_lbl 854 `"AIAN and other Asian race(s)"', add
+label define raced_lbl 855 `"AIAN and PI"', add
+label define raced_lbl 856 `"AIAN and other race write_in"', add
+label define raced_lbl 860 `"Asian and PI"', add
+label define raced_lbl 861 `"Chinese and Hawaiian"', add
+label define raced_lbl 862 `"Chinese, Filipino, Hawaiian (2000 1%)"', add
+label define raced_lbl 863 `"Japanese and Hawaiian (2000 1%)"', add
+label define raced_lbl 864 `"Filipino and Hawaiian"', add
+label define raced_lbl 865 `"Filipino and PI write_in"', add
+label define raced_lbl 866 `"Asian Indian and PI write_in (2000 1%)"', add
+label define raced_lbl 867 `"Asian write_in and PI write_in"', add
+label define raced_lbl 868 `"Other Asian race(s) and PI race(s)"', add
+label define raced_lbl 869 `"Japanese and Korean (ACS)"', add
+label define raced_lbl 880 `"Asian and other race write_in"', add
+label define raced_lbl 881 `"Chinese and other race write_in"', add
+label define raced_lbl 882 `"Japanese and other race write_in"', add
+label define raced_lbl 883 `"Filipino and other race write_in"', add
+label define raced_lbl 884 `"Asian Indian and other race write_in"', add
+label define raced_lbl 885 `"Asian write_in and other race write_in"', add
+label define raced_lbl 886 `"Other Asian race(s) and other race write_in"', add
+label define raced_lbl 887 `"      Chinese and Korean"', add
+label define raced_lbl 890 `"PI and other race write_in: "', add
+label define raced_lbl 891 `"PI write_in and other race write_in"', add
+label define raced_lbl 892 `"Other PI race(s) and other race write_in"', add
+label define raced_lbl 893 `"         Native Hawaiian or PI other race(s)"', add
+label define raced_lbl 899 `"API and other race write_in"', add
+label define raced_lbl 901 `"White, Black, AIAN"', add
+label define raced_lbl 902 `"White, Black, Asian"', add
+label define raced_lbl 903 `"White, Black, PI"', add
+label define raced_lbl 904 `"White, Black, other race write_in"', add
+label define raced_lbl 905 `"White, AIAN, Asian"', add
+label define raced_lbl 906 `"White, AIAN, PI"', add
+label define raced_lbl 907 `"White, AIAN, other race write_in"', add
+label define raced_lbl 910 `"White, Asian, PI "', add
+label define raced_lbl 911 `"White, Chinese, Hawaiian"', add
+label define raced_lbl 912 `"White, Chinese, Filipino, Hawaiian (2000 1%)"', add
+label define raced_lbl 913 `"White, Japanese, Hawaiian (2000 1%)"', add
+label define raced_lbl 914 `"White, Filipino, Hawaiian"', add
+label define raced_lbl 915 `"Other White, Asian race(s), PI race(s)"', add
+label define raced_lbl 916 `"      White, AIAN and Filipino"', add
+label define raced_lbl 917 `"      White, Black, and Filipino"', add
+label define raced_lbl 920 `"White, Asian, other race write_in"', add
+label define raced_lbl 921 `"White, Filipino, other race write_in (2000 1%)"', add
+label define raced_lbl 922 `"White, Asian write_in, other race write_in (2000 1%)"', add
+label define raced_lbl 923 `"Other White, Asian race(s), other race write_in (2000 1%)"', add
+label define raced_lbl 925 `"White, PI, other race write_in"', add
+label define raced_lbl 930 `"Black, AIAN, Asian"', add
+label define raced_lbl 931 `"Black, AIAN, PI"', add
+label define raced_lbl 932 `"Black, AIAN, other race write_in"', add
+label define raced_lbl 933 `"Black, Asian, PI"', add
+label define raced_lbl 934 `"Black, Asian, other race write_in"', add
+label define raced_lbl 935 `"Black, PI, other race write_in"', add
+label define raced_lbl 940 `"AIAN, Asian, PI"', add
+label define raced_lbl 941 `"AIAN, Asian, other race write_in"', add
+label define raced_lbl 942 `"AIAN, PI, other race write_in"', add
+label define raced_lbl 943 `"Asian, PI, other race write_in"', add
+label define raced_lbl 944 `"Asian (Chinese, Japanese, Korean, Vietnamese); and Native Hawaiian or PI; and Other"', add
+label define raced_lbl 949 `"2 or 3 races (CPS)"', add
+label define raced_lbl 950 `"White, Black, AIAN, Asian"', add
+label define raced_lbl 951 `"White, Black, AIAN, PI"', add
+label define raced_lbl 952 `"White, Black, AIAN, other race write_in"', add
+label define raced_lbl 953 `"White, Black, Asian, PI"', add
+label define raced_lbl 954 `"White, Black, Asian, other race write_in"', add
+label define raced_lbl 955 `"White, Black, PI, other race write_in"', add
+label define raced_lbl 960 `"White, AIAN, Asian, PI"', add
+label define raced_lbl 961 `"White, AIAN, Asian, other race write_in"', add
+label define raced_lbl 962 `"White, AIAN, PI, other race write_in"', add
+label define raced_lbl 963 `"White, Asian, PI, other race write_in"', add
+label define raced_lbl 964 `"White, Chinese, Japanese, Native Hawaiian"', add
+label define raced_lbl 970 `"Black, AIAN, Asian, PI"', add
+label define raced_lbl 971 `"Black, AIAN, Asian, other race write_in"', add
+label define raced_lbl 972 `"Black, AIAN, PI, other race write_in"', add
+label define raced_lbl 973 `"Black, Asian, PI, other race write_in"', add
+label define raced_lbl 974 `"AIAN, Asian, PI, other race write_in"', add
+label define raced_lbl 975 `"AIAN, Asian, PI, Hawaiian other race write_in"', add
+label define raced_lbl 976 `"Two specified Asian  (Chinese and other Asian, Chinese and Japanese, Japanese and other Asian, Korean and other Asian); Native Hawaiian/PI; and Other Race"', add
+label define raced_lbl 980 `"White, Black, AIAN, Asian, PI"', add
+label define raced_lbl 981 `"White, Black, AIAN, Asian, other race write_in"', add
+label define raced_lbl 982 `"White, Black, AIAN, PI, other race write_in"', add
+label define raced_lbl 983 `"White, Black, Asian, PI, other race write_in"', add
+label define raced_lbl 984 `"White, AIAN, Asian, PI, other race write_in"', add
+label define raced_lbl 985 `"Black, AIAN, Asian, PI, other race write_in"', add
+label define raced_lbl 986 `"Black, AIAN, Asian, PI, Hawaiian, other race write_in"', add
+label define raced_lbl 989 `"4 or 5 races (CPS)"', add
+label define raced_lbl 990 `"White, Black, AIAN, Asian, PI, other race write_in"', add
+label define raced_lbl 991 `"White race; Some other race; Black or African American race and/or American Indian and Alaska Native race and/or Asian groups and/or Native Hawaiian and Other Pacific Islander groups"', add
+label define raced_lbl 996 `"2+ races, n.e.c. (CPS)"', add
+label values raced raced_lbl
+
+label define hispan_lbl 0 `"Not Hispanic"'
+label define hispan_lbl 1 `"Mexican"', add
+label define hispan_lbl 2 `"Puerto Rican"', add
+label define hispan_lbl 3 `"Cuban"', add
+label define hispan_lbl 4 `"Other"', add
+label define hispan_lbl 9 `"Not Reported"', add
+label values hispan hispan_lbl
+
+label define hispand_lbl 000 `"Not Hispanic"'
+label define hispand_lbl 100 `"Mexican"', add
+label define hispand_lbl 102 `"Mexican American"', add
+label define hispand_lbl 103 `"Mexicano/Mexicana"', add
+label define hispand_lbl 104 `"Chicano/Chicana"', add
+label define hispand_lbl 105 `"La Raza"', add
+label define hispand_lbl 106 `"Mexican American Indian"', add
+label define hispand_lbl 107 `"Mexico"', add
+label define hispand_lbl 200 `"Puerto Rican"', add
+label define hispand_lbl 300 `"Cuban"', add
+label define hispand_lbl 401 `"Central American Indian"', add
+label define hispand_lbl 402 `"Canal Zone"', add
+label define hispand_lbl 411 `"Costa Rican"', add
+label define hispand_lbl 412 `"Guatemalan"', add
+label define hispand_lbl 413 `"Honduran"', add
+label define hispand_lbl 414 `"Nicaraguan"', add
+label define hispand_lbl 415 `"Panamanian"', add
+label define hispand_lbl 416 `"Salvadoran"', add
+label define hispand_lbl 417 `"Central American, n.e.c."', add
+label define hispand_lbl 420 `"Argentinean"', add
+label define hispand_lbl 421 `"Bolivian"', add
+label define hispand_lbl 422 `"Chilean"', add
+label define hispand_lbl 423 `"Colombian"', add
+label define hispand_lbl 424 `"Ecuadorian"', add
+label define hispand_lbl 425 `"Paraguayan"', add
+label define hispand_lbl 426 `"Peruvian"', add
+label define hispand_lbl 427 `"Uruguayan"', add
+label define hispand_lbl 428 `"Venezuelan"', add
+label define hispand_lbl 429 `"South American Indian"', add
+label define hispand_lbl 430 `"Criollo"', add
+label define hispand_lbl 431 `"South American, n.e.c."', add
+label define hispand_lbl 450 `"Spaniard"', add
+label define hispand_lbl 451 `"Andalusian"', add
+label define hispand_lbl 452 `"Asturian"', add
+label define hispand_lbl 453 `"Castillian"', add
+label define hispand_lbl 454 `"Catalonian"', add
+label define hispand_lbl 455 `"Balearic Islander"', add
+label define hispand_lbl 456 `"Gallego"', add
+label define hispand_lbl 457 `"Valencian"', add
+label define hispand_lbl 458 `"Canarian"', add
+label define hispand_lbl 459 `"Spanish Basque"', add
+label define hispand_lbl 460 `"Dominican"', add
+label define hispand_lbl 465 `"Latin American"', add
+label define hispand_lbl 470 `"Hispanic"', add
+label define hispand_lbl 480 `"Spanish"', add
+label define hispand_lbl 490 `"Californio"', add
+label define hispand_lbl 491 `"Tejano"', add
+label define hispand_lbl 492 `"Nuevo Mexicano"', add
+label define hispand_lbl 493 `"Spanish American"', add
+label define hispand_lbl 494 `"Spanish American Indian"', add
+label define hispand_lbl 495 `"Meso American Indian"', add
+label define hispand_lbl 496 `"Mestizo"', add
+label define hispand_lbl 498 `"Other, n.s. "', add
+label define hispand_lbl 499 `"Other, n.e.c."', add
+label define hispand_lbl 900 `"Not Reported"', add
+label values hispand hispand_lbl
+
+label define school_lbl 0 `"N/A"'
+label define school_lbl 1 `"No, not in school"', add
+label define school_lbl 2 `"Yes, in school"', add
+label define school_lbl 9 `"Missing"', add
+label values school school_lbl
+
+label define educ_lbl 00 `"N/A or no schooling"'
+label define educ_lbl 01 `"Nursery school to grade 4"', add
+label define educ_lbl 02 `"Grade 5, 6, 7, or 8"', add
+label define educ_lbl 03 `"Grade 9"', add
+label define educ_lbl 04 `"Grade 10"', add
+label define educ_lbl 05 `"Grade 11"', add
+label define educ_lbl 06 `"Grade 12"', add
+label define educ_lbl 07 `"1 year of college"', add
+label define educ_lbl 08 `"2 years of college"', add
+label define educ_lbl 09 `"3 years of college"', add
+label define educ_lbl 10 `"4 years of college"', add
+label define educ_lbl 11 `"5+ years of college"', add
+label values educ educ_lbl
+
+label define educd_lbl 000 `"N/A or no schooling"'
+label define educd_lbl 001 `"N/A"', add
+label define educd_lbl 002 `"No schooling completed"', add
+label define educd_lbl 010 `"Nursery school to grade 4"', add
+label define educd_lbl 011 `"Nursery school, preschool"', add
+label define educd_lbl 012 `"Kindergarten"', add
+label define educd_lbl 013 `"Grade 1, 2, 3, or 4"', add
+label define educd_lbl 014 `"Grade 1"', add
+label define educd_lbl 015 `"Grade 2"', add
+label define educd_lbl 016 `"Grade 3"', add
+label define educd_lbl 017 `"Grade 4"', add
+label define educd_lbl 020 `"Grade 5, 6, 7, or 8"', add
+label define educd_lbl 021 `"Grade 5 or 6"', add
+label define educd_lbl 022 `"Grade 5"', add
+label define educd_lbl 023 `"Grade 6"', add
+label define educd_lbl 024 `"Grade 7 or 8"', add
+label define educd_lbl 025 `"Grade 7"', add
+label define educd_lbl 026 `"Grade 8"', add
+label define educd_lbl 030 `"Grade 9"', add
+label define educd_lbl 040 `"Grade 10"', add
+label define educd_lbl 050 `"Grade 11"', add
+label define educd_lbl 060 `"Grade 12"', add
+label define educd_lbl 061 `"12th grade, no diploma"', add
+label define educd_lbl 062 `"High school graduate or GED"', add
+label define educd_lbl 063 `"Regular high school diploma"', add
+label define educd_lbl 064 `"GED or alternative credential"', add
+label define educd_lbl 065 `"Some college, but less than 1 year"', add
+label define educd_lbl 070 `"1 year of college"', add
+label define educd_lbl 071 `"1 or more years of college credit, no degree"', add
+label define educd_lbl 080 `"2 years of college"', add
+label define educd_lbl 081 `"Associate's degree, type not specified"', add
+label define educd_lbl 082 `"Associate's degree, occupational program"', add
+label define educd_lbl 083 `"Associate's degree, academic program"', add
+label define educd_lbl 090 `"3 years of college"', add
+label define educd_lbl 100 `"4 years of college"', add
+label define educd_lbl 101 `"Bachelor's degree"', add
+label define educd_lbl 110 `"5+ years of college"', add
+label define educd_lbl 111 `"6 years of college (6+ in 1960-1970)"', add
+label define educd_lbl 112 `"7 years of college"', add
+label define educd_lbl 113 `"8+ years of college"', add
+label define educd_lbl 114 `"Master's degree"', add
+label define educd_lbl 115 `"Professional degree beyond a bachelor's degree"', add
+label define educd_lbl 116 `"Doctoral degree"', add
+label define educd_lbl 999 `"Missing"', add
+label values educd educd_lbl
+
+label define empstat_lbl 0 `"N/A"'
+label define empstat_lbl 1 `"Employed"', add
+label define empstat_lbl 2 `"Unemployed"', add
+label define empstat_lbl 3 `"Not in labor force"', add
+label values empstat empstat_lbl
+
+label define empstatd_lbl 00 `"N/A"'
+label define empstatd_lbl 10 `"At work"', add
+label define empstatd_lbl 11 `"At work, public emerg"', add
+label define empstatd_lbl 12 `"Has job, not working"', add
+label define empstatd_lbl 13 `"Armed forces"', add
+label define empstatd_lbl 14 `"Armed forces--at work"', add
+label define empstatd_lbl 15 `"Armed forces--not at work but with job"', add
+label define empstatd_lbl 20 `"Unemployed"', add
+label define empstatd_lbl 21 `"Unemp, exper worker"', add
+label define empstatd_lbl 22 `"Unemp, new worker"', add
+label define empstatd_lbl 30 `"Not in Labor Force"', add
+label define empstatd_lbl 31 `"NILF, housework"', add
+label define empstatd_lbl 32 `"NILF, unable to work"', add
+label define empstatd_lbl 33 `"NILF, school"', add
+label define empstatd_lbl 34 `"NILF, other"', add
+label values empstatd empstatd_lbl
+
+label define uhrswork_lbl 00 `"N/A"'
+label define uhrswork_lbl 01 `"1"', add
+label define uhrswork_lbl 02 `"2"', add
+label define uhrswork_lbl 03 `"3"', add
+label define uhrswork_lbl 04 `"4"', add
+label define uhrswork_lbl 05 `"5"', add
+label define uhrswork_lbl 06 `"6"', add
+label define uhrswork_lbl 07 `"7"', add
+label define uhrswork_lbl 08 `"8"', add
+label define uhrswork_lbl 09 `"9"', add
+label define uhrswork_lbl 10 `"10"', add
+label define uhrswork_lbl 11 `"11"', add
+label define uhrswork_lbl 12 `"12"', add
+label define uhrswork_lbl 13 `"13"', add
+label define uhrswork_lbl 14 `"14"', add
+label define uhrswork_lbl 15 `"15"', add
+label define uhrswork_lbl 16 `"16"', add
+label define uhrswork_lbl 17 `"17"', add
+label define uhrswork_lbl 18 `"18"', add
+label define uhrswork_lbl 19 `"19"', add
+label define uhrswork_lbl 20 `"20"', add
+label define uhrswork_lbl 21 `"21"', add
+label define uhrswork_lbl 22 `"22"', add
+label define uhrswork_lbl 23 `"23"', add
+label define uhrswork_lbl 24 `"24"', add
+label define uhrswork_lbl 25 `"25"', add
+label define uhrswork_lbl 26 `"26"', add
+label define uhrswork_lbl 27 `"27"', add
+label define uhrswork_lbl 28 `"28"', add
+label define uhrswork_lbl 29 `"29"', add
+label define uhrswork_lbl 30 `"30"', add
+label define uhrswork_lbl 31 `"31"', add
+label define uhrswork_lbl 32 `"32"', add
+label define uhrswork_lbl 33 `"33"', add
+label define uhrswork_lbl 34 `"34"', add
+label define uhrswork_lbl 35 `"35"', add
+label define uhrswork_lbl 36 `"36"', add
+label define uhrswork_lbl 37 `"37"', add
+label define uhrswork_lbl 38 `"38"', add
+label define uhrswork_lbl 39 `"39"', add
+label define uhrswork_lbl 40 `"40"', add
+label define uhrswork_lbl 41 `"41"', add
+label define uhrswork_lbl 42 `"42"', add
+label define uhrswork_lbl 43 `"43"', add
+label define uhrswork_lbl 44 `"44"', add
+label define uhrswork_lbl 45 `"45"', add
+label define uhrswork_lbl 46 `"46"', add
+label define uhrswork_lbl 47 `"47"', add
+label define uhrswork_lbl 48 `"48"', add
+label define uhrswork_lbl 49 `"49"', add
+label define uhrswork_lbl 50 `"50"', add
+label define uhrswork_lbl 51 `"51"', add
+label define uhrswork_lbl 52 `"52"', add
+label define uhrswork_lbl 53 `"53"', add
+label define uhrswork_lbl 54 `"54"', add
+label define uhrswork_lbl 55 `"55"', add
+label define uhrswork_lbl 56 `"56"', add
+label define uhrswork_lbl 57 `"57"', add
+label define uhrswork_lbl 58 `"58"', add
+label define uhrswork_lbl 59 `"59"', add
+label define uhrswork_lbl 60 `"60"', add
+label define uhrswork_lbl 61 `"61"', add
+label define uhrswork_lbl 62 `"62"', add
+label define uhrswork_lbl 63 `"63"', add
+label define uhrswork_lbl 64 `"64"', add
+label define uhrswork_lbl 65 `"65"', add
+label define uhrswork_lbl 66 `"66"', add
+label define uhrswork_lbl 67 `"67"', add
+label define uhrswork_lbl 68 `"68"', add
+label define uhrswork_lbl 69 `"69"', add
+label define uhrswork_lbl 70 `"70"', add
+label define uhrswork_lbl 71 `"71"', add
+label define uhrswork_lbl 72 `"72"', add
+label define uhrswork_lbl 73 `"73"', add
+label define uhrswork_lbl 74 `"74"', add
+label define uhrswork_lbl 75 `"75"', add
+label define uhrswork_lbl 76 `"76"', add
+label define uhrswork_lbl 77 `"77"', add
+label define uhrswork_lbl 78 `"78"', add
+label define uhrswork_lbl 79 `"79"', add
+label define uhrswork_lbl 80 `"80"', add
+label define uhrswork_lbl 81 `"81"', add
+label define uhrswork_lbl 82 `"82"', add
+label define uhrswork_lbl 83 `"83"', add
+label define uhrswork_lbl 84 `"84"', add
+label define uhrswork_lbl 85 `"85"', add
+label define uhrswork_lbl 86 `"86"', add
+label define uhrswork_lbl 87 `"87"', add
+label define uhrswork_lbl 88 `"88"', add
+label define uhrswork_lbl 89 `"89"', add
+label define uhrswork_lbl 90 `"90"', add
+label define uhrswork_lbl 91 `"91"', add
+label define uhrswork_lbl 92 `"92"', add
+label define uhrswork_lbl 93 `"93"', add
+label define uhrswork_lbl 94 `"94"', add
+label define uhrswork_lbl 95 `"95"', add
+label define uhrswork_lbl 96 `"96"', add
+label define uhrswork_lbl 97 `"97"', add
+label define uhrswork_lbl 98 `"98"', add
+label define uhrswork_lbl 99 `"99 (Topcode)"', add
+label values uhrswork uhrswork_lbl
+
+label define migrate1_lbl 0 `"N/A"'
+label define migrate1_lbl 1 `"Same house"', add
+label define migrate1_lbl 2 `"Moved within state"', add
+label define migrate1_lbl 3 `"Moved between states"', add
+label define migrate1_lbl 4 `"Abroad one year ago"', add
+label define migrate1_lbl 9 `"Unknown"', add
+label values migrate1 migrate1_lbl
+
+label define migrate1d_lbl 00 `"N/A"'
+label define migrate1d_lbl 10 `"Same house"', add
+label define migrate1d_lbl 20 `"Same state (migration status within state unknown)"', add
+label define migrate1d_lbl 21 `"Different house, moved within county"', add
+label define migrate1d_lbl 22 `"Different house, moved within state, between counties"', add
+label define migrate1d_lbl 23 `"Different house, moved within state, within PUMA"', add
+label define migrate1d_lbl 24 `"Different house, moved within state, between PUMAs"', add
+label define migrate1d_lbl 25 `"Different house, unknown within state"', add
+label define migrate1d_lbl 30 `"Different state (general)"', add
+label define migrate1d_lbl 31 `"Moved between contigious states"', add
+label define migrate1d_lbl 32 `"Moved between non-contiguous states"', add
+label define migrate1d_lbl 40 `"Abroad one year ago"', add
+label define migrate1d_lbl 90 `"Unknown"', add
+label values migrate1d migrate1d_lbl
+
+
+*}}}
+
+***get ave chars in 2005 and 2006
+assert year==2000 | (year>=2005 & year<=2007)
+
+
+ren met2013 msa
+
+**recode MSAs to NECTAs to match BG (and BLS etc)
+*{{{
+				foreach var in msa  {
+					qui replace `var' = 	70600	if `var'==	12300	//Augusta-Waterville, ME
+					qui replace `var' = 	70750	if `var'==	12620	//Bangor, ME
+					qui replace `var' = 	70900	if `var'==	12700	//Barnstable Town, MA
+					qui replace `var' = 	71050	if `var'==	12740	//Barre, VT
+					qui replace `var' = 	71350	if `var'==	13540	//Bennington, VT
+					qui replace `var' = 	71500	if `var'==	13620	//Berlin, NH-VT
+					qui replace `var' = 	71500	if `var'==	13620	//Berlin, NH-VT
+					qui replace `var' = 	71650	if `var'==	14460	//Boston-Cambridge-Quincy, MA-NH
+					qui replace `var' = 	71950	if `var'==	14860	//Bridgeport-Stamford-Norwalk, CT
+					qui replace `var' = 	72400	if `var'==	15540	//Burlington-South Burlington, VT
+					qui replace `var' = 	72500	if `var'==	17200	//Claremont, NH
+					qui replace `var' = 	72700	if `var'==	18180	//Concord, NH
+					qui replace `var' = 	73450	if `var'==	25540	//Hartford-West Hartford-East Hartford, CT
+					qui replace `var' = 	73750	if `var'==	28300	//Keene, NH
+					qui replace `var' = 	73900	if `var'==	29060	//Laconia, NH
+					qui replace `var' = 	74350	if `var'==	30100	//Lebanon, NH-VT
+					qui replace `var' = 	74650	if `var'==	30340	//Lewiston-Auburn, ME
+					qui replace `var' = 	74950	if `var'==	31700	//Manchester-Nashua, NH
+					qui replace `var' = 	75700	if `var'==	35300	//New Haven-Milford, CT
+					qui replace `var' = 	76450	if `var'==	35980	//Norwich-New London, CT
+					qui replace `var' = 	76600	if `var'==	38340	//Pittsfield, MA
+					qui replace `var' = 	76750	if `var'==	38860	//Portland-South Portland-Biddeford, ME
+					qui replace `var' = 	77200	if `var'==	39300	//Providence-New Bedford-Fall River, RI-MA
+					qui replace `var' = 	77500	if `var'==	40500	//Rockland, ME
+					qui replace `var' = 	77650	if `var'==	40860	//Rutland, VT
+					qui replace `var' = 	78100	if `var'==	44140	//Springfield, MA
+					qui replace `var' = 	78400	if `var'==	45860	//Torrington, CT
+					qui replace `var' = 	79300	if `var'==	48740	//Willimantic, CT
+					qui replace `var' = 	79600	if `var'==	49340	//Worcester, MA
+				}
+*}}}
+
+****make variables
+gen ACS_female = (sex==2)
+gen ACS_hispanic = (hispan>=1 & hispan<=4)
+gen ACS_black = (ACS_hispanic==0 & race==2)
+gen ACS_asian = (ACS_hispanic==0 & race>=4 & race<=6)
+gen ACS_married = (marst==1)
+gen ACS_migrated = (migrate1>1 & migrate1<=4) 
+gen ACS_dropout = (educ<=5)
+gen ACS_hs = (educ==6)
+gen ACS_sc = (educ>=7 & educ<=9)
+gen ACS_ba = (educ==10)
+gen ACS_enrolled = (school==2)
+
+gen ACS_18 = (age<=18)
+gen ACS_19_29 = (age>=19 & age<=29)
+gen ACS_30_39 = (age>=30 & age<=39)
+gen ACS_40_49 = (age>=40 & age<=49)
+gen ACS_50_64 = (age>=50 & age<=64)
+
+gen ACS_epop = (empstat==1)
+replace ACS_epop = . if age>64 | age<16
+
+foreach var in incwage wkswork uhrswor {
+	replace `var' = . if q`var'!=0
+}
+
+gen weekly_wage = incwage/wkswork1 if wkswork1>=48 & wkswork1!=. & uhrswork>=35 & uhrswork!=.
+ren weekly_wage ACS_wage
+
+***MSA collapse
+**use person weights within year and unweighted across year
+collapse ACS* [aw=perwt], by(msa year)
+
+reshape wide ACS*, i(msa) j(year)
+
+foreach var in ACS_female ACS_hispanic ACS_black ACS_asian ACS_married ACS_migrated ACS_dropout ACS_hs ACS_sc ACS_ba ACS_enrolled ACS_18 ACS_19_29 ACS_30_39 ACS_40_49 ACS_50_64 ACS_epop ACS_wage {
+	gen CH`var'0_56 = (`var'2006 + `var'2005)/2 - `var'2000
+}
+
+keep CH* msa
+
+tempfile CHACSvars0506_msa
+save `CHACSvars0506_msa', replace
+save "$public/CHACSvars0506_msa", replace
+
+*}}}
+
+**2. time-varying MSA demographic controls for robustness -- ACS_empstats_msa_year.dta				 					
+*{{{
+* NOTE: You need to set the Stata working directory to the path
+* where the data file is located.
+
+set more off
+
+clear
+quietly infix              ///
+  int     year      1-4    ///
+  byte    datanum   5-6    ///
+  double  serial    7-14   ///
+  float   hhwt      15-24  ///
+  byte    statefip  25-26  ///
+  long    met2013   27-31  ///
+  byte    gq        32-32  ///
+  int     pernum    33-36  ///
+  float   perwt     37-46  ///
+  int     age       47-49  ///
+  byte    educ      50-51  ///
+  int     educd     52-54  ///
+  byte    empstat   55-55  ///
+  byte    empstatd  56-57  ///
+  int     occ1990   58-60  ///
+  byte    wkswork1  61-62  ///
+  byte    uhrswork  63-64  ///
+  long    incwage   65-70  ///
+  byte    quhrswor  71-71  ///
+  byte    qwkswork  72-72  ///
+  byte    qincwage  73-73  ///
+  using "$raw_MSA/usa_00048.dat"
+
+replace hhwt     = hhwt     / 100
+replace perwt    = perwt    / 100
+
+format serial   %8.0f
+format hhwt     %10.2f
+format perwt    %10.2f
+
+**label vars
+*{{{
+label var year     `"Census year"'
+label var datanum  `"Data set number"'
+label var serial   `"Household serial number"'
+label var hhwt     `"Household weight"'
+label var statefip `"State (FIPS code)"'
+label var met2013  `"Metropolitan area, 2013 OMB delineations"'
+label var gq       `"Group quarters status"'
+label var pernum   `"Person number in sample unit"'
+label var perwt    `"Person weight"'
+label var age      `"Age"'
+label var educ     `"Educational attainment [general version]"'
+label var educd    `"Educational attainment [detailed version]"'
+label var empstat  `"Employment status [general version]"'
+label var empstatd `"Employment status [detailed version]"'
+label var occ1990  `"Occupation, 1990 basis"'
+label var wkswork1 `"Weeks worked last year"'
+label var uhrswork `"Usual hours worked per week"'
+label var incwage  `"Wage and salary income"'
+label var quhrswor `"Flag for Uhrswork"'
+label var qwkswork `"Flag for Wkswork1, Wkswork2"'
+label var qincwage `"Flag for Incwage, Inctot, Incearn"'
+
+label define year_lbl 1850 `"1850"'
+label define year_lbl 1860 `"1860"', add
+label define year_lbl 1870 `"1870"', add
+label define year_lbl 1880 `"1880"', add
+label define year_lbl 1900 `"1900"', add
+label define year_lbl 1910 `"1910"', add
+label define year_lbl 1920 `"1920"', add
+label define year_lbl 1930 `"1930"', add
+label define year_lbl 1940 `"1940"', add
+label define year_lbl 1950 `"1950"', add
+label define year_lbl 1960 `"1960"', add
+label define year_lbl 1970 `"1970"', add
+label define year_lbl 1980 `"1980"', add
+label define year_lbl 1990 `"1990"', add
+label define year_lbl 2000 `"2000"', add
+label define year_lbl 2001 `"2001"', add
+label define year_lbl 2002 `"2002"', add
+label define year_lbl 2003 `"2003"', add
+label define year_lbl 2004 `"2004"', add
+label define year_lbl 2005 `"2005"', add
+label define year_lbl 2006 `"2006"', add
+label define year_lbl 2007 `"2007"', add
+label define year_lbl 2008 `"2008"', add
+label define year_lbl 2009 `"2009"', add
+label define year_lbl 2010 `"2010"', add
+label define year_lbl 2011 `"2011"', add
+label define year_lbl 2012 `"2012"', add
+label define year_lbl 2013 `"2013"', add
+label define year_lbl 2014 `"2014"', add
+label define year_lbl 2015 `"2015"', add
+label values year year_lbl
+
+label define statefip_lbl 01 `"Alabama"'
+label define statefip_lbl 02 `"Alaska"', add
+label define statefip_lbl 04 `"Arizona"', add
+label define statefip_lbl 05 `"Arkansas"', add
+label define statefip_lbl 06 `"California"', add
+label define statefip_lbl 08 `"Colorado"', add
+label define statefip_lbl 09 `"Connecticut"', add
+label define statefip_lbl 10 `"Delaware"', add
+label define statefip_lbl 11 `"District of Columbia"', add
+label define statefip_lbl 12 `"Florida"', add
+label define statefip_lbl 13 `"Georgia"', add
+label define statefip_lbl 15 `"Hawaii"', add
+label define statefip_lbl 16 `"Idaho"', add
+label define statefip_lbl 17 `"Illinois"', add
+label define statefip_lbl 18 `"Indiana"', add
+label define statefip_lbl 19 `"Iowa"', add
+label define statefip_lbl 20 `"Kansas"', add
+label define statefip_lbl 21 `"Kentucky"', add
+label define statefip_lbl 22 `"Louisiana"', add
+label define statefip_lbl 23 `"Maine"', add
+label define statefip_lbl 24 `"Maryland"', add
+label define statefip_lbl 25 `"Massachusetts"', add
+label define statefip_lbl 26 `"Michigan"', add
+label define statefip_lbl 27 `"Minnesota"', add
+label define statefip_lbl 28 `"Mississippi"', add
+label define statefip_lbl 29 `"Missouri"', add
+label define statefip_lbl 30 `"Montana"', add
+label define statefip_lbl 31 `"Nebraska"', add
+label define statefip_lbl 32 `"Nevada"', add
+label define statefip_lbl 33 `"New Hampshire"', add
+label define statefip_lbl 34 `"New Jersey"', add
+label define statefip_lbl 35 `"New Mexico"', add
+label define statefip_lbl 36 `"New York"', add
+label define statefip_lbl 37 `"North Carolina"', add
+label define statefip_lbl 38 `"North Dakota"', add
+label define statefip_lbl 39 `"Ohio"', add
+label define statefip_lbl 40 `"Oklahoma"', add
+label define statefip_lbl 41 `"Oregon"', add
+label define statefip_lbl 42 `"Pennsylvania"', add
+label define statefip_lbl 44 `"Rhode Island"', add
+label define statefip_lbl 45 `"South Carolina"', add
+label define statefip_lbl 46 `"South Dakota"', add
+label define statefip_lbl 47 `"Tennessee"', add
+label define statefip_lbl 48 `"Texas"', add
+label define statefip_lbl 49 `"Utah"', add
+label define statefip_lbl 50 `"Vermont"', add
+label define statefip_lbl 51 `"Virginia"', add
+label define statefip_lbl 53 `"Washington"', add
+label define statefip_lbl 54 `"West Virginia"', add
+label define statefip_lbl 55 `"Wisconsin"', add
+label define statefip_lbl 56 `"Wyoming"', add
+label define statefip_lbl 61 `"Maine-New Hampshire-Vermont"', add
+label define statefip_lbl 62 `"Massachusetts-Rhode Island"', add
+label define statefip_lbl 63 `"Minnesota-Iowa-Missouri-Kansas-Nebraska-S.Dakota-N.Dakota"', add
+label define statefip_lbl 64 `"Maryland-Delaware"', add
+label define statefip_lbl 65 `"Montana-Idaho-Wyoming"', add
+label define statefip_lbl 66 `"Utah-Nevada"', add
+label define statefip_lbl 67 `"Arizona-New Mexico"', add
+label define statefip_lbl 68 `"Alaska-Hawaii"', add
+label define statefip_lbl 72 `"Puerto Rico"', add
+label define statefip_lbl 97 `"Military/Mil. Reservation"', add
+label define statefip_lbl 99 `"State not identified"', add
+label values statefip statefip_lbl
+
+label define met2013_lbl 00000 `"Not in identifiable area"'
+label define met2013_lbl 10420 `"Akron, OH"', add
+label define met2013_lbl 10580 `"Albany-Schenectady-Troy, NY"', add
+label define met2013_lbl 10740 `"Albuquerque, NM"', add
+label define met2013_lbl 10780 `"Alexandria, LA"', add
+label define met2013_lbl 10900 `"Allentown-Bethlehem-Easton, PA-NJ"', add
+label define met2013_lbl 11020 `"Altoona, PA"', add
+label define met2013_lbl 11100 `"Amarillo, TX"', add
+label define met2013_lbl 11260 `"Anchorage, AK"', add
+label define met2013_lbl 11460 `"Ann Arbor, MI"', add
+label define met2013_lbl 11500 `"Anniston-Oxford-Jacksonville, AL"', add
+label define met2013_lbl 11700 `"Asheville, NC"', add
+label define met2013_lbl 12020 `"Athens-Clarke County, GA"', add
+label define met2013_lbl 12060 `"Atlanta-Sandy Springs-Roswell, GA"', add
+label define met2013_lbl 12100 `"Atlantic City-Hammonton, NJ"', add
+label define met2013_lbl 12220 `"Auburn-Opelika, AL"', add
+label define met2013_lbl 12260 `"Augusta-Richmond County, GA-SC"', add
+label define met2013_lbl 12420 `"Austin-Round Rock, TX"', add
+label define met2013_lbl 12540 `"Bakersfield, CA"', add
+label define met2013_lbl 12580 `"Baltimore-Columbia-Towson, MD"', add
+label define met2013_lbl 12620 `"Bangor, ME"', add
+label define met2013_lbl 12700 `"Barnstable Town, MA"', add
+label define met2013_lbl 12940 `"Baton Rouge, LA"', add
+label define met2013_lbl 12980 `"Battle Creek, MI"', add
+label define met2013_lbl 13140 `"Beaumont-Port Arthur, TX"', add
+label define met2013_lbl 13380 `"Bellingham, WA"', add
+label define met2013_lbl 13460 `"Bend-Redmond, OR"', add
+label define met2013_lbl 13740 `"Billings, MT"', add
+label define met2013_lbl 13780 `"Binghamton, NY"', add
+label define met2013_lbl 13820 `"Birmingham-Hoover, AL"', add
+label define met2013_lbl 13900 `"Bismarck, ND"', add
+label define met2013_lbl 13980 `"Blacksburg-Christiansburg-Radford, VA"', add
+label define met2013_lbl 14010 `"Bloomington, IL"', add
+label define met2013_lbl 14020 `"Bloomington, IN"', add
+label define met2013_lbl 14260 `"Boise City, ID"', add
+label define met2013_lbl 14460 `"Boston-Cambridge-Newton, MA-NH"', add
+label define met2013_lbl 14740 `"Bremerton-Silverdale, WA"', add
+label define met2013_lbl 14860 `"Bridgeport-Stamford-Norwalk, CT"', add
+label define met2013_lbl 15180 `"Brownsville-Harlingen, TX"', add
+label define met2013_lbl 15380 `"Buffalo-Cheektowaga-Niagara Falls, NY"', add
+label define met2013_lbl 15500 `"Burlington, NC"', add
+label define met2013_lbl 15540 `"Burlington-South Burlington, VT"', add
+label define met2013_lbl 15940 `"Canton-Massillon, OH"', add
+label define met2013_lbl 15980 `"Cape Coral-Fort Myers, FL"', add
+label define met2013_lbl 16580 `"Champaign-Urbana, IL"', add
+label define met2013_lbl 16620 `"Charleston, WV"', add
+label define met2013_lbl 16700 `"Charleston-North Charleston, SC"', add
+label define met2013_lbl 16740 `"Charlotte-Concord-Gastonia, NC-SC"', add
+label define met2013_lbl 16820 `"Charlottesville, VA"', add
+label define met2013_lbl 16860 `"Chattanooga, TN-GA"', add
+label define met2013_lbl 16980 `"Chicago-Naperville-Elgin, IL-IN-WI"', add
+label define met2013_lbl 17020 `"Chico, CA"', add
+label define met2013_lbl 17140 `"Cincinnati, OH-KY-IN"', add
+label define met2013_lbl 17300 `"Clarksville, TN-KY"', add
+label define met2013_lbl 17460 `"Cleveland-Elyria, OH"', add
+label define met2013_lbl 17660 `"Coeur d'Alene, ID"', add
+label define met2013_lbl 17780 `"College Station-Bryan, TX"', add
+label define met2013_lbl 17820 `"Colorado Springs, CO"', add
+label define met2013_lbl 17860 `"Columbia, MO"', add
+label define met2013_lbl 17900 `"Columbia, SC"', add
+label define met2013_lbl 18140 `"Columbus, OH"', add
+label define met2013_lbl 18580 `"Corpus Christi, TX"', add
+label define met2013_lbl 19100 `"Dallas-Fort Worth-Arlington, TX"', add
+label define met2013_lbl 19300 `"Daphne-Fairhope-Foley, AL"', add
+label define met2013_lbl 19340 `"Davenport-Moline-Rock Island, IA-IL"', add
+label define met2013_lbl 19380 `"Dayton, OH"', add
+label define met2013_lbl 19460 `"Decatur, AL"', add
+label define met2013_lbl 19500 `"Decatur, IL"', add
+label define met2013_lbl 19660 `"Deltona-Daytona Beach-Ormond Beach, FL"', add
+label define met2013_lbl 19740 `"Denver-Aurora-Lakewood, CO"', add
+label define met2013_lbl 19780 `"Des Moines-West Des Moines, IA"', add
+label define met2013_lbl 19820 `"Detroit-Warren-Dearborn, MI"', add
+label define met2013_lbl 20100 `"Dover, DE"', add
+label define met2013_lbl 20500 `"Durham-Chapel Hill, NC"', add
+label define met2013_lbl 20700 `"East Stroudsburg, PA"', add
+label define met2013_lbl 20740 `"Eau Claire, WI"', add
+label define met2013_lbl 20940 `"El Centro, CA"', add
+label define met2013_lbl 21060 `"Elizabethtown-Fort Knox, KY"', add
+label define met2013_lbl 21140 `"Elkhart-Goshen, IN"', add
+label define met2013_lbl 21340 `"El Paso, TX"', add
+label define met2013_lbl 21500 `"Erie, PA"', add
+label define met2013_lbl 21660 `"Eugene, OR"', add
+label define met2013_lbl 21780 `"Evansville, IN-KY"', add
+label define met2013_lbl 22140 `"Farmington, NM"', add
+label define met2013_lbl 22180 `"Fayetteville, NC"', add
+label define met2013_lbl 22220 `"Fayetteville-Springdale-Rogers, AR-MO"', add
+label define met2013_lbl 22380 `"Flagstaff, AZ"', add
+label define met2013_lbl 22420 `"Flint, MI"', add
+label define met2013_lbl 22500 `"Florence, SC"', add
+label define met2013_lbl 22520 `"Florence-Muscle Shoals, AL"', add
+label define met2013_lbl 22660 `"Fort Collins, CO"', add
+label define met2013_lbl 23060 `"Fort Wayne, IN"', add
+label define met2013_lbl 23420 `"Fresno, CA"', add
+label define met2013_lbl 23460 `"Gadsden, AL"', add
+label define met2013_lbl 23540 `"Gainesville, FL"', add
+label define met2013_lbl 23580 `"Gainesville, GA"', add
+label define met2013_lbl 24020 `"Glens Falls, NY"', add
+label define met2013_lbl 24140 `"Goldsboro, NC"', add
+label define met2013_lbl 24300 `"Grand Junction, CO"', add
+label define met2013_lbl 24340 `"Grand Rapids-Wyoming, MI"', add
+label define met2013_lbl 24540 `"Greeley, CO"', add
+label define met2013_lbl 24660 `"Greensboro-High Point, NC"', add
+label define met2013_lbl 24780 `"Greenville, NC"', add
+label define met2013_lbl 24860 `"Greenville-Anderson-Mauldin, SC"', add
+label define met2013_lbl 25060 `"Gulfport-Biloxi-Pascagoula, MS"', add
+label define met2013_lbl 25220 `"Hammond, LA"', add
+label define met2013_lbl 25260 `"Hanford-Corcoran, CA"', add
+label define met2013_lbl 25420 `"Harrisburg-Carlisle, PA"', add
+label define met2013_lbl 25500 `"Harrisonburg, VA"', add
+label define met2013_lbl 25540 `"Hartford-West Hartford-East Hartford, CT"', add
+label define met2013_lbl 25620 `"Hattiesburg, MS"', add
+label define met2013_lbl 25860 `"Hickory-Lenoir-Morganton, NC"', add
+label define met2013_lbl 25940 `"Hilton Head Island-Bluffton-Beaufort, SC"', add
+label define met2013_lbl 26140 `"Homosassa Springs, FL"', add
+label define met2013_lbl 26380 `"Houma-Thibodaux, LA"', add
+label define met2013_lbl 26420 `"Houston-The Woodlands-Sugar Land, TX"', add
+label define met2013_lbl 26620 `"Huntsville, AL"', add
+label define met2013_lbl 26900 `"Indianapolis-Carmel-Anderson, IN"', add
+label define met2013_lbl 26980 `"Iowa City, IA"', add
+label define met2013_lbl 27060 `"Ithaca, NY"', add
+label define met2013_lbl 27100 `"Jackson, MI"', add
+label define met2013_lbl 27140 `"Jackson, MS"', add
+label define met2013_lbl 27180 `"Jackson, TN"', add
+label define met2013_lbl 27260 `"Jacksonville, FL"', add
+label define met2013_lbl 27340 `"Jacksonville, NC"', add
+label define met2013_lbl 27500 `"Janesville-Beloit, WI"', add
+label define met2013_lbl 27620 `"Jefferson City, MO"', add
+label define met2013_lbl 27780 `"Johnstown, PA"', add
+label define met2013_lbl 27900 `"Joplin, MO"', add
+label define met2013_lbl 28020 `"Kalamazoo-Portage, MI"', add
+label define met2013_lbl 28100 `"Kankakee, IL"', add
+label define met2013_lbl 28140 `"Kansas City, MO-KS"', add
+label define met2013_lbl 28420 `"Kennewick-Richland, WA"', add
+label define met2013_lbl 28660 `"Killeen-Temple, TX"', add
+label define met2013_lbl 28700 `"Kingsport-Bristol-Bristol, TN-VA"', add
+label define met2013_lbl 28940 `"Knoxville, TN"', add
+label define met2013_lbl 29100 `"La Crosse-Onalaska, WI-MN"', add
+label define met2013_lbl 29180 `"Lafayette, LA"', add
+label define met2013_lbl 29200 `"Lafayette-West Lafayette, IN"', add
+label define met2013_lbl 29340 `"Lake Charles, LA"', add
+label define met2013_lbl 29420 `"Lake Havasu City-Kingman, AZ"', add
+label define met2013_lbl 29460 `"Lakeland-Winter Haven, FL"', add
+label define met2013_lbl 29540 `"Lancaster, PA"', add
+label define met2013_lbl 29620 `"Lansing-East Lansing, MI"', add
+label define met2013_lbl 29700 `"Laredo, TX"', add
+label define met2013_lbl 29740 `"Las Cruces, NM"', add
+label define met2013_lbl 29820 `"Las Vegas-Henderson-Paradise, NV"', add
+label define met2013_lbl 29940 `"Lawrence, KS"', add
+label define met2013_lbl 30140 `"Lebanon, PA"', add
+label define met2013_lbl 30340 `"Lewiston-Auburn, ME"', add
+label define met2013_lbl 30620 `"Lima, OH"', add
+label define met2013_lbl 30700 `"Lincoln, NE"', add
+label define met2013_lbl 30780 `"Little Rock-North Little Rock-Conway, AR"', add
+label define met2013_lbl 31080 `"Los Angeles-Long Beach-Anaheim, CA"', add
+label define met2013_lbl 31140 `"Louisville/Jefferson County, KY-IN"', add
+label define met2013_lbl 31180 `"Lubbock, TX"', add
+label define met2013_lbl 31340 `"Lynchburg, VA"', add
+label define met2013_lbl 31460 `"Madera, CA"', add
+label define met2013_lbl 31700 `"Manchester-Nashua, NH"', add
+label define met2013_lbl 31900 `"Mansfield, OH"', add
+label define met2013_lbl 32420 `"Mayagüez, PR"', add
+label define met2013_lbl 32580 `"McAllen-Edinburg-Mission, TX"', add
+label define met2013_lbl 32780 `"Medford, OR"', add
+label define met2013_lbl 32820 `"Memphis, TN-MS-AR"', add
+label define met2013_lbl 32900 `"Merced, CA"', add
+label define met2013_lbl 33100 `"Miami-Fort Lauderdale-West Palm Beach, FL"', add
+label define met2013_lbl 33140 `"Michigan City-La Porte, IN"', add
+label define met2013_lbl 33260 `"Midland, TX"', add
+label define met2013_lbl 33340 `"Milwaukee-Waukesha-West Allis, WI"', add
+label define met2013_lbl 33460 `"Minneapolis-St. Paul-Bloomington, MN-WI"', add
+label define met2013_lbl 33660 `"Mobile, AL"', add
+label define met2013_lbl 33700 `"Modesto, CA"', add
+label define met2013_lbl 33740 `"Monroe, LA"', add
+label define met2013_lbl 33780 `"Monroe, MI"', add
+label define met2013_lbl 33860 `"Montgomery, AL"', add
+label define met2013_lbl 34060 `"Morgantown, WV"', add
+label define met2013_lbl 34620 `"Muncie, IN"', add
+label define met2013_lbl 34740 `"Muskegon, MI"', add
+label define met2013_lbl 34820 `"Myrtle Beach-Conway-North Myrtle Beach, SC-NC"', add
+label define met2013_lbl 34900 `"Napa, CA"', add
+label define met2013_lbl 34940 `"Naples-Immokalee-Marco Island, FL"', add
+label define met2013_lbl 34980 `"Nashville-Davidson--Murfreesboro--Franklin, TN"', add
+label define met2013_lbl 35300 `"New Haven-Milford, CT"', add
+label define met2013_lbl 35380 `"New Orleans-Metairie, LA"', add
+label define met2013_lbl 35620 `"New York-Newark-Jersey City, NY-NJ-PA"', add
+label define met2013_lbl 35660 `"Niles-Benton Harbor, MI"', add
+label define met2013_lbl 35840 `"North Port-Sarasota-Bradenton, FL"', add
+label define met2013_lbl 35980 `"Norwich-New London, CT"', add
+label define met2013_lbl 36100 `"Ocala, FL"', add
+label define met2013_lbl 36140 `"Ocean City, NJ"', add
+label define met2013_lbl 36220 `"Odessa, TX"', add
+label define met2013_lbl 36260 `"Ogden-Clearfield, UT"', add
+label define met2013_lbl 36420 `"Oklahoma City, OK"', add
+label define met2013_lbl 36500 `"Olympia-Tumwater, WA"', add
+label define met2013_lbl 36540 `"Omaha-Council Bluffs, NE-IA"', add
+label define met2013_lbl 36740 `"Orlando-Kissimmee-Sanford, FL"', add
+label define met2013_lbl 36780 `"Oshkosh-Neenah, WI"', add
+label define met2013_lbl 36980 `"Owensboro, KY"', add
+label define met2013_lbl 37100 `"Oxnard-Thousand Oaks-Ventura, CA"', add
+label define met2013_lbl 37340 `"Palm Bay-Melbourne-Titusville, FL"', add
+label define met2013_lbl 37460 `"Panama City, FL"', add
+label define met2013_lbl 37620 `"Parkersburg-Vienna, WV"', add
+label define met2013_lbl 37860 `"Pensacola-Ferry Pass-Brent, FL"', add
+label define met2013_lbl 37900 `"Peoria, IL"', add
+label define met2013_lbl 37980 `"Philadelphia-Camden-Wilmington, PA-NJ-DE-MD"', add
+label define met2013_lbl 38060 `"Phoenix-Mesa-Scottsdale, AZ"', add
+label define met2013_lbl 38300 `"Pittsburgh, PA"', add
+label define met2013_lbl 38340 `"Pittsfield, MA"', add
+label define met2013_lbl 38660 `"Ponce, PR"', add
+label define met2013_lbl 38860 `"Portland-South Portland, ME"', add
+label define met2013_lbl 38900 `"Portland-Vancouver-Hillsboro, OR-WA"', add
+label define met2013_lbl 38940 `"Port St. Lucie, FL"', add
+label define met2013_lbl 39140 `"Prescott, AZ"', add
+label define met2013_lbl 39300 `"Providence-Warwick, RI-MA"', add
+label define met2013_lbl 39340 `"Provo-Orem, UT"', add
+label define met2013_lbl 39380 `"Pueblo, CO"', add
+label define met2013_lbl 39460 `"Punta Gorda, FL"', add
+label define met2013_lbl 39540 `"Racine, WI"', add
+label define met2013_lbl 39580 `"Raleigh, NC"', add
+label define met2013_lbl 39740 `"Reading, PA"', add
+label define met2013_lbl 39820 `"Redding, CA"', add
+label define met2013_lbl 39900 `"Reno, NV"', add
+label define met2013_lbl 40060 `"Richmond, VA"', add
+label define met2013_lbl 40140 `"Riverside-San Bernardino-Ontario, CA"', add
+label define met2013_lbl 40220 `"Roanoke, VA"', add
+label define met2013_lbl 40380 `"Rochester, NY"', add
+label define met2013_lbl 40420 `"Rockford, IL"', add
+label define met2013_lbl 40580 `"Rocky Mount, NC"', add
+label define met2013_lbl 40900 `"Sacramento--Roseville--Arden-Arcade, CA"', add
+label define met2013_lbl 40980 `"Saginaw, MI"', add
+label define met2013_lbl 41060 `"St. Cloud, MN"', add
+label define met2013_lbl 41100 `"St. George, UT"', add
+label define met2013_lbl 41140 `"St. Joseph, MO-KS"', add
+label define met2013_lbl 41180 `"St. Louis, MO-IL"', add
+label define met2013_lbl 41500 `"Salinas, CA"', add
+label define met2013_lbl 41540 `"Salisbury, MD-DE"', add
+label define met2013_lbl 41620 `"Salt Lake City, UT"', add
+label define met2013_lbl 41660 `"San Angelo, TX"', add
+label define met2013_lbl 41700 `"San Antonio-New Braunfels, TX"', add
+label define met2013_lbl 41740 `"San Diego-Carlsbad, CA"', add
+label define met2013_lbl 41860 `"San Francisco-Oakland-Hayward, CA"', add
+label define met2013_lbl 41900 `"San Germán, PR"', add
+label define met2013_lbl 41940 `"San Jose-Sunnyvale-Santa Clara, CA"', add
+label define met2013_lbl 41980 `"San Juan-Carolina-Caguas, PR"', add
+label define met2013_lbl 42020 `"San Luis Obispo-Paso Robles-Arroyo Grande, CA"', add
+label define met2013_lbl 42100 `"Santa Cruz-Watsonville, CA"', add
+label define met2013_lbl 42140 `"Santa Fe, NM"', add
+label define met2013_lbl 42200 `"Santa Maria-Santa Barbara, CA"', add
+label define met2013_lbl 42220 `"Santa Rosa, CA"', add
+label define met2013_lbl 42540 `"Scranton--Wilkes-Barre--Hazleton, PA"', add
+label define met2013_lbl 42660 `"Seattle-Tacoma-Bellevue, WA"', add
+label define met2013_lbl 42680 `"Sebastian-Vero Beach, FL"', add
+label define met2013_lbl 43100 `"Sheboygan, WI"', add
+label define met2013_lbl 43340 `"Shreveport-Bossier City, LA"', add
+label define met2013_lbl 43900 `"Spartanburg, SC"', add
+label define met2013_lbl 44060 `"Spokane-Spokane Valley, WA"', add
+label define met2013_lbl 44100 `"Springfield, IL"', add
+label define met2013_lbl 44140 `"Springfield, MA"', add
+label define met2013_lbl 44180 `"Springfield, MO"', add
+label define met2013_lbl 44220 `"Springfield, OH"', add
+label define met2013_lbl 44300 `"State College, PA"', add
+label define met2013_lbl 44700 `"Stockton-Lodi, CA"', add
+label define met2013_lbl 44940 `"Sumter, SC"', add
+label define met2013_lbl 45060 `"Syracuse, NY"', add
+label define met2013_lbl 45220 `"Tallahassee, FL"', add
+label define met2013_lbl 45300 `"Tampa-St. Petersburg-Clearwater, FL"', add
+label define met2013_lbl 45460 `"Terre Haute, IN"', add
+label define met2013_lbl 45780 `"Toledo, OH"', add
+label define met2013_lbl 45820 `"Topeka, KS"', add
+label define met2013_lbl 45940 `"Trenton, NJ"', add
+label define met2013_lbl 46060 `"Tucson, AZ"', add
+label define met2013_lbl 46220 `"Tuscaloosa, AL"', add
+label define met2013_lbl 46340 `"Tyler, TX"', add
+label define met2013_lbl 46520 `"Urban Honolulu, HI"', add
+label define met2013_lbl 46540 `"Utica-Rome, NY"', add
+label define met2013_lbl 46660 `"Valdosta, GA"', add
+label define met2013_lbl 46700 `"Vallejo-Fairfield, CA"', add
+label define met2013_lbl 47220 `"Vineland-Bridgeton, NJ"', add
+label define met2013_lbl 47260 `"Virginia Beach-Norfolk-Newport News, VA-NC"', add
+label define met2013_lbl 47300 `"Visalia-Porterville, CA"', add
+label define met2013_lbl 47380 `"Waco, TX"', add
+label define met2013_lbl 47900 `"Washington-Arlington-Alexandria, DC-VA-MD-WV"', add
+label define met2013_lbl 48140 `"Wausau, WI"', add
+label define met2013_lbl 48300 `"Wenatchee, WA"', add
+label define met2013_lbl 48620 `"Wichita, KS"', add
+label define met2013_lbl 48660 `"Wichita Falls, TX"', add
+label define met2013_lbl 48700 `"Williamsport, PA"', add
+label define met2013_lbl 48900 `"Wilmington, NC"', add
+label define met2013_lbl 49180 `"Winston-Salem, NC"', add
+label define met2013_lbl 49340 `"Worcester, MA-CT"', add
+label define met2013_lbl 49420 `"Yakima, WA"', add
+label define met2013_lbl 49620 `"York-Hanover, PA"', add
+label define met2013_lbl 49660 `"Youngstown-Warren-Boardman, OH-PA"', add
+label define met2013_lbl 49700 `"Yuba City, CA"', add
+label define met2013_lbl 49740 `"Yuma, AZ"', add
+label values met2013 met2013_lbl
+
+label define gq_lbl 0 `"Vacant unit"'
+label define gq_lbl 1 `"Households under 1970 definition"', add
+label define gq_lbl 2 `"Additional households under 1990 definition"', add
+label define gq_lbl 3 `"Group quarters--Institutions"', add
+label define gq_lbl 4 `"Other group quarters"', add
+label define gq_lbl 5 `"Additional households under 2000 definition"', add
+label define gq_lbl 6 `"Fragment"', add
+label values gq gq_lbl
+
+label define age_lbl 000 `"Less than 1 year old"'
+label define age_lbl 001 `"1"', add
+label define age_lbl 002 `"2"', add
+label define age_lbl 003 `"3"', add
+label define age_lbl 004 `"4"', add
+label define age_lbl 005 `"5"', add
+label define age_lbl 006 `"6"', add
+label define age_lbl 007 `"7"', add
+label define age_lbl 008 `"8"', add
+label define age_lbl 009 `"9"', add
+label define age_lbl 010 `"10"', add
+label define age_lbl 011 `"11"', add
+label define age_lbl 012 `"12"', add
+label define age_lbl 013 `"13"', add
+label define age_lbl 014 `"14"', add
+label define age_lbl 015 `"15"', add
+label define age_lbl 016 `"16"', add
+label define age_lbl 017 `"17"', add
+label define age_lbl 018 `"18"', add
+label define age_lbl 019 `"19"', add
+label define age_lbl 020 `"20"', add
+label define age_lbl 021 `"21"', add
+label define age_lbl 022 `"22"', add
+label define age_lbl 023 `"23"', add
+label define age_lbl 024 `"24"', add
+label define age_lbl 025 `"25"', add
+label define age_lbl 026 `"26"', add
+label define age_lbl 027 `"27"', add
+label define age_lbl 028 `"28"', add
+label define age_lbl 029 `"29"', add
+label define age_lbl 030 `"30"', add
+label define age_lbl 031 `"31"', add
+label define age_lbl 032 `"32"', add
+label define age_lbl 033 `"33"', add
+label define age_lbl 034 `"34"', add
+label define age_lbl 035 `"35"', add
+label define age_lbl 036 `"36"', add
+label define age_lbl 037 `"37"', add
+label define age_lbl 038 `"38"', add
+label define age_lbl 039 `"39"', add
+label define age_lbl 040 `"40"', add
+label define age_lbl 041 `"41"', add
+label define age_lbl 042 `"42"', add
+label define age_lbl 043 `"43"', add
+label define age_lbl 044 `"44"', add
+label define age_lbl 045 `"45"', add
+label define age_lbl 046 `"46"', add
+label define age_lbl 047 `"47"', add
+label define age_lbl 048 `"48"', add
+label define age_lbl 049 `"49"', add
+label define age_lbl 050 `"50"', add
+label define age_lbl 051 `"51"', add
+label define age_lbl 052 `"52"', add
+label define age_lbl 053 `"53"', add
+label define age_lbl 054 `"54"', add
+label define age_lbl 055 `"55"', add
+label define age_lbl 056 `"56"', add
+label define age_lbl 057 `"57"', add
+label define age_lbl 058 `"58"', add
+label define age_lbl 059 `"59"', add
+label define age_lbl 060 `"60"', add
+label define age_lbl 061 `"61"', add
+label define age_lbl 062 `"62"', add
+label define age_lbl 063 `"63"', add
+label define age_lbl 064 `"64"', add
+label define age_lbl 065 `"65"', add
+label define age_lbl 066 `"66"', add
+label define age_lbl 067 `"67"', add
+label define age_lbl 068 `"68"', add
+label define age_lbl 069 `"69"', add
+label define age_lbl 070 `"70"', add
+label define age_lbl 071 `"71"', add
+label define age_lbl 072 `"72"', add
+label define age_lbl 073 `"73"', add
+label define age_lbl 074 `"74"', add
+label define age_lbl 075 `"75"', add
+label define age_lbl 076 `"76"', add
+label define age_lbl 077 `"77"', add
+label define age_lbl 078 `"78"', add
+label define age_lbl 079 `"79"', add
+label define age_lbl 080 `"80"', add
+label define age_lbl 081 `"81"', add
+label define age_lbl 082 `"82"', add
+label define age_lbl 083 `"83"', add
+label define age_lbl 084 `"84"', add
+label define age_lbl 085 `"85"', add
+label define age_lbl 086 `"86"', add
+label define age_lbl 087 `"87"', add
+label define age_lbl 088 `"88"', add
+label define age_lbl 089 `"89"', add
+label define age_lbl 090 `"90 (90+ in 1980 and 1990)"', add
+label define age_lbl 091 `"91"', add
+label define age_lbl 092 `"92"', add
+label define age_lbl 093 `"93"', add
+label define age_lbl 094 `"94"', add
+label define age_lbl 095 `"95"', add
+label define age_lbl 096 `"96"', add
+label define age_lbl 097 `"97"', add
+label define age_lbl 098 `"98"', add
+label define age_lbl 099 `"99"', add
+label define age_lbl 100 `"100 (100+ in 1960-1970)"', add
+label define age_lbl 101 `"101"', add
+label define age_lbl 102 `"102"', add
+label define age_lbl 103 `"103"', add
+label define age_lbl 104 `"104"', add
+label define age_lbl 105 `"105"', add
+label define age_lbl 106 `"106"', add
+label define age_lbl 107 `"107"', add
+label define age_lbl 108 `"108"', add
+label define age_lbl 109 `"109"', add
+label define age_lbl 110 `"110"', add
+label define age_lbl 111 `"111"', add
+label define age_lbl 112 `"112 (112+ in the 1980 internal data)"', add
+label define age_lbl 113 `"113"', add
+label define age_lbl 114 `"114"', add
+label define age_lbl 115 `"115 (115+ in the 1990 internal data)"', add
+label define age_lbl 116 `"116"', add
+label define age_lbl 117 `"117"', add
+label define age_lbl 118 `"118"', add
+label define age_lbl 119 `"119"', add
+label define age_lbl 120 `"120"', add
+label define age_lbl 121 `"121"', add
+label define age_lbl 122 `"122"', add
+label define age_lbl 123 `"123"', add
+label define age_lbl 124 `"124"', add
+label define age_lbl 125 `"125"', add
+label define age_lbl 126 `"126"', add
+label define age_lbl 129 `"129"', add
+label define age_lbl 130 `"130"', add
+label define age_lbl 135 `"135"', add
+label values age age_lbl
+
+label define educ_lbl 00 `"N/A or no schooling"'
+label define educ_lbl 01 `"Nursery school to grade 4"', add
+label define educ_lbl 02 `"Grade 5, 6, 7, or 8"', add
+label define educ_lbl 03 `"Grade 9"', add
+label define educ_lbl 04 `"Grade 10"', add
+label define educ_lbl 05 `"Grade 11"', add
+label define educ_lbl 06 `"Grade 12"', add
+label define educ_lbl 07 `"1 year of college"', add
+label define educ_lbl 08 `"2 years of college"', add
+label define educ_lbl 09 `"3 years of college"', add
+label define educ_lbl 10 `"4 years of college"', add
+label define educ_lbl 11 `"5+ years of college"', add
+label values educ educ_lbl
+
+label define educd_lbl 000 `"N/A or no schooling"'
+label define educd_lbl 001 `"N/A"', add
+label define educd_lbl 002 `"No schooling completed"', add
+label define educd_lbl 010 `"Nursery school to grade 4"', add
+label define educd_lbl 011 `"Nursery school, preschool"', add
+label define educd_lbl 012 `"Kindergarten"', add
+label define educd_lbl 013 `"Grade 1, 2, 3, or 4"', add
+label define educd_lbl 014 `"Grade 1"', add
+label define educd_lbl 015 `"Grade 2"', add
+label define educd_lbl 016 `"Grade 3"', add
+label define educd_lbl 017 `"Grade 4"', add
+label define educd_lbl 020 `"Grade 5, 6, 7, or 8"', add
+label define educd_lbl 021 `"Grade 5 or 6"', add
+label define educd_lbl 022 `"Grade 5"', add
+label define educd_lbl 023 `"Grade 6"', add
+label define educd_lbl 024 `"Grade 7 or 8"', add
+label define educd_lbl 025 `"Grade 7"', add
+label define educd_lbl 026 `"Grade 8"', add
+label define educd_lbl 030 `"Grade 9"', add
+label define educd_lbl 040 `"Grade 10"', add
+label define educd_lbl 050 `"Grade 11"', add
+label define educd_lbl 060 `"Grade 12"', add
+label define educd_lbl 061 `"12th grade, no diploma"', add
+label define educd_lbl 062 `"High school graduate or GED"', add
+label define educd_lbl 063 `"Regular high school diploma"', add
+label define educd_lbl 064 `"GED or alternative credential"', add
+label define educd_lbl 065 `"Some college, but less than 1 year"', add
+label define educd_lbl 070 `"1 year of college"', add
+label define educd_lbl 071 `"1 or more years of college credit, no degree"', add
+label define educd_lbl 080 `"2 years of college"', add
+label define educd_lbl 081 `"Associate's degree, type not specified"', add
+label define educd_lbl 082 `"Associate's degree, occupational program"', add
+label define educd_lbl 083 `"Associate's degree, academic program"', add
+label define educd_lbl 090 `"3 years of college"', add
+label define educd_lbl 100 `"4 years of college"', add
+label define educd_lbl 101 `"Bachelor's degree"', add
+label define educd_lbl 110 `"5+ years of college"', add
+label define educd_lbl 111 `"6 years of college (6+ in 1960-1970)"', add
+label define educd_lbl 112 `"7 years of college"', add
+label define educd_lbl 113 `"8+ years of college"', add
+label define educd_lbl 114 `"Master's degree"', add
+label define educd_lbl 115 `"Professional degree beyond a bachelor's degree"', add
+label define educd_lbl 116 `"Doctoral degree"', add
+label define educd_lbl 999 `"Missing"', add
+label values educd educd_lbl
+
+label define empstat_lbl 0 `"N/A"'
+label define empstat_lbl 1 `"Employed"', add
+label define empstat_lbl 2 `"Unemployed"', add
+label define empstat_lbl 3 `"Not in labor force"', add
+label values empstat empstat_lbl
+
+label define empstatd_lbl 00 `"N/A"'
+label define empstatd_lbl 10 `"At work"', add
+label define empstatd_lbl 11 `"At work, public emerg"', add
+label define empstatd_lbl 12 `"Has job, not working"', add
+label define empstatd_lbl 13 `"Armed forces"', add
+label define empstatd_lbl 14 `"Armed forces--at work"', add
+label define empstatd_lbl 15 `"Armed forces--not at work but with job"', add
+label define empstatd_lbl 20 `"Unemployed"', add
+label define empstatd_lbl 21 `"Unemp, exper worker"', add
+label define empstatd_lbl 22 `"Unemp, new worker"', add
+label define empstatd_lbl 30 `"Not in Labor Force"', add
+label define empstatd_lbl 31 `"NILF, housework"', add
+label define empstatd_lbl 32 `"NILF, unable to work"', add
+label define empstatd_lbl 33 `"NILF, school"', add
+label define empstatd_lbl 34 `"NILF, other"', add
+label values empstatd empstatd_lbl
+
+label define occ1990_lbl 003 `"Legislators"'
+label define occ1990_lbl 004 `"Chief executives and public administrators"', add
+label define occ1990_lbl 007 `"Financial managers"', add
+label define occ1990_lbl 008 `"Human resources and labor relations managers"', add
+label define occ1990_lbl 013 `"Managers and specialists in marketing, advertising, and public relations"', add
+label define occ1990_lbl 014 `"Managers in education and related fields"', add
+label define occ1990_lbl 015 `"Managers of medicine and health occupations"', add
+label define occ1990_lbl 016 `"Postmasters and mail superintendents"', add
+label define occ1990_lbl 017 `"Managers of food-serving and lodging establishments"', add
+label define occ1990_lbl 018 `"Managers of properties and real estate"', add
+label define occ1990_lbl 019 `"Funeral directors"', add
+label define occ1990_lbl 021 `"Managers of service organizations, n.e.c."', add
+label define occ1990_lbl 022 `"Managers and administrators, n.e.c."', add
+label define occ1990_lbl 023 `"Accountants and auditors"', add
+label define occ1990_lbl 024 `"Insurance underwriters"', add
+label define occ1990_lbl 025 `"Other financial specialists"', add
+label define occ1990_lbl 026 `"Management analysts"', add
+label define occ1990_lbl 027 `"Personnel, HR, training, and labor relations specialists"', add
+label define occ1990_lbl 028 `"Purchasing agents and buyers, of farm products"', add
+label define occ1990_lbl 029 `"Buyers, wholesale and retail trade"', add
+label define occ1990_lbl 033 `"Purchasing managers, agents and buyers, n.e.c."', add
+label define occ1990_lbl 034 `"Business and promotion agents"', add
+label define occ1990_lbl 035 `"Construction inspectors"', add
+label define occ1990_lbl 036 `"Inspectors and compliance officers, outside construction"', add
+label define occ1990_lbl 037 `"Management support occupations"', add
+label define occ1990_lbl 043 `"Architects"', add
+label define occ1990_lbl 044 `"Aerospace engineer"', add
+label define occ1990_lbl 045 `"Metallurgical and materials engineers, variously phrased"', add
+label define occ1990_lbl 047 `"Petroleum, mining, and geological engineers"', add
+label define occ1990_lbl 048 `"Chemical engineers"', add
+label define occ1990_lbl 053 `"Civil engineers"', add
+label define occ1990_lbl 055 `"Electrical engineer"', add
+label define occ1990_lbl 056 `"Industrial engineers"', add
+label define occ1990_lbl 057 `"Mechanical engineers"', add
+label define occ1990_lbl 059 `"Not-elsewhere-classified engineers"', add
+label define occ1990_lbl 064 `"Computer systems analysts and computer scientists"', add
+label define occ1990_lbl 065 `"Operations and systems researchers and analysts"', add
+label define occ1990_lbl 066 `"Actuaries"', add
+label define occ1990_lbl 067 `"Statisticians"', add
+label define occ1990_lbl 068 `"Mathematicians and mathematical scientists"', add
+label define occ1990_lbl 069 `"Physicists and astronomers"', add
+label define occ1990_lbl 073 `"Chemists"', add
+label define occ1990_lbl 074 `"Atmospheric and space scientists"', add
+label define occ1990_lbl 075 `"Geologists"', add
+label define occ1990_lbl 076 `"Physical scientists, n.e.c."', add
+label define occ1990_lbl 077 `"Agricultural and food scientists"', add
+label define occ1990_lbl 078 `"Biological scientists"', add
+label define occ1990_lbl 079 `"Foresters and conservation scientists"', add
+label define occ1990_lbl 083 `"Medical scientists"', add
+label define occ1990_lbl 084 `"Physicians"', add
+label define occ1990_lbl 085 `"Dentists"', add
+label define occ1990_lbl 086 `"Veterinarians"', add
+label define occ1990_lbl 087 `"Optometrists"', add
+label define occ1990_lbl 088 `"Podiatrists"', add
+label define occ1990_lbl 089 `"Other health and therapy"', add
+label define occ1990_lbl 095 `"Registered nurses"', add
+label define occ1990_lbl 096 `"Pharmacists"', add
+label define occ1990_lbl 097 `"Dietitians and nutritionists"', add
+label define occ1990_lbl 098 `"Respiratory therapists"', add
+label define occ1990_lbl 099 `"Occupational therapists"', add
+label define occ1990_lbl 103 `"Physical therapists"', add
+label define occ1990_lbl 104 `"Speech therapists"', add
+label define occ1990_lbl 105 `"Therapists, n.e.c."', add
+label define occ1990_lbl 106 `"Physicians' assistants"', add
+label define occ1990_lbl 113 `"Earth, environmental, and marine science instructors"', add
+label define occ1990_lbl 114 `"Biological science instructors"', add
+label define occ1990_lbl 115 `"Chemistry instructors"', add
+label define occ1990_lbl 116 `"Physics instructors"', add
+label define occ1990_lbl 118 `"Psychology instructors"', add
+label define occ1990_lbl 119 `"Economics instructors"', add
+label define occ1990_lbl 123 `"History instructors"', add
+label define occ1990_lbl 125 `"Sociology instructors"', add
+label define occ1990_lbl 127 `"Engineering instructors"', add
+label define occ1990_lbl 128 `"Math instructors"', add
+label define occ1990_lbl 139 `"Education instructors"', add
+label define occ1990_lbl 145 `"Law instructors"', add
+label define occ1990_lbl 147 `"Theology instructors"', add
+label define occ1990_lbl 149 `"Home economics instructors"', add
+label define occ1990_lbl 150 `"Humanities profs/instructors, college, nec"', add
+label define occ1990_lbl 154 `"Subject instructors (HS/college)"', add
+label define occ1990_lbl 155 `"Kindergarten and earlier school teachers"', add
+label define occ1990_lbl 156 `"Primary school teachers"', add
+label define occ1990_lbl 157 `"Secondary school teachers"', add
+label define occ1990_lbl 158 `"Special education teachers"', add
+label define occ1990_lbl 159 `"Teachers , n.e.c."', add
+label define occ1990_lbl 163 `"Vocational and educational counselors"', add
+label define occ1990_lbl 164 `"Librarians"', add
+label define occ1990_lbl 165 `"Archivists and curators"', add
+label define occ1990_lbl 166 `"Economists, market researchers, and survey researchers"', add
+label define occ1990_lbl 167 `"Psychologists"', add
+label define occ1990_lbl 168 `"Sociologists"', add
+label define occ1990_lbl 169 `"Social scientists, n.e.c."', add
+label define occ1990_lbl 173 `"Urban and regional planners"', add
+label define occ1990_lbl 174 `"Social workers"', add
+label define occ1990_lbl 175 `"Recreation workers"', add
+label define occ1990_lbl 176 `"Clergy and religious workers"', add
+label define occ1990_lbl 178 `"Lawyers "', add
+label define occ1990_lbl 179 `"Judges"', add
+label define occ1990_lbl 183 `"Writers and authors"', add
+label define occ1990_lbl 184 `"Technical writers"', add
+label define occ1990_lbl 185 `"Designers"', add
+label define occ1990_lbl 186 `"Musician or composer"', add
+label define occ1990_lbl 187 `"Actors, directors, producers"', add
+label define occ1990_lbl 188 `"Art makers: painters, sculptors, craft-artists, and print-makers"', add
+label define occ1990_lbl 189 `"Photographers"', add
+label define occ1990_lbl 193 `"Dancers"', add
+label define occ1990_lbl 194 `"Art/entertainment performers and related"', add
+label define occ1990_lbl 195 `"Editors and reporters"', add
+label define occ1990_lbl 198 `"Announcers"', add
+label define occ1990_lbl 199 `"Athletes, sports instructors, and officials"', add
+label define occ1990_lbl 200 `"Professionals, n.e.c."', add
+label define occ1990_lbl 203 `"Clinical laboratory technologies and technicians"', add
+label define occ1990_lbl 204 `"Dental hygenists"', add
+label define occ1990_lbl 205 `"Health record tech specialists"', add
+label define occ1990_lbl 206 `"Radiologic tech specialists"', add
+label define occ1990_lbl 207 `"Licensed practical nurses"', add
+label define occ1990_lbl 208 `"Health technologists and technicians, n.e.c."', add
+label define occ1990_lbl 213 `"Electrical and electronic (engineering) technicians"', add
+label define occ1990_lbl 214 `"Engineering technicians, n.e.c."', add
+label define occ1990_lbl 215 `"Mechanical engineering technicians"', add
+label define occ1990_lbl 217 `"Drafters"', add
+label define occ1990_lbl 218 `"Surveyors, cartographers, mapping scientists and technicians"', add
+label define occ1990_lbl 223 `"Biological technicians"', add
+label define occ1990_lbl 224 `"Chemical technicians"', add
+label define occ1990_lbl 225 `"Other science technicians"', add
+label define occ1990_lbl 226 `"Airplane pilots and navigators"', add
+label define occ1990_lbl 227 `"Air traffic controllers"', add
+label define occ1990_lbl 228 `"Broadcast equipment operators"', add
+label define occ1990_lbl 229 `"Computer software developers"', add
+label define occ1990_lbl 233 `"Programmers of numerically controlled machine tools"', add
+label define occ1990_lbl 234 `"Legal assistants, paralegals, legal support, etc"', add
+label define occ1990_lbl 235 `"Technicians, n.e.c."', add
+label define occ1990_lbl 243 `"Supervisors and proprietors of sales jobs"', add
+label define occ1990_lbl 253 `"Insurance sales occupations"', add
+label define occ1990_lbl 254 `"Real estate sales occupations"', add
+label define occ1990_lbl 255 `"Financial services sales occupations"', add
+label define occ1990_lbl 256 `"Advertising and related sales jobs"', add
+label define occ1990_lbl 258 `"Sales engineers"', add
+label define occ1990_lbl 274 `"Salespersons, n.e.c."', add
+label define occ1990_lbl 275 `"Retail sales clerks"', add
+label define occ1990_lbl 276 `"Cashiers"', add
+label define occ1990_lbl 277 `"Door-to-door sales, street sales, and news vendors"', add
+label define occ1990_lbl 283 `"Sales demonstrators / promoters / models"', add
+label define occ1990_lbl 303 `"Office supervisors"', add
+label define occ1990_lbl 308 `"Computer and peripheral equipment operators"', add
+label define occ1990_lbl 313 `"Secretaries"', add
+label define occ1990_lbl 314 `"Stenographers"', add
+label define occ1990_lbl 315 `"Typists"', add
+label define occ1990_lbl 316 `"Interviewers, enumerators, and surveyors"', add
+label define occ1990_lbl 317 `"Hotel clerks"', add
+label define occ1990_lbl 318 `"Transportation ticket and reservation agents"', add
+label define occ1990_lbl 319 `"Receptionists"', add
+label define occ1990_lbl 323 `"Information clerks, nec"', add
+label define occ1990_lbl 326 `"Correspondence and order clerks"', add
+label define occ1990_lbl 328 `"Human resources clerks, except payroll and timekeeping"', add
+label define occ1990_lbl 329 `"Library assistants"', add
+label define occ1990_lbl 335 `"File clerks"', add
+label define occ1990_lbl 336 `"Records clerks"', add
+label define occ1990_lbl 337 `"Bookkeepers and accounting and auditing clerks"', add
+label define occ1990_lbl 338 `"Payroll and timekeeping clerks"', add
+label define occ1990_lbl 343 `"Cost and rate clerks (financial records processing)"', add
+label define occ1990_lbl 344 `"Billing clerks and related financial records processing"', add
+label define occ1990_lbl 345 `"Duplication machine operators / office machine operators"', add
+label define occ1990_lbl 346 `"Mail and paper handlers"', add
+label define occ1990_lbl 347 `"Office machine operators, n.e.c."', add
+label define occ1990_lbl 348 `"Telephone operators"', add
+label define occ1990_lbl 349 `"Other telecom operators"', add
+label define occ1990_lbl 354 `"Postal clerks, excluding mail carriers"', add
+label define occ1990_lbl 355 `"Mail carriers for postal service"', add
+label define occ1990_lbl 356 `"Mail clerks, outside of post office"', add
+label define occ1990_lbl 357 `"Messengers"', add
+label define occ1990_lbl 359 `"Dispatchers"', add
+label define occ1990_lbl 361 `"Inspectors, n.e.c."', add
+label define occ1990_lbl 364 `"Shipping and receiving clerks"', add
+label define occ1990_lbl 365 `"Stock and inventory clerks"', add
+label define occ1990_lbl 366 `"Meter readers"', add
+label define occ1990_lbl 368 `"Weighers, measurers, and checkers"', add
+label define occ1990_lbl 373 `"Material recording, scheduling, production, planning, and expediting clerks"', add
+label define occ1990_lbl 375 `"Insurance adjusters, examiners, and investigators"', add
+label define occ1990_lbl 376 `"Customer service reps, investigators and adjusters, except insurance"', add
+label define occ1990_lbl 377 `"Eligibility clerks for government programs; social welfare"', add
+label define occ1990_lbl 378 `"Bill and account collectors"', add
+label define occ1990_lbl 379 `"General office clerks"', add
+label define occ1990_lbl 383 `"Bank tellers"', add
+label define occ1990_lbl 384 `"Proofreaders"', add
+label define occ1990_lbl 385 `"Data entry keyers"', add
+label define occ1990_lbl 386 `"Statistical clerks"', add
+label define occ1990_lbl 387 `"Teacher's aides"', add
+label define occ1990_lbl 389 `"Administrative support jobs, n.e.c."', add
+label define occ1990_lbl 405 `"Housekeepers, maids, butlers, stewards, and lodging quarters cleaners"', add
+label define occ1990_lbl 407 `"Private household cleaners and servants"', add
+label define occ1990_lbl 415 `"Supervisors of guards"', add
+label define occ1990_lbl 417 `"Fire fighting, prevention, and inspection"', add
+label define occ1990_lbl 418 `"Police, detectives, and private investigators"', add
+label define occ1990_lbl 423 `"Other law enforcement: sheriffs, bailiffs, correctional institution officers"', add
+label define occ1990_lbl 425 `"Crossing guards and bridge tenders"', add
+label define occ1990_lbl 426 `"Guards, watchmen, doorkeepers"', add
+label define occ1990_lbl 427 `"Protective services, n.e.c."', add
+label define occ1990_lbl 434 `"Bartenders"', add
+label define occ1990_lbl 435 `"Waiter/waitress"', add
+label define occ1990_lbl 436 `"Cooks, variously defined"', add
+label define occ1990_lbl 438 `"Food counter and fountain workers"', add
+label define occ1990_lbl 439 `"Kitchen workers"', add
+label define occ1990_lbl 443 `"Waiter's assistant"', add
+label define occ1990_lbl 444 `"Misc food prep workers"', add
+label define occ1990_lbl 445 `"Dental assistants"', add
+label define occ1990_lbl 446 `"Health aides, except nursing"', add
+label define occ1990_lbl 447 `"Nursing aides, orderlies, and attendants"', add
+label define occ1990_lbl 448 `"Supervisors of cleaning and building service"', add
+label define occ1990_lbl 453 `"Janitors"', add
+label define occ1990_lbl 454 `"Elevator operators"', add
+label define occ1990_lbl 455 `"Pest control occupations"', add
+label define occ1990_lbl 456 `"Supervisors of personal service jobs, n.e.c."', add
+label define occ1990_lbl 457 `"Barbers"', add
+label define occ1990_lbl 458 `"Hairdressers and cosmetologists"', add
+label define occ1990_lbl 459 `"Recreation facility attendants"', add
+label define occ1990_lbl 461 `"Guides"', add
+label define occ1990_lbl 462 `"Ushers"', add
+label define occ1990_lbl 463 `"Public transportation attendants and inspectors"', add
+label define occ1990_lbl 464 `"Baggage porters"', add
+label define occ1990_lbl 465 `"Welfare service aides"', add
+label define occ1990_lbl 468 `"Child care workers"', add
+label define occ1990_lbl 469 `"Personal service occupations, nec"', add
+label define occ1990_lbl 473 `"Farmers (owners and tenants)"', add
+label define occ1990_lbl 474 `"Horticultural specialty farmers"', add
+label define occ1990_lbl 475 `"Farm managers, except for horticultural farms"', add
+label define occ1990_lbl 476 `"Managers of horticultural specialty farms"', add
+label define occ1990_lbl 479 `"Farm workers"', add
+label define occ1990_lbl 483 `"Marine life cultivation workers"', add
+label define occ1990_lbl 484 `"Nursery farming workers"', add
+label define occ1990_lbl 485 `"Supervisors of agricultural occupations"', add
+label define occ1990_lbl 486 `"Gardeners and groundskeepers"', add
+label define occ1990_lbl 487 `"Animal caretakers except on farms"', add
+label define occ1990_lbl 488 `"Graders and sorters of agricultural products"', add
+label define occ1990_lbl 489 `"Inspectors of agricultural products"', add
+label define occ1990_lbl 496 `"Timber, logging, and forestry workers"', add
+label define occ1990_lbl 498 `"Fishers, hunters, and kindred"', add
+label define occ1990_lbl 503 `"Supervisors of mechanics and repairers"', add
+label define occ1990_lbl 505 `"Automobile mechanics"', add
+label define occ1990_lbl 507 `"Bus, truck, and stationary engine mechanics"', add
+label define occ1990_lbl 508 `"Aircraft mechanics"', add
+label define occ1990_lbl 509 `"Small engine repairers"', add
+label define occ1990_lbl 514 `"Auto body repairers"', add
+label define occ1990_lbl 516 `"Heavy equipment and farm equipment mechanics"', add
+label define occ1990_lbl 518 `"Industrial machinery repairers"', add
+label define occ1990_lbl 519 `"Machinery maintenance occupations"', add
+label define occ1990_lbl 523 `"Repairers of industrial electrical equipment "', add
+label define occ1990_lbl 525 `"Repairers of data processing equipment"', add
+label define occ1990_lbl 526 `"Repairers of household appliances and power tools"', add
+label define occ1990_lbl 527 `"Telecom and line installers and repairers"', add
+label define occ1990_lbl 533 `"Repairers of electrical equipment, n.e.c."', add
+label define occ1990_lbl 534 `"Heating, air conditioning, and refigeration mechanics"', add
+label define occ1990_lbl 535 `"Precision makers, repairers, and smiths"', add
+label define occ1990_lbl 536 `"Locksmiths and safe repairers"', add
+label define occ1990_lbl 538 `"Office machine repairers and mechanics"', add
+label define occ1990_lbl 539 `"Repairers of mechanical controls and valves"', add
+label define occ1990_lbl 543 `"Elevator installers and repairers"', add
+label define occ1990_lbl 544 `"Millwrights"', add
+label define occ1990_lbl 549 `"Mechanics and repairers, n.e.c."', add
+label define occ1990_lbl 558 `"Supervisors of construction work"', add
+label define occ1990_lbl 563 `"Masons, tilers, and carpet installers"', add
+label define occ1990_lbl 567 `"Carpenters"', add
+label define occ1990_lbl 573 `"Drywall installers"', add
+label define occ1990_lbl 575 `"Electricians"', add
+label define occ1990_lbl 577 `"Electric power installers and repairers"', add
+label define occ1990_lbl 579 `"Painters, construction and maintenance"', add
+label define occ1990_lbl 583 `"Paperhangers"', add
+label define occ1990_lbl 584 `"Plasterers"', add
+label define occ1990_lbl 585 `"Plumbers, pipe fitters, and steamfitters"', add
+label define occ1990_lbl 588 `"Concrete and cement workers"', add
+label define occ1990_lbl 589 `"Glaziers"', add
+label define occ1990_lbl 593 `"Insulation workers"', add
+label define occ1990_lbl 594 `"Paving, surfacing, and tamping equipment operators"', add
+label define occ1990_lbl 595 `"Roofers and slaters"', add
+label define occ1990_lbl 596 `"Sheet metal duct installers"', add
+label define occ1990_lbl 597 `"Structural metal workers"', add
+label define occ1990_lbl 598 `"Drillers of earth"', add
+label define occ1990_lbl 599 `"Construction trades, n.e.c."', add
+label define occ1990_lbl 614 `"Drillers of oil wells"', add
+label define occ1990_lbl 615 `"Explosives workers"', add
+label define occ1990_lbl 616 `"Miners"', add
+label define occ1990_lbl 617 `"Other mining occupations"', add
+label define occ1990_lbl 628 `"Production supervisors or foremen"', add
+label define occ1990_lbl 634 `"Tool and die makers and die setters"', add
+label define occ1990_lbl 637 `"Machinists"', add
+label define occ1990_lbl 643 `"Boilermakers"', add
+label define occ1990_lbl 644 `"Precision grinders and filers"', add
+label define occ1990_lbl 645 `"Patternmakers and model makers"', add
+label define occ1990_lbl 646 `"Lay-out workers"', add
+label define occ1990_lbl 649 `"Engravers"', add
+label define occ1990_lbl 653 `"Tinsmiths, coppersmiths, and sheet metal workers"', add
+label define occ1990_lbl 657 `"Cabinetmakers and bench carpenters"', add
+label define occ1990_lbl 658 `"Furniture and wood finishers"', add
+label define occ1990_lbl 659 `"Other precision woodworkers"', add
+label define occ1990_lbl 666 `"Dressmakers and seamstresses"', add
+label define occ1990_lbl 667 `"Tailors"', add
+label define occ1990_lbl 668 `"Upholsterers"', add
+label define occ1990_lbl 669 `"Shoe repairers"', add
+label define occ1990_lbl 674 `"Other precision apparel and fabric workers"', add
+label define occ1990_lbl 675 `"Hand molders and shapers, except jewelers "', add
+label define occ1990_lbl 677 `"Optical goods workers"', add
+label define occ1990_lbl 678 `"Dental laboratory and medical appliance technicians"', add
+label define occ1990_lbl 679 `"Bookbinders"', add
+label define occ1990_lbl 684 `"Other precision and craft workers"', add
+label define occ1990_lbl 686 `"Butchers and meat cutters"', add
+label define occ1990_lbl 687 `"Bakers"', add
+label define occ1990_lbl 688 `"Batch food makers"', add
+label define occ1990_lbl 693 `"Adjusters and calibrators"', add
+label define occ1990_lbl 694 `"Water and sewage treatment plant operators"', add
+label define occ1990_lbl 695 `"Power plant operators"', add
+label define occ1990_lbl 696 `"Plant and system operators, stationary engineers "', add
+label define occ1990_lbl 699 `"Other plant and system operators"', add
+label define occ1990_lbl 703 `"Lathe, milling, and turning machine operatives"', add
+label define occ1990_lbl 706 `"Punching and stamping press operatives"', add
+label define occ1990_lbl 707 `"Rollers, roll hands, and finishers of metal"', add
+label define occ1990_lbl 708 `"Drilling and boring machine operators"', add
+label define occ1990_lbl 709 `"Grinding, abrading, buffing, and polishing workers"', add
+label define occ1990_lbl 713 `"Forge and hammer operators"', add
+label define occ1990_lbl 717 `"Fabricating machine operators, n.e.c."', add
+label define occ1990_lbl 719 `"Molders, and casting machine operators"', add
+label define occ1990_lbl 723 `"Metal platers"', add
+label define occ1990_lbl 724 `"Heat treating equipment operators"', add
+label define occ1990_lbl 726 `"Wood lathe, routing, and planing machine operators"', add
+label define occ1990_lbl 727 `"Sawing machine operators and sawyers"', add
+label define occ1990_lbl 728 `"Shaping and joining machine operator (woodworking)"', add
+label define occ1990_lbl 729 `"Nail and tacking machine operators  (woodworking)"', add
+label define occ1990_lbl 733 `"Other woodworking machine operators"', add
+label define occ1990_lbl 734 `"Printing machine operators, n.e.c."', add
+label define occ1990_lbl 735 `"Photoengravers and lithographers"', add
+label define occ1990_lbl 736 `"Typesetters and compositors"', add
+label define occ1990_lbl 738 `"Winding and twisting textile/apparel operatives"', add
+label define occ1990_lbl 739 `"Knitters, loopers, and toppers textile operatives"', add
+label define occ1990_lbl 743 `"Textile cutting machine operators"', add
+label define occ1990_lbl 744 `"Textile sewing machine operators"', add
+label define occ1990_lbl 745 `"Shoemaking machine operators"', add
+label define occ1990_lbl 747 `"Pressing machine operators (clothing)"', add
+label define occ1990_lbl 748 `"Laundry workers"', add
+label define occ1990_lbl 749 `"Misc textile machine operators"', add
+label define occ1990_lbl 753 `"Cementing and gluing maching operators"', add
+label define occ1990_lbl 754 `"Packers, fillers, and wrappers"', add
+label define occ1990_lbl 755 `"Extruding and forming machine operators"', add
+label define occ1990_lbl 756 `"Mixing and blending machine operatives"', add
+label define occ1990_lbl 757 `"Separating, filtering, and clarifying machine operators"', add
+label define occ1990_lbl 759 `"Painting machine operators"', add
+label define occ1990_lbl 763 `"Roasting and baking machine operators (food)"', add
+label define occ1990_lbl 764 `"Washing, cleaning, and pickling machine operators"', add
+label define occ1990_lbl 765 `"Paper folding machine operators"', add
+label define occ1990_lbl 766 `"Furnace, kiln, and oven operators, apart from food"', add
+label define occ1990_lbl 768 `"Crushing and grinding machine operators"', add
+label define occ1990_lbl 769 `"Slicing and cutting machine operators"', add
+label define occ1990_lbl 773 `"Motion picture projectionists"', add
+label define occ1990_lbl 774 `"Photographic process workers"', add
+label define occ1990_lbl 779 `"Machine operators, n.e.c."', add
+label define occ1990_lbl 783 `"Welders and metal cutters"', add
+label define occ1990_lbl 784 `"Solderers"', add
+label define occ1990_lbl 785 `"Assemblers of electrical equipment"', add
+label define occ1990_lbl 789 `"Hand painting, coating, and decorating occupations"', add
+label define occ1990_lbl 796 `"Production checkers and inspectors"', add
+label define occ1990_lbl 799 `"Graders and sorters in manufacturing"', add
+label define occ1990_lbl 803 `"Supervisors of motor vehicle transportation"', add
+label define occ1990_lbl 804 `"Truck, delivery, and tractor drivers"', add
+label define occ1990_lbl 808 `"Bus drivers"', add
+label define occ1990_lbl 809 `"Taxi cab drivers and chauffeurs"', add
+label define occ1990_lbl 813 `"Parking lot attendants"', add
+label define occ1990_lbl 823 `"Railroad conductors and yardmasters"', add
+label define occ1990_lbl 824 `"Locomotive operators (engineers and firemen)"', add
+label define occ1990_lbl 825 `"Railroad brake, coupler, and switch operators"', add
+label define occ1990_lbl 829 `"Ship crews and marine engineers"', add
+label define occ1990_lbl 834 `"Water transport infrastructure tenders and crossing guards"', add
+label define occ1990_lbl 844 `"Operating engineers of construction equipment"', add
+label define occ1990_lbl 848 `"Crane, derrick, winch, and hoist operators"', add
+label define occ1990_lbl 853 `"Excavating and loading machine operators"', add
+label define occ1990_lbl 859 `"Misc material moving occupations"', add
+label define occ1990_lbl 865 `"Helpers, constructions"', add
+label define occ1990_lbl 866 `"Helpers, surveyors"', add
+label define occ1990_lbl 869 `"Construction laborers"', add
+label define occ1990_lbl 874 `"Production helpers"', add
+label define occ1990_lbl 875 `"Garbage and recyclable material collectors"', add
+label define occ1990_lbl 876 `"Materials movers: stevedores and longshore workers"', add
+label define occ1990_lbl 877 `"Stock handlers"', add
+label define occ1990_lbl 878 `"Machine feeders and offbearers"', add
+label define occ1990_lbl 883 `"Freight, stock, and materials handlers"', add
+label define occ1990_lbl 885 `"Garage and service station related occupations"', add
+label define occ1990_lbl 887 `"Vehicle washers and equipment cleaners"', add
+label define occ1990_lbl 888 `"Packers and packagers by hand"', add
+label define occ1990_lbl 889 `"Laborers outside construction"', add
+label define occ1990_lbl 905 `"Military"', add
+label define occ1990_lbl 991 `"Unemployed"', add
+label define occ1990_lbl 999 `"Unknown"', add
+label values occ1990 occ1990_lbl
+
+
+*}}}
+
+assert age>=16
+gen employed = (empstat==1)
+gen unemployed = (empstat==2)
+gen college_plus = (educd>=100 & educd<999)
+gen ACS_dropout = (educ<=5)
+gen ACS_hs = (educ==6)
+gen ACS_sc = (educ>=7 & educ<=9)
+gen ACS_ba = (educ==10)
+gen ACS_moreba = (educ==11)
+
+ren met2013 msa
+
+
+**recode MSAs to NECTAs to match BG (and BLS etc)
+*{{{
+				foreach var in msa  {
+					qui replace `var' = 	70600	if `var'==	12300	//Augusta-Waterville, ME
+					qui replace `var' = 	70750	if `var'==	12620	//Bangor, ME
+					qui replace `var' = 	70900	if `var'==	12700	//Barnstable Town, MA
+					qui replace `var' = 	71050	if `var'==	12740	//Barre, VT
+					qui replace `var' = 	71350	if `var'==	13540	//Bennington, VT
+					qui replace `var' = 	71500	if `var'==	13620	//Berlin, NH-VT
+					qui replace `var' = 	71500	if `var'==	13620	//Berlin, NH-VT
+					qui replace `var' = 	71650	if `var'==	14460	//Boston-Cambridge-Quincy, MA-NH
+					qui replace `var' = 	71950	if `var'==	14860	//Bridgeport-Stamford-Norwalk, CT
+					qui replace `var' = 	72400	if `var'==	15540	//Burlington-South Burlington, VT
+					qui replace `var' = 	72500	if `var'==	17200	//Claremont, NH
+					qui replace `var' = 	72700	if `var'==	18180	//Concord, NH
+					qui replace `var' = 	73450	if `var'==	25540	//Hartford-West Hartford-East Hartford, CT
+					qui replace `var' = 	73750	if `var'==	28300	//Keene, NH
+					qui replace `var' = 	73900	if `var'==	29060	//Laconia, NH
+					qui replace `var' = 	74350	if `var'==	30100	//Lebanon, NH-VT
+					qui replace `var' = 	74650	if `var'==	30340	//Lewiston-Auburn, ME
+					qui replace `var' = 	74950	if `var'==	31700	//Manchester-Nashua, NH
+					qui replace `var' = 	75700	if `var'==	35300	//New Haven-Milford, CT
+					qui replace `var' = 	76450	if `var'==	35980	//Norwich-New London, CT
+					qui replace `var' = 	76600	if `var'==	38340	//Pittsfield, MA
+					qui replace `var' = 	76750	if `var'==	38860	//Portland-South Portland-Biddeford, ME
+					qui replace `var' = 	77200	if `var'==	39300	//Providence-New Bedford-Fall River, RI-MA
+					qui replace `var' = 	77500	if `var'==	40500	//Rockland, ME
+					qui replace `var' = 	77650	if `var'==	40860	//Rutland, VT
+					qui replace `var' = 	78100	if `var'==	44140	//Springfield, MA
+					qui replace `var' = 	78400	if `var'==	45860	//Torrington, CT
+					qui replace `var' = 	79300	if `var'==	48740	//Willimantic, CT
+					qui replace `var' = 	79600	if `var'==	49340	//Worcester, MA
+				}
+*}}}
+
+gen unemp_rate = unemployed if employed==1 | unemployed==1
+gen unemp_rate25 = unemployed if (employed==1 | unemployed==1) & age>=25
+gen unemp_rate25_coll = unemployed if (employed==1 | unemployed==1) & age>=25 & college_plus==1
+gen unemp_rate_coll = unemployed if (employed==1 | unemployed==1) & college_plus==1
+
+***make a bunch of epops
+gen epop = employed
+gen epop25 = employed if age>=25
+gen epop25_coll = employed if age>=25 & college_plus==1
+gen epop_prime = employed if age>=25 & age<=55
+
+foreach ed in dropout hs sc ba moreba {
+	gen epop_`ed' = employed if ACS_`ed'==1
+	gen epop_`ed'25 = epop_`ed' if age>=25
+	gen epop_`ed'_prime = epop_`ed' if age>=25 & age<=55
+	
+	gen unemp_`ed' = unemployed if (employed==1 | unemployed==1) & ACS_`ed'==1
+	gen unemp_`ed'25 = unemp_`ed' if age>=25 
+	gen unemp_`ed'_prime = unemp_`ed' if age>=25 & age<=55 
+}	
+
+***education vars
+**ren vars so don't conflict with control vars
+foreach var in dropout hs sc ba moreba {
+	ren ACS_`var' `var'_ACS
+	gen `var'_ACS_18_32 = `var'_ACS if age>=18 & age<=32
+	gen `var'_ACS_22_32 = `var'_ACS if age>=22 & age<=32
+}
+
+****for empstock analysis
+gen educ_cat = 1 if dropout_ACS ==1
+replace educ_cat = 2 if hs_ACS==1
+replace educ_cat = 3 if sc_ACS==1
+replace educ_cat = 4 if ba_ACS==1
+replace educ_cat = 5 if moreba_ACS==1
+assert educ_cat!=.
+
+gen yrschl = 0 if educd<=2
+replace yrschl = 2 if educd>=10 & educd<=17
+replace yrschl = 5.5 if educd>=21 & educd<=23
+replace yrschl = 7.5 if educd>=24 & educd<=26
+replace yrschl = 9 if educd==30
+replace yrschl = 10 if educd==40
+replace yrschl = 11 if educd==50
+replace yrschl = 12 if educd>=61 & educd<=64
+replace yrschl = 13 if educd==65
+replace yrschl = 13 if educd==71
+replace yrschl = 14 if educd==81
+replace yrschl = 16 if educd==101
+replace yrschl = 18 if educd==114
+replace yrschl = 19 if educd==115
+replace yrschl = 20 if educd==116
+assert yrschl!=.
+gen exp = age - yrschl - 6
+
+foreach var in employed {
+	foreach educ of numlist 1/5 {
+		gen `var'`educ' = `var' if educ_cat==`educ' 
+	}
+	gen `var'_ba = `var' if educ_cat==4 | educ_cat==5
+}
+gen yrschl_emp = yrschl if employed==1
+gen exp_emp = exp if employed==1
+
+
+******make wage vars
+foreach var in incwage wkswork uhrswor {
+	replace `var' = . if q`var'!=0
+}
+
+**will look at MSA-level wage changes as a function of MSA-level RTI
+gen FTweekly_wage = incwage/wkswork1 if wkswork1>=48 & wkswork1!=. & uhrswork>=35 & uhrswork!=.
+**hourly wage for all workers including not full time
+gen wage = incwage/(wkswork1*uhrswork)
+
+***MSA collapse
+collapse FTweekly_wage wage unemp_rate unemp_rate25 unemp_rate25_coll unemp_rate_coll unemp_dropout* unemp_hs* unemp_sc* unemp_ba* unemp_moreba* epop* dropout_ACS* hs_ACS* ba_ACS* moreba_ACS*  employed1 employed2 employed3 employed4 employed5 employed_ba yrschl_emp exp_emp  (sum) employed  [aw=perwt], by(msa year)
+
+gen period  = 1 if (year==2000 | year==2001 | year==2002)
+replace period = 2 if (year==2005 | year==2006 | year==2007)
+replace period = 3 if (year==2010 | year==2011)
+replace period = 4 if (year==2012 | year==2013)
+replace period = 5 if (year==2014 | year==2015)
+
+keep if period!=.
+collapse unemp_dropout unemp_hs unemp_sc unemp_ba unemp_moreba epop_dropout epop_hs epop_sc epop_ba epop_moreba, by(msa period)
+reshape wide unemp_dropout unemp_hs unemp_sc unemp_ba unemp_moreba epop_dropout epop_hs epop_sc epop_ba epop_moreba, i(msa) j(period)
+
+foreach var in unemp_dropout unemp_hs unemp_sc unemp_ba unemp_moreba epop_dropout epop_hs epop_sc epop_ba epop_moreba {
+	gen ch`var'_pre = `var'2 - `var'1
+	gen ch`var'_early = `var'3 - `var'2
+	gen ch`var'_middle = `var'4 - `var'2
+	gen ch`var'_late = `var'5-`var'2
+
+	ren `var'2 `var'_pre
+}
+
+tempfile ACS_unemp_epop
+save `ACS_unemp_epop', replace
+save "$public/ACS_unemp_epop", replace
+
+
+*}}}
+
+***3. MSA-year quit rates from CPS
+*{{{
+***clean quits data (from CPS, made by Brad)
+use "$raw_MSA/quits_msa_year_educ2", clear
+
+gen period  = 1 if (year==2000 | year==2001 | year==2002)
+replace period = 2 if (year==2005 | year==2006 | year==2007)
+replace period = 3 if (year==2010 | year==2011 | year==2012)
+replace period = 4 if (year==2013 | year==2014 | year==2015)
+drop if period==.
+
+ren gtcbsa msa
+
+***recode NECTAs
+*{{{
+			qui replace msa = 	70600	if msa==	12300	//Augusta-Waterville, ME
+			qui replace msa = 	70750	if msa==	12620	//Bangor, ME
+			qui replace msa = 	70900	if msa==	12700	//Barnstable Town, MA
+			qui replace msa = 	71050	if msa==	12740	//Barre, VT
+			qui replace msa = 	71350	if msa==	13540	//Bennington, VT
+			qui replace msa = 	71500	if msa==	13620	//Berlin, NH-VT
+			qui replace msa = 	71500	if msa==	13620	//Berlin, NH-VT
+			qui replace msa = 	71650	if msa==	14460	//Boston-Cambridge-Quincy, MA-NH
+			qui replace msa = 	71950	if msa==	14860	//Bridgeport-Stamford-Norwalk, CT
+			qui replace msa = 	72400	if msa==	15540	//Burlington-South Burlington, VT
+			qui replace msa = 	72500	if msa==	17200	//Claremont, NH
+			qui replace msa = 	72700	if msa==	18180	//Concord, NH
+			qui replace msa = 	73450	if msa==	25540	//Hartford-West Hartford-East Hartford, CT
+			qui replace msa = 	73750	if msa==	28300	//Keene, NH
+			qui replace msa = 	73900	if msa==	29060	//Laconia, NH
+			qui replace msa = 	74350	if msa==	30100	//Lebanon, NH-VT
+			qui replace msa = 	74650	if msa==	30340	//Lewiston-Auburn, ME
+			qui replace msa = 	74950	if msa==	31700	//Manchester-Nashua, NH
+			qui replace msa = 	75700	if msa==	35300	//New Haven-Milford, CT
+			qui replace msa = 	76450	if msa==	35980	//Norwich-New London, CT
+			qui replace msa = 	76600	if msa==	38340	//Pittsfield, MA
+			qui replace msa = 	76750	if msa==	38860	//Portland-South Portland-Biddeford, ME
+			qui replace msa = 	77200	if msa==	39300	//Providence-New Bedford-Fall River, RI-MA
+			qui replace msa = 	77500	if msa==	40500	//Rockland, ME
+			qui replace msa = 	77650	if msa==	40860	//Rutland, VT
+			qui replace msa = 	78100	if msa==	44140	//Springfield, MA
+			qui replace msa = 	78400	if msa==	45860	//Torrington, CT
+			qui replace msa = 	79300	if msa==	48740	//Willimantic, CT
+			qui replace msa = 	79600	if msa==	49340	//Worcester, MA
+
+*}}}
+
+collapse quit3, by(period educat2 msa)
+ren quit3 quit
+egen id = group(msa educat2)
+reshape wide quit, i(id) j(period)
+
+gen chquit_pre = quit2 - quit1
+gen chquit_early = quit3 - quit2
+gen chquit_late = quit4-quit2
+
+ren quit2 quit_rate_pre
+
+keep quit_rate_pre chquit* educat2 msa
+
+reshape wide quit_rate_pre chquit_pre chquit_early chquit_late, i(msa) j(educat2)
+
+foreach var in quit_rate_pre chquit_pre chquit_early chquit_late {
+	ren `var'1 `var'_low
+	ren `var'2 `var'_high
+}
+
+tempfile quits
+save `quits', replace
+save "$public/quits", replace
+
+*}}}
+
+
+***merge into BG data
+*{{{
+use "$data_output/BG_hasfirm_soc_msa_year", clear
+merge m:1 msa using `CHACSvars0506_msa'
+	drop if _merge==2
+	gen M_CHACS = (CHACS_female0_56==.)
+	foreach var of varlist CHACS* {
+		replace `var' = 0 if `var'==.
+	}
+	capture drop miss_ACS
+	drop _merge
+
+	merge m:1 msa using `ACS_unemp_epop'
+drop if _merge==2
+gen M_ACS2 = (_merge==1)
+drop _merge
+
+
+
+merge m:1 msa using `quits'
+drop if _merge==2
+gen M_CPS = (_merge==1)
+drop _merge
+
+foreach var in unemp_dropout unemp_hs unemp_sc unemp_ba unemp_moreba epop_dropout epop_hs epop_sc epop_ba epop_moreba {
+	gen ch`var' = ch`var'_early if year>=2010 & year<=2011
+	replace ch`var' = ch`var'_middle if year>=2012 & year<=2013
+	replace ch`var' = ch`var'_late if year>=2014 & year<=2015
+}
+
+gen chquit_low = chquit_early_low if year>=2010 & year<=2012
+replace chquit_low = chquit_late_low if year>=2013 & year<=2015
+gen chquit_high = chquit_early_high if year>=2010 & year<=2012
+replace chquit_high = chquit_late_high if year>=2013 & year<=2015
+
+
+**level in pre period, change from 2000 to pre period, change from pre-period to current
+local controls = "unemp_dropout_pre unemp_hs_pre unemp_sc_pre unemp_ba_pre unemp_moreba_pre epop_dropout_pre epop_hs_pre epop_sc_pre epop_ba_pre epop_moreba_pre chunemp_dropout chunemp_hs chunemp_sc chunemp_ba chunemp_moreba chepop_dropout chepop_hs chepop_sc chepop_ba chepop_moreba chunemp_dropout_pre chunemp_hs_pre chunemp_sc_pre chunemp_ba_pre chunemp_moreba_pre chepop_dropout_pre chepop_hs_pre chepop_sc_pre chepop_ba_pre chepop_moreba_pre"
+local quit_controls = "chquit_low chquit_high quit_rate_pre_low quit_rate_pre_high chquit_pre_low chquit_pre_high"
+foreach var of varlist `controls' `quit_controls' {
+	replace `var' = 0 if `var'==.
+}
+
+tempfile working
+save `working', replace
+*}}}
+
+***Tables B1-B4:
+*{{{
+local counter = 1
+foreach stem in ed exp cog comp_all  {
+	use `working', clear
+
+	display "**base spec, `stem'"
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015  i.year ACS* M_ACS   [aw=weight] if year!=2007,  cluster(msa)
+	outreg2 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableB`counter'", replace stats(coef, se) excel  
+
+	display "*control for changes in ACS vars, epops/unemps and quits `stem'"
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 M_ACS2 `controls' M_CPS `quit_controls'  i.year ACS* M_ACS  CHACS*0_56 M_CHACS  [aw=weight] if year!=2007,  cluster(msa)
+	outreg2 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableB`counter'", append stats(coef, se) excel ctitle(epops)  
+
+	display "*occ FEs and trends, `stem'"
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 i.year i.soc##c.year ACS* M_ACS  [aw=weight] if year!=2007, cluster(msa)
+	outreg2 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableB`counter'", append stats(coef, se) excel   ctitle(occFEtrend)
+
+	display "*no weight, `stem'"
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 i.year ACS* M_ACS  if year!=2007 & npostings>=15,  cluster(msa)
+	outreg2 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableB`counter'", append stats(coef, se) excel ctitle(nowt)  
+
+	display "***missing firm, `stem'"
+	use "$data_output/BG_all_soc_msa_year", clear
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 i.year ACS* M_ACS  [aw=weight] if year!=2007, cluster(msa)
+	outreg2 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableB`counter'", append stats(coef, se) excel   ctitle(missfirm)
+
+	use `working', clear	
+	***alt shocks
+	foreach shock in shock_bw level shock1 {
+		display "alt shock, `shock', `stem'"		
+		reg ch`stem' `shock'_90102010 `shock'_90102011 `shock'_90102012 `shock'_90102013 `shock'_90102014 `shock'_90102015 i.year ACS* M_ACS  [aw=weight] if year!=2007 ,  cluster(msa)
+		outreg2 `shock'_90102010 `shock'_90102011 `shock'_90102012 `shock'_90102013 `shock'_90102014 `shock'_90102015 using "$tables/tableB`counter'", append stats(coef, se) excel   
+	}
+	
+	local counter = `counter' + 1
+	
+}	
+*}}}
+
+*}}}
+
+/********************************************************************************
+**Table B5: within industry-occupation results
+*******************************************************************************/
+*{{{
+**by sector
+***w/in ind
+use "$data_output/BG_hasfirm_sector_soc_msa_year", clear
+	egen helper = group(sector)
+
+**how many cells are dropped bc they do not match back?
+gen missing = (ched==.)
+tab missing if year>=2010 & year<=2015 & ed!=. [aw=weight]
+tab missing if year>=2010 & year<=2015 & ed!=. [aw=npostings]
+
+capture erase "$tables/tableB5.txt"
+capture erase "$tables/tableB5.xml"
+
+foreach stem in ed exp cog comp_all { 
+	**base
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 i.year ACS* M_ACS  [aw=weight] if year!=2007,  cluster(msa)
+	outreg2 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableB5", append stats(coef, se) excel ctitle(wind)  
+
+	**ind FEs and trends
+	reg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 i.year ACS* M_ACS  i.helper##c.year [aw=weight] if year!=2007,  cluster(msa) 
+	outreg2 shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 using "$tables/tableB5", append stats(coef, se) excel ctitle(sect_controls)  
+	
+}
+
+
+*}}}
+
+
+/********************************************************************************
+**Figure B3: upskilling by offshorability of industry
+*******************************************************************************/
+*{{{
+**by sector
+***w/in ind
+use "$data_output/BG_hasfirm_sector_soc_msa_year", clear
+	egen helper = group(sector)
+
+**how many cells are dropped bc they do not match back?
+gen missing = (ched==.)
+tab missing if year>=2010 & year<=2015 & ed!=. [aw=weight]
+tab missing if year>=2010 & year<=2015 & ed!=. [aw=npostings]
+
+***from table 3 JensenKletzer WP
+*share of employees in each "concentration" class
+**1: least geographically concentrated
+**2: middle
+**3: most geographically concentrated  (1-gini1-gini2)
+gen gini1 = 0 if sector==11
+gen gini2 = .8795 if sector==11
+
+replace gini1 = 0 if sector==21
+replace gini2 = .2424 if sector==21
+
+replace gini1 = .8089 if sector==22
+replace gini2 = .1531 if sector==22
+
+replace gini1 = 1 if sector==23
+replace gini2 = 0 if sector==23
+
+replace gini1 = 0 if sector==31
+replace gini2 = .4039 if sector==31
+
+replace gini1 = .2199 if sector==32
+replace gini2 = .4488 if sector==32
+
+replace gini1 = .1414 if sector==33
+replace gini2 = .6536 if sector==33
+
+***3M 0, 100, 0
+
+replace gini1 = .4582 if sector==42
+replace gini2 = .5062 if sector==42
+
+replace gini1 = .8172 if sector==44
+replace gini2 = .1828 if sector==44
+
+replace gini1 = .8865 if sector==45
+replace gini2 = .1135 if sector==45
+
+**4M 100, 0, 0
+
+replace gini1 = .4281 if sector==48
+replace gini2 = .2203 if sector==48
+
+replace gini1 = 0 if sector==49
+replace gini2 = 1 if sector==49
+
+replace gini1 = .3325 if sector==51
+replace gini2 = .5037 if sector==51
+
+replace gini1 = .3205 if sector==52
+replace gini2 = .5098 if sector==52
+
+replace gini1 = .0906 if sector==53
+replace gini2 = .9094 if sector==53
+
+replace gini1 = .1395 if sector==54
+replace gini2 = .7987 if sector==54
+
+replace gini1 = 0 if sector==55
+replace gini2 = 1 if sector==55
+
+replace gini1 = .5953 if sector==56
+replace gini2 = .4047 if sector==56
+
+replace gini1 = .9889 if sector==61
+replace gini2 = .0111 if sector==61
+
+replace gini1 = .9780 if sector==62
+replace gini2 = .0220 if sector==62
+
+replace gini1 = .6735 if sector==71
+replace gini2 = .3265 if sector==71
+
+replace gini1 = .8192 if sector==72
+replace gini2 = .1808 if sector==72
+
+replace gini1 = .7977 if sector==81
+replace gini2 = .0986 if sector==81
+
+replace gini1 = .7168 if sector==92
+replace gini2 = .0463 if sector==92
+
+
+	**NOT USED from table 3 Blinder-Krueger 2014
+	**offshorability score based on 3 surveys (last one is experts)
+	gen off1 = .128 if sector==23
+	gen off2 = .235 if sector==23
+	gen off3 = .104 if sector==23
+
+	replace off1 = .273 if sector==31 | sector==32 | sector==33
+	replace off2 = .326 if sector==31 | sector==32 | sector==33
+	replace off3 = .503 if sector==31 | sector==32 | sector==33
+
+	replace off1 = .175 if sector==44 | sector==45
+	replace off2 = .208 if sector==44 | sector==45
+	replace off3 = .101 if sector==44 | sector==45
+	
+	replace off1 = .119 if sector==48 | sector==49
+	replace off2 = .229 if sector==48 | sector==49
+	replace off3 = .093 if sector==48 | sector==49
+	
+	replace off1 = .462 if sector==51
+	replace off2 = .536 if sector==51
+	replace off3 = .351 if sector==51
+	
+	replace off1 = .532 if sector==52 | sector==53
+	replace off2 = .582 if sector==52 | sector==53
+	replace off3 = .5548 if sector==52 | sector==53
+	
+	replace off1 = .583 if sector==54 | sector==55
+	replace off2 = .574 if sector==54 | sector==55
+	replace off3 = .344 if sector==54 | sector==55
+	
+	replace off1 = .230 if sector==56
+	replace off2 = .200 if sector==56
+	replace off3 = .278 if sector==56
+	
+	replace off1 = .156 if sector==61
+	replace off2 = .141 if sector==61
+	replace off3 = .060 if sector==61
+
+	replace off1 = .174 if sector==62
+	replace off2 = .198 if sector==62
+	replace off3 = .085 if sector==62
+	
+	replace off1 = .153 if sector==71
+	replace off2 = .219 if sector==71
+	replace off3 = .16 if sector==71
+	
+	replace off1 = .097 if sector==72
+	replace off2 = .034 if sector==72
+	replace off3 = .47 if sector==72
+
+	tab sector if off1==., m
+assert off1!=. & off2!=. & off3!=. if sector!=11 & sector!=21 & sector!=22 & sector!=42 & sector!=81 & sector!=92 & sector!=99 & sector!=. & sector!=-99
+
+gen off_ave = (off1 + off2 + off3)/3
+
+
+
+
+
+
+assert gini1!=. & gini2!=. if sector!=99 & sector!=. & sector!=-99
+
+gen gini3 = 1-gini1-gini2
+gen not_lowest = 1-gini1
+sum gini1 gini2 gini3
+
+
+foreach var in off1 off2 off3 off_ave gini1 gini2 gini3 not_lowest {
+	sum `var' [aw=weight], d
+	gen NORM`var' = `var' - r(mean)
+	
+	foreach year of numlist 2010/2015 {
+		gen INT`var'`year' = shock9010`year'*NORM`var'
+	}
+}
+
+**plot both 90 and 10
+foreach var in  gini1  {
+		**p10-p90 is fitting to LEAST offsharable, relative to MOST
+		sum NORM`var', d
+
+		if "`var'"=="off_ave" {
+			local plocal = r(p10)
+			local ptraded = r(p90)
+		}
+		**for gini1, make figure for least offshorable, i.e., highest share in gini1 -- least concentrated
+		if "`var'" == "gini1" {
+			local plocal = r(p90)
+			local ptraded = r(p10)
+		}
+		foreach stem in ed exp cog comp_all {
+		preserve
+
+		areg ch`stem' shock90102010 shock90102011 shock90102012 shock90102013 shock90102014 shock90102015 INT`var'2010 INT`var'2011  INT`var'2012  INT`var'2013 INT`var'2014 INT`var'2015 ACS* M_ACS  i.year [aw=weight] if year!=2007 ,  cluster(msa) absorb(sector)
+		mata: coeffs_local = J(6,1,.)
+		mata: ses_local = J(6,1,.)
+		mata: coeffs_traded = J(6,1,.)
+		mata: ses_traded = J(6,1,.)
+		local row = 1
+		foreach year of numlist 2010/2015 {
+			lincom shock9010`year' + `plocal'*INT`var'`year'
+			local est = r(estimate)
+			local se = r(se)
+
+			mata: coeffs_local[`row',1] = `est'
+			mata: ses_local[`row',1] = `se'
+			
+			lincom shock9010`year' + `ptraded'*INT`var'`year'
+			local est = r(estimate)
+			local se = r(se)
+
+			mata: coeffs_traded[`row',1] = `est'
+			mata: ses_traded[`row',1] = `se'
+			
+			local row = `row' + 1
+		}
+		
+		clear
+		getmata coeffs_traded ses_traded coeffs_local ses_local
+		gen year = 2009 + _n
+		gen ci_plus_local = coeffs_local + `ci'*ses_local
+		gen ci_minus_local = coeffs_local - `ci'*ses_local
+		gen ci_plus_traded = coeffs_traded + `ci'*ses_traded
+		gen ci_minus_traded = coeffs_traded - `ci'*ses_traded
+
+		local obs = _N
+		local new = `obs' + 1
+		set obs `new'
+		replace year = 2007 in `new'
+		foreach coeff of varlist coeffs_traded coeffs_local ci_plus* ci_minus* {
+			replace `coeff' = 0 if year==2007
+		}
+		sort year
+
+		display "local-traded relative coeffs size `stem'"
+		gen fraction = coeffs_local/coeffs_traded
+		list year fraction
+		
+		
+		if "`stem'"=="ed" {
+			local title = "Education Requirement"
+		}	
+		if "`stem'"=="exp" {
+			local title = "Experience Requirement"
+		}
+		if  "`stem'"=="cog" {
+			local title = "Cognitive Skill Requirement"
+		}
+		if  "`stem'"=="comp_all" {
+			local title = "Computer Skill Requirement"
+		}
+
+		if "`stem'"=="ed" | "`stem'"=="exp"{
+			twoway (line coeffs_local year, lcolor(navy) lpattern(solid)) (scatter coeffs_local year, mcolor(navy)) (line coeffs_traded year, lcolor(maroon) lpattern(dash))   (scatter coeffs_traded year, mcolor(maroon)) , xtitle("") ytitle("") title("`title'") saving("$graphs/g`stem'", replace) legend(off) yline(0,lcolor(black)) graphregion(color(white)) bgcolor(white) ylabel(0 .02 .04 .06 .08)
+		}
+		if ("`stem'"=="cog" | "`stem'"=="comp_all") & "`var'"== "off_ave" {
+			twoway (line coeffs_local year, lcolor(navy) lpattern(solid)) (scatter coeffs_local year, mcolor(navy))  (line coeffs_traded year, lcolor(maroon) lpattern(dash))   (scatter coeffs_traded year, mcolor(maroon)) , xtitle("") ytitle("") title("`title'") saving("$graphs/g`stem'", replace) legend(off) yline(0,lcolor(black)) graphregion(color(white)) bgcolor(white) ylabel(-.01 0 .01 .02 .03)
+		}
+		if ("`stem'"=="cog" | "`stem'"=="comp_all") & "`var'"== "gini1" {
+			twoway (line coeffs_local year, lcolor(navy) lpattern(solid)) (scatter coeffs_local year, mcolor(navy))  (line coeffs_traded year, lcolor(maroon) lpattern(dash))   (scatter coeffs_traded year, mcolor(maroon))  , xtitle("") ytitle("") title("`title'") saving("$graphs/g`stem'", replace) legend(off) yline(0,lcolor(black)) graphregion(color(white)) bgcolor(white) ylabel(0 .01 .02 .03)
+		}
+		
+		
+		restore
+	}
+
+	graph combine "$graphs/ged.gph" "$graphs/gexp.gph" "$graphs/gcog.gph" "$graphs/gcomp_all.gph"  , l1title(Coefficient) b1title(Year)    note("Blue line = local products, Maroon dashed line = traded products" " " "We regress the industry-MSA change in BG skill requirements from 2007 on an exhaustive set of MSA employment shock-by-year" "interactions, and triple interactions between the shock, year, and offshorability. We also control for year fixed effects and MSA" "characteristics. Graph plots the coefficients on the triple interactions. The offshorability measure is the 90-10 differential" "in the Jensen-Kletzer geographic employment concentration index.", size(vsmall)) graphregion(color(white))
+	graph export "$graphs/figureB3.pdf", as(pdf) replace
+}
+
+
+*}}}
+
+/*
+/********************************************************************************
+**Figure B4 and Table B6: Decomposition
+*******************************************************************************/
+
+/******************************************************************************
+** Full decomposition 
+**decomposition -- full for mt change
+**	1. continuing firm, continuing occ
+**	2. continuing firm, noncontinuing occ
+**     		**within and between occs among continuing firms and non-continuing occs for them
+**		**if some occs are missing then need to aggregate up
+**	3. noncontinuing firm 
+**		**within and between occs among non-continuing firms
+**		**if some occs are missing then need to aggregate up
+************************************************/
+*{{{
+
+local counter = 1
+foreach stem in ed exp cog comp_all {
+	**need to do this separately by year so the firm weights are present for the exact same set of firms (and therefore sum to 1 regardless of which ones I use)
+	foreach year of numlist 2010/2015 {
+		
+		use "$data_output/BG_hasfirm_employer_soc_msa_year", clear
+		keep if `stem'!=.
+		keep if year==2007 | year==`year'
+
+		gen value_07 = `stem' if year==2007
+		gen value_t = `stem' if year==`year'
+		
+		**1. continuing firms, continuing occs
+		bysort emp_nospace soc msa: egen mtemp = mean(value_07)
+		gen hasmatch = (mtemp!=.) if year==`year'
+		display "firm-occ matches back to 2007 in `year'"
+		tab hasmatch [aw=weight]
+		drop mtemp
+		bysort emp_nospace soc msa: egen mtemp = mean(value_t)
+		gen hasmatch2007 = (mtemp!=.) if year==2007
+		display "firm-occ matches to `year' in 2007"
+		tab hasmatch2007 [aw=weight]
+		drop mtemp
+		
+		gen matchgroup = 1 if hasmatch==1 & year==`year'
+		replace matchgroup = 1 if hasmatch2007==1 & year==2007
+		
+		gen Cfirm_Cocc = (hasmatch==1 & year==`year') | (hasmatch2007==1 & year==2007)
+		**should be same # firm occs
+		egen helper = group(emp_nospace soc msa) if Cfirm_Cocc==1 & year==`year'
+		sum helper
+		drop helper
+		egen helper = group(emp_nospace soc msa) if Cfirm_Cocc==1 & year==2007
+		sum helper
+		drop helper
+		drop hasmatch hasmatch2007
+		
+		**2. continuing firms, non-continuing occs with overall OCC match
+		bysort emp_nospace msa: egen mtemp = mean(value_07)
+		assert mtemp!=. if matchgroup==1 & year==`year'
+		gen firmmatch = (mtemp!=.) if year==`year'
+		display "firm matches, in `year'"
+		tab firmmatch [aw=weight]
+		drop mtemp
+		bysort emp_nospace msa: egen mtemp = mean(value_t)
+		assert mtemp!=. if matchgroup==1 & year==2007
+		gen firmmatch2007 = (mtemp!=.) if year==2007
+		display "firm matches, 2007"
+		tab firmmatch2007 [aw=weight]
+		drop mtemp
+		gen Cfirm = (firmmatch==1 & year==`year') | (firmmatch2007==1 & year==2007)
+		drop firmmatch firmmatch2007 
+			**among continuing firms for non-continuing occs (within firm), which occs overall match for the MSA?
+			gen temp = value_07 if Cfirm==1 & Cfirm_Cocc==0
+			bysort soc msa: egen mtemp = mean(temp)
+			gen hasmatch = (mtemp!=. & Cfirm==1 & Cfirm_Cocc==0) if year==`year'
+			display "match to occ among matching firms and non-continuing occs in `year'"
+			tab hasmatch [aw=weight]
+			tab hasmatch [aw=weight] if Cfirm==1 & Cfirm_Cocc==0
+			
+			drop mtemp temp
+			gen temp = value_t if Cfirm==1 & Cfirm_Cocc==0
+			bysort soc msa: egen mtemp = mean(temp)
+			gen hasmatch2007 = (mtemp!=. & Cfirm==1 & Cfirm_Cocc==0) if year==2007
+			display "match to occ among matching firms and non-continuing occs in 2007"
+			tab hasmatch2007 [aw=weight]
+			tab hasmatch2007 [aw=weight] if Cfirm==1 & Cfirm_Cocc==0
+			drop mtemp temp
+			
+			**make sure same number of soc-msas match forwards and backwards
+			egen helper = group(soc msa) if hasmatch==1 & year==`year'
+			sum helper
+			drop helper
+			egen helper = group(soc msa) if hasmatch2007==1 & year==2007
+			sum helper 
+			drop helper
+			
+			gen Cfirm_Nocc1 = ((hasmatch==1 & year==`year') | (hasmatch2007==1 & year==2007))
+			gen Cfirm_Nocc2 = (Cfirm==1 & Cfirm_Cocc==0 & ((hasmatch==0 & year==`year') | (hasmatch2007==0 & year==2007)))
+			assert Cfirm_Nocc1==1 | Cfirm_Nocc2==1 if Cfirm==1 & Cfirm_Cocc==0
+			assert Cfirm_Nocc1==0 & Cfirm_Nocc2==0 if Cfirm_Cocc==1 | Cfirm==0
+			drop hasmatch hasmatch2007
+			
+		replace matchgroup = 2 if Cfirm_Nocc1==1
+		replace matchgroup = 3 if Cfirm_Nocc2==1
+		
+		tab matchgroup if year==`year' [aw=weight]
+		tab matchgroup if year==2007 [aw=weight]
+
+		**3. noncontinuing firms, non-continuing occs with overall OCC match
+			**among noncontinuing firms for non-continuing occs (within firm), which occs overall match for the MSA?
+			gen temp = value_07 if Cfirm==0
+			bysort soc msa: egen mtemp = mean(temp)
+			gen hasmatch = (mtemp!=. & Cfirm==0) if year==`year'
+			display "match to occ among non-continuing firms in `year'"
+			tab hasmatch [aw=weight]
+			tab hasmatch [aw=weight] if Cfirm==0
+			drop mtemp temp
+
+			gen temp = value_t if Cfirm==0
+			bysort soc msa: egen mtemp = mean(temp)
+			gen hasmatch2007 = (mtemp!=. & Cfirm==0) if year==2007
+			display "match to occ among non-continuing firms in 2007"
+			tab hasmatch2007 [aw=weight]
+			tab hasmatch2007 [aw=weight] if Cfirm==0
+			drop mtemp temp
+			
+			**make sure same number of soc-msas match forwards and backwards
+			egen helper = group(soc msa) if hasmatch==1 & year==`year'
+			sum helper
+			drop helper
+			egen helper = group(soc msa) if hasmatch2007==1 & year==2007
+			sum helper 
+			drop helper
+			
+			gen Nfirm_Cocc = ((hasmatch==1 & year==`year') | (hasmatch2007==1 & year==2007))
+			gen Nfirm_Nocc = (Cfirm==0 & ((hasmatch==0 & year==`year') | (hasmatch2007==0 & year==2007)))
+			assert Nfirm_Cocc==1 | Nfirm_Nocc==1 if Cfirm==0
+			assert Nfirm_Cocc==0 & Nfirm_Nocc==0 if Cfirm==1
+			drop hasmatch hasmatch2007
+			
+		replace matchgroup = 4 if Nfirm_Cocc==1
+		replace matchgroup = 5 if Nfirm_Nocc==1
+		
+		tab matchgroup if year==`year' [aw=weight]
+		tab matchgroup if year==2007 [aw=weight]
+		
+		assert Cfirm_Cocc + Cfirm_Nocc1 + Cfirm_Nocc2 + Nfirm_Cocc + Nfirm_Nocc==1
+		preserve
+		gen share_C = Cfirm_Cocc + Cfirm_Nocc1 + Cfirm_Nocc2 
+		gen wshCfirm_Cocc = Cfirm_Cocc if share_C==1
+		gen wshCfirm_Nocc1 = Cfirm_Nocc1 if share_C==1
+		gen wshCfirm_Nocc2 = Cfirm_Nocc2 if share_C==1
+		gen wshNfirm_Cocc = Nfirm_Cocc if share_C==0
+		gen wshNfirm_Nocc = Nfirm_Nocc if share_C==0
+		
+		collapse Cfirm_Cocc Cfirm_Nocc1 Cfirm_Nocc2 Nfirm_Cocc Nfirm_Nocc wsh* share_C [aw=npostings], by(msa year)
+		foreach var in Cfirm_Cocc Cfirm_Nocc1 Cfirm_Nocc2 Nfirm_Cocc Nfirm_Nocc {
+			ren `var' sh`var'
+		}
+		reshape wide shCfirm_Cocc shCfirm_Nocc1 shCfirm_Nocc2 shNfirm_Cocc shNfirm_Nocc wsh* share_C, i(msa) j(year)
+		
+
+
+		tempfile across_weights
+		save `across_weights', replace
+
+		***continuing fom's
+		restore, preserve
+		keep if matchgroup==1
+		
+		*within skill requirement
+		gen skill_fomt = `stem'
+		bysort emp_nospace msa year: egen tot_obs = sum(npostings)
+		*occ|firm dist
+		gen Nfomt_NfOmt = npostings/tot_obs
+		keep skill_fomt Nfomt_NfOmt emp_nospace msa soc year
+		reshape wide skill_fomt Nfomt_NfOmt, i(emp_nospace msa soc) j(year)
+		tempfile match1a
+		save `match1a', replace
+		restore, preserve
+		keep if matchgroup==1
+		collapse (sum) npostings, by(emp_nospace msa year)
+		bysort msa year: egen tot_obs = sum(npostings)
+		gen NfOmt_NFOmt_delta = npostings/tot_obs
+		drop tot_obs npostings
+		reshape wide NfOmt_NFOmt_delta, i(emp_nospace msa) j(year)
+		merge 1:m emp_nospace msa using `match1a'
+		assert _merge==3
+		drop _merge
+		d
+		tempfile match1
+		save `match1', replace
+		
+		*matching firms non-matching occs
+		restore, preserve
+		keep if matchgroup==2
+		collapse (sum) npostings, by(soc msa year)
+		bysort msa year: egen tot_obs = sum(npostings)
+		gen NFomt_NFOmt_Ndelta = npostings/tot_obs
+		drop npostings tot_obs
+		reshape wide NFomt_NFOmt_Ndelta, i(msa soc) j(year)
+		tempfile weight
+		save `weight', replace
+		restore, preserve
+		keep if matchgroup==2
+		gen skill_omt_Ndelta = `stem'
+		collapse skill_omt_Ndelta [aw=npostings], by(soc msa year)
+		reshape wide skill_omt_Ndelta, i(soc msa) j(year)
+		merge 1:1 soc msa using `weight'
+		assert _merge==3
+		drop _merge
+		tempfile match2
+		save `match2', replace
+		
+		*matching firms non-matching occs where no matching firms posted to those occs
+		restore, preserve
+		keep if matchgroup==3
+		gen skill_mt_Ndelta = `stem'
+		collapse skill_mt_Ndelta [aw=npostings], by(msa year)
+		reshape wide skill_mt_Ndelta, i(msa) j(year)
+		tempfile match3
+		save `match3', replace
+		
+		*non-matching firms matching occs
+		restore, preserve
+		keep if matchgroup==4
+		collapse (sum) npostings, by(soc msa year)
+		bysort msa year: egen tot_obs = sum(npostings)
+		gen NFomt_NFOmt_Nphi = npostings/tot_obs
+		drop npostings tot_obs
+		reshape wide NFomt_NFOmt_Nphi, i(msa soc) j(year)
+		tempfile weight
+		save `weight', replace
+		restore, preserve
+		keep if matchgroup==4
+		gen skill_omt_Nphi = `stem'
+		collapse skill_omt_Nphi [aw=npostings], by(soc msa year)
+		reshape wide skill_omt_Nphi, i(soc msa) j(year)
+		merge 1:1 soc msa using `weight'
+		assert _merge==3
+		drop _merge
+		tempfile match4
+		save `match4', replace
+
+		*non-matching firms non-matching occs
+		restore, preserve
+		keep if matchgroup==5
+		gen skill_mt_Nphi = `stem'
+		collapse skill_mt_Nphi [aw=npostings], by(msa year)
+		reshape wide skill_mt_Nphi, i(msa) j(year)
+		tempfile match5
+		save `match5', replace
+
+		/****************************************************************************
+		***Bring components together
+		****************************************************************************/
+		restore
+		display "overall averages for each year"
+		sum `stem' if year==`year' [aw=weight]
+		sum `stem' if year==2007 [aw=weight]
+		**get weights for each group
+		foreach group in Cfirm_Cocc Cfirm_Nocc1 Cfirm_Nocc2 Nfirm_Cocc Nfirm_Nocc {
+			preserve
+			keep if `group'==1
+			bysort msa year: egen tot_obs = sum(npostings)
+			drop weight
+			gen weight = lf2006*npostings/tot_obs
+			display "averages by year for `group'"
+			sum `stem' if year==`year' [aw=weight]
+			sum `stem' if year==2007 [aw=weight]
+			restore
+			*pause
+		}
+		
+		keep if year==`year'
+		merge m:1 msa using `across_weights'
+		assert _merge==3
+		drop _merge
+		merge m:1 emp_nospace msa soc using `match1'
+		assert _merge==3 if matchgroup==1
+		assert _merge!=2
+		drop _merge
+		merge m:1 soc msa using `match2'
+		assert _merge==3 if matchgroup==2
+		assert _merge!=2
+		drop _merge
+		merge m:1 msa using `match3'
+		assert _merge==3 if matchgroup==3
+		assert _merge!=2
+		drop _merge
+		merge m:1 soc msa using `match4'
+		assert _merge==3 if matchgroup==4
+		assert _merge!=2
+		drop _merge
+		merge m:1 msa using `match5'
+		assert _merge==3 
+		drop _merge
+
+		/****************************************************************************
+		***Get weights: 
+		**	for getting means, always in `year' because just sum to 1
+		**	-- don't have counterfactuals (for example weights when firms don't match)
+		**	just used logistically so we can get means the same way across groups
+		*****************************************************************************/
+		/*#2. continuing firms, non-continuing occs (within firm), occ match (across continuing)*/
+		gen temp = npostings if Cfirm_Nocc1==1
+		bysort msa soc: egen tot_obs = sum(temp)
+		gen weight2 = npostings/tot_obs if Cfirm_Nocc1==1
+		drop temp tot_obs
+		/*#3. continuing firms, non-continuing occs (within firm), nonmatching occs (across continuing)*/
+		*get obs across employers and socs
+		gen temp = npostings if Cfirm_Nocc2==1
+		bysort msa: egen tot_obs = sum(temp)
+		gen weight3 = npostings/tot_obs if Cfirm_Nocc2==1
+		drop temp tot_obs
+		/*#4. non-continuing firms, continuing occs*/
+		*get obs across socs
+		gen temp = npostings if Nfirm_Cocc==1
+		bysort msa soc: egen tot_obs = sum(temp)
+		gen weight4 = npostings/tot_obs if Nfirm_Cocc==1
+		drop temp tot_obs
+		/*#5.  non-continuing firms, noncontinuing occs*/
+		*get obs across employers and socs
+		gen temp = npostings if Nfirm_Nocc==1
+		bysort msa: egen tot_obs = sum(temp)
+		gen weight5 = npostings/tot_obs if Nfirm_Nocc==1
+		drop temp tot_obs
+		
+		
+		/****************************************************************************
+		***1. share to continuing firm-msas: share_C
+		***2. firm distribution within msa among continuing firm-soc's: NfOmt_NFOmt_delta
+		***3. within firm-soc-msa skill requirement among continuing: skill_fomt
+		***4. occ dist: (within firm) Nfomt_NfOmt (among matching) NFomt_NFOmt_Ndelta and wsh* for continuing, noncontinuing NFomt_NFOmt_Nphi
+		***5. within-occ skill requirement among continuing firms but non-continuing occs: skill_omt_Ndelta, skill_mt_Ndelta  
+		***6. within-occ skill requirement among non-continuing: skill_omt_Nphi, skill_mt_Nphi 
+		***720 possible combinations
+		*****************************************************************************/
+		**iterate over all possible values of each of ABCDE -- 2007 val and t val
+		**beginning is the same for all permutations
+		local A = 1
+		foreach first in 2007 `year' {
+			local B = 1
+			foreach second in 2007 `year' {
+				local C = 1
+				foreach third in 2007 `year'  {
+					local D = 1
+					foreach fourth in 2007 `year'  {
+						local E = 1
+						foreach fifth in 2007 `year' {
+							local F = 1
+							foreach sixth in 2007 `year' { 
+								gen fitted`A'`B'`C'`D'`E'`F' = share_C`first'*wshCfirm_Cocc`fourth'*skill_fomt`third'*Nfomt_NfOmt`fourth'*NfOmt_NFOmt_delta`second' if Cfirm_Cocc==1
+								replace fitted`A'`B'`C'`D'`E'`F' = share_C`first'*wshCfirm_Nocc1`fourth'*skill_omt_Ndelta`fifth'*weight2*NFomt_NFOmt_Ndelta`fourth' if Cfirm_Nocc1==1
+								replace fitted`A'`B'`C'`D'`E'`F' = share_C`first'*wshCfirm_Nocc2`fourth'*skill_mt_Ndelta`fifth'*weight3 if Cfirm_Nocc2==1
+								replace fitted`A'`B'`C'`D'`E'`F' = (1-share_C`first')*wshNfirm_Cocc`fourth'*skill_omt_Nphi`sixth'*weight4*NFomt_NFOmt_Nphi`fourth' if Nfirm_Cocc==1
+								replace fitted`A'`B'`C'`D'`E'`F' = (1-share_C`first')*wshNfirm_Nocc`fourth'*skill_mt_Nphi`sixth'*weight5 if Nfirm_Nocc==1
+								local F = 2
+							}
+							local E = 2
+						}
+						local D = 2
+					}
+					local C = 2
+				}
+				local B = 2
+			}
+			local A = 2
+		}
+
+		**testing
+		/*OVERALL*/
+		gen fitted_t = share_C`year'*wshCfirm_Cocc`year'*skill_fomt`year'*Nfomt_NfOmt`year'*NfOmt_NFOmt_delta`year' if Cfirm_Cocc==1
+		replace fitted_t = share_C`year'*wshCfirm_Nocc1`year'*skill_omt_Ndelta`year'*weight2*NFomt_NFOmt_Ndelta`year' if Cfirm_Nocc1==1
+		replace fitted_t = share_C`year'*wshCfirm_Nocc2`year'*skill_mt_Ndelta`year'*weight3 if Cfirm_Nocc2==1
+		replace fitted_t = (1-share_C`year')*wshNfirm_Cocc`year'*skill_omt_Nphi`year'*weight4*NFomt_NFOmt_Nphi`year' if Nfirm_Cocc==1
+		replace fitted_t = (1-share_C`year')*wshNfirm_Nocc`year'*skill_mt_Nphi`year'*weight5 if Nfirm_Nocc==1
+
+		gen fitted_07 = share_C2007*wshCfirm_Cocc2007*skill_fomt2007*Nfomt_NfOmt2007*NfOmt_NFOmt_delta2007 if Cfirm_Cocc==1
+		replace fitted_07 = share_C2007*wshCfirm_Nocc12007*skill_omt_Ndelta2007*weight2*NFomt_NFOmt_Ndelta2007 if Cfirm_Nocc1==1
+		replace fitted_07 = share_C2007*wshCfirm_Nocc22007*skill_mt_Ndelta2007*weight3 if Cfirm_Nocc2==1
+		replace fitted_07 = (1-share_C2007)*wshNfirm_Cocc2007*skill_omt_Nphi2007*weight4*NFomt_NFOmt_Nphi2007 if Nfirm_Cocc==1
+		replace fitted_07 = (1-share_C2007)*wshNfirm_Nocc2007*skill_mt_Nphi2007*weight5 if Nfirm_Nocc==1
+
+		**only change share to continuing firms		
+		gen fitted_C1 = share_C`year'*wshCfirm_Cocc2007*skill_fomt2007*Nfomt_NfOmt2007*NfOmt_NFOmt_delta2007 if Cfirm_Cocc==1
+		replace fitted_C1 = share_C`year'*wshCfirm_Nocc12007*skill_omt_Ndelta2007*weight2*NFomt_NFOmt_Ndelta2007 if Cfirm_Nocc1==1
+		replace fitted_C1 = share_C`year'*wshCfirm_Nocc22007*skill_mt_Ndelta2007*weight3 if Cfirm_Nocc2==1
+		replace fitted_C1 = (1-share_C`year')*wshNfirm_Cocc2007*skill_omt_Nphi2007*weight4*NFomt_NFOmt_Nphi2007 if Nfirm_Cocc==1
+		replace fitted_C1 = (1-share_C`year')*wshNfirm_Nocc2007*skill_mt_Nphi2007*weight5 if Nfirm_Nocc==1
+		
+		**only change firm distribution among continuing
+		gen fitted_C2 = share_C2007*wshCfirm_Cocc2007*skill_fomt2007*Nfomt_NfOmt2007*NfOmt_NFOmt_delta`year' if Cfirm_Cocc==1
+		replace fitted_C2 = share_C2007*wshCfirm_Nocc12007*skill_omt_Ndelta2007*weight2*NFomt_NFOmt_Ndelta2007 if Cfirm_Nocc1==1
+		replace fitted_C2 = share_C2007*wshCfirm_Nocc22007*skill_mt_Ndelta2007*weight3 if Cfirm_Nocc2==1
+		replace fitted_C2 = (1-share_C2007)*wshNfirm_Cocc2007*skill_omt_Nphi2007*weight4*NFomt_NFOmt_Nphi2007 if Nfirm_Cocc==1
+		replace fitted_C2 = (1-share_C2007)*wshNfirm_Nocc2007*skill_mt_Nphi2007*weight5 if Nfirm_Nocc==1
+		
+		**only change firm within-firm-soc-msa skill
+		gen fitted_C3 = share_C2007*wshCfirm_Cocc2007*skill_fomt`year'*Nfomt_NfOmt2007*NfOmt_NFOmt_delta2007 if Cfirm_Cocc==1
+		replace fitted_C3 = share_C2007*wshCfirm_Nocc12007*skill_omt_Ndelta2007*weight2*NFomt_NFOmt_Ndelta2007 if Cfirm_Nocc1==1
+		replace fitted_C3 = share_C2007*wshCfirm_Nocc22007*skill_mt_Ndelta2007*weight3 if Cfirm_Nocc2==1
+		replace fitted_C3 = (1-share_C2007)*wshNfirm_Cocc2007*skill_omt_Nphi2007*weight4*NFomt_NFOmt_Nphi2007 if Nfirm_Cocc==1
+		replace fitted_C3 = (1-share_C2007)*wshNfirm_Nocc2007*skill_mt_Nphi2007*weight5 if Nfirm_Nocc==1
+
+		**occ dist among continuing
+		gen fitted_C4 = share_C2007*wshCfirm_Cocc`year'*skill_fomt2007*Nfomt_NfOmt`year'*NfOmt_NFOmt_delta2007 if Cfirm_Cocc==1
+		replace fitted_C4 = share_C2007*wshCfirm_Nocc1`year'*skill_omt_Ndelta2007*weight2*NFomt_NFOmt_Ndelta`year' if Cfirm_Nocc1==1
+		replace fitted_C4 = share_C2007*wshCfirm_Nocc2`year'*skill_mt_Ndelta2007*weight3 if Cfirm_Nocc2==1
+		replace fitted_C4 = (1-share_C2007)*wshNfirm_Cocc`year'*skill_omt_Nphi2007*weight4*NFomt_NFOmt_Nphi`year' if Nfirm_Cocc==1
+		replace fitted_C4 = (1-share_C2007)*wshNfirm_Nocc`year'*skill_mt_Nphi2007*weight5 if Nfirm_Nocc==1
+
+		**within occ among continuing but non-continuing
+		gen fitted_C5 = share_C2007*wshCfirm_Cocc2007*skill_fomt2007*Nfomt_NfOmt2007*NfOmt_NFOmt_delta2007 if Cfirm_Cocc==1
+		replace fitted_C5 = share_C2007*wshCfirm_Nocc12007*skill_omt_Ndelta`year'*weight2*NFomt_NFOmt_Ndelta2007 if Cfirm_Nocc1==1
+		replace fitted_C5 = share_C2007*wshCfirm_Nocc22007*skill_mt_Ndelta`year'*weight3 if Cfirm_Nocc2==1
+		replace fitted_C5 = (1-share_C2007)*wshNfirm_Cocc2007*skill_omt_Nphi2007*weight4*NFomt_NFOmt_Nphi2007 if Nfirm_Cocc==1
+		replace fitted_C5 = (1-share_C2007)*wshNfirm_Nocc2007*skill_mt_Nphi2007*weight5 if Nfirm_Nocc==1
+		
+		**within occ skill requirement among non-continuing
+		gen fitted_C6 = share_C2007*wshCfirm_Cocc2007*skill_fomt2007*Nfomt_NfOmt2007*NfOmt_NFOmt_delta2007 if Cfirm_Cocc==1
+		replace fitted_C6 = share_C2007*wshCfirm_Nocc12007*skill_omt_Ndelta2007*weight2*NFomt_NFOmt_Ndelta2007 if Cfirm_Nocc1==1
+		replace fitted_C6 = share_C2007*wshCfirm_Nocc22007*skill_mt_Ndelta2007*weight3 if Cfirm_Nocc2==1
+		replace fitted_C6 = (1-share_C2007)*wshNfirm_Cocc2007*skill_omt_Nphi`year'*weight4*NFomt_NFOmt_Nphi2007 if Nfirm_Cocc==1
+		replace fitted_C6 = (1-share_C2007)*wshNfirm_Nocc2007*skill_mt_Nphi`year'*weight5 if Nfirm_Nocc==1
+
+		assert year!=2007		
+		collapse lf2006 year shock9010 ACS* M_ACS (sum) fitted*, by(msa)
+		
+		display "summarized variables should be the same and match ch_full above"
+		sum fitted_t fitted222222 fitted_07 fitted111111 [aw=lf2006]
+		sum fitted_C1 fitted211111 [aw=lf2006]
+		sum fitted_C2 fitted121111 [aw=lf2006]
+		sum fitted_C3 fitted112111 [aw=lf2006]
+		sum fitted_C4 fitted111211 [aw=lf2006]
+		sum fitted_C5 fitted111121 [aw=lf2006]
+		sum fitted_C6 fitted111112 [aw=lf2006]
+		
+		save "$data_output/working`year'", replace
+	}
+	
+	use "$data_output/working2010", clear
+	foreach year of numlist 2011/2015 {
+		append using "$data_output/working`year'"
+	}
+	
+	foreach year of numlist 2010/2015 {
+		gen shock`year' = shock9010*(year==`year')
+	}
+	
+	
+	gen full = fitted222222-fitted111111
+	reg full shock2010 shock2011 shock2012 shock2013 shock2014 shock2015 i.year ACS* M_ACS [aw=lf2006],  cluster(msa)
+	foreach year of numlist 2010/2015 {
+		local total`year' = _b[shock`year']
+	}
+
+	mata: RESULTS_`stem' = J(4320,19,.)
+
+	/*****************************************************************************
+	**Decompositions: 
+	**	Differences can be attributed to change in
+	***1. share to continuing firm-msas: share_C
+	***2. firm distribution within msa among continuing firm-soc's: NfOmt_NFOmt_delta
+	***3. within firm-soc-msa skill requirement among continuing: skill_fomt
+	***4. occ dist: (within firm) Nfomt_NfOmt (among matching) NFomt_NFOmt_Ndelta and wsh* for continuing, noncontinuing NFomt_NFOmt_Nphi
+	***5. within-occ skill requirement among continuing firms but non-continuing occs: skill_omt_Ndelta, skill_mt_Ndelta  
+	***6. within-occ skill requirement among non-continuing: skill_omt_Nphi, skill_mt_Nphi 
+	**	720 possible combinations:
+	**		1234 means change 1 first, then 2, then 3, then 4
+	**		3421 means change 4 first, then three, then 1, then 2
+	**	matrix stores order, then for each incremental change:
+	**		coeff, se, fraction of total attributed to change
+	**		results order is always: component 1, 2, 3, 4
+	******************************************************************************/
+	
+	local row = 1
+	**i = which variable gets changed first (1,2,3,4)
+	**j = which variable gets changed second, etc.
+	foreach i of numlist 1/6 {
+		foreach j of numlist 1/6 {
+			foreach k of numlist 1/6 {
+				foreach l of numlist 1/6 {
+					foreach m of numlist 1/6 {
+						foreach n of numlist 1/6 {
+							local invalid = (`i'==`j' | `i'==`k' | `i'==`l' | `i'==`m' | `i'==`n' | `j'==`k' | `j'==`l' | `j'==`m' | `j'==`n' | `k'==`l' | `k'==`m' | `k'==`n' | `l'==`m' | `l'==`n' | `m'==`n' )
+							***only for non-repeats
+							if `invalid'==0 {
+								local first = 1
+								local second = 1
+								local third = 1
+								local fourth = 1
+								local fifth = 1
+								local sixth = 1
+								**starting value is always 111111
+								local start = `first'`second'`third'`fourth'`fifth'`sixth'
+								local order = `i'`j'`k'`l'`m'`n'
+								***results for i will always be in columns 2-4
+								***results for j: 5-7
+								***results for k: 8-10
+								***results for l:11-13
+								***results for m:14-16
+								***results for n:17-19
+								foreach step in `i' `j' `k' `l' `m' `n' {
+									**change one variable at a time
+									**i points to the first change
+									if `step'==1 {
+										**if `step'==1 we are changing `first' from 1 to 2
+										local first = 2
+										local column = 2
+									}
+									if `step'==2 {
+										local second = 2
+										local column = 5
+									}
+									if `step'==3 {
+										local third = 2
+										local column = 8
+									}
+									if `step'==4 {
+										local fourth = 2
+										local column = 11
+									}
+									if `step'==5 {
+										local fifth = 2
+										local column = 14
+									}
+									if `step'==6 {
+										local sixth = 2
+										local column = 17
+									}
+									
+									**dependent variable is new var (with incremental change) minus old var (whatever was the new var last time)
+									qui gen step`step' = fitted`first'`second'`third'`fourth'`fifth'`sixth' - fitted`start'
+									**store order for this iteration (row)
+									mata: RESULTS_`stem'[`row',1]=`order'
+									qui reg step`step' shock2010 shock2011 shock2012 shock2013 shock2014 shock2015 i.year ACS* M_ACS [aw=lf2006], cluster(msa)
+									local grouprow = `row'
+									foreach year of numlist 2010/2015 {
+										local beta = _b[shock`year']
+										local se = _se[shock`year']
+										local fraction = `beta'/`total`year''
+										local end_col = `column'+2
+										mata: RESULTS_`stem'[`grouprow',`column'..`end_col'] = `beta',`se',`fraction'
+										local grouprow = `grouprow' + 1
+									}
+									**redefine "old var" to be the new var from this round
+									local start = `first'`second'`third'`fourth'`fifth'`sixth'
+									drop step`step'
+								
+								}
+								display "`stem' `row'"
+								local row = `row' + 6
+							}
+						}
+
+					}
+				}
+			}
+		}
+	}
+}
+mata: mata matsave "$data_output/f_decomp" RESULTS_*, replace
+
+
+**separate rates
+foreach stem in ed exp cog comp_all  {
+	clear
+	clear mata
+	mata: mata matuse "$data_output/f_decomp" 
+	mata: DECOMP_RESULTS`stem' = J(12,6,.)
+	mata: mean`stem' = J(6,18,.)
+	mata: sd`stem' = J(6,18,.)
+	local row = 1
+	foreach i of numlist 1/6 {
+		mata: temp = J(720,18,.)
+		foreach order of numlist 1/720 {
+			local counter = (`order'-1)*6+`i'
+			mata: temp[`order',.] = RESULTS_`stem'[`counter',2..19]
+		}
+		mata: mean`stem'[`i',.] = mean(temp)
+		mata: sd`stem'[`i',.] = sqrt(diagonal(variance(temp))')
+		mata: DECOMP_RESULTS`stem'[`row',.] = mean`stem'[`i',3], mean`stem'[`i',6], mean`stem'[`i',9], mean`stem'[`i',12], mean`stem'[`i',15], mean`stem'[`i',18]    
+		local row = `row' + 1
+		mata: DECOMP_RESULTS`stem'[`row',.] =  sd`stem'[`i',3], sd`stem'[`i',6], sd`stem'[`i',9], sd`stem'[`i',12], sd`stem'[`i',15], sd`stem'[`i',18]  
+		local row = `row' + 1
+	}
+	***Table B6
+	
+	display "`stem'"
+	***1. share to continuing firm-msas: share_C
+	***2. firm distribution within msa among continuing firm-soc's: NfOmt_NFOmt_delta
+	***3. within firm-soc-msa skill requirement among continuing: skill_fomt
+	***4. occ dist: (within firm) Nfomt_NfOmt (among matching) NFomt_NFOmt_Ndelta and wsh* for continuing, noncontinuing NFomt_NFOmt_Nphi
+	***5. within-occ skill requirement among continuing firms but non-continuing occs: skill_omt_Ndelta, skill_mt_Ndelta  
+	***6. within-occ skill requirement among non-continuing: skill_omt_Nphi, skill_mt_Nphi 
+
+	display "1. share to continuing firm-msas"
+	display "2. firm distribution within msa among continuing firm-soc's"
+	display "3. within firm-soc-msa skill requirement among continuing"
+	display "4. occ dist"
+	display "5. within-occ skill requirement among continuing firms but non-continuing occs"
+	display "6. within-occ skill requirement among non-continuing"
+	
+	mata: DECOMP_RESULTS`stem'
+
+	***graph results
+	*turn them into a data set then plot
+	global var="`var'"
+	clear
+	mata:	st_addobs(rows(DECOMP_RESULTS`stem'))
+	mata:	varidx = st_addvar("double", st_tempname(cols(DECOMP_RESULTS`stem')))
+	mata:	st_store(.,varidx,DECOMP_RESULTS`stem')
+	qui describe
+	local nvars = `r(k)'
+	unab varlist: _all
+	local count 1
+	foreach name of local varlist {
+		rename `name' fraction`count++'
+	}
+	gen counter = _n
+	gen year = 2010 if counter==1 | counter==2
+	replace year = 2011 if counter==3 | counter==4
+	replace year = 2012 if counter==5 | counter==6
+	replace year = 2013 if counter==7 | counter==8
+	replace year = 2014 if counter==9 | counter==10
+	replace year = 2015 if counter==11 | counter==12
+	
+	gen type = 1 if (counter==1 | counter==3 | counter==5 | counter==7 | counter==9 | counter==11)
+	replace type = 2 if (counter==2 | counter==4 | counter==6 | counter==8 | counter==10 | counter==12)
+
+
+	if "`stem'"=="ed" {	
+		local title = "Education Requirement"
+	}
+	if "`stem'"=="exp" {
+		local title = "Experience Requirement"
+	}
+	if "`stem'"=="cog" {
+		local title = "Cognitive Skill Requirement"
+	}
+	if "`stem'"=="cog" {
+		local title = "Cognitive Skill Requirement"
+	}
+	if "`stem'"=="comp_all" {
+		local title = "Computer Skill Requirement"
+	}
+	display "title= `title'"
+	
+	gen firm_dist = fraction1 + fraction2
+	gen within_firm = fraction3 + fraction5
+	
+	graph bar firm_dist fraction4 within_firm fraction6 if type==1, over(year) stack bar(4,color(navy)  ) bar(3,color(navy) fi(inten80)) bar(2,color(navy) fi(inten40)) bar(1,color(navy)  fi(inten20))  title("`title'")  saving("$graphs/g`stem'", replace) legend(off) graphregion(color(white)) bgcolor(white)
+	*legend(label(1 "firm dis") label(2 "occ dist") label(3 "w/in firm (both w/in occ and into new occs") label(4 "old-new firms"))
+
+
+}
+graph combine "$graphs/ged.gph" "$graphs/gexp.gph" "$graphs/gcog.gph" "$graphs/gcomp_all.gph", l1title("Share Attributed to Each Component") b1title(Year) /// 
+note("Darkest = old-new firms within occ, dark = within continuing firms, light = occ dist, lightest = firm dist" " " /// 
+"We decompose the impact of the MSA-specific Bartik employment shock on the change in skill requirements from 2007 in each year." "We then plot the share attributed to each component, averaged across all possible decomposition orders.", size(vsmall))  graphregion(color(white))
+graph export "$graphs/figureB4.pdf", as(pdf) replace
+
+
+*}}}
+	
+*/
+

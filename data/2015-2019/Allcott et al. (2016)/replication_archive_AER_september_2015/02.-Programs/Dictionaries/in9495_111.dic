@@ -1,0 +1,21 @@
+dictionary using 94-95/ASI1994_95_DATA/ASID9495.TXT {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+_column(16)	linkcode	%3.0f	"Link Code"
+_column(29)	ownconst	%10.0f	"own Construction-Total"
+_column(39)	workforothers	%10.0f	"Value of work done for others"
+_column(49)	servinc		%10.0f	"Receipt for non-industrial services"
+_column(59)	incrstsfg   	%10.0f	"Variation in Stock of Semi-Finished Goods"
+_column(69)	velecsold   	%10.0f	"Value of electricity sold"
+_column(79)	ownconstr	%10.0f	"Value of Own Construction"
+_column(99)	otherop		%10.0f	"Total of Other Output/Receipts"
+_column(109)	vsamecond	%10.0f	"Sale Value of goods sold in the same condition as purchased"
+
+};
+
+
+

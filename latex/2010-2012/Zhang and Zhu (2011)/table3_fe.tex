@@ -1,0 +1,37 @@
+\begin{table}[htbp]
+\centering
+\small
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Difference-in-Differences Estimations of the Impact of the Block on
+Contributors with Different Levels of Social Participation}
+\label{tab:table3}
+\begin{tabular}{l*{3}{c}}
+\toprule
+& \multicolumn{1}{c}{Total}
+& \multicolumn{1}{c}{Addition}
+& \multicolumn{1}{c}{Deletion} \\
+& (4) & (5) & (6) \\
+\midrule
+AfterBlock  &      -0.212** &      -0.170** &      -0.131** \\
+            &     [0.086]   &     [0.082]   &     [0.062]   \\
+SocialParticipation $\times$ AfterBlock&      -0.190***&      -0.182***&      -0.150***\\
+            &     [0.024]   &     [0.023]   &     [0.020]   \\
+Age         &      -0.062***&      -0.062***&      -0.026** \\
+            &     [0.015]   &     [0.015]   &     [0.011]   \\
+Age$^2$     &       0.001***&       0.001***&       0.001***\\
+            &     [0.000]   &     [0.000]   &     [0.000]   \\
+\midrule
+R$^2$       &        0.05   &        0.05   &        0.05   \\
+Observations&      13.376   &      13.376   &      13.376   \\
+Specification & FE & FE & FE \\
+\bottomrule
+\multicolumn{4}{p{0.92\linewidth}}{\footnotesize \textit{Notes:}
+ SocialParticipation is the logarithm of the weekly average of total
+ addition and total deletion in user pages or user-talk pages by each
+ contributor before the block. The variable SocialParticipation drops
+ in the fixed-effect specifications as its value is fixed for each
+ contributor. Heteroskedasticity-adjusted standard errors in brackets.} \\
+\multicolumn{4}{l}{\footnotesize *** Significant at the 1 percent level,
+ ** 5 percent level, * 10 percent level.} \\
+\end{tabular}
+\end{table}

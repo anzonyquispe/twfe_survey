@@ -1,0 +1,17 @@
+dictionary using 97-98/P979823C.RAW {
+
+_column(1)	nic87		%4.0f	"Industry - NIC-87 Industry Code"
+_column(5)	runslno		%6.0f	"Running Serial No. "
+_column(11)	stcode		%2.0f	"State Code (ST)"
+_column(13)	permid		%5.0f	"Permanent Serial No.
+_column(18)	schcode   	%1.0f  	"Scheme Code"
+
+_column(21)	linkcode	%3.0f	"Link Code"
+
+_column(48)	depn		%12.0f	""
+
+
+};
+
+
+

@@ -1,0 +1,2591 @@
+-------------------------------------------------------------------------------
+       log:  /disk/bulkn/mgduggan/partd/meps/aerdata/regs-partd-final.log
+  log type:  text
+ opened on:   4 Mar 2009, 16:14:51
+
+. 
+. * start with data from 2003 meps that estimates medicare market shares
+. 
+. use meps03share
+
+. drop mcd03paidamt mcd03numndcs mcd03otcfrac
+
+. d, fullname
+
+Contains data from meps03share.dta
+  obs:           956                          
+ vars:            11                          3 Mar 2009 23:31
+ size:        58,316 (99.9% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+shortnam        str20  %20s                   
+mcar03mepsrx    float  %9.0g                  meps medicare share - weighted
+                                                script share
+dual03mepsrx    float  %9.0g                  dual share - weighted script
+                                                share
+mcself03mepsrx  float  %9.0g                  meps medicare self share -
+                                                weighted script share
+gen03meps       float  %9.0g                  fraction of 03 meps scripts
+                                                generic
+brand03meps     float  %9.0g                  fraction of 03 meps scripts brand
+meps03scripts   float  %9.0g                  # of scripts in 2003 meps
+meps03paid      float  %9.0g                  weighted amt paid / 1000
+top500          float  %9.0g                  (mean) top500
+mcar03mepspd    float  %9.0g                  meps medicare share - weighted $
+                                                share
+merge1          byte   %8.0g                  merge of meps 03 to medicaid 03
+-------------------------------------------------------------------------------
+Sorted by:  shortnam
+     Note:  dataset has changed since last saved
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcar03mepsrx |       769    .3664271    .2711598          0          1
+dual03mepsrx |       769    .0505136    .0943743          0   .9954565
+mcself03me~x |       769    .2175451    .1978117          0          1
+   gen03meps |       769    .2734493    .4240945          0          1
+-------------+--------------------------------------------------------
+ brand03meps |       769    .6619412    .4337696          0          1
+meps03scri~s |       769    339.9155    699.2679          1       7534
+  meps03paid |       769    214051.9    523063.6   44.70178    7780559
+      top500 |       769    .5389872    .4979378          0          1
+mcar03mepspd |       769     .375378    .2820495          0          1
+-------------+--------------------------------------------------------
+      merge1 |       956    2.570084    .6927481          1          3
+
+. 
+. * merge this with comparable info from 2002 meps to increase sample size
+. 
+. sort shortnam
+
+. merge shortnam using meps02share
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |         10        1.03        1.03
+          2 |         14        1.44        2.47
+          3 |        946       97.53      100.00
+------------+-----------------------------------
+      Total |        970      100.00
+
+. drop _merge
+
+. 
+. * drop those with meps02paid and meps03paid missing
+. 
+. count
+  970
+
+. drop if meps02paid==. & meps03paid==.
+(169 observations deleted)
+
+. count
+  801
+
+. 
+. * how many drugs are in both versus only one
+. 
+. count if meps02paid!=. & meps03paid!=.
+  709
+
+. count if meps02paid!=. & meps03paid==.
+   32
+
+. count if meps02paid==. & meps03paid!=.
+   60
+
+. 
+. * now let's see how they are correlated - we'll use this as weight
+. * for a given number of scripts gives greatest weight to those with
+. * scripts in 02 equal to 03 and lowest to those with essentially all
+. * in one year and just one script in the other year
+. 
+. gen regwgt = (1 / ((1/meps02scripts) + (1/meps03scripts)))
+(92 missing values generated)
+
+. 
+. * fraction of scripts that are generic in meps - ignore those with missing
+. * gbo and thus divide by share either brand or generic here
+. * fraction missing generic info is 1 - gen02meps - brand02meps
+. 
+. gen gen03frac = gen03meps / (brand03meps + gen03meps)
+(34 missing values generated)
+
+. gen gen02frac = gen02meps / (brand02meps + gen02meps)
+(63 missing values generated)
+
+. 
+. sum brand02meps gen02meps gen02frac meps02scripts
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+ brand02meps |       741    .6870364    .4348919          0          1
+   gen02meps |       741    .2642214    .4171712          0          1
+   gen02frac |       738    .2832827    .4396148          0          1
+meps02scri~s |       741     387.139    772.9107          1       7520
+
+. sum brand03meps gen03meps gen03frac meps03scripts
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+ brand03meps |       769    .6619412    .4337696          0          1
+   gen03meps |       769    .2734493    .4240945          0          1
+   gen03frac |       767    .2909829    .4457925          0          1
+meps03scri~s |       769    339.9155    699.2679          1       7534
+
+. 
+. * now pool to estimate share of prescriptions in 02 and 03 that are generic
+. * a bit messy b/c have to scale down meps02scripts and meps03scripts to
+. * account for those scripts that have missing generic-brand info
+. * but otherwise just a weighted avg of 02 and 03 share . . . if one
+. * year has no info then just use other year's generic share
+. 
+. gen gen0203frac = (gen02frac * (meps02scripts * (brand02meps + gen02meps))) +
+>  (gen03frac * (meps03scripts * (brand03meps + gen03meps)))
+(96 missing values generated)
+
+. replace gen0203frac = gen0203frac / ((meps02scripts * (brand02meps + gen02mep
+> s)) + (meps03scripts * (brand03meps + gen03meps)))
+(276 real changes made)
+
+. replace gen0203frac = gen02frac if gen03frac==. & gen02frac!=.
+(33 real changes made)
+
+. replace gen0203frac = gen03frac if gen02frac==. & gen03frac!=.
+(62 real changes made)
+
+. 
+. sum gen02frac gen03frac gen0203frac
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   gen02frac |       738    .2832827    .4396148          0          1
+   gen03frac |       767    .2909829    .4457925          0          1
+ gen0203frac |       800    .2847654    .4365547          0          1
+
+. sum gen02frac gen03frac gen0203frac if gen02frac!=. & gen03frac!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   gen02frac |       705     .290869    .4427621          0          1
+   gen03frac |       705    .2914476    .4455874          0          1
+ gen0203frac |       705     .292339    .4385326          0          1
+
+. 
+. * a few strange cases where gen0203frac falls outside of gen02frac and
+. * gen03frac range but only b/c of rounding
+. 
+. list gen02frac gen03frac gen0203frac if gen02frac!=. & gen03frac!=. & gen02fr
+> ac > gen0203frac & gen03frac > gen0203frac
+
+     +--------------------------------+
+     | gen02f~c   gen03f~c   gen020~c |
+     |--------------------------------|
+ 51. |        1          1   .9999999 |
+ 97. |        1          1   .9999999 |
+137. |        1          1   .9999999 |
+138. |        1          1   .9999999 |
+240. |        1          1   .9999999 |
+     |--------------------------------|
+346. |        1          1   .9999999 |
+451. |        1          1   .9999999 |
+598. |        1          1   .9999999 |
+655. |        1          1   .9999999 |
+     +--------------------------------+
+
+. list gen02frac gen03frac gen0203frac if gen02frac!=. & gen03frac!=. & gen02fr
+> ac < gen0203frac & gen03frac < gen0203frac
+
+. 
+. * average medicare market shares in each year
+. 
+. sum mcar03mepsrx [aw=meps03scripts]
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+mcar03mepsrx |     769      261395    .4285404   .1996616          0          1
+
+. sum mcar02mepsrx [aw=meps02scripts]
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+mcar02mepsrx |     741      286870    .4205135    .199058          0          1
+
+. 
+. * regress these two measures
+. 
+. reg mcar03mepsrx mcar02mepsrx [aw=regwgt], robust
+(sum of wgt is   1.3150e+05)
+
+Linear regression                                      Number of obs =     709
+                                                       F(  1,   707) = 3378.95
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.8502
+                                                       Root MSE      =  .07734
+
+------------------------------------------------------------------------------
+             |               Robust
+mcar03mepsrx |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar02mepsrx |   .9263062   .0159354    58.13   0.000     .8950198    .9575926
+       _cons |   .0372907   .0072011     5.18   0.000     .0231527    .0514287
+------------------------------------------------------------------------------
+
+. 
+. * exclude over the counter drugs
+. 
+. reg mcar03mepsrx mcar02mepsrx [aw=regwgt] if mcd03otcfrac<=0.1, robust
+(sum of wgt is   1.2055e+05)
+
+Linear regression                                      Number of obs =     571
+                                                       F(  1,   569) = 3104.56
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.8612
+                                                       Root MSE      =  .07429
+
+------------------------------------------------------------------------------
+             |               Robust
+mcar03mepsrx |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar02mepsrx |   .9322914   .0167321    55.72   0.000     .8994271    .9651557
+       _cons |   .0347356   .0075538     4.60   0.000      .019899    .0495723
+------------------------------------------------------------------------------
+
+. 
+. * exclude generic drugs
+. 
+. reg mcar03mepsrx mcar02mepsrx [aw=regwgt] if mcd03otcfrac<=0.1 & gen0203frac<
+> =0.1, robust
+(sum of wgt is   7.4614e+04)
+
+Linear regression                                      Number of obs =     383
+                                                       F(  1,   381) = 1710.34
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.8414
+                                                       Root MSE      =  .07668
+
+------------------------------------------------------------------------------
+             |               Robust
+mcar03mepsrx |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar02mepsrx |   .9118259   .0220481    41.36   0.000     .8684747    .9551771
+       _cons |   .0430375   .0090812     4.74   0.000      .025182     .060893
+------------------------------------------------------------------------------
+
+. 
+. * or just weight by total scripts - very similar estimate
+. 
+. reg mcar03mepsrx mcar02mepsrx [aw=meps02scripts+meps03scripts] if mcd03otcfra
+> c<=0.1 & gen0203frac<=0.1, robust
+(sum of wgt is   3.0848e+05)
+
+Linear regression                                      Number of obs =     383
+                                                       F(  1,   381) = 1685.89
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.8331
+                                                       Root MSE      =  .07879
+
+------------------------------------------------------------------------------
+             |               Robust
+mcar03mepsrx |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar02mepsrx |   .9044309   .0220273    41.06   0.000     .8611207    .9477411
+       _cons |   .0458738   .0090915     5.05   0.000      .027998    .0637496
+------------------------------------------------------------------------------
+
+. 
+. * mcar self share
+. 
+. reg mcself03mepsrx mcself02mepsrx [aw=meps02scripts+meps03scripts] if mcd03ot
+> cfrac<=0.1 & gen0203frac<=0.1, robust
+(sum of wgt is   3.0848e+05)
+
+Linear regression                                      Number of obs =     383
+                                                       F(  1,   381) =  638.69
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.7068
+                                                       Root MSE      =  .07599
+
+------------------------------------------------------------------------------
+             |               Robust
+mcself03me~x |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcself02me~x |   .8056005   .0318768    25.27   0.000     .7429241    .8682769
+       _cons |   .0523029   .0075306     6.95   0.000     .0374962    .0671097
+------------------------------------------------------------------------------
+
+. 
+. * dual share
+. 
+. reg dual03mepsrx dual02mepsrx [aw=meps02scripts+meps03scripts] if mcd03otcfra
+> c<=0.1 & gen0203frac<=0.1, robust
+(sum of wgt is   3.0848e+05)
+
+Linear regression                                      Number of obs =     383
+                                                       F(  1,   381) =   78.70
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2649
+                                                       Root MSE      =  .03632
+
+------------------------------------------------------------------------------
+             |               Robust
+dual03mepsrx |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+dual02mepsrx |   .5473002   .0616915     8.87   0.000     .4260018    .6685987
+       _cons |   .0218945   .0030862     7.09   0.000     .0158264    .0279626
+------------------------------------------------------------------------------
+
+. 
+. * total number of scripts adding 02 and 03
+. 
+. gen     meps0203scripts = meps02scripts + meps03scripts
+(92 missing values generated)
+
+. replace meps0203scripts = meps02scripts if meps03scripts==. & meps0203scripts
+> ==.
+(32 real changes made)
+
+. replace meps0203scripts = meps03scripts if meps02scripts==. & meps0203scripts
+> ==.
+(60 real changes made)
+
+. 
+. label var meps0203scripts "total scripts in 02 + 03 meps"
+
+. 
+. 
+. * weighted medicare market share - the key explanatory variable
+. 
+. gen mcar0203mepsrx = ((meps02scripts * mcar02mepsrx) + (meps03scripts * mcar0
+> 3mepsrx)) / meps0203scripts
+(92 missing values generated)
+
+. replace mcar0203mepsrx = mcar02mepsrx if mcar03mepsrx==. & mcar0203mepsrx==.
+(32 real changes made)
+
+. replace mcar0203mepsrx = mcar03mepsrx if mcar02mepsrx==. & mcar0203mepsrx==.
+(60 real changes made)
+
+. 
+. label var mcar0203mepsrx "weighted medicare mkt share 02,03"
+
+. 
+. 
+. * weighted medicare market share for spending - a variant on key expl var
+. 
+. gen mcar0203mepspd = ((meps02scripts * mcar02mepspd) + (meps03scripts * mcar0
+> 3mepspd)) / meps0203scripts
+(92 missing values generated)
+
+. replace mcar0203mepspd = mcar02mepspd if mcar03mepspd==. & mcar0203mepspd==.
+(32 real changes made)
+
+. replace mcar0203mepspd = mcar03mepspd if mcar02mepspd==. & mcar0203mepspd==.
+(60 real changes made)
+
+. 
+. label var mcar0203mepspd "weighted medicare mkt share in $ 02,03"
+
+. 
+. 
+. * weighted dual share
+. 
+. gen dual0203mepsrx = ((meps02scripts * dual02mepsrx) + (meps03scripts * dual0
+> 3mepsrx)) / meps0203scripts
+(92 missing values generated)
+
+. replace dual0203mepsrx = dual02mepsrx if dual03mepsrx==. & dual0203mepsrx==.
+(32 real changes made)
+
+. replace dual0203mepsrx = dual03mepsrx if dual02mepsrx==. & dual0203mepsrx==.
+(60 real changes made)
+
+. 
+. * weighted medicare self pay share
+. 
+. gen mcself0203mepsrx = ((meps02scripts * mcself02mepsrx) + (meps03scripts * m
+> cself03mepsrx)) / meps0203scripts
+(92 missing values generated)
+
+. replace mcself0203mepsrx = mcself02mepsrx if mcself03mepsrx==. & mcself0203me
+> psrx==.
+(32 real changes made)
+
+. replace mcself0203mepsrx = mcself03mepsrx if mcself02mepsrx==. & mcself0203me
+> psrx==.
+(60 real changes made)
+
+. 
+. label var dual0203mepsrx "weighted dual mkt share 02,03"
+
+. label var mcself0203mepsrx "weighted medicare-self market share 02,03"
+
+. 
+. sort shortnam
+
+. save merge0203AA, replace
+file merge0203AA.dta saved
+
+. d, fullname
+
+Contains data from merge0203AA.dta
+  obs:           801                          
+ vars:            31                          4 Mar 2009 16:14
+ size:       119,349 (99.9% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+shortnam        str20  %20s                   
+mcar03mepsrx    float  %9.0g                  meps medicare share - weighted
+                                                script share
+dual03mepsrx    float  %9.0g                  dual share - weighted script
+                                                share
+mcself03mepsrx  float  %9.0g                  meps medicare self share -
+                                                weighted script share
+gen03meps       float  %9.0g                  fraction of 03 meps scripts
+                                                generic
+brand03meps     float  %9.0g                  fraction of 03 meps scripts brand
+meps03scripts   float  %9.0g                  # of scripts in 2003 meps
+meps03paid      float  %9.0g                  weighted amt paid / 1000
+top500          float  %9.0g                  (mean) top500
+mcar03mepspd    float  %9.0g                  meps medicare share - weighted $
+                                                share
+merge1          byte   %8.0g                  merge of meps 03 to medicaid 03
+mcar02mepsrx    float  %9.0g                  meps medicare share - weighted
+                                                script share
+dual02mepsrx    float  %9.0g                  dual share - weighted script
+                                                share
+mcself02mepsrx  float  %9.0g                  meps medicare self share -
+                                                weighted script share
+gen02meps       float  %9.0g                  fraction of 02 meps scripts
+                                                generic
+brand02meps     float  %9.0g                  fraction of 02 meps scripts brand
+meps02scripts   float  %9.0g                  # of scripts in 2002 meps
+meps02paid      float  %9.0g                  weighted amt paid / 1000
+mcar02mepspd    float  %9.0g                  meps medicare share - weighted $
+                                                share
+mcd03paidamt    double %10.0g                 (sum) paidamt
+mcd03numndcs    double %9.0g                  (sum) numndcs
+mcd03otcfrac    float  %9.0g                  
+regwgt          float  %9.0g                  
+gen03frac       float  %9.0g                  
+gen02frac       float  %9.0g                  
+gen0203frac     float  %9.0g                  
+meps0203scripts float  %9.0g                  total scripts in 02 + 03 meps
+mcar0203mepsrx  float  %9.0g                  weighted medicare mkt share 02,03
+mcar0203mepspd  float  %9.0g                  weighted medicare mkt share in $
+                                                02,03
+dual0203mepsrx  float  %9.0g                  weighted dual mkt share 02,03
+mcself0203mepsrx
+                float  %9.0g                  weighted medicare-self market
+                                                share 02,03
+-------------------------------------------------------------------------------
+Sorted by:  shortnam
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcar03mepsrx |       769    .3664271    .2711598          0          1
+dual03mepsrx |       769    .0505136    .0943743          0   .9954565
+mcself03me~x |       769    .2175451    .1978117          0          1
+   gen03meps |       769    .2734493    .4240945          0          1
+-------------+--------------------------------------------------------
+ brand03meps |       769    .6619412    .4337696          0          1
+meps03scri~s |       769    339.9155    699.2679          1       7534
+  meps03paid |       769    214051.9    523063.6   44.70178    7780559
+      top500 |       783    .5344587    .4982817          0          1
+mcar03mepspd |       769     .375378    .2820495          0          1
+-------------+--------------------------------------------------------
+      merge1 |       801    2.662921    .7339863          1          3
+mcar02mepsrx |       741    .3772392    .2879838          0          1
+dual02mepsrx |       741    .0482202    .0942209          0    .958194
+mcself02me~x |       741    .2264947    .2198389          0          1
+   gen02meps |       741    .2642214    .4171712          0          1
+-------------+--------------------------------------------------------
+ brand02meps |       741    .6870364    .4348919          0          1
+meps02scri~s |       741     387.139    772.9107          1       7520
+  meps02paid |       741    182608.7    437637.4   2.171612    5961980
+mcar02mepspd |       741    .3824992    .2938923          0          1
+mcd03paidamt |       675    4.37e+07    1.17e+08     1032.8   1.81e+09
+-------------+--------------------------------------------------------
+mcd03numndcs |       675    9.491852    14.75762          1        114
+mcd03otcfrac |       675    .0500355    .2082604          0          1
+      regwgt |       709    185.4731    367.7255   .6666667   3763.497
+   gen03frac |       767    .2909829    .4457925          0          1
+   gen02frac |       738    .2832827    .4396148          0          1
+-------------+--------------------------------------------------------
+ gen0203frac |       800    .2847654    .4365547          0          1
+meps0203sc~s |       801    684.4757     1422.75          1      15054
+mcar0203me~x |       801    .3676893    .2600268          0          1
+mcar0203me~d |       801    .3742549    .2665306          0          1
+dual0203me~x |       801    .0505883    .0837313          0   .7142911
+-------------+--------------------------------------------------------
+mcself0203~x |       801    .2190693    .1903875          0          1
+
+. quietly by shortnam: gen temp = _n
+
+. tab temp 
+
+       temp |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        801      100.00      100.00
+------------+-----------------------------------
+      Total |        801      100.00
+
+. clear
+
+. 
+. 
+. * get subcategories - will use later to determine which are prot classes, etc
+> .
+. * this is all levels of the ims data
+. 
+. use ims0106all.dta
+
+. 
+. d, fullname
+
+Contains data from ims0106all.dta
+  obs:        36,600                          
+ vars:            28                          20 Apr 2007 13:44
+ size:    16,323,600 (96.8% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+nameshort       str50  %-50s                  
+level           byte   %10.0g                 
+thercat         byte   %10.0g                 
+cat             byte   %10.0g                 
+subcat          byte   %10.0g                 
+chem            int    %10.0g                 
+product         int    %10.0g                 
+pharm           int    %10.0g                 
+salesq401       long   %10.0g                 
+salesq402       long   %10.0g                 
+salesq403       double %10.0g                 
+salesq404       double %10.0g                 
+salesq405       double %10.0g                 
+salesq406       double %10.0g                 
+stdq401         double %10.0g                 
+stdq402         double %10.0g                 
+stdq403         double %10.0g                 
+stdq404         double %10.0g                 
+stdq405         double %10.0g                 
+stdq406         double %10.0g                 
+ddoseq401       double %10.0g                 
+ddoseq402       double %10.0g                 
+ddoseq403       double %10.0g                 
+ddoseq404       double %10.0g                 
+ddoseq405       double %10.0g                 
+ddoseq406       double %10.0g                 
+fullname        str244 %-244s                 
+order           int    %-10.0g                
+-------------------------------------------------------------------------------
+Sorted by:  level  thercat  cat  subcat  chem  product  pharm
+
+. 
+. drop if salesq401==. & salesq402==. & salesq403==. & salesq404==. & salesq405
+> ==. & salesq406==.
+(5186 observations deleted)
+
+. 
+. tab level, missing
+
+      level |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |         14        0.04        0.04
+          1 |         86        0.27        0.32
+          2 |        259        0.82        1.14
+          3 |      3,727       11.86       13.01
+          4 |     10,661       33.94       46.94
+          5 |     16,667       53.06      100.00
+------------+-----------------------------------
+      Total |     31,414      100.00
+
+. 
+. keep if level==2
+(31155 observations deleted)
+
+. keep if salesq403>0 & salesq403!=.
+(6 observations deleted)
+
+. keep nameshort thercat cat subcat
+
+. replace nameshort = ltrim(rtrim(upper(nameshort)))
+(253 real changes made)
+
+. rename nameshort subcat1_03
+
+. sort subcat1_03
+
+. save temp, replace
+file temp.dta saved
+
+. d
+
+Contains data from temp.dta
+  obs:           253                          
+ vars:             4                          4 Mar 2009 16:14
+ size:        14,421 (99.9% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+subcat1_03      str50  %-50s                  
+thercat         byte   %10.0g                 
+cat             byte   %10.0g                 
+subcat          byte   %10.0g                 
+-------------------------------------------------------------------------------
+Sorted by:  subcat1_03
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+  subcat1_03 |         0
+     thercat |       253    6.375494    4.174435          1         14
+         cat |       253    3.501976    2.883484          1         16
+      subcat |       253    12.33992    9.224873          1         43
+
+. clear
+
+. 
+. 
+. 
+. * get subcategory that accounts for most spending for each drug
+. 
+. use ims0106data2
+
+. 
+. drop if salesq401==. & salesq402==. & salesq403==. & salesq404==. & salesq405
+> ==. & salesq406==.
+(1935 observations deleted)
+
+. 
+. tab level, missing
+
+ Level code |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          4 |     10,661      100.00      100.00
+------------+-----------------------------------
+      Total |     10,661      100.00
+
+. 
+. d namemerge subcatn, fullname
+
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+namemerge       str19  %-19s                  Drug group name
+subcatn         str29  %-29s                  Thercat 3 name
+
+. 
+. keep if imsgrouprank03<=1000 & salesq403>0 & salesq403!=.
+(8432 observations deleted)
+
+. 
+. count
+ 2229
+
+. 
+. gen vers03 = 1
+
+. 
+. collapse (sum) salesq403 vers03, by(namemerge subcatn)
+
+. 
+. count
+ 1271
+
+. 
+. egen tot03 = sum(salesq403), by(namemerge)
+
+. egen versions03 = sum(vers03), by(namemerge subcatn)
+
+. gen  sc03shar = salesq403 / tot03
+
+. gsort namemerge - salesq403
+
+. 
+. quietly by namemerge: gen counter = _n
+
+. quietly by namemerge: gen subcats03 = _N
+
+. 
+. sum sc03shar if counter==1, detail
+
+                          sc03shar
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .5544163        .307714
+ 5%       .78782       .3314735
+10%     .9666541       .3984792       Obs                1000
+25%     .9999999       .4653607       Sum of Wgt.        1000
+
+50%            1                      Mean           .9759031
+                        Largest       Std. Dev.      .0851235
+75%            1              1
+90%            1              1       Variance        .007246
+95%            1              1       Skewness      -4.240982
+99%            1              1       Kurtosis       22.35298
+
+. keep if counter==1
+(271 observations deleted)
+
+. keep namemerge subcatn subcats03 sc03shar
+
+. rename namemerge shortnam
+
+. rename subcatn subcat1_03
+
+. 
+. label var subcat1_03 "major sub category in 03 data"
+
+. label var subcats03  "# of subcategories in 03"
+
+. 
+. sort subcat1_03
+
+. count
+ 1000
+
+. merge subcat1_03 using temp
+variable subcat1_03 does not uniquely identify observations in the master data
+subcat1_03 was str29 now str50
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          2 |         72        6.72        6.72
+          3 |      1,000       93.28      100.00
+------------+-----------------------------------
+      Total |      1,072      100.00
+
+. tab _merge if subcats03!=.
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          3 |      1,000      100.00      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. 
+. drop if subcats03==.
+(72 observations deleted)
+
+. drop _merge
+
+. 
+. replace subcat1_03 = ltrim(rtrim(upper(subcat1_03)))
+(0 real changes made)
+
+. 
+. gen byte protected = 0
+
+. replace  protected = 1 if substr(subcat1_03,1,1)=="L"
+(69 real changes made)
+
+. replace  protected = 1 if substr(subcat1_03,1,3)=="N6A"
+(25 real changes made)
+
+. replace  protected = 1 if substr(subcat1_03,1,3)=="N5A"
+(8 real changes made)
+
+. replace  protected = 1 if substr(subcat1_03,1,3)=="N3A"
+(19 real changes made)
+
+. replace  protected = 1 if substr(subcat1_03,1,3)=="J5C"
+(19 real changes made)
+
+. 
+. tab subcat1_03 if protected==1, missing
+
+          major sub category in 03 data |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                     J5C HIV ANTIVIRALS |         19       13.57       13.57
+                  L1A ALKYLATING AGENTS |          2        1.43       15.00
+                    L1B ANTIMETABOLITES |          7        5.00       20.00
+                    L1C VINCA ALKALOIDS |          9        6.43       26.43
+           L1D ANTINEOPLAS. ANTIBIOTICS |          4        2.86       29.29
+           L1X ALL OTH. ANTINEOPLASTICS |         12        8.57       37.86
+                L2A CYTOSTATIC HORMONES |          4        2.86       40.71
+           L2B CYTO HORMONE ANTAGONISTS |          8        5.71       46.43
+           L3A IMMUNOSTIM AG EX INTFRON |          6        4.29       50.71
+                        L3B INTERFERONS |          7        5.00       55.71
+           L4A IMMUNOSUPPRESSIVE AGENTS |         10        7.14       62.86
+                    N3A ANTI-EPILEPTICS |         19       13.57       76.43
+                     N5A ANTIPSYCHOTICS |          8        5.71       82.14
+           N6A ANTIDEPRESS.& MOOD STAB. |         25       17.86      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        140      100.00
+
+. 
+. sort shortnam
+
+. 
+. save subcats03, replace
+file subcats03.dta saved
+
+. 
+. d
+
+Contains data from subcats03.dta
+  obs:         1,000                          
+ vars:             8                          4 Mar 2009 16:14
+ size:        85,000 (99.9% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+shortnam        str19  %-19s                  Drug group name
+subcat1_03      str50  %-50s                  major sub category in 03 data
+sc03shar        float  %9.0g                  
+subcats03       float  %9.0g                  # of subcategories in 03
+thercat         byte   %10.0g                 
+cat             byte   %10.0g                 
+subcat          byte   %10.0g                 
+protected       byte   %8.0g                  
+-------------------------------------------------------------------------------
+Sorted by:  shortnam
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+  subcat1_03 |         0
+    sc03shar |      1000    .9759031    .0851235    .307714          1
+   subcats03 |      1000       1.271    .8026227          1          7
+     thercat |      1000       6.481    3.680378          1         14
+-------------+--------------------------------------------------------
+         cat |      1000       2.857    2.176991          1         14
+      subcat |      1000       8.922    7.611034          1         41
+   protected |      1000         .14    .3471607          0          1
+
+. 
+. clear
+
+. 
+. 
+. 
+. * ims 01-06 data for level 4 obs
+. 
+. use ims0106data2
+
+. 
+. * this has all level 4 obs from the 01-06 ims data
+. * there are sometimes more than 1 obs for same drug
+. * for example Zyprexa and Zyprexa Zydis, etc.
+. 
+. drop if salesq401==. & salesq402==. & salesq403==. & salesq404==. & salesq405
+> ==. & salesq406==.
+(1935 observations deleted)
+
+. 
+. sum imsgrouprank03
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+imsgroupr~03 |      3213    637.8198    357.7951          1       1280
+
+. 
+. d, fullname
+
+Contains data from ims0106data2.dta
+  obs:        10,661                          
+ vars:            26                          4 Mar 2009 00:38
+ size:     2,270,793 (99.6% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+namemerge       str19  %-19s                  Drug group name
+fullname        str18  %-18s                  Full IMS name
+gbo             byte   %9.0g       gbo        Generic / Brand status
+otc             byte   %9.0g       otc        OTC status
+fdayear         int    %9.0g                  FDA approval year
+imsgrouprank03  int    %9.0g                  IMS sales rank, 2003
+level           byte   %10.0g                 Level code
+subcatn         str29  %-29s                  Thercat 3 name
+salesq401       long   %10.0g                 2001 retail sales,
+                                                U.S.DRG+HMO+CLIN+MAIL
+salesq402       long   %10.0g                 2002 retail sales,
+                                                U.S.DRG+HMO+CLIN+MAIL
+salesq403       double %10.0g                 2003 retail sales,
+                                                U.S.DRG+HMO+CLIN+MAIL
+salesq404       double %10.0g                 2004 retail sales,
+                                                U.S.DRG+HMO+CLIN+MAIL
+salesq405       double %10.0g                 2005 retail sales,
+                                                U.S.DRG+HMO+CLIN+MAIL
+salesq406       double %10.0g                 2006 retail sales,
+                                                U.S.DRG+HMO+CLIN+MAIL
+stdq401         double %10.0g                 2001 quantity
+stdq402         double %10.0g                 2002 quantity
+stdq403         double %10.0g                 2003 quantity
+stdq404         double %10.0g                 2004 quantity
+stdq405         double %10.0g                 2005 quantity
+stdq406         double %10.0g                 2006 quantity
+ddoseq401       double %10.0g                 2001 daily dose
+ddoseq402       double %10.0g                 2002 daily dose
+ddoseq403       double %10.0g                 2003 daily dose
+ddoseq404       double %10.0g                 2004 daily dose
+ddoseq405       double %10.0g                 2005 daily dose
+ddoseq406       double %10.0g                 2006 daily dose
+-------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. 
+. replace fullname  = upper(ltrim(rtrim(fullname)))
+(0 real changes made)
+
+. replace namemerge = upper(ltrim(rtrim(namemerge)))
+(0 real changes made)
+
+. 
+. * namemerge is the name used to merge to the meps data - see the list in
+. * the meps02share.do and meps03share.do files
+. 
+. * how many drugs do we now have (excluding those with no "namemerge")?
+. 
+. sort namemerge salesq403
+
+. quietly by namemerge: gen temp6 = _n
+
+. replace temp6 = . if namemerge==""
+(7268 real changes made, 7268 to missing)
+
+. count if temp6==1
+ 1443
+
+. 
+. * let's start by just collapsing the salesq401, etc. vars by namemerge
+. * this will create vars like pat's gsalesq401 but also for quantities, etc.
+. 
+. * keep fdayear and otc indicator - these do not vary across products
+. * with same namemerge
+. 
+. rename gbo imsgbo
+
+. 
+. gen doses01 = stdq401 / ddoseq401
+(2908 missing values generated)
+
+. gen doses02 = stdq402 / ddoseq402
+(2587 missing values generated)
+
+. gen doses03 = stdq403 / ddoseq403
+(2342 missing values generated)
+
+. gen doses04 = stdq404 / ddoseq404
+(2300 missing values generated)
+
+. gen doses05 = stdq405 / ddoseq405
+(2425 missing values generated)
+
+. gen doses06 = stdq406 / ddoseq406
+(2760 missing values generated)
+
+. 
+. keep if imsgrouprank03<=1000
+(8094 observations deleted)
+
+. 
+. collapse (sum) salesq401 salesq402 salesq403 salesq404 salesq405 salesq406 do
+> ses0*, by(namemerge fdayear otc imsgbo imsgrouprank03)
+
+. 
+. d
+
+Contains data
+  obs:         1,000                          
+ vars:            17                          
+ size:       125,000 (99.9% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+namemerge       str19  %-19s                  Drug group name
+imsgbo          byte   %9.0g       gbo        Generic / Brand status
+otc             byte   %9.0g       otc        OTC status
+fdayear         int    %9.0g                  FDA approval year
+imsgrouprank03  int    %9.0g                  IMS sales rank, 2003
+salesq401       double %10.0g                 (sum) salesq401
+salesq402       double %10.0g                 (sum) salesq402
+salesq403       double %10.0g                 (sum) salesq403
+salesq404       double %10.0g                 (sum) salesq404
+salesq405       double %10.0g                 (sum) salesq405
+salesq406       double %10.0g                 (sum) salesq406
+doses01         double %9.0g                  (sum) doses01
+doses02         double %9.0g                  (sum) doses02
+doses03         double %9.0g                  (sum) doses03
+doses04         double %9.0g                  (sum) doses04
+doses05         double %9.0g                  (sum) doses05
+doses06         double %9.0g                  (sum) doses06
+-------------------------------------------------------------------------------
+Sorted by:  namemerge  fdayear  otc  imsgbo  imsgrouprank03
+     Note:  dataset has changed since last saved
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   namemerge |         0
+      imsgbo |      1000       1.793    .4053583          1          2
+         otc |      1000       1.887    .3167512          1          2
+     fdayear |       974     1992.02    7.673357       1953       2005
+imsgroupr~03 |      1000       500.5    288.8194          1       1000
+-------------+--------------------------------------------------------
+   salesq401 |      1000    136067.5    365030.9          0    4807890
+   salesq402 |      1000    154466.4    394795.6          0    5690003
+   salesq403 |      1000    173808.6    427234.7   10109.79    6295845
+   salesq404 |      1000    187010.7      468112    534.649    7161155
+   salesq405 |      1000    189187.3    488588.3          0    7696416
+-------------+--------------------------------------------------------
+   salesq406 |      1000    193971.6    512095.1          0    7915236
+     doses01 |      1000    123171.1    283996.3          0    3011243
+     doses02 |      1000    128948.2    284215.5          0    2817048
+     doses03 |      1000    133101.3    299202.7          0    3160846
+     doses04 |      1000    133110.8    295153.5          0    2999550
+-------------+--------------------------------------------------------
+     doses05 |      1000    124289.1    285374.4          0    3053393
+     doses06 |      1000      121082    285778.3          0    3244673
+
+. 
+. * drop if not in our top 1000
+. 
+. drop if namemerge==""
+(0 observations deleted)
+
+. 
+. * make sure we have just one obs per drug
+. 
+. sort namemerge
+
+. quietly by namemerge: gen temp = _n
+
+. tab temp
+
+       temp |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |      1,000      100.00      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. drop temp
+
+. 
+. * merge ims sales to meps data on medicare market shares
+. 
+. rename namemerge shortnam
+
+. count
+ 1000
+
+. sort shortnam
+
+. merge shortnam using merge0203AA
+shortnam was str19 now str20
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        199       19.90       19.90
+          3 |        801       80.10      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. drop _merge
+
+. count if imsgrouprank03==.
+    0
+
+. 
+. * we have medicare share for vast majority of ims 2003 sales
+. 
+. sum salesq403 if mcar0203mepsrx==.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   salesq403 |       199    79278.52    150396.6    10151.3    1033158
+
+. sum salesq403 if mcar0203mepsrx!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   salesq403 |       801    197293.6    468572.8   10109.79    6295845
+
+. 
+. * list drugs for which we do not have medicare market share from 02-03 meps
+. * also list ims 03 sales and medicaid 03 spending for them
+. 
+. gsort - salesq403 shortnam
+
+. list shortnam salesq403 mcd03paidamt if salesq403!=. & salesq403>0 & mcar0203
+> mepsrx==. & imsgrouprank03<=300
+
+      +------------------------------------+
+      | shortnam      salesq403   mcd03p~t |
+      |------------------------------------|
+  39. | REMICADE        1033158          . |
+  51. | NEULASTA       851536.1          . |
+  52. | RITUXAN        835894.6          . |
+  57. | ARANESP        735492.9          . |
+  64. | TAXOTERE       632907.2          . |
+      |------------------------------------|
+  85. | NEUPOGEN       505502.5          . |
+  91. | PEG-INTRON     477361.8          . |
+  93. | PARAPLATIN     452897.6          . |
+  99. | ZOMETA         421023.9          . |
+ 100. | PREVNAR        417430.7          . |
+      |------------------------------------|
+ 103. | CAMPTOSAR        385071          . |
+ 110. | GEMZAR         356990.4          . |
+ 119. | GLEEVEC          327551          . |
+ 123. | ELOXATIN       312542.8          . |
+ 137. | ZEMPLAR        272939.5          . |
+      |------------------------------------|
+ 139. | HERCEPTIN        269141          . |
+ 163. | SYNAGIS        221288.9          . |
+ 174. | VARIVAX          207111          . |
+ 177. | SANDOSTATIN   206147.33          . |
+ 187. | REBIF          184053.6          . |
+      |------------------------------------|
+ 197. | THALOMID       162942.9          . |
+ 209. | TEMODAR        154774.2          . |
+ 214. | ZOLADEX        149912.7          . |
+ 215. | M-M-R          149253.5          . |
+ 216. | VISUDYNE       149025.2          . |
+      |------------------------------------|
+ 220. | GENOTROPIN     144607.3          . |
+ 229. | VENOFER        140551.1          . |
+ 244. | INTRON           127468          . |
+ 247. | RAZADYNE       125755.6          . |
+ 257. | ACTIMMUNE      118616.7          . |
+      |------------------------------------|
+ 259. | PULMOZYME        117168          . |
+ 275. | TOBI           108148.9          . |
+ 276. | COPEGUS        107323.3          . |
+ 278. | FERRLECIT      106944.1          . |
+ 283. | HUMATROPE      105000.7          . |
+      |------------------------------------|
+ 299. | DOXIL          94456.43          . |
+      +------------------------------------+
+
+. 
+. * drop drugs with no 2003 sales
+. 
+. drop if salesq403==0
+(0 observations deleted)
+
+. 
+. count
+ 1000
+
+. 
+. * use this otc variable rather than medicaid derived one b/c it catches 
+. * ibuprofen, motrin, etc. - medicaid may only pay for prescription versions 
+. * of these - the mcd03otcfrac represents share of medicaid spending for this
+. * drug in ndc's that report that they are otc
+. 
+. sum otc if mcar0203mepsrx!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+         otc |       801    1.923845    .2654114          1          2
+
+. tab otc if mcar0203mepsrx!=., missing
+
+ OTC status |      Freq.     Percent        Cum.
+------------+-----------------------------------
+        OTC |         61        7.62        7.62
+         Rx |        740       92.38      100.00
+------------+-----------------------------------
+      Total |        801      100.00
+
+. 
+. sum mcd03otcfrac if otc==1 & mcar0203mepsrx!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+mcd03otcfrac |        46    .7137841    .4044266   .0007678          1
+
+. sum mcd03otcfrac if otc==2 & mcar0203mepsrx!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+mcd03otcfrac |       629    .0014943    .0140977          0   .2917104
+
+. sum mcd03otcfrac if otc==. & mcar0203mepsrx!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+mcd03otcfrac |         0
+
+. 
+. rename salesq401 salesq2001
+
+. rename salesq402 salesq2002
+
+. rename salesq403 salesq2003
+
+. rename salesq404 salesq2004
+
+. rename salesq405 salesq2005
+
+. rename salesq406 salesq2006
+
+. 
+. rename doses01 doses2001
+
+. rename doses02 doses2002
+
+. rename doses03 doses2003
+
+. rename doses04 doses2004
+
+. rename doses05 doses2005
+
+. rename doses06 doses2006
+
+. 
+. gen lsalesq0603 = log(salesq2006/((201.6 / 184.0) * salesq2003))
+(9 missing values generated)
+
+. gen lsalesq0302 = log(salesq2003/salesq2002)
+(34 missing values generated)
+
+. gen lsalesq0201 = log(salesq2002/salesq2001)
+(93 missing values generated)
+
+. 
+. gen yrs03onmkt = 2003 - fdayear
+(26 missing values generated)
+
+. tab yrs03onmkt if imsgrouprank03<=300 & mcar0203mepsrx!=., missing
+
+ yrs03onmkt |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         -2 |          1        0.38        0.38
+         -1 |          1        0.38        0.76
+          0 |          2        0.76        1.52
+          1 |         16        6.06        7.58
+          2 |         14        5.30       12.88
+          3 |         17        6.44       19.32
+          4 |         18        6.82       26.14
+          5 |         21        7.95       34.09
+          6 |         24        9.09       43.18
+          7 |         20        7.58       50.76
+          8 |         17        6.44       57.20
+          9 |          9        3.41       60.61
+         10 |         11        4.17       64.77
+         11 |         12        4.55       69.32
+         12 |         15        5.68       75.00
+         13 |          9        3.41       78.41
+         14 |          4        1.52       79.92
+         15 |          4        1.52       81.44
+         16 |          6        2.27       83.71
+         17 |          3        1.14       84.85
+         18 |          5        1.89       86.74
+         19 |          4        1.52       88.26
+         20 |          3        1.14       89.39
+         21 |          6        2.27       91.67
+         22 |         22        8.33      100.00
+------------+-----------------------------------
+      Total |        264      100.00
+
+. replace yrs03onmkt = 0 if yrs03onmkt < 0
+(6 real changes made)
+
+. 
+. gen ldoses0603 = log(doses2006 / doses2003)
+(10 missing values generated)
+
+. gen ldoses0302 = log(doses2003 / doses2002)
+(36 missing values generated)
+
+. gen ldoses0201 = log(doses2002 / doses2001)
+(96 missing values generated)
+
+. 
+. gen priceperday06 = salesq2006 / doses2006
+(10 missing values generated)
+
+. gen priceperday03 = (201.6 / 184.0) * (salesq2003 / doses2003)
+(2 missing values generated)
+
+. gen priceperday02 = salesq2002 / doses2002
+(36 missing values generated)
+
+. gen priceperday01 = salesq2001 / doses2001
+(96 missing values generated)
+
+. 
+. gen lppd0603 = log(priceperday06 / priceperday03)
+(10 missing values generated)
+
+. gen lppd0302 = log(priceperday03 / priceperday02)
+(36 missing values generated)
+
+. gen lppd0201 = log(priceperday02 / priceperday01)
+(96 missing values generated)
+
+. 
+. gen lppd06 = log(priceperday06)
+(10 missing values generated)
+
+. gen ppd0603 = priceperday06 - priceperday03
+(10 missing values generated)
+
+. 
+. * log versus level of prices
+. 
+. sum lppd0603 ppd0603 lppd06 priceperday06 ldoses0603 if imsgrouprank03<=1000 
+> & otc==2 & imsgbo==2 & fdayear<=2003 & ldoses0302!=. [aw=meps0203scripts], de
+> tail
+
+                          lppd0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.5521477      -2.361851
+ 5%    -.1604915      -1.897898
+10%    -.0906721      -1.606514       Obs                 548
+25%     .0131475      -1.317799       Sum of Wgt.      331705
+
+50%     .0808389                      Mean           .0823843
+                        Largest       Std. Dev.      .1989516
+75%     .1563244       1.230129
+90%     .2569087       1.300526       Variance       .0395817
+95%      .350556       1.447577       Skewness      -.5430381
+99%     .7254305       1.689571       Kurtosis       20.85071
+
+                           ppd0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -3.191572      -49.38385
+ 5%     -.263577      -49.22438
+10%    -.0767922      -17.52017       Obs                 548
+25%     .0358129      -16.87401       Sum of Wgt.      331705
+
+50%     .1328951                      Mean           .4118668
+                        Largest       Std. Dev.       3.18998
+75%     .3618906       71.80276
+90%     .9162006       110.9783       Variance       10.17597
+95%     1.714004       148.4604       Skewness        15.0519
+99%     7.424067       269.1714       Kurtosis       1067.312
+
+                           lppd06
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -1.999956      -3.208135
+ 5%    -.9821423      -2.650964
+10%    -.3340894      -2.602585       Obs                 548
+25%     .2826937      -2.547007       Sum of Wgt.      331705
+
+50%      .959583                      Mean           .8091251
+                        Largest       Std. Dev.      1.048785
+75%     1.298765       5.242681
+90%     2.043765       5.496423       Variance        1.09995
+95%     2.539321       5.878211       Skewness      -.0129285
+99%     3.772203       6.050521       Kurtosis       4.725126
+
+                        priceperday06
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .1353413       .0404319
+ 5%     .3745079       .0705832
+10%     .7159898       .0740818       Obs                 548
+25%     1.326699       .0783157       Sum of Wgt.      331705
+
+50%     2.610608                      Mean            4.25141
+                        Largest       Std. Dev.      9.572561
+75%     3.664767       189.1767
+90%     7.719619       243.8182       Variance       91.63392
+95%     12.67106       357.1699       Skewness       10.54791
+99%     43.47573       424.3341       Kurtosis       212.2697
+
+                         ldoses0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -3.692794      -8.974021
+ 5%    -3.075634      -5.977988
+10%    -2.301178      -4.378312       Obs                 548
+25%    -1.004337       -4.36867       Sum of Wgt.      331705
+
+50%     -.346012                      Mean          -.6196858
+                        Largest       Std. Dev.      1.081215
+75%     .0761252       1.579048
+90%     .3486102       1.992733       Variance       1.169025
+95%     .3903957       2.020191       Skewness      -1.731812
+99%     .9000889       2.631048       Kurtosis        7.76674
+
+. 
+. * merging to data on whether a small category and so forth
+. 
+. rename shortnam namemerge
+
+. count
+ 1000
+
+. sort namemerge
+
+. merge namemerge using usp548final
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        452       45.20       45.20
+          3 |        548       54.80      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. drop _merge
+
+. 
+. tab gen_548, missing
+
+    gen_548 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        504       50.40       50.40
+          1 |         44        4.40       54.80
+          . |        452       45.20      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. 
+. gen doelngth = length(gen_doe)
+
+. tab doelngth
+
+   doelngth |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        777       77.70       77.70
+          8 |         35        3.50       81.20
+          9 |        147       14.70       95.90
+         10 |         41        4.10      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. gen gen_yr = real(substr(gen_doe,doelngth-3,4))
+(777 missing values generated)
+
+. 
+. gen anygen01 = (nogen==0) & gen_yr<=2001
+
+. replace anygen01 = . if gen_548==.
+(452 real changes made, 452 to missing)
+
+. tab anygen01, missing
+
+   anygen01 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        450       45.00       45.00
+          1 |         98        9.80       54.80
+          . |        452       45.20      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. 
+. gen anygen06 = (nogen==0) & gen_yr>=2002 & gen_yr<=2006
+
+. replace anygen06 = . if gen_548==.
+(452 real changes made, 452 to missing)
+
+. tab anygen06, missing
+
+   anygen06 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        437       43.70       43.70
+          1 |        111       11.10       54.80
+          . |        452       45.20      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. 
+. sum lppd0603 ppd0603 lppd06 priceperday06 ldoses0603 if imsgrouprank03<=1000 
+> & otc==2 & imsgbo==2 & fdayear<=2003 & ldoses0302!=. & smallcat!=. [aw=meps02
+> 03scripts], detail
+
+                          lppd0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.4729796      -2.361851
+ 5%    -.1604915      -1.897898
+10%    -.0906721      -1.606514       Obs                 527
+25%     .0131475      -1.317799       Sum of Wgt.      329300
+
+50%     .0808389                      Mean           .0820296
+                        Largest       Std. Dev.      .1985696
+75%     .1563244       1.230129
+90%     .2559719       1.300526       Variance       .0394299
+95%     .3459807       1.447577       Skewness      -.5423908
+99%     .7254305       1.689571       Kurtosis          21.08
+
+                           ppd0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -3.191572      -49.38385
+ 5%     -.263577      -17.52017
+10%    -.0818364      -16.87401       Obs                 527
+25%     .0358129       -14.2394       Sum of Wgt.      329300
+
+50%     .1326964                      Mean           .4242542
+                        Largest       Std. Dev.      2.810158
+75%     .3618906       39.96796
+90%     .9162006       46.50391       Variance       7.896986
+95%     1.714004       110.9783       Skewness       17.29672
+99%     7.424067       269.1714       Kurtosis       1370.839
+
+                           lppd06
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -1.999956      -3.208135
+ 5%    -.9821423      -2.650964
+10%    -.3360278      -2.602585       Obs                 527
+25%     .2826937      -2.547007       Sum of Wgt.      329300
+
+50%      .959583                      Mean           .8053949
+                        Largest       Std. Dev.      1.047324
+75%     1.298765       4.682535
+90%     2.043765       4.856163       Variance       1.096888
+95%     2.539321       5.242681       Skewness      -.0283528
+99%     3.732477       6.050521       Kurtosis       4.681637
+
+                        priceperday06
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .1353413       .0404319
+ 5%     .3745079       .0705832
+10%     .7146032       .0740818       Obs                 527
+25%     1.326699       .0783157       Sum of Wgt.      329300
+
+50%     2.610608                      Mean           4.198699
+                        Largest       Std. Dev.       9.06019
+75%     3.664767       108.0436
+90%     7.719619       128.5301       Variance       82.08704
+95%     12.67106       189.1767       Skewness        8.95146
+99%     41.78248       424.3341       Kurtosis       143.7057
+
+                         ldoses0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -3.692794      -8.974021
+ 5%    -3.075634      -5.977988
+10%    -2.301178      -4.378312       Obs                 527
+25%    -1.004337       -4.36867       Sum of Wgt.      329300
+
+50%     -.346012                      Mean          -.6211034
+                        Largest       Std. Dev.      1.084657
+75%     .0761252       1.579048
+90%     .3486102       1.992733       Variance        1.17648
+95%     .3903957       2.020191       Skewness       -1.72521
+99%     .9000889       2.631048       Kurtosis       7.715402
+
+. 
+. gen str148 ther1 = ther_cat_usp1 + ther_subclass_usp1
+(473 missing values generated)
+
+. 
+. * i looked at the 21 drugs in our sample of 548 that Abby says she could not
+. * find as covered but of the first 5 - one was for depression, another two
+. * for pain from arthritis, etc. so seems like they are in - thus leave as is
+. 
+. tab smallcat if gen_548!=., missing
+
+      (max) |
+   smallcat |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        504       91.97       91.97
+          1 |         23        4.20       96.17
+          . |         21        3.83      100.00
+------------+-----------------------------------
+      Total |        548      100.00
+
+. replace smallcat = 0 if smallcat==. & gen_548!=.
+(21 real changes made)
+
+. 
+. gen anygen = max(anygen01,anygen06)
+(452 missing values generated)
+
+. 
+. * here merging to data on subcats - this is how we have known since 
+. * before abby constructed data which drugs were in protected classes
+. 
+. rename namemerge shortnam
+
+. count
+ 1000
+
+. sort shortnam
+
+. merge shortnam using subcats03
+
+. tab _merge, missing
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          3 |      1,000      100.00      100.00
+------------+-----------------------------------
+      Total |      1,000      100.00
+
+. 
+. * 2 cases with otc discrepancy though stick with original definition
+. 
+. d otc otc_548
+
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+otc             byte   %9.0g       otc        OTC status
+otc_548         byte   %8.0g                  
+
+. tab otc otc_548, missing
+
+           |             otc_548
+OTC status |         0          1          . |     Total
+-----------+---------------------------------+----------
+       OTC |         0          0        113 |       113 
+        Rx |       546          2        339 |       887 
+-----------+---------------------------------+----------
+     Total |       546          2        452 |     1,000 
+
+
+. 
+. d   imsgbo gen_548 dev_548
+
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+imsgbo          byte   %9.0g       gbo        Generic / Brand status
+gen_548         byte   %8.0g                  
+dev_548         byte   %8.0g                  
+
+. tab imsgbo gen_548, missing
+
+ Generic / |
+     Brand |             gen_548
+    status |         0          1          . |     Total
+-----------+---------------------------------+----------
+         G |         0          0        207 |       207 
+         B |       504         44        245 |       793 
+-----------+---------------------------------+----------
+     Total |       504         44        452 |     1,000 
+
+
+. 
+. * replace otc    = 1 if otc_548==1 & otc==2
+. * replace imsgbo = 1 if gen_548==1 & imsgbo==2
+. 
+. * table 2 - weight regs to account for variation across drugs in # of scripts
+. * in the meps used to estimate medicare market share
+. 
+. * sum stats column
+. sum lppd0603 ldoses0603 mcar0203mepsrx lppd0201 yrs03onmkt anygen if imsgroup
+> rank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    lppd0603 |       548    .0872455    .3487883  -2.361851   1.689571
+  ldoses0603 |       548   -.5608588    1.126395  -8.974021   2.631048
+mcar0203me~x |       548    .3479578    .2641949          0          1
+    lppd0201 |       518    .0734688    .1978627  -1.702707    1.99538
+  yrs03onmkt |       548    10.94526    7.360694          0         47
+-------------+--------------------------------------------------------
+      anygen |       548    .3813869     .486171          0          1
+
+. sum lppd0603 if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & s
+> mallcat!=., detail
+
+                          lppd0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%      -1.0396      -2.361851
+ 5%    -.4130282      -1.897898
+10%    -.2267582      -1.606514       Obs                 548
+25%    -.0405389      -1.317799       Sum of Wgt.         548
+
+50%     .0939377                      Mean           .0872455
+                        Largest       Std. Dev.      .3487883
+75%     .2253003       1.230129
+90%     .4085274       1.300526       Variance       .1216532
+95%     .5876694       1.447577       Skewness      -.9315193
+99%     1.094565       1.689571       Kurtosis       12.17919
+
+. 
+. * column 1
+. reg lppd0603 mcar0203mepsrx if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fd
+> ayear<=2003 & smallcat!=. [aw=meps0203scripts], robust
+(sum of wgt is   3.3171e+05)
+
+Linear regression                                      Number of obs =     548
+                                                       F(  1,   546) =    4.98
+                                                       Prob > F      =  0.0260
+                                                       R-squared     =  0.0160
+                                                       Root MSE      =  .19754
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1278322   .0572712    -2.23   0.026    -.2403311   -.0153334
+       _cons |   .1336053   .0256055     5.22   0.000     .0833078    .1839027
+------------------------------------------------------------------------------
+
+. 
+. * column 2 - add controls
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc==
+> 2 & imsgbo==2 & fdayear<=2003 & smallcat!=. [aw=meps0203scripts], robust
+(sum of wgt is   3.3171e+05)
+
+Linear regression                                      Number of obs =     548
+                                                       F(  3,   544) =    1.75
+                                                       Prob > F      =  0.1564
+                                                       R-squared     =  0.0163
+                                                       Root MSE      =  .19787
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1271804   .0570665    -2.23   0.026    -.2392782   -.0150827
+  yrs03onmkt |   .0003043   .0019767     0.15   0.878    -.0035787    .0041872
+      anygen |   .0049368    .022899     0.22   0.829    -.0400444     .049918
+       _cons |   .1278569    .028328     4.51   0.000     .0722112    .1835027
+------------------------------------------------------------------------------
+
+. 
+. * column 3 - drop outliers
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc==
+> 2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603>=-1.100 & lppd0603<=1.
+> 095 [aw=meps0203scripts], robust
+(sum of wgt is   3.3078e+05)
+
+Linear regression                                      Number of obs =     538
+                                                       F(  3,   534) =    2.24
+                                                       Prob > F      =  0.0829
+                                                       R-squared     =  0.0239
+                                                       Root MSE      =  .18129
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1376287   .0556076    -2.47   0.014    -.2468653   -.0283922
+  yrs03onmkt |   .0006061   .0019242     0.32   0.753    -.0031738    .0043861
+      anygen |   .0103332   .0227476     0.45   0.650    -.0343525    .0550189
+       _cons |   .1270293   .0280422     4.53   0.000     .0719427    .1821159
+------------------------------------------------------------------------------
+
+. 
+. * column 4 - exclude cancer
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc==
+> 2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603>=-1.100 & lppd0603<=1.
+> 095 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  3,   513) =    2.16
+                                                       Prob > F      =  0.0916
+                                                       R-squared     =  0.0235
+                                                       Root MSE      =  .18137
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1363694   .0561339    -2.43   0.015    -.2466499   -.0260888
+  yrs03onmkt |   .0006297    .001931     0.33   0.744     -.003164    .0044234
+      anygen |   .0104217   .0228196     0.46   0.648    -.0344097     .055253
+       _cons |    .126273   .0282266     4.47   0.000      .070819     .181727
+------------------------------------------------------------------------------
+
+. 
+. * column 5 - use share of spending instead of share of scripts
+. reg lppd0603 mcar0203mepspd yrs03onmkt anygen if imsgrouprank03<=1000 & otc==
+> 2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603>=-1.100 & lppd0603<=1.
+> 095 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  3,   513) =    2.05
+                                                       Prob > F      =  0.1057
+                                                       R-squared     =  0.0230
+                                                       Root MSE      =  .18142
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~d |  -.1329132   .0562365    -2.36   0.018    -.2433953    -.022431
+  yrs03onmkt |   .0006995   .0019314     0.36   0.717    -.0030949     .004494
+      anygen |    .010523   .0227888     0.46   0.644    -.0342479    .0552938
+       _cons |   .1251799   .0282392     4.43   0.000     .0697012    .1806585
+------------------------------------------------------------------------------
+
+. 
+. * column 6 - focus on top 200
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=292 & otc==2
+>  & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603>=-1.100 & lppd0603<=1.0
+> 95 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   2.6586e+05)
+
+Linear regression                                      Number of obs =     200
+                                                       F(  3,   196) =    2.89
+                                                       Prob > F      =  0.0368
+                                                       R-squared     =  0.0486
+                                                       Root MSE      =  .12718
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1427032   .0544166    -2.62   0.009    -.2500204   -.0353861
+  yrs03onmkt |   .0020975   .0018426     1.14   0.256    -.0015363    .0057314
+      anygen |  -.0076148   .0218462    -0.35   0.728    -.0506986    .0354691
+       _cons |   .1269107   .0317988     3.99   0.000     .0641989    .1896224
+------------------------------------------------------------------------------
+
+. 
+. * table 3
+. 
+. * sum stats column
+. sum ldoses0603 ldoses0201 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<
+> =1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=.
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+  ldoses0603 |       548   -.5608588    1.126395  -8.974021   2.631048
+  ldoses0201 |       518    .1290106    .8413048  -2.705895   12.47542
+mcar0203me~x |       548    .3479578    .2641949          0          1
+  yrs03onmkt |       548    10.94526    7.360694          0         47
+      anygen |       548    .3813869     .486171          0          1
+
+. sum ldoses0603 if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 &
+>  smallcat!=., detail
+
+                         ldoses0603
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -3.899534      -8.974021
+ 5%    -2.853547      -5.977988
+10%    -1.939088      -4.378312       Obs                 548
+25%    -1.035878       -4.36867       Sum of Wgt.         548
+
+50%    -.3086884                      Mean          -.5608588
+                        Largest       Std. Dev.      1.126395
+75%     .1183936       1.579048
+90%     .4639876       1.992733       Variance       1.268765
+95%     .7646369       2.020191       Skewness      -1.711347
+99%     1.500917       2.631048       Kurtosis       9.887951
+
+. 
+. * column 1
+. reg ldoses0603 mcar0203mepsrx if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & 
+> fdayear<=2003 & smallcat!=. [aw=meps0203scripts], robust
+(sum of wgt is   3.3171e+05)
+
+Linear regression                                      Number of obs =     548
+                                                       F(  1,   546) =    2.60
+                                                       Prob > F      =  0.1076
+                                                       R-squared     =  0.0088
+                                                       Root MSE      =  1.0774
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .5159561   .3201647     1.61   0.108    -.1129493    1.144862
+       _cons |  -.8264239   .1606193    -5.15   0.000    -1.141931   -.5109164
+------------------------------------------------------------------------------
+
+. 
+. * column 2 - add controls
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc
+> ==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. [aw=meps0203scripts], robust
+(sum of wgt is   3.3171e+05)
+
+Linear regression                                      Number of obs =     548
+                                                       F(  3,   544) =   21.83
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2617
+                                                       Root MSE      =  .93161
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .4337699   .3195468     1.36   0.175    -.1939267    1.061467
+  yrs03onmkt |  -.0036854   .0103602    -0.36   0.722    -.0240363    .0166654
+      anygen |  -1.071677   .1910497    -5.61   0.000    -1.446962   -.6963911
+       _cons |  -.2507287   .1685527    -1.49   0.137    -.5818225    .0803652
+------------------------------------------------------------------------------
+
+. 
+. * column 3 - drop outliers
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc
+> ==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses0603>=-3.95 & ldoses060
+> 3<=1.51 [aw=meps0203scripts], robust
+(sum of wgt is   3.2987e+05)
+
+Linear regression                                      Number of obs =     538
+                                                       F(  3,   534) =   21.47
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2929
+                                                       Root MSE      =  .86042
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .3805496   .3128296     1.22   0.224    -.2339779    .9950771
+  yrs03onmkt |   -.001389   .0105078    -0.13   0.895    -.0220306    .0192527
+      anygen |  -1.084452   .1914359    -5.66   0.000    -1.460512   -.7083926
+       _cons |  -.2281303   .1635775    -1.39   0.164    -.5494646     .093204
+------------------------------------------------------------------------------
+
+. 
+. * column 4 - drop cancer
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc
+> ==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses0603>=-3.95 & ldoses060
+> 3<=1.51 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  3,   513) =   21.40
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2942
+                                                       Root MSE      =  .85893
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .3891537   .3155127     1.23   0.218    -.2307021     1.00901
+  yrs03onmkt |  -.0009481   .0105467    -0.09   0.928     -.021668    .0197719
+      anygen |  -1.087196   .1918247    -5.67   0.000    -1.464054   -.7103369
+       _cons |  -.2351405   .1644047    -1.43   0.153    -.5581298    .0878488
+------------------------------------------------------------------------------
+
+. 
+. * column 5 - use share of spending instead of share of scripts
+. reg ldoses0603 mcar0203mepspd yrs03onmkt anygen if imsgrouprank03<=1000 & otc
+> ==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses0603>=-3.95 & ldoses060
+> 3<=1.51 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  3,   513) =   20.83
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2925
+                                                       Root MSE      =  .85995
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~d |   .3211932   .3134185     1.02   0.306    -.2945486    .9369349
+  yrs03onmkt |  -.0011564   .0105824    -0.11   0.913    -.0219466    .0196339
+      anygen |  -1.087987   .1926187    -5.65   0.000    -1.466405   -.7095685
+       _cons |  -.2079498   .1655515    -1.26   0.210    -.5331921    .1172925
+------------------------------------------------------------------------------
+
+. 
+. * column 6 - focus only on top 200
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=293 & otc=
+> =2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses0603>=-3.95 & ldoses0603
+> <=1.51 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   2.6603e+05)
+
+Linear regression                                      Number of obs =     200
+                                                       F(  3,   196) =   14.65
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3176
+                                                       Root MSE      =  .88424
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .5167769   .4701634     1.10   0.273    -.4104516    1.444005
+  yrs03onmkt |   .0066473   .0169251     0.39   0.695    -.0267314    .0400259
+      anygen |  -1.199203   .2428716    -4.94   0.000     -1.67818   -.7202258
+       _cons |  -.2920525     .24643    -1.19   0.237    -.7780473    .1939423
+------------------------------------------------------------------------------
+
+. 
+. * column 7 - drop those facing generic competition by 2006 or earlier
+. 
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc
+> ==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses0603>=-3.95 & ldoses060
+> 3<=1.51 & thercat!=8 & anygen==0 [aw=meps0203scripts], robust
+(sum of wgt is   1.7360e+05)
+
+Linear regression                                      Number of obs =     318
+                                                       F(  2,   315) =    7.46
+                                                       Prob > F      =  0.0007
+                                                       R-squared     =  0.1081
+                                                       Root MSE      =  .43849
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .2651332   .1372073     1.93   0.054    -.0048255    .5350919
+  yrs03onmkt |  -.0232019   .0071527    -3.24   0.001     -.037275   -.0091287
+      anygen |  (dropped)
+       _cons |   .0008013   .1116961     0.01   0.994    -.2189633     .220566
+------------------------------------------------------------------------------
+
+. 
+. * table 4
+. 
+. * differentiate b/w medicare self-pay and all other medicare scripts
+. 
+. * all medicare non-self pay (includes duals, those privately insured, etc.)
+. gen mcoth0203mepsrx = mcar0203mepsrx - mcself0203mepsrx
+(199 missing values generated)
+
+. 
+. sum mcar0203mepsrx mcoth0203mepsrx mcself0203mepsrx lppd0201 ldoses0201 lsale
+> sq0201 yrs03onmkt anygen if imsgrouprank<=1000 & otc==2 & imsgbo==2 & fdayear
+> <=2003 & smallcat!=. & lppd0603!=. & mcar0203mepsrx!=. & lppd0603>=-1.100 & l
+> ppd0603<=1.095 & thercat!=8
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+mcar0203me~x |       517    .3453235    .2616646          0          1
+mcoth0203m~x |       517    .1322153    .1336455          0   .9365758
+mcself0203~x |       517    .2131082    .1910457          0          1
+    lppd0201 |       489    .0774918    .1579267  -.9024218   1.389812
+  ldoses0201 |       489    .1310759    .8426093  -1.794199   12.47542
+-------------+--------------------------------------------------------
+ lsalesq0201 |       489    .2085677    .8595186  -1.775501   13.03189
+  yrs03onmkt |       517    10.92456    7.336071          0         47
+      anygen |       517     .384913     .487046          0          1
+
+. 
+. * all non-self and non-dual
+. gen mcoth0203mepsrx2 = mcar0203mepsrx - mcself0203mepsrx - dual0203mepsrx
+(199 missing values generated)
+
+. sum mcar0203mepsrx mcoth0203mepsrx2 mcself0203mepsrx dual0203mepsrx if imsgro
+> uprank<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603!=.
+>  & mcar0203mepsrx!=. & lppd0603>=-1.100 & lppd0603<=1.095 & thercat!=8
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+mcar0203me~x |       517    .3453235    .2616646          0          1
+mcoth0203m~2 |       517    .0886375     .107412  -1.49e-08   .9365758
+mcself0203~x |       517    .2131082    .1910457          0          1
+dual0203me~x |       517    .0435779    .0743843          0   .7142911
+
+. 
+. * column 1
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc==
+> 2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603>=-1.100 & lppd0603<=1.
+> 095 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  3,   513) =    2.16
+                                                       Prob > F      =  0.0916
+                                                       R-squared     =  0.0235
+                                                       Root MSE      =  .18137
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1363694   .0561339    -2.43   0.015    -.2466499   -.0260888
+  yrs03onmkt |   .0006297    .001931     0.33   0.744     -.003164    .0044234
+      anygen |   .0104217   .0228196     0.46   0.648    -.0344097     .055253
+       _cons |    .126273   .0282266     4.47   0.000      .070819     .181727
+------------------------------------------------------------------------------
+
+. 
+. * column 2
+. reg lppd0603 mcself0203mepsrx mcoth0203mepsrx yrs03onmkt anygen if imsgroupra
+> nk03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603>=-1.
+> 100 & lppd0603<=1.095 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  4,   512) =    2.77
+                                                       Prob > F      =  0.0267
+                                                       R-squared     =  0.0300
+                                                       Root MSE      =  .18094
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcself0203~x |  -.2252987    .070014    -3.22   0.001    -.3628488   -.0877486
+mcoth0203m~x |   .0593237   .1555369     0.38   0.703    -.2462454    .3648929
+  yrs03onmkt |   .0009996   .0019011     0.53   0.599    -.0027353    .0047345
+      anygen |   .0112921   .0233319     0.48   0.629     -.034546    .0571301
+       _cons |   .1144759   .0299608     3.82   0.000     .0556147    .1733371
+------------------------------------------------------------------------------
+
+. 
+. * column 3
+. reg lppd0603 mcself0203mepsrx mcoth0203mepsrx2 dual0203mepsrx yrs03onmkt anyg
+> en if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=.
+>  & lppd0603>=-1.100 & lppd0603<=1.095 & thercat!=8 [aw=meps0203scripts], robu
+> st
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  5,   511) =    2.41
+                                                       Prob > F      =  0.0354
+                                                       R-squared     =  0.0331
+                                                       Root MSE      =  .18083
+
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcself0203~x |  -.2428983    .077271    -3.14   0.002    -.3947062   -.0910903
+mcoth0203m~2 |   .1898703   .3046745     0.62   0.533    -.4086984     .788439
+dual0203me~x |  -.1823221   .2737513    -0.67   0.506    -.7201387    .3554944
+  yrs03onmkt |   .0009956   .0018936     0.53   0.599    -.0027247    .0047159
+      anygen |   .0095834   .0226766     0.42   0.673    -.0349673    .0541342
+       _cons |   .1176387   .0282195     4.17   0.000     .0621983    .1730792
+------------------------------------------------------------------------------
+
+. 
+. * column 4
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & otc
+> ==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses0603>=-3.95 & ldoses060
+> 3<=1.51 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  3,   513) =   21.40
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2942
+                                                       Root MSE      =  .85893
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .3891537   .3155127     1.23   0.218    -.2307021     1.00901
+  yrs03onmkt |  -.0009481   .0105467    -0.09   0.928     -.021668    .0197719
+      anygen |  -1.087196   .1918247    -5.67   0.000    -1.464054   -.7103369
+       _cons |  -.2351405   .1644047    -1.43   0.153    -.5581298    .0878488
+------------------------------------------------------------------------------
+
+. 
+. * column 5
+. reg ldoses0603 mcself0203mepsrx mcoth0203mepsrx yrs03onmkt anygen if imsgroup
+> rank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses0603>
+> =-3.95 & ldoses0603<=1.51 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  4,   512) =   16.18
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2943
+                                                       Root MSE      =  .85969
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcself0203~x |   .4607672   .4235884     1.09   0.277     -.371418    1.292952
+mcoth0203m~x |   .2317276   .8805142     0.26   0.793    -1.498138    1.961593
+  yrs03onmkt |  -.0012549   .0107033    -0.12   0.907    -.0222827    .0197729
+      anygen |  -1.087941   .1929283    -5.64   0.000     -1.46697   -.7089127
+       _cons |   -.225536   .1797315    -1.25   0.210     -.578638     .127566
+------------------------------------------------------------------------------
+
+. 
+. * column 6
+. reg ldoses0603 mcself0203mepsrx mcoth0203mepsrx2 dual0203mepsrx yrs03onmkt an
+> ygen if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!
+> =. & ldoses0603>=-3.95 & ldoses0603<=1.51 & thercat!=8 [aw=meps0203scripts], 
+> robust
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  5,   511) =   13.08
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2966
+                                                       Root MSE      =  .85914
+
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcself0203~x |    .378529   .4487794     0.84   0.399    -.5031508    1.260209
+mcoth0203m~2 |   .8496585   1.215607     0.70   0.485    -1.538545    3.237862
+dual0203me~x |  -.9142025   1.674245    -0.55   0.585    -4.203452    2.375047
+  yrs03onmkt |  -.0013052   .0106439    -0.12   0.902    -.0222164     .019606
+      anygen |  -1.095749   .1937511    -5.66   0.000    -1.476396   -.7151026
+       _cons |  -.2106955   .1786928    -1.18   0.239    -.5617584    .1403675
+------------------------------------------------------------------------------
+
+. 
+. * column 7
+. reg lsalesq0603 mcar0203mepsrx yrs03onmkt anygen if imsgrouprank03<=1000 & ot
+> c==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lsalesq0603>=-3.7 & lsalesq0
+> 603<=1.72 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2899e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  3,   513) =   19.01
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2925
+                                                       Root MSE      =  .84779
+
+------------------------------------------------------------------------------
+             |               Robust
+ lsalesq0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .2727952   .3136442     0.87   0.385      -.34339    .8889803
+  yrs03onmkt |  -.0018285   .0104656    -0.17   0.861    -.0223892    .0187321
+      anygen |  -1.071165   .1865083    -5.74   0.000    -1.437579   -.7047506
+       _cons |  -.1073883   .1639272    -0.66   0.513    -.4294395     .214663
+------------------------------------------------------------------------------
+
+. 
+. * column 8
+. reg lsalesq0603 mcself0203mepsrx mcoth0203mepsrx yrs03onmkt anygen if imsgrou
+> prank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lsalesq060
+> 3>=-3.7 & lsalesq0603<=1.72 & thercat!=8 [aw=meps0203scripts], robust
+(sum of wgt is   3.2899e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  4,   512) =   14.68
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2926
+                                                       Root MSE      =  .84861
+
+------------------------------------------------------------------------------
+             |               Robust
+ lsalesq0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcself0203~x |   .2466888   .4379443     0.56   0.573    -.6137001    1.107078
+mcoth0203m~x |   .3302271    .860554     0.38   0.701    -1.360424    2.020878
+  yrs03onmkt |  -.0017161   .0106384    -0.16   0.872    -.0226165    .0191842
+      anygen |  -1.070901   .1871229    -5.72   0.000    -1.438524   -.7032782
+       _cons |  -.1108969   .1783435    -0.62   0.534    -.4612719    .2394782
+------------------------------------------------------------------------------
+
+. 
+. 
+. * table 5
+. 
+. * missing therapeutic category for 21 of 548 
+. * group together by setting to X for all of them
+. 
+. replace ther1 = "X" if ther1=="" & gen_548!=.
+(21 real changes made)
+
+. 
+. * make smallcat equal to 1 for the 2 drugs where there are just 2 ingredients
+. 
+. tab numclass smallcat, missing
+
+     (min) |          (max) smallcat
+  numclass |         0          1          . |     Total
+-----------+---------------------------------+----------
+         1 |         0         10          0 |        10 
+         2 |         2         13          0 |        15 
+         3 |        27          0          0 |        27 
+         4 |        24          0          0 |        24 
+         5 |        32          0          0 |        32 
+         6 |        28          0          0 |        28 
+         7 |        37          0          0 |        37 
+         8 |        24          0          0 |        24 
+         9 |        19          0          0 |        19 
+        10 |        17          0          0 |        17 
+        11 |        12          0          0 |        12 
+        12 |        13          0          0 |        13 
+        13 |        16          0          0 |        16 
+        14 |         8          0          0 |         8 
+        16 |        12          0          0 |        12 
+        17 |        24          0          0 |        24 
+        18 |        32          0          0 |        32 
+        19 |        19          0          0 |        19 
+        20 |         8          0          0 |         8 
+        22 |        17          0          0 |        17 
+        25 |         5          0          0 |         5 
+        32 |        24          0          0 |        24 
+        35 |         1          0          0 |         1 
+        41 |        25          0          0 |        25 
+        49 |        25          0          0 |        25 
+        52 |        49          0          0 |        49 
+        66 |         4          0          0 |         4 
+         . |        21          0        452 |       473 
+-----------+---------------------------------+----------
+     Total |       525         23        452 |     1,000 
+
+
+. replace smallcat = 1 if smallcat==0 & numclass<=2
+(2 real changes made)
+
+. 
+. * define the interactions with protected and small category
+. gen mcar0203prot = mcar0203mepsrx * protected
+(199 missing values generated)
+
+. gen scmcar0203 = smallcat * mcar0203mepsrx
+(452 missing values generated)
+
+. 
+. tab smallcat protected if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear
+> <=2003 & smallcat!=. & lppd0603>=-.785 & lppd0603<=1.095 & thercat!=8 & lppd0
+> 201!=., missing
+
+     (max) |       protected
+  smallcat |         0          1 |     Total
+-----------+----------------------+----------
+         0 |       420         44 |       464 
+         1 |        17          4 |        21 
+-----------+----------------------+----------
+     Total |       437         48 |       485 
+
+
+. 
+. * column 1
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen protected mcar0203prot if imsgr
+> ouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603
+> >=-1.100 & lppd0603<=1.095 & thercat!=8 [aw=meps0203scripts], cluster(ther1)
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  5,   107) =    1.82
+                                                       Prob > F      =  0.1143
+                                                       R-squared     =  0.0254
+                                                       Root MSE      =  .18154
+
+                                (Std. Err. adjusted for 108 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1410088   .0593436    -2.38   0.019    -.2586506    -.023367
+  yrs03onmkt |   .0006358   .0020888     0.30   0.761     -.003505    .0047766
+      anygen |   .0095676   .0237444     0.40   0.688    -.0375029     .056638
+   protected |  -.0418278   .0544219    -0.77   0.444    -.1497128    .0660573
+mcar0203prot |   .1745183   .1977069     0.88   0.379    -.2174126    .5664492
+       _cons |    .127124   .0306209     4.15   0.000     .0664217    .1878263
+------------------------------------------------------------------------------
+
+. 
+. * column 2
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen smallcat scmcar0203 if imsgroup
+> rank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & lppd0603>=-
+> 1.100 & lppd0603<=1.095 & thercat!=8 [aw=meps0203scripts], cluster(ther1)
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  5,   107) =    1.72
+                                                       Prob > F      =  0.1372
+                                                       R-squared     =  0.0264
+                                                       Root MSE      =  .18146
+
+                                (Std. Err. adjusted for 108 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1421282   .0568695    -2.50   0.014    -.2548653   -.0293911
+  yrs03onmkt |   .0006263   .0020995     0.30   0.766    -.0035358    .0047883
+      anygen |   .0116664   .0226627     0.51   0.608    -.0332598    .0565926
+    smallcat |  -.0826301   .0575129    -1.44   0.154    -.1966426    .0313825
+  scmcar0203 |   .3044048   .1553557     1.96   0.053    -.0035698    .6123794
+       _cons |   .1272389   .0306087     4.16   0.000     .0665607    .1879171
+------------------------------------------------------------------------------
+
+. 
+. * column 3
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen smallcat scmcar0203 protected m
+> car0203prot if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & sm
+> allcat!=. & lppd0603>=-1.100 & lppd0603<=1.095 & thercat!=8 [aw=meps0203scrip
+> ts], cluster(ther1)
+(sum of wgt is   3.2960e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  7,   107) =    1.57
+                                                       Prob > F      =  0.1537
+                                                       R-squared     =  0.0283
+                                                       Root MSE      =  .18164
+
+                                (Std. Err. adjusted for 108 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |    -.14701   .0608961    -2.41   0.017    -.2677294   -.0262906
+  yrs03onmkt |     .00063   .0020918     0.30   0.764    -.0035167    .0047768
+      anygen |   .0109015   .0239096     0.46   0.649    -.0364965    .0582996
+    smallcat |  -.0827922   .0576108    -1.44   0.154     -.196999    .0314145
+  scmcar0203 |   .3025548   .1542556     1.96   0.052     -.003239    .6083486
+   protected |  -.0426278   .0549009    -0.78   0.439    -.1514625    .0662069
+mcar0203prot |   .1742496   .1995556     0.87   0.385    -.2213461    .5698453
+       _cons |    .128301   .0316872     4.05   0.000     .0654849    .1911171
+------------------------------------------------------------------------------
+
+. 
+. * column 4
+. reg lppd0603 mcar0203mepsrx yrs03onmkt anygen smallcat scmcar0203 protected m
+> car0203prot if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & sm
+> allcat!=. & lppd0603>=-1.100 & lppd0603<=1.095 & thercat!=8 & anygen==0 [aw=m
+> eps0203scripts], cluster(ther1)
+(sum of wgt is   1.7407e+05)
+
+Linear regression                                      Number of obs =     318
+                                                       F(  6,    85) =    1.97
+                                                       Prob > F      =  0.0785
+                                                       R-squared     =  0.0589
+                                                       Root MSE      =   .1567
+
+                                 (Std. Err. adjusted for 86 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+    lppd0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |  -.1724575    .079905    -2.16   0.034    -.3313301   -.0135849
+  yrs03onmkt |   .0028435   .0025416     1.12   0.266    -.0022099    .0078969
+      anygen |  (dropped)
+    smallcat |  -.1030685   .0576847    -1.79   0.078    -.2177612    .0116242
+  scmcar0203 |   .3660334   .1626591     2.25   0.027     .0426234    .6894433
+   protected |  -.0292899   .0729194    -0.40   0.689    -.1742733    .1156934
+mcar0203prot |   .1730349   .1514462     1.14   0.256    -.1280806    .4741504
+       _cons |   .1193944   .0421348     2.83   0.006     .0356192    .2031697
+------------------------------------------------------------------------------
+
+. 
+. * column 5
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen protected mcar0203prot if ims
+> grouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses
+> 0603>=-3.95 & ldoses0603<=1.51 & thercat!=8 [aw=meps0203scripts], cluster(the
+> r1)
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  5,   107) =   13.45
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3151
+                                                       Root MSE      =  .84776
+
+                                (Std. Err. adjusted for 108 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .5266117   .2985675     1.76   0.081    -.0652635    1.118487
+  yrs03onmkt |  -.0009934   .0082216    -0.12   0.904    -.0172918    .0153049
+      anygen |  -1.095105   .2481997    -4.41   0.000    -1.587132   -.6030782
+   protected |   1.026592   .4968137     2.07   0.041     .0417169    2.011467
+mcar0203prot |  -3.610548   1.661654    -2.17   0.032    -6.904582   -.3165137
+       _cons |  -.2779631   .1398254    -1.99   0.049    -.5551506   -.0007757
+------------------------------------------------------------------------------
+
+. 
+. * column 6
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen smallcat scmcar0203 if imsgro
+> uprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & smallcat!=. & ldoses060
+> 3>=-3.95 & ldoses0603<=1.51 & thercat!=8 [aw=meps0203scripts], cluster(ther1)
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  5,   107) =   16.42
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2974
+                                                       Root MSE      =  .85861
+
+                                (Std. Err. adjusted for 108 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |   .4285556   .3148804     1.36   0.176    -.1956581    1.052769
+  yrs03onmkt |  -.0005184   .0082327    -0.06   0.950    -.0168388     .015802
+      anygen |  -1.074051   .2318816    -4.63   0.000    -1.533729   -.6143729
+    smallcat |   .7117624   .2123059     3.35   0.001     .2908907    1.132634
+  scmcar0203 |   -1.25166   .5421139    -2.31   0.023    -2.326337    -.176982
+       _cons |  -.2699765   .1463409    -1.84   0.068    -.5600803    .0201273
+------------------------------------------------------------------------------
+
+. 
+. * column 7
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen smallcat scmcar0203 protected
+>  mcar0203prot if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & 
+> smallcat!=. & ldoses0603>=-3.95 & ldoses0603<=1.51 & thercat!=8 [aw=meps0203s
+> cripts], cluster(ther1)
+(sum of wgt is   3.2868e+05)
+
+Linear regression                                      Number of obs =     517
+                                                       F(  7,   107) =   14.19
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3187
+                                                       Root MSE      =  .84716
+
+                                (Std. Err. adjusted for 108 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |    .571621   .3096629     1.85   0.068    -.0422496    1.185492
+  yrs03onmkt |   -.000521   .0081574    -0.06   0.949    -.0166921    .0156502
+      anygen |  -1.082337   .2487041    -4.35   0.000    -1.575364   -.5893102
+    smallcat |    .740002   .2121577     3.49   0.001     .3194241     1.16058
+  scmcar0203 |   -1.27233   .5772486    -2.20   0.030    -2.416658   -.1280017
+   protected |   1.047998    .498277     2.10   0.038     .0602219    2.035774
+mcar0203prot |  -3.655174   1.668611    -2.19   0.031    -6.963001   -.3473462
+       _cons |  -.3169082   .1440399    -2.20   0.030    -.6024505   -.0313659
+------------------------------------------------------------------------------
+
+. 
+. * column 8
+. reg ldoses0603 mcar0203mepsrx yrs03onmkt anygen smallcat scmcar0203 protected
+>  mcar0203prot if imsgrouprank03<=1000 & otc==2 & imsgbo==2 & fdayear<=2003 & 
+> smallcat!=. & ldoses0603>=-3.95 & ldoses0603<=1.51 & thercat!=8 & anygen==0 [
+> aw=meps0203scripts], cluster(ther1)
+(sum of wgt is   1.7360e+05)
+
+Linear regression                                      Number of obs =     318
+                                                       F(  6,    84) =   10.24
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1310
+                                                       Root MSE      =  .43559
+
+                                 (Std. Err. adjusted for 85 clusters in ther1)
+------------------------------------------------------------------------------
+             |               Robust
+  ldoses0603 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+mcar0203me~x |    .344915   .1466045     2.35   0.021     .0533758    .6364542
+  yrs03onmkt |  -.0225588    .007405    -3.05   0.003    -.0372844   -.0078332
+      anygen |  (dropped)
+    smallcat |   .6307246   .1707597     3.69   0.000     .2911502     .970299
+  scmcar0203 |  -1.150973   .4543149    -2.53   0.013    -2.054428   -.2475177
+   protected |   .1022921   .1560058     0.66   0.514    -.2079426    .4125268
+mcar0203prot |  -.0298647   .3548114    -0.08   0.933    -.7354461    .6757166
+       _cons |   -.054346   .1172082    -0.46   0.644    -.2874273    .1787354
+------------------------------------------------------------------------------
+
+. 
+. log close
+       log:  /disk/bulkn/mgduggan/partd/meps/aerdata/regs-partd-final.log
+  log type:  text
+ closed on:   4 Mar 2009, 16:14:55
+-------------------------------------------------------------------------------

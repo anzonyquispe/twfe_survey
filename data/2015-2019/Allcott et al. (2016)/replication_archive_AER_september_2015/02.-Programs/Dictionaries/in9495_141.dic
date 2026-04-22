@@ -1,0 +1,23 @@
+dictionary using 94-95/ASI1994_95_DATA/ASID9495.TXT {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+_column(16)	linkcode	%3.0f	"Link Code"
+
+
+_column(19)	itemcode	%4.0f	"Item Code"
+_column(23)	qmanufactured	%11.0f	"Quantity Manufactured"
+_column(34)	qsold		%11.0f	"Quantity Sold"
+_column(45)	grsale		%11.0f	"Gross Sale Value"
+_column(89)	distrexp    	%11.0f	"Distributive Expenses - Total"
+_column(100)	nsv		%11.0f 	"Itemwise N.S.V. unit"
+_column(111)	efvperunit	%11.0f	"Itemwise Ex-Factory Value"
+
+
+};
+
+
+

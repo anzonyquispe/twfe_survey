@@ -1,0 +1,1 @@
+replace specificdrug=1 if (class ==6) & alzheimers==1

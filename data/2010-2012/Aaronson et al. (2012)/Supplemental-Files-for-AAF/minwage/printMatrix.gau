@@ -1,0 +1,57 @@
+/* printmatrix NEW.gau - This file converts gauss matrices [for simulated income and durables/nondurables consumption 
+   over time] to a text file readable by stata 
+
+   To update this file, change "version" value.
+   Run this file after minwageSimmerGrapher has been run for all 3 hikes and nohike.
+
+
+   This file assumes the following naming convention for folders (/settingsSwitch runs) 
+       -Results_XX1_hike (settingsSwitch=XX.1 hikeSwitch=1) for hike at t=16, 
+       -Results_XX1_nohike (settingsSwitch=XX.1 hikeSwitch=0) for the nohike case
+       -Results_XX2_hike (settingsSwitch=XX.2 hikeSwitch=1) for hike at t=64,
+       -Results_XX3_hike (settingsSwitch=XX.3 hikeSwitch=1) for hike at t=128,  
+   XX is a set of runs with the same parameters, except for the time of the hike (hikeStart) and 
+   the wage growth during the hike (wageIncr, calibrated to result in a $250 increase).
+
+   With Gauss 9, runs no problem. Gauss 11 may complain. If it does, replace 'screen on' with 'screen off'
+*/
+
+cls;
+version = "671";
+v=stof(version);
+
+
+for n (v-1,v+2,1);
+  idx=n-v+1;
+  vstr=ftos(n,"%*.*lf",1,0);
+
+  if idx==0; loadpath = "C:\\research\\minwage\\results\\Results_" $+ version $+ "_nohike\\sims";
+   else; loadpath = "C:\\research\\minwage\\results\\Results_" $+ vstr $+ "_hike\\sims";
+
+   //if idx==0; loadpath = "D:\\RESULTS_minwage\\Results_" $+ version $+ "_nohike\\sims";
+   // else; loadpath = "D:\\RESULTS_minwage\\Results_" $+ vstr $+ "_hike\\sims";
+  endif;
+  load path = ^loadpath;
+  load consM, Ymat, investM;
+
+  dplogFilename = "consM.txt";
+  pathTmp = loadPath $+ "\\" $+ dplogFilename;
+  output file = ^pathTmp reset;
+  outwidth 150;
+  output on;
+  screen on;
+
+  numsims = 5000;
+  periods = 188;
+
+
+  for t (1, periods-1, 1);
+    for sim (1, numsims, 1);
+      print sim "," t "," consM[t,sim] "," Ymat[t,sim] "," investM[t,sim];
+    endfor;    
+  endfor;
+
+  print /flush;
+
+  output off;
+endfor;

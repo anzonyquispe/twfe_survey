@@ -1,0 +1,201 @@
+
+*****************************************
+*****************************************
+***---Prep baseline data
+*****************************************
+*****************************************
+
+use table2, clear
+keep if drughom!=.
+
+*indicator
+g DummyDeaths=0
+replace DummyDeaths=1 if drughom>0
+
+*collapse to quarterly data
+
+drop if LameDuck==1
+drop if lame_duck2==1
+g T=.
+replace T=-2 if (DiffNL<=-4) 
+replace T=-1 if (DiffNL>-4 & DiffNL<=-1) 
+replace T=1 if (DiffNL>0 & DiffNL<=3) 
+replace T=2 if (DiffNL>3 & DiffNL<=6) 
+replace T=3 if (DiffNL>6 & DiffNL<=9) 
+replace T=4 if (DiffNL>9 & DiffNL<=12) 
+replace T=5 if (DiffNL>12 & DiffNL<=15) 
+replace T=6 if (DiffNL>15 & DiffNL<=18) 
+replace T=7 if (DiffNL>18 & DiffNL<=21) 
+replace T=8 if (DiffNL>21 & DiffNL<=24) 
+replace T=9 if (DiffNL>24 & DiffNL!=.) 
+
+drop if T==.
+
+tostring T, replace
+collapse (mean) drughom spread PANwin pob_total DummyD, by(T id_mun)
+save temp, replace
+
+**lame duck period; first
+use table2, clear
+keep if drughom!=.
+
+keep if LameDuck==1
+
+egen start=min(YMEv), by(id_m)
+g temp=YMEv-start+1
+
+g T=""	
+replace T="LD1a" if (temp>0) 
+
+*indicator
+g DummyDeaths=0
+replace DummyDeaths=1 if drughom>0
+
+collapse (mean) drughom spread PANwin pob_total DummyD, by(T id_mun)
+
+append using temp
+save temp, replace
+
+
+**lame duck period; second
+use table2, clear 
+keep if drughom!=.
+
+keep if lame_duck2==1
+
+egen start=min(YMEv), by(id_m)
+g temp=YMEv-start+1
+
+g T=""	
+replace T="LD1b" if (temp>0) 
+
+*indicator
+g DummyDeaths=0
+replace DummyDeaths=1 if drughom>0
+
+collapse (mean) drughom spread PANwin pob_total DummyD, by(T id_mun)
+
+append using temp
+
+g deathsx=(drughom/pob_t)*12*100000
+
+save ViolenceTemp, replace
+
+**********************************************************
+****************average # of drug-related homicides
+*********************************************************
+
+local counter=0 /*for saving output*/
+
+
+levelsof T, local(levels) 
+foreach period of local levels {	
+	
+	*************quadratic
+	use ViolenceTemp, clear
+	keep if abs(spread)<.05
+	di "`period'"
+	quietly keep if T=="`period'"	
+	di "limited sample to a single period"
+
+	g spreadPW=spread*PANwin
+	g spread2=spread^2
+	g spreadPW2=spreadPW^2
+	di "variables generated"
+	
+	reg deathsx PANwin spread spreadPW spread2 spreadPW2 [aw=pob_t], robust
+	di "regression completed"
+	
+	*save output
+	g indexnum = _n 
+	keep if indexnum==1
+	keep indexnum
+	g bw="5%"
+	g RDpoly="quadnofe"
+	g depvar="deathsx"
+	g period="`period'"
+	g coeff=_b[PANwin]
+	g se=_se[PANwin]
+	di "output saved"
+	
+	drop ind
+	local ++counter
+	tempfile F`counter'
+	save `F`counter'', replace	
+	
+}
+
+
+use `F1', clear
+forvalues i=2/`counter' {
+	append using `F`i''
+}		
+
+g cp5=coeff+1.96*se
+g cn5=coeff-1.96*se
+
+g cp10=coeff+1.65*se
+g cn10=coeff-1.65*se
+
+outsheet using BaselineQ.csv, comma replace	
+
+******************************************
+**--Extensive margin
+******************************************
+
+
+use ViolenceTemp, clear
+local counter=0 /*for saving output*/
+
+levelsof T, local(levels) 
+foreach period of local levels {
+	
+	*************quadratic 
+	use ViolenceTemp, clear
+	keep if abs(spread)<.05
+	di "`period'"
+	quietly keep if T=="`period'"	
+	di "limited sample to a single period"
+
+	g spreadPW=spread*PANwin
+	g spread2=spread^2
+	g spreadPW2=spreadPW^2
+	di "variables generated"
+	
+	reg DummyD PANwin spread spreadPW spread2 spreadPW2, robust
+	di "regression completed"
+	
+	*save output
+	g indexnum = _n 
+	keep if indexnum==1
+	keep indexnum
+	g bw="5%"
+	g RDpoly="quadnofe"
+	g depvar="deathsx"
+	g period="`period'"
+	g coeff=_b[PANwin]
+	g se=_se[PANwin]
+	di "output saved"
+	
+	drop ind
+	local ++counter
+	tempfile F`counter'
+	save `F`counter'', replace	
+}
+
+
+use `F1', clear
+forvalues i=2/`counter' {
+	append using `F`i''
+}		
+
+g cp5=coeff+1.96*se
+g cn5=coeff-1.96*se
+
+g cp10=coeff+1.65*se
+g cn10=coeff-1.65*se
+
+outsheet using BaselineQextensive.csv, comma replace	
+	
+
+

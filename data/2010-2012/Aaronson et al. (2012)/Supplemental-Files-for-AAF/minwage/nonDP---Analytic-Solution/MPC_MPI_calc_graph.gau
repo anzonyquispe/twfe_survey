@@ -1,0 +1,222 @@
+
+/// This is a quickly written thing to make up the graphs from the perfect capital
+//market model (i.e. carroll+=durables, ie no borrowing constraints). 
+//calculates MPC, MPI using formulas Eric derived.
+
+/* 
+We find the analytic solution for each age simulation, and average the results.
+setting initialPI to .905 results in an average $4500 income level the year before the hike
+We set wageincr such that we end up with a $250 income increase in the first period of the hike.
+*/
+
+periods = 188;
+beta=1.01^(1/4);
+downpaymentR=.4;
+delta= 0.034; 
+PIgrowthR = 0.0108;       
+R = 1.03^(1/4);
+initialPI=.905;
+rho=2;
+theta=.15;   
+PIgrowthChangeTime = 81; 
+incomeLevelAtHike = 1; //don't actually use this;
+
+sse = 0; 
+rho_paper=.995;
+PIstates=zeros(7,1); 
+
+wageincr16=ln(1.0879);
+wageincr64=ln(1.0523);
+wageincr128=ln(1.0442);
+
+hikeLength=10;
+wageHike16 = seqa(wageIncr16, -wageIncr16/hikeLength, hikeLength);
+wageHike64 = seqa(wageIncr64, -wageIncr64/hikeLength, hikeLength);
+wageHike128 = seqa(wageIncr128, -wageIncr128/hikeLength, hikeLength);
+wageHike2=(0|0|0|wageHike16)~(0|0|0|wageHike64)~(0|0|0|wageHike128);
+print "wageHike2" wageHike2;
+
+
+MPCmat=zeros(21,3);
+MPImat=zeros(21,3);
+sumMat=zeros(21,3);
+
+// alpha == theta, theta from  minwagedp, alpha from my notes
+
+
+
+for nn (1,3,1);
+
+  if nn==1; hikestart=16; endif;
+  if nn==2; hikeStart=64; endif;
+  if nn==3; hikestart=128; endif;
+
+
+//calculate the total discounted&nondiscounted additional $$$ from hike, discounted with respect to T=hikestart
+lengthHike = rows(wageHike2);
+zeroWageHike = zeros(lengthHike,1);
+
+totalExtraIncome_discounted = 0;
+totalExtraIncome_nonDiscounted = 0;
+discountCtr = 1;
+
+for tt (hikeStart, hikeStart+lengthHike-1, 1);
+          
+
+    extraY = getIncome(tt, ceil(rows(PIstates)/2), PIstates, PIgrowthR, wageHike2[.,nn],  hikeStart, IncomeLevelAtHike , PIgrowthChangeTime,initialPI) - 
+             getIncome(tt, ceil(rows(PIstates)/2), PIstates, PIgrowthR, zeroWageHike, hikeStart, IncomeLevelAtHike, PIgrowthChangeTime,initialPI);
+
+/*extraY = getIncome(tt, 0, 1, ceil(rows(PIstates)/2), PIstates, R, PIgrowthR, wageHike,       hikeStart, PIgrowthChangeTime) - 
+             getIncome(tt, 0, 1, ceil(rows(PIstates)/2), PIstates, R, PIgrowthR, zeroWageHike,   hikeStart, PIgrowthChangeTime);
+*/
+
+
+    totalExtraIncome_nonDiscounted = totalExtraIncome_nonDiscounted + extraY;
+    totalExtraIncome_discounted = totalExtraIncome_discounted + discountCtr*extraY;
+    discountCtr = discountCtr*(1/R);
+endfor;
+
+//Unit Conversion (simUnits to Dollars)
+totalExtraIncome_nonDiscounted = totalExtraIncome_nonDiscounted*1000;
+totalExtraIncome_discounted = totalExtraIncome_discounted*1000;
+"totalextraNond  " totalExtraIncome_nonDiscounted;
+"totalextra_disc  " totalExtraIncome_discounted;
+
+//lifeWealthInnovation = 2000;
+lifeWealthInnovation = totalExtraIncome_nonDiscounted;
+timeTilDeath = periods - hikeStart; //Need only time left to live at moment of calculation.
+
+
+graphLength = 14; //graphLength is "forward" graph length, e.g. length after 0;
+MPIvec = zeros(graphLength,1);
+MPCvec = zeros(graphLength,1);
+for i (1,graphLength,1);
+    MPIvec[i] = getMPI(i, beta, R, delta, timeTilDeath, rho, theta) * lifeWealthInnovation;
+    MPCvec[i] = getMPC(i, beta, R, timeTilDeath, rho, theta) * lifeWealthInnovation;
+endfor;
+
+graphTime = seqa(-10,1,21); //1 for zero; -3 to 3 now.
+MPCvec = zeros(7,1)|MPCvec; // Eric wants graph to spike in middle instead of at beginning
+MPIvec = zeros(7,1)|MPIvec;
+sumVec = MPCvec+MPIvec;
+//"MPCvec " MPCvec;
+//"MPIvec " MPIvec;
+
+MPCmat[.,nn]=MPCvec;
+MPImat[.,nn]=MPIvec;
+sumMat[.,nn]=sumVec;
+
+endfor;
+
+MPCmean=arraytomat(amean(mattoarray(MPCmat),1));
+MPImean=arraytomat(amean(mattoarray(MPImat),1));
+sumMean=arraytomat(amean(mattoarray(sumMat),1));
+
+
+/////////////////do graphing///////////////////
+
+d=ChangeDir "C:\\Research\\minwage\\results\\Results_set291_hike\\"; //need temp dir where i have write options so grapher can work correctly
+"New Current Dir: " d;
+
+library pgraph;
+graphset;
+
+rootdir = "-C=1 -PO=L -CF=C:\\Temp\\"; //options for graphprt. //landscape has no effect.
+
+_pdate   = "";                @ date is not printed    @
+_plctrl  = {0, 0 };     @ curves without symbols @
+_pstype  = {0, 8};    @ symbol types           @
+_pcolor  = {3, 6};      @ set white color        @
+_plwidth = {8,8};
+_pltype  = (6|6);
+_pmcolor = zeros(8,1)|15;
+_ptitlht = 0.18;
+//_protate = 1; //apparently need to rotate for eps. landscape option not working
+xtics(-10,10,2,0); //scale below is other option for axis control // format (min,max,step,numMinorSubDivs)
+/*IMPORTANT: The way the graph is output to EPS is (very!) affected by the "scale" setting. 
+I only  know how to access this setting by opening up the GAUSS graph viewer (TKF File viewer)
+and going to Convert->EPS.  Setting it around 
+0.14
+gives pretty good results.
+*/
+//margin(0,0,0,1.5);
+
+//_plegctl = {2, 6, 1.2, 4.5}; //_plegctl = 1; //Have legend in default location; may need to change this for differing graphs.
+_plegctl = {2, 6, 5.5, 4.5}; //_plegctl = 1; //Have legend in default location; may need to change this for differing graphs.
+_plegstr = "Non-Durables" $+ "\000" $+ "Durables" $+ "\000" $+ "Total"; //Names of curves in legend. separate by \000 //last one may be unnecssary depending on what eric wants at th etime
+theTitle = "Spending Dynamics Around Minimum Wage Increase, Simulations\L without Borrowing Constraints"; // the clear title that i havent made fit yet: "C, I Responses to Lifetime Wealth Innovation (Perfect Capital Markets)"
+_ptitlht = 0.15; //title height/size  .13 is default
+title(theTitle);
+ylabel("Expenditure Response");
+xlabel("Quarters around minimum wage increase at t=0");
+graphOutfile = rootdir $+ "analyticResult_noConstraint.eps";
+graphprt(graphOutfile);
+xy(graphTime~graphTime~graphTime,MPCmean~MPImean~sumMean);
+print "Graph Data analytic result";
+for point (1, 21, 1);
+  gtt = graphTime[point];
+  MPCp = MPCmean[point];      
+  MPIp = MPImean[point];
+  sVP = sumMean[point];
+  print gtt "," MPCp "," MPIp "," sVP;
+endfor;  
+pause(3); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+
+
+//////////////////////end graphing ///////////////////////
+
+
+///////////////// function /////////////////////
+
+
+
+//periods should be time LEFT to live, at moment of calculation, of course
+proc(1) = getMPC(timeT, beta, R, periods, rho, theta);
+    local discountTerm, MPC, MPCnought,rbr,numerator, denominator;
+
+    rbr = (1/R)*((beta*R)^(1/rho));
+    numerator = 1-rbr;
+    denominator = 1 - rbr^periods;
+    MPCnought = (1-theta)*numerator/denominator; // by MPCnought i mean MPCat 1 , nought from notes.
+    discountTerm = (R*beta)^((timeT-1)/rho); // -1 cus start at 1 
+    MPC = discountTerm * MPCnought;
+    retp(MPC);
+endp;
+
+/*
+Function calculating marginal propensity to Invest in durables relative to
+an increase in permanent lifetime wealth (A0 + sum( (1/r^t)*Yt)).
+See calculations elsewhere.
+Time 1 is initial period (not 0).
+//periods should be time LEFT to live, at moment of calculation, of course
+*/
+
+proc(1) = getMPI(timeT, beta, R, delta, periods, rho, theta);
+    local MPI, MPInought, pricestock, rbr, numerator, denominator, discountTerm; //pricestock is price of one unit of stock
+
+    pricestock = ((R-1)+delta)/R;
+    rbr = (1/R)*((beta*R)^(1/rho));
+    numerator = 1-rbr;
+    denominator = 1 - rbr^periods;
+    MPInought = (1/pricestock)*theta*numerator/denominator; //by "nought" i mean period 1 , e.g. period 0 in notes.
+    if (timeT==1);
+        MPI = MPInought;
+    elseif (timeT>1);
+        MPI = MPInought*( (beta*R)^(1/rho) + delta-1 );
+        discountTerm = (R*beta)^((timeT-2)/rho); //-2 b/c start at 1; -1 if start at 0
+        MPI = discountTerm*MPI; 
+    endif; // T >=1.
+
+    retp(MPI);
+endp;
+
+
+
+
+/******************************** BEGIN FUNCTIONS ***********************************/
+
+// Most functions here.
+#include "C:\\Research\\minwage\\minwage_functions.gau"; //Need to be able to change gauss.cfg to change path ...
+
+
+/******************************** END FUNCTIONS ***********************************/

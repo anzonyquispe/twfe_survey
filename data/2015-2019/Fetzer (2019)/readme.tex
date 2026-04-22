@@ -1,0 +1,1993 @@
+%\usepackage[latin1]{inputenc}
+%\usepackage[onehalfspacing]{setspace}
+%\usepackage{aer}
+%\usepackage{comment}
+%\usepackage{endfloat}
+%no more than two floats per page, one at top
+%adjustments to punctuation in citations
+% -------------------End of Head-------------------------------------------
+
+
+\documentclass[[a4paper,11pt]{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{pdflscape}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[toc, page]{appendix}
+\usepackage{rotating}
+\usepackage[breaklinks=true]{hyperref}
+\usepackage{pdflscape}
+\usepackage{pdfpages}
+\usepackage[doublespacing]{setspace}
+\usepackage{rotating}
+\usepackage{url}
+\usepackage{booktabs,fixltx2e}
+\usepackage[justification=justified]{caption}
+\usepackage[flushleft]{threeparttable}
+\usepackage{subfiles}
+\usepackage{xcolor,colortbl}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{verbatim}
+\usepackage{ntheorem}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{sidecap}
+\usepackage[sc]{mathpazo}
+\usepackage[margin=1.2in, nohead, paper=a4paper]{geometry}
+\usepackage[shortlabels]{enumitem}
+                    \setlist[enumerate, 1]{1\textsuperscript{o}}
+
+\setcounter{MaxMatrixCols}{10}
+%TCIDATA{OutputFilter=Latex.dll}
+%TCIDATA{Version=5.50.0.2960}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{BibliographyScheme=BibTeX}
+%TCIDATA{LastRevised=Friday, August 12, 2016 15:30:23}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+
+\graphicspath{{../Draft/figures/}{../figures/}}
+\newtheorem{assumption}{Assumption}
+\newtheorem{theorem}{Theorem}
+\newtheorem{algorithm}{Algorithm}
+\newtheorem{axiom}{Axiom}
+\newtheorem{case}{Case}
+\newtheorem{claim}{Claim}
+\newtheorem{conclusion}{Conclusion}
+\newtheorem{condition}{Condition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{corollary}{Corollary}
+\newtheorem{criterion}{Criterion}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{exercise}{Exercise}
+\newtheorem{lemma}{Lemma}
+\newtheorem{notation}{Notation}
+\newtheorem{problem}{Problem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\newtheorem{solution}{Solution}
+\newtheorem{summary}{Summary}
+\newtheorem{hyp}{Hypothesis}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+\newcommand\startappendixtables{    \makeatletter
+       \setcounter{table}{0}
+   \setcounter{table}{0}\global\def\thetable{A\arabic{table}}    \makeatother}
+\newcommand\startrefereetables{    \makeatletter
+       \setcounter{table}{0}
+   \setcounter{table}{0}\global\def\thetable{R\arabic{table}}    \makeatother}
+\newcommand\startappendixfigures{    \makeatletter
+       \setcounter{figure}{0}
+   \setcounter{figure}{0}\global\def\thefigure{A\arabic{figure}}    \makeatother}
+\renewcommand{\appendixpagename}{Online Appendices}
+\linespread{1.4}
+ \setlength{\bibsep}{0.1pt plus 0.5ex}
+ \newcommand{\code}[1]{\texttt{#1}}
+
+
+\newcommand\startappendixtables{%
+    \makeatletter
+       \setcounter{table}{0}
+   \setcounter{table}{0}\global\def\thetable{A\arabic{table}}%
+    \makeatother}
+ 
+ \newcommand\startappendixfigures{%
+    \makeatletter
+       \setcounter{figure}{0}
+   \setcounter{figure}{0}\global\def\thefigure{A\arabic{figure}}%
+    \makeatother}
+ 
+ 
+\newcommand\startappendixtablesB{%
+    \makeatletter
+       \setcounter{table}{0}
+   \setcounter{table}{0}\global\def\thetable{B\arabic{table}}%
+    \makeatother}
+ 
+ \newcommand\startappendixfiguresB{%
+    \makeatletter
+       \setcounter{figure}{0}
+   \setcounter{figure}{0}\global\def\thefigure{B\arabic{figure}}%
+    \makeatother}
+
+ 
+\newcommand\startappendixtablesC{%
+    \makeatletter
+       \setcounter{table}{0}
+   \setcounter{table}{0}\global\def\thetable{C\arabic{table}}%
+    \makeatother}
+ 
+ \newcommand\startappendixfiguresC{%
+    \makeatletter
+       \setcounter{figure}{0}
+   \setcounter{figure}{0}\global\def\thefigure{C\arabic{figure}}%
+    \makeatother}
+
+
+
+%\input{tcilatex}
+\begin{document}
+
+\title{Notes on Replication of Figures and Tables \\``Did Austerity Cause Brexit? '' }
+\author{ \addtocounter{footnote}{1} \setcounter{footnote}{0} Thiemo Fetzer}
+\date{June 2019}
+%-------------------End of Title------------------------------------------
+
+\maketitle
+
+\section{Data access for individual level data}
+The individual level panel data set is built using the \cite{Essex2018} Understanding Society Panel dataset (USOC). This data is made electronically available through the UK Data Service at and is available on \url{https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=6676}. Access to the data needs to be requested from the UK Data Service. In order to obtain the local authority district of residence of individual respondents a special access license needs to be obtained additionally. This can be requested on \url{https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=6908}.
+
+The version of the data that was used here was used in the paper was UK Data Service \code{UKDA-SN-6614-10} -- this version of the data covered waves 1-7 and was made available in November 2017. This data archive is not available on the UK Data Service anymore as the platform does not provide for legacy data sets or version control. This implies that researchers attempting to replicate the analysis will have to download the most recent data version -- release \code{UKDA-SN-6614-12}. This release involved some changes to the raw data, resulting a minor changes to the number of observations but also involved variable recodings and changes to storage format as since the November 2017 release that was used for the paper files are now stored in Stata 15 format. 
+
+The process outlined below describes how the current release UKDA-SN-6614-12 can be downloaded and converted to build an analysis data set that comes very close to the one actually used in the paper. All results are replicable with the data version released \code{UKDA-SN-6614-12} though the point estimates are slightly different -- the differences usually only affect the third digit. Further, sample sizes are slightly different to what is reported in the paper. This reflecting changes to the raw data since the release UKDA-SN-6614-10 that are beyond the control of the researcher.
+
+The researcher is currently investigating options to have the full analysis data used -- based on release \code{UKDA-SN-6614-10} -- to be made available hosted on the UK Data Service. In case you have access to this data archive, you can skip the data preparation steps. Note that future releases of the data may imply that the scripts provided in this replication archive do not run anymore without errors. 
+
+The process to build the analysis data file is described next:
+
+\begin{enumerate}
+
+\item Data access requests should be launched with the UK Data Service requesting access to  \url{https://beta.ukdataservice.ac.uk/datacatalogue/doi/?id=6614} and \url{https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=6908}.
+
+\item Upon the request being granted, the data can be downloaded from the UK Data Service in Stata format. The Understanding Society survey files are stored in the subfolders \code{ukhls\_w1-ukhls\_w8}, which should be moved into the \code{usoc} subfolder on the path of the replication archive. The BHPS survey waves should be moved to the \code{bhps} subfolder. 
+
+\item The USOC mappers to the district identifiers should be stored int he corresponding USOC/BHPS folders in the \code{lad/usoc} and are named \code{a\_oslaua.dta-h\_oslaua.dta}. The first letter indicates the USOC survey wave a-h. Please be aware that the file names may change. The BHPS district identifiers should be moved to 
+
+\item Run \code{data files/usoc/convert-stata11.do} - make sure the paths are correct. This file converts the recent USOC release files into Stata 12 format. The conversion is required as the R-script building the analysis data makes use of the \code{foreign} R-package which can only read Stata files up to Stata version 12. The R-package \code{haven}, while able to work with more recent Stata DTA's converts factor variables to a new R data type "labelled" which the provided R script does not handle.
+
+\item Open R and run \code{read-usoc.R}. This R-script loads the right files from the \code{usoc} and \code{lad} folders, grabs the variables and combines them to build the analysis panel file \code{INDIVIDUAL.PANEL.dta}. Please make sure to adjust paths were necessary.  The R-code also pulls in some CSV files in \code{data files/usoc/harmonization mappers}. These are used to help standardize some variables. Please also note that the R-code loads some packages which may need to be installed. R version 3.3.3 was used.
+
+\end{enumerate}
+
+
+For data set that combines the USOC and the BHPS the process is very similar. It is a prerequisite that the above instructions which build \code{INDIVIDUAL.PANEL.dta} have been followed.  To build the combined USOC/BHPS dataset, follow the sequence of steps laid out below.
+
+
+\begin{enumerate}
+
+\item Move the BHPS data files  into the \code{bhps} subfolder - in total there should be 18 folders with names \code{bhps\_w1-bhps\_w18}.
+
+\item The local authority district to BHPS mapper files should be placed in the \code{lad/bhps} folder - the files are \code{aoslaua\_protect.dta - roslaua\_protect.dta}. The first letter again identifies the wave number.
+
+\item Run \code{data files/bhps/convert-stata11.do} - make sure the paths are correct. This file converts the recent USOC release files into Stata 11/12 format. 
+
+\item Open R and run \code{read-bhps.R}. This R-script loads the right files from the \code{bhps} and \code{lad/bhps} folders, grabs the variables and combines them to build the analysis panel file \code{USOCBHPSCOMB.dta}. Please make sure to adjust paths were necessary. The R-code also pulls in some CSV files in \code{data files/bhps/harmonization mappers}. These are used to help standardize some variables. Please also note that the R-code loads some packages which may need to be installed. R version 3.3.3 was used.
+
+\end{enumerate}
+
+
+
+\section{Analysis do-files instructions}
+This Latex document loads and displays the figures and tables that are presented in the main paper and the appendix. The analysis draws on three main do-files that produce the output and results presented in the paper and the appendix. 
+
+\begin{enumerate}
+
+\item District- and Westminster constituency analysis in the do-file \code{do files/district and westminster.do}
+
+\item Individual-level analysis in do-file \code{do files/individual-level}
+
+\item Longer trends panel combining USOC and BHPS in do-file \code{do files/longertrends.do}
+
+\end{enumerate}
+
+The do file \code{do files/run-all.do} executes the whole code and produces all outputs. The respective do files produce the figures and tables or table fragments, which are stored in the respective subfolders "figures" and "tables". This latex files loads these figure and tables and presents them in exactly the same sequence as in the full paper. The tables are either individual fragments with the outer latex shell being included in this latex file or they are full tables. 
+
+
+\section{Data folder}
+
+The data folder contains four main files:
+
+\begin{enumerate}
+
+\item \code{DISTRICT.dta} - includes the local and EP election performances, the 2016 EU Referendum esults along with the district level austerity measures from \cite{Beatty2013} and the census variables used for the motivating evidence.
+
+\item \code{WESTMINSTER.dta} - includes the Westminster election results and the district-level austerity measures matched to Westminster constituencies.
+
+\item Having followed steps outlined in the data access description, the file \code{INDIVIDUAL.PANEL.dta} - includes the individual level panel constructed from the USOC data.
+
+\item Having followed steps outlined in the data access description, the file \code{USOCBHPSCOMB.dta}  - combines the BHPS precursor survey with the later USOC survey
+ 
+\end{enumerate}
+
+The temporary data folder within the data folder stores temporary data files that get written in the analysis.
+
+\clearpage
+\bibliography{/Users/thiemo/Dropbox/Research/Paper/Bibtex/library.bib}
+\bibliographystyle{mychicago}
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{UKIP support across elections or across individuals over time\label{fig:ukip-elections}}
+\begin{center}$
+\begin{array}{ll}
+\text{\emph{Panel A}: Across elections } & \text{\emph{Panel B}: Individual level}\\
+  \includegraphics[scale=.4]{figures/summary-ukipvoteshares.png}  &   \includegraphics[scale=.4]{figures/individual-level-ukipsupport.png} \\
+
+  \end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The left panel presents the average UKIP vote share across the European, Westminster and Local elections since 2000. The right figure includes the share of respondents in the USOC data that state that they are a supporter of UKIP, feel closer to UKIP compared to other parties or, among those stating they would vote, express that they would vote for UKIP if there was an election tomorrow. This follows the way the USOC instrument elicits political party preferences which is detailed in Appendix Figure \ref{fig:usoc-elicit}.}
+\end{figure}
+\end{landscape}
+
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+
+\begin{figure}[h]
+\caption{UKIP vote share in the EP elections in 2004, 2014 and the Leave share in the 2016 EU referendum\label{fig:UKIP_Results}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: UKIP vote in 2004} & \text{Panel B: UKIP Vote in 2014} & \text{Panel C: Leave share}\\
+  \includegraphics[scale=.45]{../Draft/figures/UKIP2004.png}  &
+ \includegraphics[scale=.45]{../Draft/figures/UKIP2014.png}  &
+\includegraphics[scale=.45]{../Draft/figures/LEAVE2016.png} 
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} This map displays the  UKIP vote share in the European Parliamentary elections in 2004 and 2014 in Panel A and B, and the share of the electorate that voted leave in the 2016 EU referendum across local authority districts in Panel C.}
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+
+%\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of educational qualification, socio-economic status, and sectoral employment of the resident population as of 2001 on support for UKIP over time\label{fig:nonparametric-qualification-nssec-industry-small}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.24]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png}  &
+\includegraphics[scale=.24]{figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr.png} \\
+
+ \text{Panel C: Retail }& \text{Panel D: Manufacturing }  \\
+  \includegraphics[scale=.24]{figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.png} & 
+     \includegraphics[scale=.24]{figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.png} 
+ 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in local council elections. Panel A uses the share of the resident population with no formal qualifications as of 2001 with mean 0.28 (0.06 sd). Panel B uses the share of the resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001 with mean 0.1 (0.03 sd). Panel C uses the share of the resident working age population employed in the Retail sector with mean 0.17 (0.02 sd), while panel D uses the share of the resident working age population employed in Manufacturing with mean 0.15 (0.05 sd). The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+%\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Goverment spending per capita and distribution of austerity shock across local authority districts in the UK\label{fig:austerityoverall}}
+\begin{center}$
+\begin{array}{ll}
+\text{\emph{Panel A}: Composition of government spending} & \text{\emph{Panel B}: Spatial variation in austerity shock} \\
+  \includegraphics[scale=0.55]{figures/austerityoverall.png} & \includegraphics[scale=.13]{../Draft/figures/AUSTERITY_SMALL2.png}   
+
+
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The left panel A plots real aggregate spending per capita in £ using data from HMRC for the years between 2000-2015. Aggregate totals are divided by total population from the National Office of Statistics and the annual CPI with 2015 being the base year. The four series account for, on average, 68\% of government spending over the sample period. Panel B displays the spatial distribution of the austerity shock across local authority areas. The size of the shock is measured as the expected loss in benefit income in pounds per working age individual and year from \cite{Beatty2013}.}
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of austerity on support for UKIP overall and by individual measures.\label{fig:nonparametric-ukip-austerity}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: Overall austerity shock } &  \text{Panel B: Council Tax Benefit  }   \\
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-totalimpact_finlosswapyr-ryr}  &
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-counciltaxbenefit_finlosswapyr-ryr} \\
+
+ \text{Panel C: Disability Living Allowance }   & \text{Panel D: Bedroom Tax}\\
+ \includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-disabilitylivingallow_finlosswap-ryr} &
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-bedroom_tax_finlosswapyr-ryr}  \\
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in English and Welsh local council elections from 2000-2015. The graph plots point estimates of the interaction between these simulated incidence of the austerity measures and a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+%\end{landscape}
+%-----------------------------------------------------------------------------
+ 
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Impact of abolishment of national  council tax benefit system effective April 2013 on support for UKIP and being behind on council tax payments \label{fig:counciltaxbenefit-event}}
+\begin{center}$
+\begin{array}{cc}
+\multicolumn{2}{c}{\text{\textbf{Effect of ``council tax benefit''  abolishment on...}}}\\ \addlinespace
+\text{\textbf{support for UKIP}} & \text{\textbf{being in arrears with council tax payments}} \\
+\includegraphics[scale=.33]{figures/ukipeither-always_counciltaxbenefit-event-id-rwtq.png}  & \includegraphics[scale=.33]{figures/behindcounciltax-always_counciltaxbenefit-event-id-rwtq.png} \\
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} Figure plots event studies studying the impact of the abolishment of council tax benefit on previous recipients. The dependent variable in the left panel is a dummy variable indicating whether the respondent revealed a political preference in support of UKIP. The dependent panel in the right hand side is an indicator variable indicating whether the respondent is behind with his or her council tax payments. The regressions control  for counil by survey wave by time fixed effects.  The graph plots point estimates of the interaction between an indicator variable indicating whether the individual respondents received council tax benefit at each point in time in the three years prior to the reform in which they were observed in the sample interacted with an indicator for the survey quarter.  Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Impact of ``bedroom tax''  effective April 2013\label{fig:bedroomtax-event}}
+\begin{center}$
+\begin{array}{ccc}
+\multicolumn{3}{c}{\text{\textbf{Effect of ``bedroom tax'' penalizing social housing tenants on low incomes with spare bedrooms on...}}}\\  \addlinespace
+\text{\textbf{support for UKIP }} & \text{\textbf{being in arrears with rent}} & \text{\textbf{number of bedrooms in domicile}} \\
+\includegraphics[scale=.25]{figures/ukipeither-hbcuttype-event-id-rwtq.png}  & \includegraphics[scale=.25]{figures/behindrent-hbcuttype-event-id-rwtq.png} & \includegraphics[scale=.25]{figures/hsbeds-hbcuttype-event-id-rwtq.png} \\
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} Figure plots event studies studying the impact of the bedroom tax penalizing households receiving housing benefit living in social housing and are judged to have a spare bedroom. The dependent variable in the left panel is a dummy variable indicating whether the respondent revealed a political preference in support of UKIP. The dependent panel in the center column is an indicator whether respondents state that they are in arrears with their rent, while the outcome variable in the right panel is the number of bedrooms in the dwelling that a respondent lives in. The regressions control for council by survey wave by time fixed effects. The graph plots point estimates of the interaction between an indicator variable indicating whether the individual respondents are living in social housing at each point in time observed in the data and are judged to have an extra bedroom at the most recent time they were surveyed relative to the reform becoming effective in April 2013. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric estimates capturing the evolution of labor and benefit income \emph{within-individuals} over time for respondents with low- and high levels of educational attainment \label{fig:evolution-incomes-qual}}
+\begin{center}$
+\begin{array}{ccc}
+\multicolumn{3}{c}{\text{\textbf{\emph{Panel A:} Evolution of benefit and labor income for individuals with no qualifications}}}\\
+\includegraphics[scale=.25]{figures/fimnlabgrs_dv-did-qual_1-idwyr}  & \includegraphics[scale=.25]{figures/fimnsben_dv-did-qual_1-idwyr} & \includegraphics[scale=.25]{figures/fimngrs_dv-did-qual_1-idwyr}  \\
+ \text{Labor income} & \text{Benefit income} & \text{Gross income} \\ \addlinespace \addlinespace
+
+\multicolumn{3}{c}{\text{\textbf{\emph{Panel B:} Evolution of benefit and labor income for individuals with university degree}}}\\
+\includegraphics[scale=.25]{figures/fimnlabgrs_dv-did-qual_4-idwyr}  & \includegraphics[scale=.25]{figures/fimnsben_dv-did-qual_4-idwyr} & \includegraphics[scale=.25]{figures/fimngrs_dv-did-qual_4-idwyr}  \\
+ \text{Labor income} & \text{Benefit income} & \text{Gross income} 
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the monthly gross labor income on the left, and the monthly benefit income on the right. The population is restricted to the sample of BHPS and USOC respondents that are not retired. The BHPS survey waves 11-18 start in 2001 and end in 2009, while the larger USOC survey starts in 2009 and includes some, but not all of the former BHPS respondents. The graph plots point estimates of the interaction between the qualification status of respondents (having no qualifications in top row, versus having a university degree in bottom row) on monthly labor or benefit income.  All regression include individual respondent fixed effects and local authority by survey wave by time fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+
+
+
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+\begin{table}[tbp]
+\scalebox{0.9}{
+  \begin{threeparttable}
+  \caption{The Impact of different austerity measures on support for UKIP across Local, European and Westminster elections\label{table:austeritydid}}
+\begin{tabular}{l*{7}{c}}
+\toprule
+  \emph{Dependent variable: } &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   &\multicolumn{1}{c}{(5)} &\multicolumn{1}{c}{(6)}    \\
+        \emph{UKIP vote share in... }    &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{TC}   &\multicolumn{1}{c}{CB}    &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}  &\multicolumn{1}{c}{BTX}     \\ 
+            
+ \midrule
+\emph{Panel A:} Local elections \\
+\input{tables/did-pct_votes_UKIP-ryr.tex} \\
+\emph{Panel B:} European elections  \\
+\input{tables/did-UKIPPct-ryr.tex} \\
+\emph{Panel C:} Westminster elections  \\
+\input{tables/did-westminster-ukip-ryr.tex} \\
+
+\midrule
+\input{tables/did-polled-stats-ryr.tex} 
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS regressions with the dependent variable being UKIP's vote share in English and Welsh  Local Elections from 2000 to 2015 in Panel A, European Elections in Panel B and Westminster Elections in Panel C. The regressions control for local authority district fixed effects in Panels A and B, and harmonized constituency level in panel C as well as region by year fixed effects throughout. Standard errors clustered at the Local Government Authority District Level in Panel A and B and at the Harmonized Constituency level in Panel C, with standard errors presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{The Impact of different austerity measures on support for UKIP: exploiting individual level data \label{table:ukipeither-individual}}
+\begin{tabular}{l*{4}{c}}
+\toprule
+   \emph{Dependent variable: }                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)} &\multicolumn{1}{c}{(3)}     \\ 
+                   
+  \emph{support UKIP}             &\multicolumn{1}{c}{Any}   &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}    &\multicolumn{1}{c}{BTX}     \\ 
+              
+              
+                   
+\midrule
+\emph{Panel A:}  \\
+\input{tables/reform-did-ukipeither-id-rwtq.tex}
+District FE \& Region x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} \\
+\input{tables/reform-did-ukipeither-idwtq.tex}
+District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+\emph{Panel C:}  \\
+\input{tables/reform-did-ukipeither-pidp-idwtq.tex} 
+Individual FE \& District  x Wave x Time FE & x & x & x & x \\
+
+\addlinespace
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS. The dependent variable is a dummy variable taking the value 1 in case a respondent expresses support for UKIP. The columns indicate the different welfare reforms we study. Panel A controls for district by Region x Wave x Time fixed effects, thus exploiting between district and between individual variation. Panel B controls for District x Wave x Time Fixed effects, thus only exploiting between individual variation within a district. Panel C controls for Respondent fixed effects and District x Wave x Time Fixed Effects, exploiting only within-individual- and within district variation.   Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%-----------------------------------------------------------------------------
+
+ 
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{The Impact of different austerity measures on support for other parties: Exploiting individual level data \label{table:otherparties-austerity}}
+\begin{tabular}{l*{4}{c}}
+\toprule
+                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)} &\multicolumn{1}{c}{(4)}     \\ 
+                   
+            &\multicolumn{1}{c}{Any}   &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}    &\multicolumn{1}{c}{BTX}     \\ 
+              
+                   
+\midrule
+\emph{Panel A:} Support for Conservatives \\
+\input{tables/reform-did-coneither-pidp-idwtq.tex}
+\addlinespace
+
+\emph{Panel B:} Support for Labour \\
+\input{tables/reform-did-labeither-pidp-idwtq.tex}
+\addlinespace
+
+\emph{Panel C:} Support for Liberal Democrats   \\
+\input{tables/reform-did-libdemeither-pidp-idwtq.tex}
+\addlinespace
+
+\emph{Panel D:} Support for No party    \\
+\input{tables/reform-did-nonevote-pidp-idwtq.tex}
+\addlinespace
+
+
+Individual FE & x & x  & x & x  \\
+
+District x Wave x Time FE & x & x  & x & x  \\
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS regressions. The dependent variable is a dummy indicating individual USOC respondent's support for the Conservatives (panel A), the Labour party (panel B) and the Liberal Democratic party (panel C).  The regressions include various different levels of fixed effects indicated at the bottom of the table.  Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%-----------------------------------------------------------------------------
+
+
+
+ 
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Wider measures of perceptions of disenfranchisement and turnout: included only in some waves of the USOC study \label{table:broaderperceptions}}
+\begin{tabular}{l*{4}{c}}
+\toprule
+                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}      \\ 
+                   
+                   
+\midrule
+\addlinespace
+\emph{Panel A:} Public officials dont care \\
+\input{tables/reform-did-poleff3_num-post_anytreat.tex}
+\addlinespace
+
+\emph{Panel B:} Don't have say in what govt does \\
+\input{tables/reform-did-poleff4_num-post_anytreat.tex}
+\addlinespace
+
+\emph{Panel C:} Your vote is unlikely to make a difference  \\
+\input{tables/reform-did-perpolinf_dum-post_anytreat.tex}
+\addlinespace
+\addlinespace
+
+
+District FE & x & & \\
+Region x Wave x Time FE & x & & \\
+District x Wave x Time FE & & x  &  x  \\
+Individual FE &  & & x \\
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS regressions. The dependent variable in Panel A and B is a score on a 5 point likert scale (strongly disagree - strongly agree). In Panel C it is a dummy variable equal to 1 if respondents indicate that they think it is unlikely that their vote makes a difference.  Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Support for Leave among individuals exposed to any of the three welfare reform measures studied \label{table:leavecrosssectionalregression-sur}}
+\begin{tabular}{l*{6}{c}}
+\toprule
+                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)} &\multicolumn{1}{c}{(4)} &\multicolumn{1}{c}{(5)} &\multicolumn{1}{c}{(6)}     \\ 
+                                      
+\midrule
+\addlinespace
+\input{tables/seemingly-unrelated-old.tex}
+\addlinespace
+District FE & x &x  & x & x &x  & x  \\
+Qualifications \& Age FE & &x  & x & x &x  & x  \\
+Economic Activity Status FE  & &  & x  & x &x  & x  \\
+Income Decile  FE  & &  &  & x &x  & x  \\
+Health conditions   & &  &  &   & x & x \\
+Socio-economic status \& Employment Sector FE  & &  &  &  &  & x \\
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports reports seemingly unrelated regression results on the system consisting of equations \ref{ref:system} and  \ref{ref:sys2aleave} studying individuals supporting leave and switching to UKIP jointly. The sample gets successively smaller as more control variables get added that are not available across the full sample. In case a variable is not reported on in the wave asking the referendum question I use the value recorded in the most recent time this variable was observed for an individual to maximize the sample size. Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+
+%-----------------------------------------------------------------------------
+
+
+\setstretch{1.35}
+
+\newpage
+\startappendixtables{}
+\startappendixfigures{}
+ 
+\appendix
+\clearpage
+
+%\setcounter{footnote}{0} \setcounter{page}{1} 
+
+\section{Further Robustness Checks and Additional Results\label{app:sectionA}}
+
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+
+\begin{figure}[h]
+\caption{UKIP Election Result in 2014 EP elections and EU referendum vote leave.\label{fig:referendumukipvote}}
+\begin{center}$
+\begin{array}{l}
+\includegraphics[scale=.3]{../Draft/figures/ukip-voteleave.png}
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} This figure is reproduced from Appendix Figure A2 in \citep{Becker2016b}. The R-squared of a univariate cross-sectional regression of support for Leave and UKIP vote share in the 2014 elections is 75\%, and the point estimate is a near straight line with an intercept of 25 percentage points, suggesting that UKIP EP vote share plus 25\% does a reasonably good job predicting the EU referendum vote share for Leave.}
+\end{figure}
+%\end{landscape}
+
+%-----------------------------------------------------------------------------
+
+%-----------------------------------------------------------------------------
+
+\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of austerity on support for UKIP overall and by individual measures studying \emph{Westminster elections}.\label{fig:nonparametric-ukip-austerity-westminster}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: Overall austerity shock } &  \text{Panel B: Council Tax Benefit  }   \\
+\includegraphics[scale=.25]{figures/westminster-ukip-did-totalimpact_finlosswapyr-ryr}  &
+\includegraphics[scale=.25]{figures/westminster-ukip-did-counciltaxbenefit_finlosswapyr-ryr} \\
+
+
+ \text{Panel C: Disability living allow.  }  & \text{Panel D: Bedroom Tax  }  \\
+\includegraphics[scale=.25]{figures/westminster-ukip-did-disabilitylivingallow_finlosswp-ryr.png} &
+\includegraphics[scale=.25]{figures/westminster-ukip-did-bedroom_tax_finlosswapyr-ryr} \\
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in Westminster elections across the 570 harmonized constituencies in the 2001, 2005, 2010 and 2015 Westminster elections. The graph plots point estimates of the interaction between the simulated incidence of the austerity measures and a set of year fixed effects with 2010 as omitted year. All regression include constituency fixed effects  and NUTS1 region by year fixed effects. Standard errors are clustered at the constituency level with 90\% confidence bands indicated.}
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+ 
+
+
+%-----------------------------------------------------------------------------
+
+\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of austerity on support for UKIP overall and by individual measures studying \emph{European elections}.\label{fig:nonparametric-ukip-austerity-ep}}
+\begin{center}$
+\begin{array}{llll}
+\text{Panel A: Overall austerity shock } & \text{Panel B: Council Tax Benefit  } \\
+\includegraphics[scale=.25]{figures/ep-UKIPPct-did-totalimpact_finlosswapyr-ryr}  &
+\includegraphics[scale=.25]{figures/ep-UKIPPct-did-counciltaxbenefit_finlosswapyr-ryr} \\
+
+ \text{Panel C: Disability living allow.  }  & \text{Panel D: Bedroom Tax  } \\
+\includegraphics[scale=.25]{figures/ep-UKIPPct-did-disabilitylivingallow_finlosswap-ryr.png} &
+\includegraphics[scale=.25]{figures/ep-UKIPPct-did-bedroom_tax_finlosswapyr-ryr}  \\
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in European Parliamentary elections of 2004, 2009 and 2014 at the district level. The graph plots point estimates of the interaction between the simulated incidence of the austerity measures and a set of year fixed effects with 2009 being the omitted year. All regression include district fixed effects  and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+ 
+ 
+
+
+
+%-----------------------------------------------------------------------------
+
+
+\begin{figure}[h]
+\caption{Effect of Austerity on Local Area Gross Value Added per capita\label{fig:localareagva-timeeffect}}
+\begin{center}$
+\begin{array}{l}
+ \includegraphics[scale=.54]{figures/logGVA_Allindustripc-did-totalimpact_finlosswapyr-ryr.png}   
+ \end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the log value of the  gross value added per working age adult in a local authority area between 2000 to 2015.  The graph plots point estimates of the interaction between the overall simulated local authority area austerity incidence and a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+
+%-----------------------------------------------------------------------------
+
+ 
+ 
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Evolution of labor, benefit and gross income for individuals affected by the council tax benefit abolishment \label{fig:evolution-benefit-counciltaxbenefit}}
+\begin{center}$
+\begin{array}{ccc}
+\includegraphics[scale=.23]{figures/fimnlabnet_dv-always_counciltaxbenefit-event-id-rwtq.png}  & \includegraphics[scale=.23]{figures/fimnsben_dv-always_counciltaxbenefit-event-id-rwtq.png} & \includegraphics[scale=.23]{figures/fimngrs_dv-always_counciltaxbenefit-event-id-rwtq.png}  \\
+ \text{Labor income} & \text{Benefit income} & \text{Gross income} \\ \addlinespace \addlinespace
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the monthly labor income on the left, the monthly social benefit income in the center and gross income in the right. Estimated coefficients capture interaction between whether an individual has always received council tax benefit. The vertical line indicates the time from which council tax benefit was abolished and those previously claiming benefits were send a council tax demand letter. Regressions absorb local authority and region by time effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+\begin{figure}[h]
+\caption{Impact of ``disability living allowance'' conversion starting October 28 2013 on support for UKIP\label{fig:dla-pip-event}}
+\begin{center}$
+\begin{array}{c}
+
+\includegraphics[scale=.4]{figures/ukipeither-alwys_bprxy_dla_pip_dum-event-id-rwtq.png} 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} Figure plots event studies studying the impact of the abolishment of council tax benefit on previous recipients. The dependent variable in the left panel is a dummy variable indicating whether the respondent revealed a political preference in support of UKIP. The dependent panel in the right hand side is an indicator variable indicating whether the respondent is behind with his or her council tax payments. The regressions control  for counil by survey wave by time fixed effects.  The graph plots point estimates of the interaction between an indicator variable indicating whether the individual respondents received council tax benefit at each point in time in the three years prior to the reform in which they were observed in the sample interacted with an indicator for the survey quarter.  Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+
+\end{figure}
+%\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+
+\begin{figure}[h]
+\caption{Support for Leave in EU referendum by respondent's political party preference\label{fig:leave-averages-partyeither}}
+\begin{center}$
+\begin{array}{l}
+ \includegraphics[scale=.54]{figures/coefplot-leave-last-earliest-party.png}   
+ \end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The plot presents sample averages of Leave support in Wave 8 of the USOC survey by the respondents expressed political support for UKIP, the Conservatives, Labour or the Liberal Democrats at the earliest instance and the latest instance.}
+\end{figure}
+
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Excluding individuals ever having worked in manufacturing, mining or agriculture: Non-parametric estimates capturing the evolution of labor and benefit income \emph{within-individuals} over time for respondents with low- and high levels of human capital  \label{fig:evolution-incomes-qual-nevermanu}}
+\begin{center}$
+\begin{array}{ccc}
+\multicolumn{3}{c}{\text{\textbf{\emph{Panel A:} Evolution of benefit and labor income for individuals with no qualifications}}}\\
+\includegraphics[scale=.25]{figures/fimnlabgrs_dv-did-qual_1-idwyr-nevermanu}  & \includegraphics[scale=.25]{figures/fimnsben_dv-did-qual_1-idwyr-nevermanu} & \includegraphics[scale=.25]{figures/fimngrs_dv-did-qual_1-idwyr-nevermanu}  \\
+ \text{Labor income} & \text{Benefit income} & \text{Gross income} \\ \addlinespace \addlinespace
+
+\multicolumn{3}{c}{\text{\textbf{\emph{Panel B:} Evolution of benefit and labor income for individuals with university degree}}}\\
+\includegraphics[scale=.25]{figures/fimnlabgrs_dv-did-qual_4-idwyr-nevermanu}  & \includegraphics[scale=.25]{figures/fimnsben_dv-did-qual_4-idwyr-nevermanu} & \includegraphics[scale=.25]{figures/fimngrs_dv-did-qual_4-idwyr-nevermanu}  \\
+ \text{Labor income} & \text{Benefit income} & \text{Gross income} 
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the monthly gross labor income on the left, and the monthly benefit income on the right. The population is restricted to the sample of BHPS and USOC respondents that are not retired and that have never worked in manufacturing, mining or agriculture. The BHPS survey waves 11-18 start in 2001 and end in 2009, while the larger USOC survey starts in 2009 and includes some, but not all of the former BHPS from Wave 2 onwards. The graph plots point estimates of the interaction between the qualification status of respondents (having no qualifications in top row, versus having a university degree in bottom row) on monthly labor or benefit income.  All regression include individual respondent fixed effects and local authority by survey wave by time fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+
+\end{figure}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Summary statistics of main variables used \label{table:summarystats}}
+\begin{tabular}{l*{3}{c}}
+\toprule
+               %    &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}      \\ 
+                   
+%Sector           &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{Retail \& Distr.}   &\multicolumn{1}{c}{Public admin}    &\multicolumn{1}{c}{Manuf.}    &\multicolumn{1}{c}{Business Serv.} &\multicolumn{1}{c}{Construction}  &\multicolumn{1}{c}{Financial Serv.}    \\ 
+                   
+\midrule
+\emph{Panel A:} District level \\
+\input{tables/summary_stats.tex}
+\addlinespace
+\emph{Panel B:} Individual level \\
+\input{tables/summary_stats_ind.tex}
+
+\addlinespace
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+%\item Notes: Table reports results from a OLS regressions. The dependent variable capture the extent to which respondents like or dislike one of the three main political parties. They are measured on a 10 point Likert scale ranging from strong dislike to strongly like.  Standard errors clustered at the Local Government Authority District Level are presented in parentheses.
+} 
+\end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+\begin{table}[h!]
+\scalebox{0.8}{
+  \begin{threeparttable}
+  \caption{Robustness of the Impact of different austerity measures on support for UKIP across Local, European and Westminster elections: Adding district specific linear time trends\label{table:austeritydid-trend}}
+\begin{tabular}{l*{7}{c}}
+\toprule
+ %                  &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   &\multicolumn{1}{c}{(5)}   &\multicolumn{1}{c}{(6)}   &\multicolumn{1}{c}{(7)}   &\multicolumn{1}{c}{(8)}  &\multicolumn{1}{c}{(9)}   &\multicolumn{1}{c}{(10)}  &\multicolumn{1}{c}{(11)}      \\
+ \emph{Dependent variable: }  &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   &\multicolumn{1}{c}{(5)} &\multicolumn{1}{c}{(6)}    \\
+% taxcredits  childbenefit bedroom_tax  disabilitylivingallow counciltaxbenefit
+      \emph{UKIP vote share in... }            &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{TC}   &\multicolumn{1}{c}{CB}    &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}  &\multicolumn{1}{c}{BTX}     \\ 
+            
+ \midrule
+	%	& \multicolumn{3}{c}{} &\multicolumn{3}{c}{\emph{studied with ind. level data}}   \\
+ 		                                  %      \cmidrule(lr){5-7}                                     
+
+\emph{Panel A:} Local  \\
+\input{tables/did-pct_votes_UKIP-trend-ryr.tex} \\
+\emph{Panel B:} European  \\
+\input{tables/did-UKIPPct-trend-ryr.tex} \\
+\emph{Panel C:} Westminster  \\
+\input{tables/did-westminster-ukip-pcon-year-ryr.tex} \\
+
+\midrule
+\input{tables/did-polled-stats-ryr.tex} 
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS regressions with the dependent variable being UKIP's vote share in English and Welsh  Local Elections from 2000 to 2015 in Panel A, European Elections in Panel B and Westminster Elections in Panel C. The regressions control for local authority district fixed effects and local authority district-specific linear trends in Panels A and B, and harmonized constituency level and constituency-specific linear trends in panel C as well as region by year fixed effects throughout. Standard errors clustered at the Local Government Authority District Level in Panel A and B and at the Harmonized Constituency level in Panel C, with standard errors presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{table}[tbp]
+\scalebox{0.8}{
+  \begin{threeparttable}
+  \caption{The Impact of different austerity on local area gross value added by sector with spending multiplier estimates\label{table:multipliers}}
+\begin{tabular}{l*{7}{c}}
+\toprule
+                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   &\multicolumn{1}{c}{(5)}   &\multicolumn{1}{c}{(6)}    &\multicolumn{1}{c}{(7)}     \\ 
+                   
+Sector           &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{Retail \& Distr.}   &\multicolumn{1}{c}{Public admin}    &\multicolumn{1}{c}{Manuf.}    &\multicolumn{1}{c}{Business Serv.} &\multicolumn{1}{c}{Construction}  &\multicolumn{1}{c}{Financial Serv.}    \\ 
+                   
+\midrule
+\input{tables/did-multipliers-totalimpact-ryr}
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS regressions with local authority area and region by year fixed effects. The dependent variable is the log value of the sector specific gross value added measured in £ 1000 per working age adult in a local authority area between 2000 to 2015. The multiplier effect is the size of the contraction in gross value added due to a one pound contraction transfer-income due to the austerity-induced welfare reforms studied in Section \ref{sec:aggregateausterity}. Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+\end{landscape}
+
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+\begin{table}[tbp]
+\centering{
+\scalebox{0.85}{
+  \begin{threeparttable}
+  \caption{Austerity, UKIP and support for Leave in 2016: Exploring changes in UKIP support across Local, European and Westminster elections\label{table:austerity-cross-section-leave-ukip}}
+\begin{tabular}{l*{3}{c}}
+\toprule
+ %                  &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   &\multicolumn{1}{c}{(5)}   &\multicolumn{1}{c}{(6)}   &\multicolumn{1}{c}{(7)}   &\multicolumn{1}{c}{(8)}  &\multicolumn{1}{c}{(9)}   &\multicolumn{1}{c}{(10)}  &\multicolumn{1}{c}{(11)}      \\
+  \emph{Dependent variable: Leave vote share in 2016}  &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}      \\
+% taxcredits  childbenefit bedroom_tax  disabilitylivingallow counciltaxbenefit
+      %      &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{TC}   &\multicolumn{1}{c}{CB}    &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}  &\multicolumn{1}{c}{BTX}     \\ 
+            
+ \midrule
+\emph{Panel A:} Local Elections   \\
+\input{tables/cross-section-both-dchpct_votes_UKIP-ryr.tex} \\
+               
+\emph{Panel B:} European Elections \\
+\input{tables/cross-section-both-dchUKIPPct-ryr.tex} \\
+
+\emph{Panel C:} Westminster elections \\
+\input{tables/cross-section-both-dchukip-Region.tex} \\
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: The dependent variable throughout is a measure of Leave support measured at the district level in Panel A and B, at the constituency level using the estimates constructed by \cite{Hanretty2017} in Panel C.  Austerity refers to the main austerity shock measure used in Section 4. $\Delta$ UKIP in Panel A measures the change in support for UKIP between the 2009 and 2014 EP elections, the change in support for UKIP between the 2009-2012 and 2013-2015 time windows in local elections in Panel B. In Panel C, it measures the change in support for UKIP between 2010 and 2015 Westminster elections.   All regressions control for region fixed effects. Standard errors clustered at the Local Government Authority District Level in Panel A and B and at the Harmonized Constituency level in Panel C, are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+    }  
+\end{table}
+%\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{table}[tbp]
+\scalebox{.82}{
+  \begin{threeparttable}
+  \caption{Robustness to accounting for non-linear time varying shocks affecting individuals with different characteristics \label{table:ukipeither-robustness-education}}
+\begin{tabular}{l*{6}{c}}
+\toprule
+   
+
+ & & \multicolumn{5}{c}{Controlling for shocks specific to}  \\
+\cmidrule(lr){3-7} 
+                          & & \multicolumn{3}{c}{Qualification \& Ec. activity}   &\multicolumn{2}{c}{Life histories}   \\ 
+                                                                                            \cmidrule(lr){3-5}                                                                                              \cmidrule(lr){6-7}                                   
+ \emph{Dependent variable: }       \emph{support for UKIP}                  &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}  &\multicolumn{1}{c}{(4)} &\multicolumn{1}{c}{(5)}  &\multicolumn{1}{c}{(6)}     \\ 
+
+\midrule
+\emph{Panel A:}  \\
+\input{tables/robustness-time-varying-anytreat-id-rwtq.tex}
+District FE \& Region x Wave x Time FE & x & x & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} \\
+\input{tables/robustness-time-varying-anytreat-idwtq.tex}
+District  x Wave x Time FE & x & x & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+\emph{Panel C:}  \\
+\input{tables/robustness-time-varying-anytreat-pidp-idwtq.tex} 
+Individual FE \& District  x Wave x Time FE & x & x & x & x & x & x \\
+
+\\
+Region x Qualifications x Wave x Time FE &   & x &  & x &  & x\\
+Region x Economic Activity x Wave x Time FE &   &  & x & x &  & x \\
+Economic Activity History x Time FE  &  &   &  &  & x & x\\
+
+
+\addlinespace
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS. The dependent variable is a dummy variable taking the value 1 in case a respondent expresses support for UKIP. Panel A controls for district by NUTS 1 Region x Wave x Time fixed effects, thus exploiting between district and between individual variation. Panel B controls for District x Wave x Time Fixed effects, thus only exploiting between individual variation within a district. Panel C controls for Respondent fixed effects and District x Wave x Time Fixed Effects, exploiting only within-individual- and within district variation.   Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{table}[!htb]
+    \caption{Robustness of impact of different austerity measures on support for UKIP studying alternative control groups: exploiting individual-level data \label{table:ukipeither-individual-robustmatching}}
+    \scalebox{.8}{
+    \begin{minipage}{.555\linewidth}
+%      \caption{Overalll}
+      \centering
+\begin{tabular}{l*{4}{c}}
+\toprule
+                                      	& \multicolumn{4}{c}{Whole sample}    \\
+                                                      \cmidrule(lr){2-5}                                   
+                        \emph{Dependent variable}                                                 &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)} &\multicolumn{1}{c}{(4)}     \\ 
+ \emph{support for UKIP}           &\multicolumn{1}{c}{Any}   &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}    &\multicolumn{1}{c}{BTX}     \\ 
+\midrule
+\emph{Panel A:}  \\
+\input{tables/reform-did-ukipeither-id-rwtq.tex}
+District FE & x & x & x & x \\
+Region x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} \\
+\input{tables/reform-did-ukipeither-idwtq.tex}
+District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+\emph{Panel C:}  \\
+\input{tables/reform-did-ukipeither-pidp-idwtq.tex} 
+Individual FE & x & x & x & x \\
+District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\bottomrule
+\end{tabular}
+    \end{minipage}%3
+    \begin{minipage}{.3\linewidth}
+      \centering
+ %     \caption{Refined control group}
+\begin{tabular}{l*{4}{c}}
+\toprule
+                                      	& \multicolumn{4}{c}{Matched sample}    \\
+                                                      \cmidrule(lr){2-5}                                   
+                                                                         &\multicolumn{1}{c}{(5)}   &\multicolumn{1}{c}{(6)}   &\multicolumn{1}{c}{(7)} &\multicolumn{1}{c}{(8)}     \\ 
+            &\multicolumn{1}{c}{Any}   &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}    &\multicolumn{1}{c}{BTX}     \\ 
+\midrule
+ \\
+\input{tables/reform-matched-did-ukipeither-id-rwtq}
+  & x & x & x & x \\
+  & x & x & x & x \\
+\addlinespace
+\addlinespace
+  \\
+\input{tables/reform-matched-did-ukipeither-idwtq}
+  & x & x & x & x \\
+   \addlinespace
+\addlinespace
+ \\
+\input{tables/reform-matched-did-ukipeither-pidp-idwtq} 
+  & x & x & x & x \\
+    & x & x & x & x \\
+    \addlinespace
+\bottomrule
+\end{tabular}
+ \end{minipage} 
+       \begin{minipage}{0.36\linewidth}
+      \centering
+ %     \caption{Refined control group}
+\begin{tabular}{l*{4}{c}}
+\toprule
+                  & \multicolumn{4}{c}{Narrower control group}    \\
+                                                      \cmidrule(lr){2-5}                                   
+                                                                         &\multicolumn{1}{c}{(9)}   &\multicolumn{1}{c}{(10)}   &\multicolumn{1}{c}{(11)} &\multicolumn{1}{c}{(12)}     \\ 
+            &\multicolumn{1}{c}{Any}   &\multicolumn{1}{c}{CTB}   &\multicolumn{1}{c}{DLA}    &\multicolumn{1}{c}{BTX}     \\ 
+\midrule
+ \\
+\input{tables/reform-did-ukipeither-id-rwtq-refinedcontrolgroup}
+  & x & x & x & x \\
+    & x & x & x & x \\
+\addlinespace
+\addlinespace
+  \\
+\input{tables/reform-did-ukipeither-idwtq-refinedcontrolgroup.tex}
+  & x & x & x & x \\
+\addlinespace
+\addlinespace
+ \\
+\input{tables/reform-did-ukipeither-pidp-idwtq-refinedcontrolgroup.tex} 
+  & x & x & x & x \\
+    & x & x & x & x \\
+\addlinespace
+\bottomrule
+\end{tabular}
+\end{minipage}
+    }
+\addlinespace
+\footnotesize{
+Notes: Table reports results from a OLS regressions with the dependent variable capturing whether an individual expresses support for UKIP. Panel A controls for local authority district and region by wave by time fixed effects. Panel B controls for local authority district by wave by time fixed effects. Panel C controls for individual fixed effects and local authority district by wave by time fixed effects. Columns (1 - (4) present the main results. Columns (5) - (8) constrain the analysis to include only individuals in the control group that are matched to individuals in the treatment group using propensity score matching on a vector of baseline characteristics prior to each reform. Columns (9) - (12) constrain the control group to only include individuals that have, at any point in time, received one of the three benefits. Standard errors clustered at the local Government Authority district-level are presented in parentheses, stars indicate *** $p<0.01$, ** $p<0.05$, * $p<0.1$. } 
+
+
+\end{table}
+
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Effect of austerity on political preferences: Studying the original political preferences of supporters of different political parties \label{table:partymovesto-from}}
+\begin{tabular}{l*{5}{c}}
+\toprule
+                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)} &\multicolumn{1}{c}{(4)}    &\multicolumn{1}{c}{(5)}     \\ 
+                   
+            &\multicolumn{1}{c}{UKIP}   &\multicolumn{1}{c}{Conservatives}   &\multicolumn{1}{c}{Labour}    &\multicolumn{1}{c}{Lib Dems}  &\multicolumn{1}{c}{No party}    \\ 
+            
+\midrule
+
+\emph{Initial party preference...}\\
+\input{tables/partymovesto-from.tex}
+\addlinespace
+Individual FE  & x & x & x & x & x \\
+District x Region x Time FE & x & x & x & x & x \\
+
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS. The dependent variable is a dummy variable taking the value 1 in case a respondent expresses support for the party provided in the column head (either stating they are a supporter, feel close or would vote for the party if there was a general election tomorrow). The underlying regression interacts the individual level exposure to welfare reforms studied in Table \ref{table:ukipeither-individual} with a baseline measure of an individual's stated political party preference recorded the first time the respondents contribute to the USOC study. Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Effect of exposure to welfare cuts on like/ or dislike of the established political parties: included only in Wave 2, 3 and 6 in USOC study \label{table:partylikedislike}}
+\begin{tabular}{l*{4}{c}}
+\toprule
+                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}      \\ 
+                   
+%Sector           &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{Retail \& Distr.}   &\multicolumn{1}{c}{Public admin}    &\multicolumn{1}{c}{Manuf.}    &\multicolumn{1}{c}{Business Serv.} &\multicolumn{1}{c}{Construction}  &\multicolumn{1}{c}{Financial Serv.}    \\ 
+                   
+\midrule
+\emph{Panel A:} Like or dislike Conservatives \\
+\input{tables/reform-did-colbens1-post_anytreat.tex}
+\addlinespace
+
+\emph{Panel B:} Like or dislike Labour \\
+\input{tables/reform-did-colbens2-post_anytreat.tex}
+\addlinespace
+
+\emph{Panel C:} Like or dislike Liberal Democrats   \\
+\input{tables/reform-did-colbens3-post_anytreat.tex}
+\addlinespace
+
+
+District FE & $\times$ & & \\
+Region x Wave x Time FE & $\times$ & & \\
+District x Wave x Time FE & & $\times$  &  $\times$  \\
+Individual FE &  & & $\times$ \\
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a OLS regressions. The dependent variable capture the extent to which respondents like or dislike one of the three main political parties. They are measured on a 10 point Likert scale ranging from strong dislike to strongly like.  Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Effects of benefit cut exposure on wider measures of perceptions of disenfranchisement \emph{controlling for individual level political party preferences}\label{table:broaderperceptions-controlparty}}
+\begin{tabular}{l*{4}{c}}
+\toprule
+                   &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}      \\ 
+                   
+%Sector           &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{Retail \& Distr.}   &\multicolumn{1}{c}{Public admin}    &\multicolumn{1}{c}{Manuf.}    &\multicolumn{1}{c}{Business Serv.} &\multicolumn{1}{c}{Construction}  &\multicolumn{1}{c}{Financial Serv.}    \\ 
+                   
+\midrule
+\addlinespace
+\emph{Panel A:} Public officials dont care \\
+\input{tables/reform-did-controlparty-poleff3_num-post_anytreat.tex}
+\addlinespace
+
+\emph{Panel B:} Don't have say in what govt does \\
+\input{tables/reform-did-controlparty-poleff4_num-post_anytreat.tex}
+\addlinespace
+
+\emph{Panel C:} Your vote is unlikely to make a difference  \\
+\input{tables/reform-did-controlparty-perpolinf_dum-post_anytreat.tex}
+\addlinespace
+\addlinespace
+
+Individual level political party preference  & x & x  & x  \\
+District FE & x & & \\
+Region x Wave x Time FE & x & & \\
+District x Wave x Time FE & & x  &  x  \\
+Individual FE &  & & x \\
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a panel OLS regressions. The individual level political party preference controls for time-varying individual level political party preference for Labour, the Conservatives, the Liberal Democrats, UKIP or No Party. The dependent variable in Panel A and B is a score on a 5 point likert scale (strongly disagree - strongly agree). In Panel C it is a dummy variable equal to 1 if respondents indicate that they think it is unlikely that their vote makes a difference.  Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{table}[!htb]
+    \caption{Wider measures of perceptions of disenfranchisement and turnout: robustness included only in some waves of the USOC study \label{table:broaderoutcomes-robust-reform}}
+    \scalebox{.75}{
+    \begin{minipage}{.68\linewidth}
+%      \caption{Overalll}
+      \centering
+\begin{tabular}{l*{3}{c}}
+\toprule
+                                      	& \multicolumn{3}{c}{Any reform}    \\
+                                                      \cmidrule(lr){2-4}                                   
+                                                                         &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}    \\ 
+\midrule
+\emph{Panel A:} Public officials dont care \\
+\input{tables/reform-did-poleff3_num-post_anytreat.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} Don't have say in what govt does \\
+\input{tables/reform-did-poleff4_num-post_anytreat.tex}
+\addlinespace
+\addlinespace
+\emph{Panel C:} Your vote is unlikely to make a difference  \\
+\input{tables/reform-did-perpolinf_dum-post_anytreat.tex}
+\addlinespace
+\addlinespace
+ \emph{Panel D}: Likelihood to vote in next election \\
+\input{tables/reform-wide-did-voteintent-post_anytreat.tex}
+\addlinespace
+District FE & x & & \\
+Region x Wave x Time FE & x & & \\
+District x Wave x Time FE & & x  &  x  \\
+Individual FE &  & & x \\
+\bottomrule
+\end{tabular}
+    \end{minipage}%3
+    \begin{minipage}{.22\linewidth}
+      \centering
+\begin{tabular}{l*{3}{c}}
+\toprule
+                                      	& \multicolumn{3}{c}{CTB}    \\
+                                                      \cmidrule(lr){2-4}                                   
+                                                                         &\multicolumn{1}{c}{(4)}   &\multicolumn{1}{c}{(5)}   &\multicolumn{1}{c}{(6)}    \\ 
+\midrule
+  \\
+\input{tables/reform-wide-did-poleff3_num-post_counciltaxbenefit}
+%District FE \& Region x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+  \\
+\input{tables/reform-wide-did-poleff4_num-post_counciltaxbenefit.tex}
+%District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+ \\
+\input{tables/reform-wide-did-perpolinf_dum-post_counciltaxbenefit}
+%Individual FE \& District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+ \\
+\input{tables/reform-wide-did-voteintent-post_counciltaxbenefit}
+%Individual FE \& District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+
+  & x & & \\
+    & x & & \\
+  & & x  &  x  \\
+ &  & & x \\
+
+\bottomrule
+\end{tabular}
+
+ \end{minipage} 
+       \begin{minipage}{.22\linewidth}
+      \centering
+\begin{tabular}{l*{3}{c}}
+\toprule
+                                      	& \multicolumn{3}{c}{DLA}    \\
+                                                      \cmidrule(lr){2-4}                                   
+                                                                         &\multicolumn{1}{c}{(7)}   &\multicolumn{1}{c}{(8)}   &\multicolumn{1}{c}{(9)}    \\ 
+\midrule
+  \\
+  \input{tables/reform-wide-did-poleff3_num-post_dlapip}
+%District FE \& Region x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+ \\
+\input{tables/reform-wide-did-poleff4_num-post_dlapip}
+%District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+ \\
+\input{tables/reform-wide-did-perpolinf_dum-post_dlapip}
+%Individual FE \& District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+ \\
+\input{tables/reform-wide-did-voteintent-post_dlapip}
+%Individual FE \& District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+
+  & x & & \\
+    & x & & \\
+  & & x  &  x  \\
+ &  & & x \\
+
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+       \begin{minipage}{.22\linewidth}
+      \centering
+\begin{tabular}{l*{3}{c}}
+\toprule
+                                      	& \multicolumn{3}{c}{BTX}    \\
+                                                      \cmidrule(lr){2-4}                                   
+                                                                         &\multicolumn{1}{c}{(10)}   &\multicolumn{1}{c}{(11)}   &\multicolumn{1}{c}{(12)}    \\ 
+\midrule
+  \\
+  \input{tables/reform-wide-did-poleff3_num-post_hbcuttype}
+%District FE \& Region x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+
+ \\
+\input{tables/reform-wide-did-poleff4_num-post_hbcuttype}
+%District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+ \\
+\input{tables/reform-wide-did-perpolinf_dum-post_hbcuttype}
+%Individual FE \& District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+\addlinespace
+ \\
+\input{tables/reform-wide-did-voteintent-post_hbcuttype}
+%Individual FE \& District  x Wave x Time FE & x & x & x & x \\
+\addlinespace
+
+  & x & & \\
+    & x & & \\
+  & & x  &  x  \\
+ &  & & x \\
+
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+    }
+\addlinespace
+\footnotesize{
+Notes: Columns (1) - (3) replicate main Table \ref{table:broaderperceptions}.  Columns (4) - (6) focus on the individuals affected by council tax benefit reform. Columns (7) - (9) focus on the sample exposed to the disability living allowance reform, while columns (10)-(12) focus on the sample of individuals likely exposed to the bedroom tax. Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} 
+
+\end{table}
+
+\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+
+
+
+
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Alternative broader outcome measures and support for Leave across different control variables: Controlling for political party preferences\label{table:leavecrosssectionalbroadermeasures-control}}
+\begin{tabular}{l*{6}{c}}
+\toprule
+  \emph{Dependent variable: Leave support}                  &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)} &\multicolumn{1}{c}{(4)} &\multicolumn{1}{c}{(5)} &\multicolumn{1}{c}{(6)}     \\ 
+                   
+%Sector           &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{Retail \& Distr.}   &\multicolumn{1}{c}{Public admin}    &\multicolumn{1}{c}{Manuf.}    &\multicolumn{1}{c}{Business Serv.} &\multicolumn{1}{c}{Construction}  &\multicolumn{1}{c}{Financial Serv.}    \\ 
+                   
+\midrule
+\addlinespace
+\input{tables/crosssectional-leave-regs-otherproxies.tex}
+\addlinespace
+Political party preferences & x &x  & x & x &x  & x \\
+District FE & x &x  & x & x &x  & x  \\
+Qualifications \& Age FE & &x  & x & x &x  & x  \\
+Economic Activity Status FE  & &  & x  & x &x  & x  \\
+Income Decile  FE  & &  &  & x &x  & x  \\
+Health conditions   & &  &  &   & x & x \\
+Socio-economic status \& Employment Sector FE  & &  &  &  &  & x \\
+
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a cross-sectional OLS regressions. The dependent variable is a dummy indicating whether respondents stated that they support Leaving the EU. The sample gets successively smaller as more control variables get added that are not available across the full sample. In case a variable is not reported on in a specific wave, the most recent time a control variable is observed for an individual in the panel is used. Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+%\end{landscape}
+
+%-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{table}[tbp]
+\scalebox{.9}{
+  \begin{threeparttable}
+  \caption{Robustness to using control group individuals refined using matching \label{table:crosssectional-leave-regs-matched}}
+\begin{tabular}{l*{8}{c}}
+\toprule
+  \emph{Dependent variable: Leave support}                  &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)} &\multicolumn{1}{c}{(4)} &\multicolumn{1}{c}{(5)} &\multicolumn{1}{c}{(6)} &\multicolumn{1}{c}{(7)}    &\multicolumn{1}{c}{(8)}     \\ 
+                   
+%Sector           &\multicolumn{1}{c}{Overall}   &\multicolumn{1}{c}{Retail \& Distr.}   &\multicolumn{1}{c}{Public admin}    &\multicolumn{1}{c}{Manuf.}    &\multicolumn{1}{c}{Business Serv.} &\multicolumn{1}{c}{Construction}  &\multicolumn{1}{c}{Financial Serv.}    \\ 
+                   
+\midrule
+\addlinespace
+\input{tables/crosssectional-leave-regs-matched.tex}
+\addlinespace
+District FE & x &x  & x & x &x  & x & x & x \\
+Qualifications FE & &x  & x & x &x  & x & x & x \\
+Age FE  & &  & x & x &x  & x & x & x \\
+Employment Status FE  & &  &  & x &x  & x & x & x \\
+Income Decile  FE  & &  &  &  &x  & x & x & x \\
+Industry of Employment  FE  & &  &  &  &  & x & x & x \\
+Socio-economic status group FE  & &  &  &  &  &  & x & x \\
+Health conditions  & &  &  &  &  &  &  & x \\
+
+\bottomrule
+\end{tabular}
+    \begin{tablenotes} {\footnotesize
+\item Notes: Table reports results from a cross-sectional OLS regressions. The dependent variable is a dummy indicating whether respondents stated that they support Leaving the EU. The sample is restricted based on individuals that are good matches among the set of individuals not exposed to either of the three benefit reforms studied in detail. Matches are constructed with replacement with matching on gender, age, indicator variables capturing whether an individual is employed, working in family care roles, retired, self-employed, a student or unemployed, together with the tenancy status indicator of whether an individual lives in rented accommodation, owns the property outright or with a mortgage, together with a set of features capturing the educational attainment across the five categories included in the UK census, along with the log value of pre-treatment monthly benefit income. A caliper of 0.01 is imposed to retain good quality matched pairs. The sample gets successively smaller as more control variables get added that are not available across the full sample. In case a variable is not reported on in a specific wave, the most recent time a control variable is observed for an individual in the panel is used. Standard errors clustered at the Local Government Authority District Level are presented in parentheses.} \end{tablenotes}
+      \end{threeparttable}
+      
+ }
+      
+\end{table}
+\end{landscape}
+
+%-----------------------------------------------------------------------------
+
+
+
+
+\clearpage
+\newpage
+\startappendixtablesC{}
+\startappendixfiguresC{}
+\section{Auxiliary Results\label{app:sectionC}}
+
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of educational qualification, socio-economic status, and sectoral employment of the resident population as of 2001 on support for UKIP \emph{in Westminster Parliamentary elections} from 2001 - 2015 over time\label{fig:nonparametric-qualification-nssec-industry-small-westminster}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.3]{figures/westminster-ukip-did-QUAL_ALL_noq_sh-ryr.png}  &
+\includegraphics[scale=.3]{figures/westminster-ukip-did-RoutineOccAll_sh-ryr.png} \\
+
+ \text{Panel C: Retail }& \text{Panel D: Manufacturing }  \\
+  \includegraphics[scale=.3]{figures/westminster-ukip-did-GRetailAll_sh-ryr.png} & 
+     \includegraphics[scale=.3]{figures/westminster-ukip-did-DManufAll_sh-ryr.png} 
+ 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in Westminster elections at the harmonized 2010 constituency level. Panel A uses the share of the resident population with no formal qualifications as of 2001. Panel B uses the share of the resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001. Panel C uses the share of the resident working age population employed in the Retail sector, while panel D uses the share of the resident working age population employed in Manufacturing. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and election wave by NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+\end{landscape}
+
+%-----------------------------------------------------------------------------
+ %-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of educational qualification, socio-economic status, and sectoral employment of the resident population as of 2001 on support for UKIP \emph{in European Parliamentary elections} over time\label{fig:nonparametric-qualification-nssec-industry-small-europeanparliamentary}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.3]{figures/ep-UKIPPct-did-QUAL_ALL_noq_sh-ryr.png}  &
+\includegraphics[scale=.3]{figures/ep-UKIPPct-did-RoutineOccAll_sh-ryr.png} \\
+
+ \text{Panel C: Retail }& \text{Panel D: Manufacturing }  \\
+  \includegraphics[scale=.3]{figures/ep-UKIPPct-did-GRetailAll_sh-ryr.png} & 
+     \includegraphics[scale=.3]{figures/ep-UKIPPct-did-DManufAll_sh-ryr.png} 
+ 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in European Parliamentary elections at the local authority district level. Panel A uses the share of the resident population with no formal qualifications as of 2001. Panel B uses the share of the resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001. Panel C uses the share of the resident working age population employed in the Retail sector, while panel D uses the share of the resident working age population employed in Manufacturing. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and election wave by NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+\end{landscape}
+
+%-----------------------------------------------------------------------------
+ %-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of educational qualification of the resident population in 2001 on support for UKIP over time\label{fig:nonparametric-qualification-local-full}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: Other qualifications } & \text{Panel B: No Qualification  } &  \text{Panel C: Level 1} \\
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_otherq_sh-ryr.png}  &
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png} &
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl1_sh-ryr.png}  \\
+\text{Panel D: Level 2  } & \text{Panel E: Level 3} &  \text{Panel F: Level 4 plus} \\
+
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl2_sh-ryr.png}  &
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl3_sh-ryr.png}  &
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl4_plus_sh-ryr.png} 
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The variable is the respective share of the resident population in a local authority district that has obtained the educational qualifications following the UK classification system,  whereby No qualifications means no formal qualification or school leaving certificate, Level 1 stands for having between 1-4 General Certificate of Secondary Education (GCSE) qualifications, Level 2 stands for  5 GCSEs, Level 3 means having 2 or more A-levels (university qualifying), while level 4 or above captures having a university degree. Other qualifications includes apprenticeships and foreign qualification below a university degree. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+\end{landscape}
+
+
+
+%-----------------------------------------------------------------------------
+ %-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\begin{landscape}
+\begin{figure}[h]
+\caption{Non-parametric effect of socio-economic employment status of the resident population in 2001 on support for UKIP over time\label{fig:nonparametric-nssec-local-full}}
+\begin{center}$
+\begin{array}{llll}
+ \text{Panel A: Long term unemployed} &  \text{Panel B : Routine job} & \text{Panel C: Semi-routine  } & \text{Panel D: Lower supervisory} \\
+
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-LLTunemployedAll_sh-ryr} &
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr} &
+
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-Semi_routineOccAll_sh-ryr}  &
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-LowersupervisoryAll_sh-ryr.png}  \\
+
+\text{Panel E: Student  } & \text{Panel F: Lower management  } & \text{Panel G: Higher professional} & \text{Panel H: Higher management}\\
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-LStudentAll_sh-ryr}  &
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-LowerManagAll_sh-ryr} &
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-HigherProfOccAll_sh-ryr} &
+\includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-LargeemphigherManAll_sh-ryr.png} 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The variable is the respective share of the resident population in a district that is in either socio-economic status classification as of 2001. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated. }
+\end{figure}
+\end{landscape}
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+\begin{figure}[h]
+\caption{Non-parametric effect of the industry employment structure in 2001 on support for UKIP over time\label{fig:nonparametric-industry-local-full}}
+\begin{center}$
+\begin{array}{ll}
+ \text{Panel A: Education}& \text{Panel B: Real Estate }  \\
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-MEducationAll_sh-ryr.png} &   
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-KRealEstateAll_sh-ryr.png}  \\
+
+\text{Panel C: Retail } & \text{Panel D: Transport} \\
+
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.png} & 
+  
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-ITransportICTAll_sh-ryr.png} \\
+
+ \text{Panel E: Construction} &  \text{Panel F: Manufacturing}\\
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-FConstrAll_sh-ryr.png} &
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.png}  \\
+  
+ \text{Panel G: Hotel \& Accommodation} &  \text{Panel H: Health care}\\
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-HHotelsAll_sh-ryr.png} &
+  \includegraphics[scale=.2]{figures/localpolpct_votes_UKIP-did-NHealthAll_sh-ryr.png}  \\
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in local council elections. The independent variables are the respective shares of the resident working age population in a district that is working in any of the different sectors as of 2001 interacted with a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated. }
+\end{figure}
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+%\begin{landscape}
+\begin{figure}[h]
+\caption{Non-linear time trend in support for UKIP \emph{after partialing out non-linear trend in baseline manufacturing sector prevalence and import-shock}\label{fig:trend-partial-out}}
+\begin{center}$
+\begin{array}{ll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_shDManufAll_sh-import_shock-ryr.png}  &
+\includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-RoutineOccAll_shDManufAll_sh-import_shock-ryr.png}   \\
+
+
+ \text{Panel C: Retail }   \\
+  \includegraphics[scale=.3]{figures/localpolpct_votes_UKIP-did-GRetailAll_shDManufAll_sh-import_shock-ryr.png} & 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in local council elections. Panel A uses the share of the resident UK born population with no formal qualifications as of 2001. Panel B uses the share of the UK born resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001. The graph plots point estimates of the interaction between these two cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects, in addition to year effects interacted with the baseline size of the manufacturing sector in terms of employment as of 2001 as well as the \cite{Colatone2016} import competition measure. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+%\end{landscape}
+%-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\begin{figure}[h]
+\caption{Robustness to balanced sample of elections -- Non-parametric effect of educational qualification, socio-economic status, and sectoral employment of the resident population as of 2001 on support for UKIP over time\label{fig:nonparametric-qualification-nssec-industry-small-balancedsample}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr-samplebal.png}  &
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr-samplebal.png} \\
+
+ \text{Panel C: Retail }& \text{Panel D: Manufacturing }  \\
+  \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr-samplebal.png} & 
+     \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr-samplebal.png} 
+ 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in local council elections. The sample is restricted to only include elections where UKIP ran across districts in which UKIP contested at least 50\% of the races. Panel A uses the share of the resident population with no formal qualifications as of 2001. Panel B uses the share of the resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001. Panel C uses the share of the resident working age population employed in the Retail sector, while panel D uses the share of the resident working age population employed in Manufacturing. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and election wave by NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+
+%-----------------------------------------------------------------------------
+ %-----------------------------------------------------------------------------
+
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\begin{figure}[h]
+\caption{Robustness to controlling for more demanding time effects: Election wave by Region by Year -- Non-parametric effect of educational qualification, socio-economic status, and sectoral employment of the resident population as of 2001 on support for UKIP over time\label{fig:nonparametric-qualification-nssec-industry-small-ewryr}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ewryr}  &
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ewryr} \\
+
+ \text{Panel C: Retail }& \text{Panel D: Manufacturing }  \\
+  \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ewryr} & 
+     \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-DManufAll_sh-ewryr} 
+ 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in local council elections. Panel A uses the share of the resident population with no formal qualifications as of 2001. Panel B uses the share of the resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001. Panel C uses the share of the resident working age population employed in the Retail sector, while panel D uses the share of the resident working age population employed in Manufacturing. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and election wave by NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+%-----------------------------------------------------------------------------
+ %-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\begin{figure}[h]
+\caption{Robustness to controlling for less demanding time effects: Year FE -- Non-parametric effect of educational qualification, socio-economic status, and sectoral employment of the resident population as of 2001 on support for UKIP over time\label{fig:nonparametric-qualification-nssec-industry-small-yr}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-year}  &
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-year} \\
+
+ \text{Panel C: Retail }& \text{Panel D: Manufacturing }  \\
+  \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-GRetailAll_sh-year} & 
+     \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-DManufAll_sh-year} 
+ 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in local council elections. Panel A uses the share of the resident population with no formal qualifications as of 2001. Panel B uses the share of the resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001. Panel C uses the share of the resident working age population employed in the Retail sector, while panel D uses the share of the resident working age population employed in Manufacturing. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+
+%-----------------------------------------------------------------------------
+ %-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\begin{figure}[h]
+\caption{Robustness to measurement of baseline characteristics - Focusing on UK born population shares -- Non-parametric effect of educational qualification, socio-economic status, and sectoral employment of the resident population as of 2001 on support for UKIP over time\label{fig:nonparametric-qualification-nssec-industry-small-ukborn}}
+\begin{center}$
+\begin{array}{lll}
+\text{Panel A: No qualifications } & \text{Panel B: Routine jobs  } \\
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-NoQualUKShareWithin-ryr.png}  &
+\includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-RoutineOccUKShareWithin-ryr.png} \\
+
+ \text{Panel C: Retail }& \text{Panel D: Manufacturing }  \\
+  \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-GRetailUKShareWithin-ryr.png} & 
+     \includegraphics[scale=.25]{figures/localpolpct_votes_UKIP-did-DManufUKShareWithin-ryr.png} 
+ 
+
+\end{array}$
+\end{center}
+\scriptsize{\textbf{Notes:} The dependent variable is the percentage of votes for UKIP in local council elections. Panel A uses the share of the UK born resident population with no formal qualifications as of 2001. Panel B uses the share of the UK born resident population in Routine jobs as per the National Socio-Economic Classification of Occupations as of 2001. Panel C uses the share of the UK born  resident working age population employed in the Retail sector, while panel D uses the share of the UK born resident working age population employed in Manufacturing. The graph plots point estimates of the interaction between these cross sectional measures and a set of year fixed effects. All regression include local authority district fixed effects and NUTS1 region by year fixed effects. Standard errors are clustered at the district level with 90\% confidence bands indicated.}
+\end{figure}
+
+
+%-----------------------------------------------------------------------------
+ %-----------------------------------------------------------------------------
+\newpage
+\clearpage
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+\begin{table}[h!]
+ \scalebox{.7}{
+\centering{
+  \begin{threeparttable}
+\caption{Where do UKIP voters post 2010 come from? Studying local elections \label{table:wherecomefrom-local}}
+{
+\begin{tabular}{l*{5}{c}}
+\toprule
+                &\multicolumn{2}{c}{}         &\multicolumn{3}{c}{Other parties}                   \\
+                    
+   \cmidrule(lr){4-6}  
+                                                            &\multicolumn{1}{c}{UKIP}&\multicolumn{1}{c}{Turnout}&\multicolumn{1}{c}{Con}&\multicolumn{1}{c}{Lab}&\multicolumn{1}{c}{LD}  \\
+ 
+                                                            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}  \\
+  
+ \midrule
+\emph{Panel A:} No qualifications \\
+\input{tables/localpol-QUAL_ALL_noq_sh-did-ryr.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} Routine jobs   \\
+\input{tables/localpol-RoutineOccAll_sh-did-ryr.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel C:}  Retail   \\
+\input{tables/localpol-GRetailAll_sh-did-ryr.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel D:}  Manufacturing   \\
+\input{tables/localpol-DManufAll_sh-did-ryr.tex}
+\addlinespace
+
+\addlinespace
+
+\bottomrule
+\end{tabular}
+
+} 
+    \begin{tablenotes} 
+    {\footnotesize
+\item \textit{Notes}: All regressions control for local authority district and NUTS1 region by time fixed effects. Standard errors are adjusted clustering at the local authority district level with stars indicating *** $p<0.01$, ** $p<0.05$, * $p<0.1$. 
+} \end{tablenotes}
+      \end{threeparttable}
+      
+}
+}
+\end{table}
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+\begin{table}[h!]
+ \scalebox{.7}{
+\centering{
+  \begin{threeparttable}
+\caption{Where do UKIP voters post 2010 come from? Studying European Parliamentary elections \label{table:wherecomefrom-ep}}
+{
+\begin{tabular}{l*{5}{c}}
+\toprule
+                &\multicolumn{2}{c}{}         &\multicolumn{3}{c}{Other parties}                   \\
+                    
+   \cmidrule(lr){4-6}  
+                                                            &\multicolumn{1}{c}{UKIP}&\multicolumn{1}{c}{Turnout}&\multicolumn{1}{c}{Con}&\multicolumn{1}{c}{Lab}&\multicolumn{1}{c}{LD}  \\
+ 
+                                                            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}  \\
+  
+ \midrule
+\emph{Panel A:} No qualifications \\
+\input{tables/europeanparliamentary-QUAL_ALL_noq_sh-did-ryr}
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} Routine jobs   \\
+\input{tables/europeanparliamentary-RoutineOccAll_sh-did-ryr.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel C:}  Retail   \\
+\input{tables/europeanparliamentary-GRetailAll_sh-did-ryr.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel D:}  Manufacturing   \\
+\input{tables/europeanparliamentary-DManufAll_sh-did-ryr.tex}
+\addlinespace
+
+\addlinespace
+
+\bottomrule
+\end{tabular}
+
+} 
+    \begin{tablenotes} 
+    {\footnotesize
+\item \textit{Notes}: All regressions control for state by time fixed effects and local government area (LGA) fixed effects.  Standard errors are adjusted for two way clustering by time and LGA with stars indicating *** $p<0.01$, ** $p<0.05$, * $p<0.1$. 
+} \end{tablenotes}
+      \end{threeparttable}
+      
+}
+}
+\end{table}
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+\begin{table}[h!]
+ \scalebox{.7}{
+\centering{
+  \begin{threeparttable}
+\caption{Where do UKIP voters post 2010 come from? Studying Westminster Parliamentary elections \label{table:wherecomefrom-westminsterpol}}
+{
+\begin{tabular}{l*{5}{c}}
+\toprule
+                &\multicolumn{2}{c}{}         &\multicolumn{3}{c}{Other parties}                   \\
+                    
+   \cmidrule(lr){4-6}  
+                                                            &\multicolumn{1}{c}{UKIP}&\multicolumn{1}{c}{Turnout}&\multicolumn{1}{c}{Con}&\multicolumn{1}{c}{Lab}&\multicolumn{1}{c}{LD}  \\
+ 
+                                                            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}  \\
+  
+ \midrule
+\emph{Panel A:} No qualifications \\
+\input{tables/westminster-QUAL_ALL_noq_sh-did-ryr}
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} Routine jobs   \\
+\input{tables/westminster-RoutineOccAll_sh-did-ryr.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel C:}  Retail   \\
+\input{tables/westminster-GRetailAll_sh-did-ryr.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel D:}  Manufacturing   \\
+\input{tables/westminster-DManufAll_sh-did-ryr.tex}
+\addlinespace
+
+\addlinespace
+
+\bottomrule
+\end{tabular}
+
+} 
+    \begin{tablenotes} 
+    {\footnotesize
+\item \textit{Notes}: All regressions control for state by time fixed effects and local government area (LGA) fixed effects.  Standard errors are adjusted for two way clustering by time and LGA with stars indicating *** $p<0.01$, ** $p<0.05$, * $p<0.1$. 
+} \end{tablenotes}
+      \end{threeparttable}
+      
+}
+}
+\end{table}
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+\begin{table}[h!]
+ \scalebox{.7}{
+\centering{
+  \begin{threeparttable}
+\caption{Where do UKIP voters post 2010 come from? Studying local elections \emph{prior to 2013}\label{table:wherecomefrom-local-pre2012}}
+{
+\begin{tabular}{l*{5}{c}}
+\toprule
+                &\multicolumn{2}{c}{}         &\multicolumn{3}{c}{Other parties}                   \\
+                    
+   \cmidrule(lr){4-6}  
+                                                            &\multicolumn{1}{c}{UKIP}&\multicolumn{1}{c}{Turnout}&\multicolumn{1}{c}{Con}&\multicolumn{1}{c}{Lab}&\multicolumn{1}{c}{LD}  \\
+ 
+                                                            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}  \\
+  
+ \midrule
+\emph{Panel A:} No qualifications \\
+\input{tables/localpol-QUAL_ALL_noq_sh-did-ryr-pre2012.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel B:} Routine jobs   \\
+\input{tables/localpol-RoutineOccAll_sh-did-ryr-pre2012.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel C:}  Retail   \\
+\input{tables/localpol-GRetailAll_sh-did-ryr-pre2012.tex}
+\addlinespace
+\addlinespace
+
+\emph{Panel D:}  Manufacturing   \\
+\input{tables/localpol-DManufAll_sh-did-ryr-pre2012.tex}
+\addlinespace
+
+\addlinespace
+
+\bottomrule
+\end{tabular}
+
+} 
+    \begin{tablenotes} 
+    {\footnotesize
+\item \textit{Notes}: All regressions control for local authority district and NUTS1 region by time fixed effects. Standard errors are adjusted clustering at the local authority district level with stars indicating *** $p<0.01$, ** $p<0.05$, * $p<0.1$. 
+} \end{tablenotes}
+      \end{threeparttable}
+      
+}
+}
+\end{table}
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+\end{document}
+

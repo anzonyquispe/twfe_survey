@@ -1,0 +1,2026 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.6.11)  6 SEP 2019 19:07
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**readme.tex
+(./readme.tex
+LaTeX2e <2018-04-01> patch level 2
+Babel <3.18> and hyphenation patterns for 84 language(s) loaded.
+(/usr/local/texlive/2018/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2018/texmf-dist/tex/latex/base/size11.clo
+File: size11.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/pdflscape.sty
+Package: pdflscape 2016/05/14 v0.11 Display of landscape pages in PDF (HO)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics/lscape.sty
+Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 99.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+)))
+(/usr/local/texlive/2018/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2017/03/15 v3.2 Provides the ifpdf switch
+)
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+
+(/usr/local/texlive/2018/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+))
+(/usr/local/texlive/2018/texmf-dist/tex/latex/natbib/natbib.sty
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip43
+\bibsep=\skip44
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count88
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2017/09/02 v2.17a AMS math features
+\@mathmargin=\skip45
+
+For additional information on amsmath, use the `?' option.
+(/usr/local/texlive/2018/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01 AMS text
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks14
+\ex@=\dimen103
+))
+(/usr/local/texlive/2018/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen104
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count89
+LaTeX Info: Redefining \frac on input line 213.
+\uproot@=\count90
+\leftroot@=\count91
+LaTeX Info: Redefining \overline on input line 375.
+\classnum@=\count92
+\DOTSCASE@=\count93
+LaTeX Info: Redefining \ldots on input line 472.
+LaTeX Info: Redefining \dots on input line 475.
+LaTeX Info: Redefining \cdots on input line 596.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen105
+LaTeX Font Info:    Redeclaring font encoding OML on input line 712.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
+\macc@depth=\count94
+\c@MaxMatrixCols=\count95
+\dotsspace@=\muskip10
+\c@parentequation=\count96
+\dspbrk@lvl=\count97
+\tag@help=\toks15
+\row@=\count98
+\column@=\count99
+\maxfields@=\count100
+\andhelp@=\toks16
+\eqnshift@=\dimen106
+\alignsep@=\dimen107
+\tagshift@=\dimen108
+\tagwidth@=\dimen109
+\totwidth@=\dimen110
+\lineht@=\dimen111
+\@envbody=\toks17
+\multlinegap=\skip46
+\multlinetaggap=\skip47
+\mathdisplay@stack=\toks18
+LaTeX Info: Redefining \[ on input line 2817.
+LaTeX Info: Redefining \] on input line 2818.
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks19
+)
+\Gin@req@height=\dimen112
+\Gin@req@width=\dimen113
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip11
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/appendix/appendix.sty
+Package: appendix 2009/09/02 v1.2b extra appendix facilities
+\c@@pps=\count101
+\c@@ppsavesec=\count102
+\c@@ppsaveapp=\count103
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics/rotating.sty
+Package: rotating 2016/08/11 v2.16d rotated objects in LaTeX
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\c@r@tfl@t=\count104
+\rotFPtop=\skip48
+\rotFPbot=\skip49
+\rot@float@box=\box28
+\rot@mess@toks=\toks20
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2018/02/06 v6.86b Hypertext links for LaTeX
+
+(/usr/local/texlive/2018/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+Package: hobsub-hyperref 2016/05/16 v1.14 Bundle oberdiek, subset hyperref (HO)
+
+
+(/usr/local/texlive/2018/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty
+Package: hobsub-generic 2016/05/16 v1.14 Bundle oberdiek, subset generic (HO)
+Package: hobsub 2016/05/16 v1.14 Construct package bundles (HO)
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+Package: intcalc 2016/05/16 v1.2 Expandable calculations with integers (HO)
+Package hobsub Info: Skipping package `ifpdf' (already loaded).
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+Package: pdftexcmds 2018/01/30 v0.27 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+Package: pdfescape 2016/05/16 v1.14 Implements pdfTeX's escape features (HO)
+Package: bigintcalc 2016/05/16 v1.4 Expandable calculations on big integers (HO
+)
+Package: bitset 2016/05/16 v1.2 Handle bit-vector datatype (HO)
+Package: uniquecounter 2016/05/16 v1.3 Provide unlimited unique counter (HO)
+)
+Package hobsub Info: Skipping package `hobsub' (already loaded).
+Package: letltxmacro 2016/05/16 v1.5 Let assignment for LaTeX macros (HO)
+Package: hopatch 2016/05/16 v1.3 Wrapper for package hooks (HO)
+Package: xcolor-patch 2016/05/16 xcolor patch
+Package: atveryend 2016/05/16 v1.9 Hooks at the very end of document (HO)
+Package atveryend Info: \enddocument detected (standard20110627).
+Package: atbegshi 2016/06/09 v1.18 At begin shipout hook (HO)
+Package: refcount 2016/05/16 v3.5 Data extraction from label references (HO)
+Package: hycolor 2016/05/16 v1.8 Color options for hyperref/bookmark (HO)
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/auxhook.sty
+Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+)
+\@linkdim=\dimen114
+\Hy@linkcounter=\count105
+\Hy@pagecounter=\count106
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2018/02/06 v6.86b Hyperref: PDFDocEncoding definition (HO)
+Now handling font encoding PD1 ...
+... no UTF-8 mapping file for font encoding PD1
+)
+\Hy@SavedSpaceFactor=\count107
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/latexconfig/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+Package hyperref Info: Option `breaklinks' set `true' on input line 4383.
+Package hyperref Info: Hyper figures OFF on input line 4509.
+Package hyperref Info: Link nesting OFF on input line 4514.
+Package hyperref Info: Hyper index ON on input line 4517.
+Package hyperref Info: Plain pages OFF on input line 4524.
+Package hyperref Info: Backreferencing OFF on input line 4529.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4762.
+\c@Hy@tempcnt=\count108
+LaTeX Info: Redefining \url on input line 5115.
+\XeTeXLinkMargin=\dimen115
+\Fld@menulength=\count109
+\Field@Width=\dimen116
+\Fld@charsize=\dimen117
+Package hyperref Info: Hyper figures OFF on input line 6369.
+Package hyperref Info: Link nesting OFF on input line 6374.
+Package hyperref Info: Hyper index ON on input line 6377.
+Package hyperref Info: backreferencing OFF on input line 6384.
+Package hyperref Info: Link coloring OFF on input line 6389.
+Package hyperref Info: Link coloring with OCG OFF on input line 6394.
+Package hyperref Info: PDF/A mode OFF on input line 6399.
+LaTeX Info: Redefining \ref on input line 6439.
+LaTeX Info: Redefining \pageref on input line 6443.
+\Hy@abspage=\count110
+\c@Item=\count111
+\c@Hfootnote=\count112
+)
+Package hyperref Info: Driver (autodetected): hpdftex.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/hpdftex.def
+File: hpdftex.def 2018/02/06 v6.86b Hyperref driver for pdfTeX
+\Fld@listcount=\count113
+\c@bookmark@seq@number=\count114
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty
+Package: rerunfilecheck 2016/05/16 v1.8 Rerun checks for auxiliary files (HO)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
+82.
+)
+\Hy@SectionHShift=\skip50
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/pdfpages/pdfpages.sty
+Package: pdfpages 2017/10/31 v0.5l Insert pages of external PDF documents (AM)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/tools/calc.sty
+Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count115
+\calc@Bcount=\count116
+\calc@Adimen=\dimen118
+\calc@Bdimen=\dimen119
+\calc@Askip=\skip51
+\calc@Bskip=\skip52
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count117
+\calc@Cskip=\skip53
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/eso-pic/eso-pic.sty
+Package: eso-pic 2015/07/21 v2.0g eso-pic (RN)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+))
+\AM@pagewidth=\dimen120
+\AM@pageheight=\dimen121
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/pdfpages/pppdftex.def
+File: pppdftex.def 2017/10/31 v0.5l Pdfpages driver for pdfTeX (AM)
+)
+\AM@pagebox=\box29
+\AM@global@opts=\toks21
+\AM@toc@title=\toks22
+\c@AM@survey=\count118
+\AM@templatesizebox=\box30
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/setspace/setspace.sty
+Package: setspace 2011/12/19 v6.7a set line spacing
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2016/04/27 v1.618033 publication quality tables
+\heavyrulewidth=\dimen122
+\lightrulewidth=\dimen123
+\cmidrulewidth=\dimen124
+\belowrulesep=\dimen125
+\belowbottomsep=\dimen126
+\aboverulesep=\dimen127
+\abovetopsep=\dimen128
+\cmidrulesep=\dimen129
+\cmidrulekern=\dimen130
+\defaultaddspace=\dimen131
+\@cmidla=\count119
+\@cmidlb=\count120
+\@aboverulesep=\dimen132
+\@belowrulesep=\dimen133
+\@thisruleclass=\count121
+\@lastruleclass=\count122
+\@thisrulewidth=\dimen134
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/base/fixltx2e.sty
+Package: fixltx2e 2016/12/29 v2.1a fixes to LaTeX (obsolete)
+Applying: [2015/01/01] Old fixltx2e package on input line 46.
+
+
+Package fixltx2e Warning: fixltx2e is not required with releases after 2015
+(fixltx2e)                All fixes are now in the LaTeX kernel.
+(fixltx2e)                See the latexrelease package for details.
+
+Already applied: [0000/00/00] Old fixltx2e package on input line 53.
+) (/usr/local/texlive/2018/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2016/02/21 v3.3-144 Customizing captions (AR)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2016/05/22 v1.7-166 caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 67.
+\captionmargin=\dimen135
+\captionmargin@=\dimen136
+\captionwidth=\dimen137
+\caption@tempdima=\dimen138
+\caption@indent=\dimen139
+\caption@parindent=\dimen140
+\caption@hangindent=\dimen141
+)
+\c@ContinuedFloat=\count123
+Package caption Info: hyperref package is loaded.
+Package caption Info: rotating package is loaded.
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/threeparttable/threeparttable.sty
+Package: threeparttable 2003/06/13  v 3.0
+\@tempboxb=\box31
+) (/usr/local/texlive/2018/texmf-dist/tex/latex/subfiles/subfiles.sty
+Package: subfiles 2012/05/23 Federico Garcia
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/tools/verbatim.sty
+Package: verbatim 2014/10/28 v1.5q LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks23
+\verbatim@line=\toks24
+\verbatim@in@stream=\read1
+))
+(/usr/local/texlive/2018/texmf-dist/tex/latex/colortbl/colortbl.sty
+Package: colortbl 2012/02/13 v1.0a Color table columns (DPC)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/tools/array.sty
+Package: array 2018/04/07 v2.4g Tabular extension package (FMi)
+\col@sep=\dimen142
+\ar@mcellbox=\box32
+\extrarowheight=\dimen143
+\NC@list=\toks25
+\extratabsurround=\skip54
+\backup@length=\skip55
+\ar@cellbox=\box33
+)
+\everycr=\toks26
+\minrowclearance=\skip56
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2016/05/22 v1.1-161 Sub-captions (AR)
+\c@subfigure=\count124
+\c@subtable=\count125
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/ntheorem/ntheorem.sty
+Style `ntheorem', Version 1.33 <2011/08/15>
+Package: ntheorem 2011/08/15 1.33
+\theorem@style=\toks27
+\theorem@@style=\toks28
+\theorembodyfont=\toks29
+\theoremnumbering=\toks30
+\theorempreskipamount=\skip57
+\theorempostskipamount=\skip58
+\theoremframepreskipamount=\skip59
+\theoremframepostskipamount=\skip60
+\theoreminframepreskipamount=\skip61
+\theoreminframepostskipamount=\skip62
+\theorem@preskip=\toks31
+\theorem@postskip=\toks32
+\theorem@framepreskip=\toks33
+\theorem@framepostskip=\toks34
+\theorem@inframepreskip=\toks35
+\theorem@inframepostskip=\toks36
+\theoremindent=\dimen144
+\theorem@indent=\dimen145
+\theoremrightindent=\dimen146
+\theorem@rightindent=\dimen147
+\theoremheaderfont=\toks37
+\theoremseparator=\toks38
+\theoremprework=\toks39
+\theorempostwork=\toks40
+\theoremsymbol=\toks41
+\qedsymbol=\toks42
+\theoremkeyword=\toks43
+\qedsymbol=\toks44
+\thm@topsep=\skip63
+\thm@topsepadd=\skip64
+) (/usr/local/texlive/2018/texmf-dist/tex/latex/sidecap/sidecap.sty
+Package: sidecap 2003/06/06 v1.6f SideCap Package (RN/HjG)
+\SC@BOXWD=\dimen148
+\SC@CAPWD=\dimen149
+\SC@tempdima=\dimen150
+\SC@tempdimb=\dimen151
+\c@SC@C=\count126
+\SC@BOX=\box34
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/mathpazo.sty
+Package: mathpazo 2005/04/12 PSNFSS-v9.2a Palatino w/ Pazo Math (D.Puga, WaS) 
+\symupright=\mathgroup6
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2018/03/24 v5.7 Page Geometry
+\Gm@cnth=\count127
+\Gm@cntv=\count128
+\c@Gm@tempcnt=\count129
+\Gm@bindingoffset=\dimen152
+\Gm@wd@mp=\dimen153
+\Gm@odd@mp=\dimen154
+\Gm@even@mp=\dimen155
+\Gm@layoutwidth=\dimen156
+\Gm@layoutheight=\dimen157
+\Gm@layouthoffset=\dimen158
+\Gm@layoutvoffset=\dimen159
+\Gm@dimlist=\toks45
+)
+(/usr/local/texlive/2018/texmf-dist/tex/latex/enumitem/enumitem.sty
+Package: enumitem 2011/09/28 v3.5.2 Customized lists
+\labelindent=\skip65
+\enit@outerparindent=\dimen160
+\enit@toks=\toks46
+\enit@inbox=\box35
+\enitdp@description=\count130
+)
+\c@assumption=\count131
+\c@theorem=\count132
+\c@algorithm=\count133
+\c@axiom=\count134
+\c@case=\count135
+\c@claim=\count136
+\c@conclusion=\count137
+\c@condition=\count138
+\c@conjecture=\count139
+\c@corollary=\count140
+\c@criterion=\count141
+\c@definition=\count142
+\c@example=\count143
+\c@exercise=\count144
+\c@lemma=\count145
+\c@notation=\count146
+\c@problem=\count147
+\c@proposition=\count148
+\c@remark=\count149
+\c@solution=\count150
+\c@summary=\count151
+\c@hyp=\count152
+Package hyperref Info: Option `colorlinks' set `true' on input line 81.
+Package hyperref Info: Option `colorlinks' set `true' on input line 87.
+
+
+./readme.tex:107: LaTeX Error: Command \startappendixtables already defined.
+               Or name \end... illegal, see p.192 of the manual.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.107     \makeatother}
+                       
+? s
+OK, entering \scrollmode...
+
+./readme.tex:113: LaTeX Error: Command \startappendixfigures already defined.
+               Or name \end... illegal, see p.192 of the manual.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.113     \makeatother}
+                       
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+LaTeX Warning: Unused global option(s):
+    [[a4paper].
+
+(./readme.aux)
+\openout1 = `readme.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 144.
+LaTeX Font Info:    ... okay on input line 144.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 144.
+LaTeX Font Info:    ... okay on input line 144.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 144.
+LaTeX Font Info:    ... okay on input line 144.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 144.
+LaTeX Font Info:    ... okay on input line 144.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 144.
+LaTeX Font Info:    ... okay on input line 144.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 144.
+LaTeX Font Info:    ... okay on input line 144.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 144.
+LaTeX Font Info:    ... okay on input line 144.
+LaTeX Font Info:    Try loading font information for OT1+pplx on input line 144
+.
+ (/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/ot1pplx.fd
+File: ot1pplx.fd 2004/09/06 font definitions for OT1/pplx.
+) (/usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count153
+\scratchdimen=\dimen161
+\scratchbox=\box36
+\nofMPsegments=\count154
+\nofMParguments=\count155
+\everyMPshowfont=\toks47
+\MPscratchCnt=\count156
+\MPscratchDim=\dimen162
+\MPnumerator=\count157
+\makeMPintoPDFobject=\count158
+\everyMPtoPDFconversion=\toks48
+) (/usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
+)
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+38.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 456.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+\AtBeginShipoutBox=\box37
+Package hyperref Info: Link coloring ON on input line 144.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/nameref.sty
+Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
+
+(/usr/local/texlive/2018/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
+Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
+)
+\c@section@level=\count159
+)
+LaTeX Info: Redefining \ref on input line 144.
+LaTeX Info: Redefining \pageref on input line 144.
+LaTeX Info: Redefining \nameref on input line 144.
+
+(./readme.out) (./readme.out)
+\@outlinefile=\write3
+\openout3 = `readme.out'.
+
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: sidecap package is loaded.
+Package caption Info: threeparttable package is loaded.
+Package caption Info: End \AtBeginDocument code.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/ms/ragged2e.sty
+Package: ragged2e 2009/05/21 v2.1 ragged2e Package (MS)
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/ms/everysel.sty
+Package: everysel 2011/10/28 v1.2 EverySelectfont Package (MS)
+
+ABD: EverySelectfont initializing macros
+LaTeX Info: Redefining \selectfont on input line 126.
+)
+\CenteringLeftskip=\skip66
+\RaggedLeftLeftskip=\skip67
+\RaggedRightLeftskip=\skip68
+\CenteringRightskip=\skip69
+\RaggedLeftRightskip=\skip70
+\RaggedRightRightskip=\skip71
+\CenteringParfillskip=\skip72
+\RaggedLeftParfillskip=\skip73
+\RaggedRightParfillskip=\skip74
+\JustifyingParfillskip=\skip75
+\CenteringParindent=\skip76
+\RaggedLeftParindent=\skip77
+\RaggedRightParindent=\skip78
+\JustifyingParindent=\skip79
+)
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(86.72377pt, 424.06033pt, 86.72377pt)
+* v-part:(T,H,B)=(86.72377pt, 671.5993pt, 86.72377pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=424.06033pt
+* \textheight=671.5993pt
+* \oddsidemargin=14.45378pt
+* \evensidemargin=14.45378pt
+* \topmargin=14.45378pt
+* \headheight=0.0pt
+* \headsep=0.0pt
+* \topskip=11.0pt
+* \footskip=30.0pt
+* \marginparwidth=59.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+LaTeX Font Info:    Try loading font information for OML+zplm on input line 152
+.
+(/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/omlzplm.fd
+File: omlzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OML/zplm.
+)
+LaTeX Font Info:    Try loading font information for OMS+zplm on input line 152
+.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/omszplm.fd
+File: omszplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMS/zplm.
+)
+LaTeX Font Info:    Try loading font information for OMX+zplm on input line 152
+.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/omxzplm.fd
+File: omxzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMX/zplm.
+)
+LaTeX Font Info:    Font shape `U/msa/m/n' will be
+(Font)              scaled to size 12.50409pt on input line 152.
+LaTeX Font Info:    Font shape `U/msa/m/n' will be
+(Font)              scaled to size 9.37807pt on input line 152.
+LaTeX Font Info:    Font shape `U/msa/m/n' will be
+(Font)              scaled to size 7.29405pt on input line 152.
+LaTeX Font Info:    Font shape `U/msb/m/n' will be
+(Font)              scaled to size 12.50409pt on input line 152.
+LaTeX Font Info:    Font shape `U/msb/m/n' will be
+(Font)              scaled to size 9.37807pt on input line 152.
+LaTeX Font Info:    Font shape `U/msb/m/n' will be
+(Font)              scaled to size 7.29405pt on input line 152.
+LaTeX Font Info:    Try loading font information for OT1+zplm on input line 152
+.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/ot1zplm.fd
+File: ot1zplm.fd 2002/09/08 Fontinst v1.914 font definitions for OT1/zplm.
+)
+LaTeX Font Info:    Font shape `OT1/pplx/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/pplx/b/n' tried instead on input line 153.
+LaTeX Font Info:    Font shape `U/msa/m/n' will be
+(Font)              scaled to size 11.40997pt on input line 154.
+LaTeX Font Info:    Font shape `U/msa/m/n' will be
+(Font)              scaled to size 8.33606pt on input line 154.
+LaTeX Font Info:    Font shape `U/msa/m/n' will be
+(Font)              scaled to size 6.25204pt on input line 154.
+LaTeX Font Info:    Font shape `U/msb/m/n' will be
+(Font)              scaled to size 11.40997pt on input line 154.
+LaTeX Font Info:    Font shape `U/msb/m/n' will be
+(Font)              scaled to size 8.33606pt on input line 154.
+LaTeX Font Info:    Font shape `U/msb/m/n' will be
+(Font)              scaled to size 6.25204pt on input line 154.
+ [1
+
+{/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \hbox (20.84607pt too wide) in paragraph at lines 170--171
+\OT1/pplx/m/n/10.95 ing USOC/BHPS fold-ers in the \OT1/cmtt/m/n/10.95 lad/usoc 
+\OT1/pplx/m/n/10.95 and are named \OT1/cmtt/m/n/10.95 a[]oslaua.dta-h[]oslaua.d
+ta\OT1/pplx/m/n/10.95 .
+ []
+
+[2]
+Overfull \hbox (25.4557pt too wide) in paragraph at lines 205--206
+[]\OT1/pplx/m/n/10.95 Longer trends panel com-bin-ing USOC and BHPS in do-file 
+\OT1/cmtt/m/n/10.95 do files/longertrends.do 
+ []
+
+[3]
+Overfull \hbox (52.19727pt too wide) in paragraph at lines 222--223
+[]\OT1/pplx/m/n/10.95 Having fol-lowed steps out-lined in the data ac-cess de-s
+crip-tion, the file \OT1/cmtt/m/n/10.95 INDIVIDUAL.PANEL.dta
+ []
+
+
+Overfull \hbox (29.20251pt too wide) in paragraph at lines 224--225
+[]\OT1/pplx/m/n/10.95 Having fol-lowed steps out-lined in the data ac-cess de-s
+crip-tion, the file \OT1/cmtt/m/n/10.95 USOCBHPSCOMB.dta
+ []
+
+[4] (./readme.bbl) [5
+
+]
+<figures/summary-ukipvoteshares.png, id=82, 803.0pt x 584.1825pt>
+File: figures/summary-ukipvoteshares.png Graphic file (type png)
+<use figures/summary-ukipvoteshares.png>
+Package pdftex.def Info: figures/summary-ukipvoteshares.png  used on input line
+ 242.
+(pdftex.def)             Requested size: 321.1943pt x 233.66885pt.
+<figures/individual-level-ukipsupport.png, id=84, 803.0pt x 584.1825pt>
+File: figures/individual-level-ukipsupport.png Graphic file (type png)
+<use figures/individual-level-ukipsupport.png>
+Package pdftex.def Info: figures/individual-level-ukipsupport.png  used on inpu
+t line 242.
+(pdftex.def)             Requested size: 321.1943pt x 233.66885pt.
+LaTeX Font Info:    Font shape `OT1/pplx/bx/n' in size <8> not available
+(Font)              Font shape `OT1/pplx/b/n' tried instead on input line 246.
+
+
+LaTeX Warning: Reference `fig:usoc-elicit' on page 6 undefined on input line 24
+6.
+
+[6
+
+ <./figures/summary-ukipvoteshares.png> <./figures/individual-level-ukipsupport
+.png>]
+<../Draft/figures/UKIP2004.png, id=92, 513.3579pt x 625.8582pt>
+File: ../Draft/figures/UKIP2004.png Graphic file (type png)
+<use ../Draft/figures/UKIP2004.png>
+Package pdftex.def Info: ../Draft/figures/UKIP2004.png  used on input line 262.
+
+(pdftex.def)             Requested size: 231.00891pt x 281.63358pt.
+<../Draft/figures/UKIP2014.png, id=93, 513.3579pt x 625.8582pt>
+File: ../Draft/figures/UKIP2014.png Graphic file (type png)
+<use ../Draft/figures/UKIP2014.png>
+Package pdftex.def Info: ../Draft/figures/UKIP2014.png  used on input line 263.
+
+(pdftex.def)             Requested size: 231.00891pt x 281.63358pt.
+<../Draft/figures/LEAVE2016.png, id=94, 513.3579pt x 625.8582pt>
+File: ../Draft/figures/LEAVE2016.png Graphic file (type png)
+<use ../Draft/figures/LEAVE2016.png>
+Package pdftex.def Info: ../Draft/figures/LEAVE2016.png  used on input line 264
+.
+(pdftex.def)             Requested size: 231.00891pt x 281.63358pt.
+
+Overfull \hbox (51.42743pt too wide) in paragraph at lines 259--266
+ []$ 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[7 <../Draft/figures/UKIP2004.png> <../Draft/figures/UKIP2014.png> <../Draft/fi
+gures/LEAVE2016.png>]
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png, id=104, 803.0pt x 
+584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png Graphic file (
+type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr
+.png  used on input line 282.
+(pdftex.def)             Requested size: 192.72394pt x 140.20665pt.
+<figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr.png, id=105, 803.0pt x
+ 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ry
+r.png  used on input line 283.
+(pdftex.def)             Requested size: 192.72394pt x 140.20665pt.
+<figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.png, id=106, 803.0pt x 58
+4.1825pt>
+File: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.png Graphic file (ty
+pe png)
+<use figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.p
+ng  used on input line 286.
+(pdftex.def)             Requested size: 192.72394pt x 140.20665pt.
+<figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.png, id=107, 803.0pt x 584
+.1825pt>
+File: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.png Graphic file (typ
+e png)
+<use figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.pn
+g  used on input line 287.
+(pdftex.def)             Requested size: 192.72394pt x 140.20665pt.
+ [8
+
+
+
+ <./figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png> <./figures/loca
+lpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr.png> <./figures/localpolpct_votes_U
+KIP-did-GRetailAll_sh-ryr.png> <./figures/localpolpct_votes_UKIP-did-DManufAll_
+sh-ryr.png>]
+<figures/austerityoverall.png, id=117, 602.25pt x 481.8pt>
+File: figures/austerityoverall.png Graphic file (type png)
+<use figures/austerityoverall.png>
+Package pdftex.def Info: figures/austerityoverall.png  used on input line 305.
+(pdftex.def)             Requested size: 331.23851pt x 264.99081pt.
+<../Draft/figures/AUSTERITY_SMALL2.png, id=118, 1839.87375pt x 2143.00626pt>
+File: ../Draft/figures/AUSTERITY_SMALL2.png Graphic file (type png)
+<use ../Draft/figures/AUSTERITY_SMALL2.png>
+Package pdftex.def Info: ../Draft/figures/AUSTERITY_SMALL2.png  used on input l
+ine 305.
+(pdftex.def)             Requested size: 239.19199pt x 278.60059pt.
+LaTeX Font Info:    Font shape `OT1/pplx/m/ui' in size <8> not available
+(Font)              Font shape `OT1/pplx/m/it' tried instead on input line 311.
+
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[9 <./figures/austerityoverall.png> <../Draft/figures/AUSTERITY_SMALL2.png>]
+<figures/localpolpct_votes_UKIP-did-totalimpact_finlosswapyr-ryr.png, id=128, 8
+03.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-totalimpact_finlosswapyr-ryr.png Graph
+ic file (type png)
+<use figures/localpolpct_votes_UKIP-did-totalimpact_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-totalimpact_finloss
+wapyr-ryr.png  used on input line 326.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-counciltaxbenefit_finlosswapyr-ryr.png, id=
+129, 803.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-counciltaxbenefit_finlosswapyr-ryr.png
+ Graphic file (type png)
+<use figures/localpolpct_votes_UKIP-did-counciltaxbenefit_finlosswapyr-ryr.png>
+
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-counciltaxbenefit_f
+inlosswapyr-ryr.png  used on input line 327.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-disabilitylivingallow_finlosswap-ryr.png, i
+d=130, 803.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-disabilitylivingallow_finlosswap-ryr.p
+ng Graphic file (type png)
+<use figures/localpolpct_votes_UKIP-did-disabilitylivingallow_finlosswap-ryr.pn
+g>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-disabilitylivingall
+ow_finlosswap-ryr.png  used on input line 330.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-bedroom_tax_finlosswapyr-ryr.png, id=131, 8
+03.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-bedroom_tax_finlosswapyr-ryr.png Graph
+ic file (type png)
+<use figures/localpolpct_votes_UKIP-did-bedroom_tax_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-bedroom_tax_finloss
+wapyr-ryr.png  used on input line 331.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+
+Overfull \hbox (77.74338pt too wide) in paragraph at lines 323--334
+ []$ 
+ []
+
+[10
+
+
+ <./figures/localpolpct_votes_UKIP-did-totalimpact_finlosswapyr-ryr.png> <./fig
+ures/localpolpct_votes_UKIP-did-counciltaxbenefit_finlosswapyr-ryr.png> <./figu
+res/localpolpct_votes_UKIP-did-disabilitylivingallow_finlosswap-ryr.png> <./fig
+ures/localpolpct_votes_UKIP-did-bedroom_tax_finlosswapyr-ryr.png>]
+LaTeX Font Info:    Font shape `OT1/pplx/bx/n' in size <10.95> not available
+(Font)              Font shape `OT1/pplx/b/n' tried instead on input line 347.
+<figures/ukipeither-always_counciltaxbenefit-event-id-rwtq.png, id=141, 875.27p
+t x 636.3775pt>
+File: figures/ukipeither-always_counciltaxbenefit-event-id-rwtq.png Graphic fil
+e (type png)
+<use figures/ukipeither-always_counciltaxbenefit-event-id-rwtq.png>
+Package pdftex.def Info: figures/ukipeither-always_counciltaxbenefit-event-id-r
+wtq.png  used on input line 349.
+(pdftex.def)             Requested size: 288.84pt x 210.00522pt.
+<figures/behindcounciltax-always_counciltaxbenefit-event-id-rwtq.png, id=142, 8
+75.27pt x 636.3775pt>
+File: figures/behindcounciltax-always_counciltaxbenefit-event-id-rwtq.png Graph
+ic file (type png)
+<use figures/behindcounciltax-always_counciltaxbenefit-event-id-rwtq.png>
+Package pdftex.def Info: figures/behindcounciltax-always_counciltaxbenefit-even
+t-id-rwtq.png  used on input line 349.
+(pdftex.def)             Requested size: 288.84pt x 210.00522pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[11 <./figures/ukipeither-always_counciltaxbenefit-event-id-rwtq.png> <./figure
+s/behindcounciltax-always_counciltaxbenefit-event-id-rwtq.png>]
+<figures/ukipeither-hbcuttype-event-id-rwtq.png, id=150, 875.27pt x 636.3775pt>
+
+File: figures/ukipeither-hbcuttype-event-id-rwtq.png Graphic file (type png)
+<use figures/ukipeither-hbcuttype-event-id-rwtq.png>
+Package pdftex.def Info: figures/ukipeither-hbcuttype-event-id-rwtq.png  used o
+n input line 368.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/behindrent-hbcuttype-event-id-rwtq.png, id=151, 875.27pt x 636.3775pt>
+
+File: figures/behindrent-hbcuttype-event-id-rwtq.png Graphic file (type png)
+<use figures/behindrent-hbcuttype-event-id-rwtq.png>
+Package pdftex.def Info: figures/behindrent-hbcuttype-event-id-rwtq.png  used o
+n input line 368.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/hsbeds-hbcuttype-event-id-rwtq.png, id=152, 875.27pt x 636.3775pt>
+File: figures/hsbeds-hbcuttype-event-id-rwtq.png Graphic file (type png)
+<use figures/hsbeds-hbcuttype-event-id-rwtq.png>
+Package pdftex.def Info: figures/hsbeds-hbcuttype-event-id-rwtq.png  used on in
+put line 368.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+
+Overfull \hbox (14.85156pt too wide) in paragraph at lines 364--371
+ []$ 
+ []
+
+[12
+
+
+
+ <./figures/ukipeither-hbcuttype-event-id-rwtq.png> <./figures/behindrent-hbcut
+type-event-id-rwtq.png> <./figures/hsbeds-hbcuttype-event-id-rwtq.png>]
+LaTeX Font Info:    Font shape `OT1/pplx/bx/it' in size <10.95> not available
+(Font)              Font shape `OT1/pplx/b/it' tried instead on input line 387.
+
+<figures/fimnlabgrs_dv-did-qual_1-idwyr.png, id=161, 875.27pt x 636.3775pt>
+File: figures/fimnlabgrs_dv-did-qual_1-idwyr.png Graphic file (type png)
+<use figures/fimnlabgrs_dv-did-qual_1-idwyr.png>
+Package pdftex.def Info: figures/fimnlabgrs_dv-did-qual_1-idwyr.png  used on in
+put line 388.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimnsben_dv-did-qual_1-idwyr.png, id=162, 875.27pt x 636.3775pt>
+File: figures/fimnsben_dv-did-qual_1-idwyr.png Graphic file (type png)
+<use figures/fimnsben_dv-did-qual_1-idwyr.png>
+Package pdftex.def Info: figures/fimnsben_dv-did-qual_1-idwyr.png  used on inpu
+t line 388.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimngrs_dv-did-qual_1-idwyr.png, id=163, 875.27pt x 636.3775pt>
+File: figures/fimngrs_dv-did-qual_1-idwyr.png Graphic file (type png)
+<use figures/fimngrs_dv-did-qual_1-idwyr.png>
+Package pdftex.def Info: figures/fimngrs_dv-did-qual_1-idwyr.png  used on input
+ line 388.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimnlabgrs_dv-did-qual_4-idwyr.png, id=164, 875.27pt x 636.3775pt>
+File: figures/fimnlabgrs_dv-did-qual_4-idwyr.png Graphic file (type png)
+<use figures/fimnlabgrs_dv-did-qual_4-idwyr.png>
+Package pdftex.def Info: figures/fimnlabgrs_dv-did-qual_4-idwyr.png  used on in
+put line 392.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimnsben_dv-did-qual_4-idwyr.png, id=165, 875.27pt x 636.3775pt>
+File: figures/fimnsben_dv-did-qual_4-idwyr.png Graphic file (type png)
+<use figures/fimnsben_dv-did-qual_4-idwyr.png>
+Package pdftex.def Info: figures/fimnsben_dv-did-qual_4-idwyr.png  used on inpu
+t line 392.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimngrs_dv-did-qual_4-idwyr.png, id=166, 875.27pt x 636.3775pt>
+File: figures/fimngrs_dv-did-qual_4-idwyr.png Graphic file (type png)
+<use figures/fimngrs_dv-did-qual_4-idwyr.png>
+Package pdftex.def Info: figures/fimngrs_dv-did-qual_4-idwyr.png  used on input
+ line 392.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+
+Overfull \hbox (14.85156pt too wide) in paragraph at lines 385--395
+ []$ 
+ []
+
+
+LaTeX Warning: Float too large for page by 74.79364pt on input line 398.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[13 <./figures/fimnlabgrs_dv-did-qual_1-idwyr.png> <./figures/fimnsben_dv-did-q
+ual_1-idwyr.png> <./figures/fimngrs_dv-did-qual_1-idwyr.png> <./figures/fimnlab
+grs_dv-did-qual_4-idwyr.png> <./figures/fimnsben_dv-did-qual_4-idwyr.png> <./fi
+gures/fimngrs_dv-did-qual_4-idwyr.png>] (./tables/did-pct_votes_UKIP-ryr.tex
+LaTeX Font Info:    Try loading font information for U+fplmbb on input line 1.
+
+(/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/ufplmbb.fd
+File: ufplmbb.fd 2003/10/30 Fontinst v1.914 font definitions for U/fplmbb.
+))
+(./tables/did-UKIPPct-ryr.tex) (./tables/did-westminster-ukip-ryr.tex)
+(./tables/did-polled-stats-ryr.tex)
+LaTeX Font Info:    Font shape `U/msa/m/n' will be
+(Font)              scaled to size 5.21004pt on input line 435.
+LaTeX Font Info:    Font shape `U/msb/m/n' will be
+(Font)              scaled to size 5.21004pt on input line 435.
+ (./tables/reform-did-ukipeither-id-rwtq.tex) (./tables/reform-did-ukipeither-i
+dwtq.tex)
+(./tables/reform-did-ukipeither-pidp-idwtq.tex)
+(./tables/reform-did-coneither-pidp-idwtq.tex)
+(./tables/reform-did-labeither-pidp-idwtq.tex)
+(./tables/reform-did-libdemeither-pidp-idwtq.tex)
+(./tables/reform-did-nonevote-pidp-idwtq.tex)
+(./tables/reform-did-poleff3_num-post_anytreat.tex)
+(./tables/reform-did-poleff4_num-post_anytreat.tex)
+(./tables/reform-did-perpolinf_dum-post_anytreat.tex)
+(./tables/seemingly-unrelated-old.tex)
+LaTeX Font Info:    Font shape `OT1/pplx/bx/n' in size <9> not available
+(Font)              Font shape `OT1/pplx/b/n' tried instead on input line 613.
+
+
+LaTeX Warning: Reference `ref:system' on page 14 undefined on input line 613.
+
+
+LaTeX Warning: Reference `ref:sys2aleave' on page 14 undefined on input line 61
+3.
+
+
+Overfull \hbox (40.50282pt too wide) in paragraph at lines 613--614
+[][] 
+ []
+
+[14] [15] [16] [17] [18]
+<../Draft/figures/ukip-voteleave.png, id=216, 1374.63562pt x 999.735pt>
+File: ../Draft/figures/ukip-voteleave.png Graphic file (type png)
+<use ../Draft/figures/ukip-voteleave.png>
+Package pdftex.def Info: ../Draft/figures/ukip-voteleave.png  used on input lin
+e 640.
+(pdftex.def)             Requested size: 412.39388pt x 299.9228pt.
+ [19
+
+
+
+
+ <../Draft/figures/ukip-voteleave.png>]
+<figures/westminster-ukip-did-totalimpact_finlosswapyr-ryr.png, id=226, 803.0pt
+ x 584.1825pt>
+File: figures/westminster-ukip-did-totalimpact_finlosswapyr-ryr.png Graphic fil
+e (type png)
+<use figures/westminster-ukip-did-totalimpact_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-totalimpact_finlosswapyr-
+ryr.png  used on input line 657.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/westminster-ukip-did-counciltaxbenefit_finlosswapyr-ryr.png, id=227, 8
+03.0pt x 584.1825pt>
+File: figures/westminster-ukip-did-counciltaxbenefit_finlosswapyr-ryr.png Graph
+ic file (type png)
+<use figures/westminster-ukip-did-counciltaxbenefit_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-counciltaxbenefit_finloss
+wapyr-ryr.png  used on input line 658.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/westminster-ukip-did-disabilitylivingallow_finlosswp-ryr.png, id=228, 
+803.0pt x 584.1825pt>
+File: figures/westminster-ukip-did-disabilitylivingallow_finlosswp-ryr.png Grap
+hic file (type png)
+<use figures/westminster-ukip-did-disabilitylivingallow_finlosswp-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-disabilitylivingallow_fin
+losswp-ryr.png  used on input line 662.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/westminster-ukip-did-bedroom_tax_finlosswapyr-ryr.png, id=229, 803.0pt
+ x 584.1825pt>
+File: figures/westminster-ukip-did-bedroom_tax_finlosswapyr-ryr.png Graphic fil
+e (type png)
+<use figures/westminster-ukip-did-bedroom_tax_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-bedroom_tax_finlosswapyr-
+ryr.png  used on input line 663.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[20 <./figures/westminster-ukip-did-totalimpact_finlosswapyr-ryr.png> <./figure
+s/westminster-ukip-did-counciltaxbenefit_finlosswapyr-ryr.png> <./figures/westm
+inster-ukip-did-disabilitylivingallow_finlosswp-ryr.png> <./figures/westminster
+-ukip-did-bedroom_tax_finlosswapyr-ryr.png>]
+<figures/ep-UKIPPct-did-totalimpact_finlosswapyr-ryr.png, id=239, 803.0pt x 584
+.1825pt>
+File: figures/ep-UKIPPct-did-totalimpact_finlosswapyr-ryr.png Graphic file (typ
+e png)
+<use figures/ep-UKIPPct-did-totalimpact_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-totalimpact_finlosswapyr-ryr.pn
+g  used on input line 681.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/ep-UKIPPct-did-counciltaxbenefit_finlosswapyr-ryr.png, id=240, 803.0pt
+ x 584.1825pt>
+File: figures/ep-UKIPPct-did-counciltaxbenefit_finlosswapyr-ryr.png Graphic fil
+e (type png)
+<use figures/ep-UKIPPct-did-counciltaxbenefit_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-counciltaxbenefit_finlosswapyr-
+ryr.png  used on input line 682.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/ep-UKIPPct-did-disabilitylivingallow_finlosswap-ryr.png, id=241, 803.0
+pt x 584.1825pt>
+File: figures/ep-UKIPPct-did-disabilitylivingallow_finlosswap-ryr.png Graphic f
+ile (type png)
+<use figures/ep-UKIPPct-did-disabilitylivingallow_finlosswap-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-disabilitylivingallow_finlosswa
+p-ryr.png  used on input line 685.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/ep-UKIPPct-did-bedroom_tax_finlosswapyr-ryr.png, id=242, 803.0pt x 584
+.1825pt>
+File: figures/ep-UKIPPct-did-bedroom_tax_finlosswapyr-ryr.png Graphic file (typ
+e png)
+<use figures/ep-UKIPPct-did-bedroom_tax_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-bedroom_tax_finlosswapyr-ryr.pn
+g  used on input line 686.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[21 <./figures/ep-UKIPPct-did-totalimpact_finlosswapyr-ryr.png> <./figures/ep-U
+KIPPct-did-counciltaxbenefit_finlosswapyr-ryr.png> <./figures/ep-UKIPPct-did-di
+sabilitylivingallow_finlosswap-ryr.png> <./figures/ep-UKIPPct-did-bedroom_tax_f
+inlosswapyr-ryr.png>]
+<figures/logGVA_Allindustripc-did-totalimpact_finlosswapyr-ryr.png, id=252, 803
+.0pt x 584.1825pt>
+File: figures/logGVA_Allindustripc-did-totalimpact_finlosswapyr-ryr.png Graphic
+ file (type png)
+<use figures/logGVA_Allindustripc-did-totalimpact_finlosswapyr-ryr.png>
+Package pdftex.def Info: figures/logGVA_Allindustripc-did-totalimpact_finlosswa
+pyr-ryr.png  used on input line 706.
+(pdftex.def)             Requested size: 433.61354pt x 315.45384pt.
+
+Overfull \hbox (19.5532pt too wide) in paragraph at lines 704--708
+ []$ 
+ []
+
+[22
+
+
+
+
+ <./figures/logGVA_Allindustripc-did-totalimpact_finlosswapyr-ryr.png>]
+<figures/fimnlabnet_dv-always_counciltaxbenefit-event-id-rwtq.png, id=259, 875.
+27pt x 636.3775pt>
+File: figures/fimnlabnet_dv-always_counciltaxbenefit-event-id-rwtq.png Graphic 
+file (type png)
+<use figures/fimnlabnet_dv-always_counciltaxbenefit-event-id-rwtq.png>
+Package pdftex.def Info: figures/fimnlabnet_dv-always_counciltaxbenefit-event-i
+d-rwtq.png  used on input line 722.
+(pdftex.def)             Requested size: 201.30786pt x 146.36374pt.
+<figures/fimnsben_dv-always_counciltaxbenefit-event-id-rwtq.png, id=260, 875.27
+pt x 636.3775pt>
+File: figures/fimnsben_dv-always_counciltaxbenefit-event-id-rwtq.png Graphic fi
+le (type png)
+<use figures/fimnsben_dv-always_counciltaxbenefit-event-id-rwtq.png>
+Package pdftex.def Info: figures/fimnsben_dv-always_counciltaxbenefit-event-id-
+rwtq.png  used on input line 722.
+(pdftex.def)             Requested size: 201.30786pt x 146.36374pt.
+<figures/fimngrs_dv-always_counciltaxbenefit-event-id-rwtq.png, id=261, 875.27p
+t x 636.3775pt>
+File: figures/fimngrs_dv-always_counciltaxbenefit-event-id-rwtq.png Graphic fil
+e (type png)
+<use figures/fimngrs_dv-always_counciltaxbenefit-event-id-rwtq.png>
+Package pdftex.def Info: figures/fimngrs_dv-always_counciltaxbenefit-event-id-r
+wtq.png  used on input line 722.
+(pdftex.def)             Requested size: 201.30786pt x 146.36374pt.
+
+[23
+
+ <./figures/fimnlabnet_dv-always_counciltaxbenefit-event-id-rwtq.png> <./figure
+s/fimnsben_dv-always_counciltaxbenefit-event-id-rwtq.png> <./figures/fimngrs_dv
+-always_counciltaxbenefit-event-id-rwtq.png>]
+<figures/ukipeither-alwys_bprxy_dla_pip_dum-event-id-rwtq.png, id=270, 875.27pt
+ x 636.3775pt>
+File: figures/ukipeither-alwys_bprxy_dla_pip_dum-event-id-rwtq.png Graphic file
+ (type png)
+<use figures/ukipeither-alwys_bprxy_dla_pip_dum-event-id-rwtq.png>
+Package pdftex.def Info: figures/ukipeither-alwys_bprxy_dla_pip_dum-event-id-rw
+tq.png  used on input line 742.
+(pdftex.def)             Requested size: 350.10179pt x 254.5465pt.
+<figures/coefplot-leave-last-earliest-party.png, id=271, 875.27pt x 636.3775pt>
+
+File: figures/coefplot-leave-last-earliest-party.png Graphic file (type png)
+<use figures/coefplot-leave-last-earliest-party.png>
+Package pdftex.def Info: figures/coefplot-leave-last-earliest-party.png  used o
+n input line 760.
+(pdftex.def)             Requested size: 472.63876pt x 343.63873pt.
+
+Overfull \hbox (58.57843pt too wide) in paragraph at lines 758--762
+ []$ 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[24
+
+ <./figures/ukipeither-alwys_bprxy_dla_pip_dum-event-id-rwtq.png>] [25 <./figur
+es/coefplot-leave-last-earliest-party.png>]
+<figures/fimnlabgrs_dv-did-qual_1-idwyr-nevermanu.png, id=285, 875.27pt x 636.3
+775pt>
+File: figures/fimnlabgrs_dv-did-qual_1-idwyr-nevermanu.png Graphic file (type p
+ng)
+<use figures/fimnlabgrs_dv-did-qual_1-idwyr-nevermanu.png>
+Package pdftex.def Info: figures/fimnlabgrs_dv-did-qual_1-idwyr-nevermanu.png  
+used on input line 777.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimnsben_dv-did-qual_1-idwyr-nevermanu.png, id=286, 875.27pt x 636.377
+5pt>
+File: figures/fimnsben_dv-did-qual_1-idwyr-nevermanu.png Graphic file (type png
+)
+<use figures/fimnsben_dv-did-qual_1-idwyr-nevermanu.png>
+Package pdftex.def Info: figures/fimnsben_dv-did-qual_1-idwyr-nevermanu.png  us
+ed on input line 777.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimngrs_dv-did-qual_1-idwyr-nevermanu.png, id=287, 875.27pt x 636.3775
+pt>
+File: figures/fimngrs_dv-did-qual_1-idwyr-nevermanu.png Graphic file (type png)
+
+<use figures/fimngrs_dv-did-qual_1-idwyr-nevermanu.png>
+Package pdftex.def Info: figures/fimngrs_dv-did-qual_1-idwyr-nevermanu.png  use
+d on input line 777.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimnlabgrs_dv-did-qual_4-idwyr-nevermanu.png, id=288, 875.27pt x 636.3
+775pt>
+File: figures/fimnlabgrs_dv-did-qual_4-idwyr-nevermanu.png Graphic file (type p
+ng)
+<use figures/fimnlabgrs_dv-did-qual_4-idwyr-nevermanu.png>
+Package pdftex.def Info: figures/fimnlabgrs_dv-did-qual_4-idwyr-nevermanu.png  
+used on input line 781.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimnsben_dv-did-qual_4-idwyr-nevermanu.png, id=289, 875.27pt x 636.377
+5pt>
+File: figures/fimnsben_dv-did-qual_4-idwyr-nevermanu.png Graphic file (type png
+)
+<use figures/fimnsben_dv-did-qual_4-idwyr-nevermanu.png>
+Package pdftex.def Info: figures/fimnsben_dv-did-qual_4-idwyr-nevermanu.png  us
+ed on input line 781.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+<figures/fimngrs_dv-did-qual_4-idwyr-nevermanu.png, id=290, 875.27pt x 636.3775
+pt>
+File: figures/fimngrs_dv-did-qual_4-idwyr-nevermanu.png Graphic file (type png)
+
+<use figures/fimngrs_dv-did-qual_4-idwyr-nevermanu.png>
+Package pdftex.def Info: figures/fimngrs_dv-did-qual_4-idwyr-nevermanu.png  use
+d on input line 781.
+(pdftex.def)             Requested size: 218.81696pt x 159.09398pt.
+
+Overfull \hbox (14.85156pt too wide) in paragraph at lines 774--784
+ []$ 
+ []
+
+
+LaTeX Warning: Float too large for page by 76.92165pt on input line 787.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[26 <./figures/fimnlabgrs_dv-did-qual_1-idwyr-nevermanu.png> <./figures/fimnsbe
+n_dv-did-qual_1-idwyr-nevermanu.png> <./figures/fimngrs_dv-did-qual_1-idwyr-nev
+ermanu.png> <./figures/fimnlabgrs_dv-did-qual_4-idwyr-nevermanu.png> <./figures
+/fimnsben_dv-did-qual_4-idwyr-nevermanu.png> <./figures/fimngrs_dv-did-qual_4-i
+dwyr-nevermanu.png>] (./tables/summary_stats.tex)
+(./tables/summary_stats_ind.tex
+./tables/summary_stats_ind.tex:5: Missing $ inserted.
+<inserted text> 
+                $
+l.5 T$\sb{i,BTX}&
+                        0.057&       0.232&  324412.000\\
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+)
+
+./readme.tex:821: LaTeX Error: Something's wrong--perhaps a missing \item.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.821  }
+        
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+(./tables/did-pct_votes_UKIP-trend-ryr.tex) (./tables/did-UKIPPct-trend-ryr.tex
+) (./tables/did-westminster-ukip-pcon-year-ryr.tex)
+(./tables/did-polled-stats-ryr.tex)
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[27] [28] (./tables/did-multipliers-totalimpact-ryr.tex)
+LaTeX Font Info:    Font shape `OT1/pplx/m/ui' in size <9> not available
+(Font)              Font shape `OT1/pplx/m/it' tried instead on input line 895.
+
+
+
+LaTeX Warning: Reference `sec:aggregateausterity' on page 29 undefined on input
+ line 895.
+
+[29] (./tables/cross-section-both-dchpct_votes_UKIP-ryr.tex)
+(./tables/cross-section-both-dchUKIPPct-ryr.tex)
+(./tables/cross-section-both-dchukip-Region.tex) [30]
+(./tables/robustness-time-varying-anytreat-id-rwtq.tex)
+(./tables/robustness-time-varying-anytreat-idwtq.tex)
+(./tables/robustness-time-varying-anytreat-pidp-idwtq.tex) [31]
+(./tables/reform-did-ukipeither-id-rwtq.tex)
+(./tables/reform-did-ukipeither-idwtq.tex)
+(./tables/reform-did-ukipeither-pidp-idwtq.tex)
+(./tables/reform-matched-did-ukipeither-id-rwtq.tex)
+(./tables/reform-matched-did-ukipeither-idwtq.tex)
+(./tables/reform-matched-did-ukipeither-pidp-idwtq.tex)
+(./tables/reform-did-ukipeither-id-rwtq-refinedcontrolgroup.tex)
+(./tables/reform-did-ukipeither-idwtq-refinedcontrolgroup.tex)
+(./tables/reform-did-ukipeither-pidp-idwtq-refinedcontrolgroup.tex)
+./readme.tex:1091: Misplaced \noalign.
+\addlinespace ->\noalign 
+                         {\ifnum 0=`}\fi \@ifnextchar [{\@addspace }{\@addsp...
+l.1091 \addlinespace
+                    
+I expect to see \noalign only after the \cr of
+an alignment. Proceed, and I'll ignore this case.
+
+
+LaTeX Warning: Float too large for page by 0.96451pt on input line 1096.
+
+[32] (./tables/partymovesto-from.tex)
+(./tables/reform-did-colbens1-post_anytreat.tex)
+(./tables/reform-did-colbens2-post_anytreat.tex)
+(./tables/reform-did-colbens3-post_anytreat.tex)
+(./tables/reform-did-controlparty-poleff3_num-post_anytreat.tex)
+(./tables/reform-did-controlparty-poleff4_num-post_anytreat.tex)
+(./tables/reform-did-controlparty-perpolinf_dum-post_anytreat.tex) [33]
+[34] [35] (./tables/reform-did-poleff3_num-post_anytreat.tex)
+(./tables/reform-did-poleff4_num-post_anytreat.tex)
+(./tables/reform-did-perpolinf_dum-post_anytreat.tex)
+(./tables/reform-wide-did-voteintent-post_anytreat.tex)
+(./tables/reform-wide-did-poleff3_num-post_counciltaxbenefit.tex)
+(./tables/reform-wide-did-poleff4_num-post_counciltaxbenefit.tex)
+(./tables/reform-wide-did-perpolinf_dum-post_counciltaxbenefit.tex)
+(./tables/reform-wide-did-voteintent-post_counciltaxbenefit.tex)
+(./tables/reform-wide-did-poleff3_num-post_dlapip.tex)
+(./tables/reform-wide-did-poleff4_num-post_dlapip.tex)
+(./tables/reform-wide-did-perpolinf_dum-post_dlapip.tex)
+(./tables/reform-wide-did-voteintent-post_dlapip.tex)
+(./tables/reform-wide-did-poleff3_num-post_hbcuttype.tex)
+(./tables/reform-wide-did-poleff4_num-post_hbcuttype.tex)
+(./tables/reform-wide-did-perpolinf_dum-post_hbcuttype.tex)
+(./tables/reform-wide-did-voteintent-post_hbcuttype.tex)
+./readme.tex:1380: Misplaced \noalign.
+\addlinespace ->\noalign 
+                         {\ifnum 0=`}\fi \@ifnextchar [{\@addspace }{\@addsp...
+l.1380 \addlinespace
+                    
+I expect to see \noalign only after the \cr of
+an alignment. Proceed, and I'll ignore this case.
+
+
+Overfull \hbox (12.91545pt too wide) in paragraph at lines 1379--1381
+[][] 
+ []
+
+[36] (./tables/crosssectional-leave-regs-otherproxies.tex)
+Overfull \hbox (40.50282pt too wide) in paragraph at lines 1425--1426
+[][] 
+ []
+
+[37] (./tables/crosssectional-leave-regs-matched.tex) [38] [39
+
+
+
+
+
+
+
+
+
+
+
+
+
+]
+<figures/westminster-ukip-did-QUAL_ALL_noq_sh-ryr.png, id=384, 803.0pt x 584.18
+25pt>
+File: figures/westminster-ukip-did-QUAL_ALL_noq_sh-ryr.png Graphic file (type p
+ng)
+<use figures/westminster-ukip-did-QUAL_ALL_noq_sh-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-QUAL_ALL_noq_sh-ryr.png  
+used on input line 1493.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/westminster-ukip-did-RoutineOccAll_sh-ryr.png, id=385, 803.0pt x 584.1
+825pt>
+File: figures/westminster-ukip-did-RoutineOccAll_sh-ryr.png Graphic file (type 
+png)
+<use figures/westminster-ukip-did-RoutineOccAll_sh-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-RoutineOccAll_sh-ryr.png 
+ used on input line 1494.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/westminster-ukip-did-GRetailAll_sh-ryr.png, id=386, 803.0pt x 584.1825
+pt>
+File: figures/westminster-ukip-did-GRetailAll_sh-ryr.png Graphic file (type png
+)
+<use figures/westminster-ukip-did-GRetailAll_sh-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-GRetailAll_sh-ryr.png  us
+ed on input line 1497.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/westminster-ukip-did-DManufAll_sh-ryr.png, id=387, 803.0pt x 584.1825p
+t>
+File: figures/westminster-ukip-did-DManufAll_sh-ryr.png Graphic file (type png)
+
+<use figures/westminster-ukip-did-DManufAll_sh-ryr.png>
+Package pdftex.def Info: figures/westminster-ukip-did-DManufAll_sh-ryr.png  use
+d on input line 1498.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+
+
+LaTeX Warning: Float too large for page by 70.09587pt on input line 1504.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[40 <./figures/westminster-ukip-did-QUAL_ALL_noq_sh-ryr.png> <./figures/westmin
+ster-ukip-did-RoutineOccAll_sh-ryr.png> <./figures/westminster-ukip-did-GRetail
+All_sh-ryr.png> <./figures/westminster-ukip-did-DManufAll_sh-ryr.png>]
+<figures/ep-UKIPPct-did-QUAL_ALL_noq_sh-ryr.png, id=397, 803.0pt x 584.1825pt>
+File: figures/ep-UKIPPct-did-QUAL_ALL_noq_sh-ryr.png Graphic file (type png)
+<use figures/ep-UKIPPct-did-QUAL_ALL_noq_sh-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-QUAL_ALL_noq_sh-ryr.png  used o
+n input line 1521.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/ep-UKIPPct-did-RoutineOccAll_sh-ryr.png, id=398, 803.0pt x 584.1825pt>
+
+File: figures/ep-UKIPPct-did-RoutineOccAll_sh-ryr.png Graphic file (type png)
+<use figures/ep-UKIPPct-did-RoutineOccAll_sh-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-RoutineOccAll_sh-ryr.png  used 
+on input line 1522.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/ep-UKIPPct-did-GRetailAll_sh-ryr.png, id=399, 803.0pt x 584.1825pt>
+File: figures/ep-UKIPPct-did-GRetailAll_sh-ryr.png Graphic file (type png)
+<use figures/ep-UKIPPct-did-GRetailAll_sh-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-GRetailAll_sh-ryr.png  used on 
+input line 1525.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/ep-UKIPPct-did-DManufAll_sh-ryr.png, id=400, 803.0pt x 584.1825pt>
+File: figures/ep-UKIPPct-did-DManufAll_sh-ryr.png Graphic file (type png)
+<use figures/ep-UKIPPct-did-DManufAll_sh-ryr.png>
+Package pdftex.def Info: figures/ep-UKIPPct-did-DManufAll_sh-ryr.png  used on i
+nput line 1526.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+
+
+LaTeX Warning: Float too large for page by 70.09587pt on input line 1532.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[41 <./figures/ep-UKIPPct-did-QUAL_ALL_noq_sh-ryr.png> <./figures/ep-UKIPPct-di
+d-RoutineOccAll_sh-ryr.png> <./figures/ep-UKIPPct-did-GRetailAll_sh-ryr.png> <.
+/figures/ep-UKIPPct-did-DManufAll_sh-ryr.png>]
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_otherq_sh-ryr.png, id=410, 803.0pt
+ x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_otherq_sh-ryr.png Graphic fil
+e (type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_otherq_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_otherq_sh-
+ryr.png  used on input line 1549.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png Graphic file (
+type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr
+.png  used on input line 1550.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl1_sh-ryr.png, id=411, 803.0pt x
+ 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl1_sh-ryr.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl1_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl1_sh-ry
+r.png  used on input line 1551.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl2_sh-ryr.png, id=412, 803.0pt x
+ 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl2_sh-ryr.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl2_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl2_sh-ry
+r.png  used on input line 1554.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl3_sh-ryr.png, id=413, 803.0pt x
+ 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl3_sh-ryr.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl3_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl3_sh-ry
+r.png  used on input line 1555.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl4_plus_sh-ryr.png, id=414, 803.
+0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl4_plus_sh-ryr.png Graphic 
+file (type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl4_plus_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl4_plus_
+sh-ryr.png  used on input line 1556.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+
+Overfull \hbox (81.10626pt too wide) in paragraph at lines 1546--1558
+ []$ 
+ []
+
+
+LaTeX Warning: Float too large for page by 57.49586pt on input line 1560.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[42 <./figures/localpolpct_votes_UKIP-did-QUAL_ALL_otherq_sh-ryr.png> <./figure
+s/localpolpct_votes_UKIP-did-QUAL_ALL_lvl1_sh-ryr.png> <./figures/localpolpct_v
+otes_UKIP-did-QUAL_ALL_lvl2_sh-ryr.png> <./figures/localpolpct_votes_UKIP-did-Q
+UAL_ALL_lvl3_sh-ryr.png> <./figures/localpolpct_votes_UKIP-did-QUAL_ALL_lvl4_pl
+us_sh-ryr.png>]
+<figures/localpolpct_votes_UKIP-did-LLTunemployedAll_sh-ryr.png, id=425, 803.0p
+t x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-LLTunemployedAll_sh-ryr.png Graphic fi
+le (type png)
+<use figures/localpolpct_votes_UKIP-did-LLTunemployedAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-LLTunemployedAll_sh
+-ryr.png  used on input line 1578.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+File: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ry
+r.png  used on input line 1579.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-Semi_routineOccAll_sh-ryr.png, id=426, 803.
+0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-Semi_routineOccAll_sh-ryr.png Graphic 
+file (type png)
+<use figures/localpolpct_votes_UKIP-did-Semi_routineOccAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-Semi_routineOccAll_
+sh-ryr.png  used on input line 1581.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-LowersupervisoryAll_sh-ryr.png, id=427, 803
+.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-LowersupervisoryAll_sh-ryr.png Graphic
+ file (type png)
+<use figures/localpolpct_votes_UKIP-did-LowersupervisoryAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-LowersupervisoryAll
+_sh-ryr.png  used on input line 1582.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-LStudentAll_sh-ryr.png, id=428, 803.0pt x 5
+84.1825pt>
+File: figures/localpolpct_votes_UKIP-did-LStudentAll_sh-ryr.png Graphic file (t
+ype png)
+<use figures/localpolpct_votes_UKIP-did-LStudentAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-LStudentAll_sh-ryr.
+png  used on input line 1585.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-LowerManagAll_sh-ryr.png, id=429, 803.0pt x
+ 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-LowerManagAll_sh-ryr.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-LowerManagAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-LowerManagAll_sh-ry
+r.png  used on input line 1586.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-HigherProfOccAll_sh-ryr.png, id=430, 803.0p
+t x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-HigherProfOccAll_sh-ryr.png Graphic fi
+le (type png)
+<use figures/localpolpct_votes_UKIP-did-HigherProfOccAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-HigherProfOccAll_sh
+-ryr.png  used on input line 1587.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-LargeemphigherManAll_sh-ryr.png, id=431, 80
+3.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-LargeemphigherManAll_sh-ryr.png Graphi
+c file (type png)
+<use figures/localpolpct_votes_UKIP-did-LargeemphigherManAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-LargeemphigherManAl
+l_sh-ryr.png  used on input line 1588.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+
+Overfull \hbox (10.7893pt too wide) in paragraph at lines 1574--1591
+ []$ 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[43 <./figures/localpolpct_votes_UKIP-did-LLTunemployedAll_sh-ryr.png> <./figur
+es/localpolpct_votes_UKIP-did-Semi_routineOccAll_sh-ryr.png> <./figures/localpo
+lpct_votes_UKIP-did-LowersupervisoryAll_sh-ryr.png> <./figures/localpolpct_vote
+s_UKIP-did-LStudentAll_sh-ryr.png> <./figures/localpolpct_votes_UKIP-did-LowerM
+anagAll_sh-ryr.png> <./figures/localpolpct_votes_UKIP-did-HigherProfOccAll_sh-r
+yr.png> <./figures/localpolpct_votes_UKIP-did-LargeemphigherManAll_sh-ryr.png>]
+<figures/localpolpct_votes_UKIP-did-MEducationAll_sh-ryr.png, id=445, 803.0pt x
+ 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-MEducationAll_sh-ryr.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-MEducationAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-MEducationAll_sh-ry
+r.png  used on input line 1611.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-KRealEstateAll_sh-ryr.png, id=446, 803.0pt 
+x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-KRealEstateAll_sh-ryr.png Graphic file
+ (type png)
+<use figures/localpolpct_votes_UKIP-did-KRealEstateAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-KRealEstateAll_sh-r
+yr.png  used on input line 1612.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+File: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.png Graphic file (ty
+pe png)
+<use figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr.p
+ng  used on input line 1616.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-ITransportICTAll_sh-ryr.png, id=447, 803.0p
+t x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-ITransportICTAll_sh-ryr.png Graphic fi
+le (type png)
+<use figures/localpolpct_votes_UKIP-did-ITransportICTAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-ITransportICTAll_sh
+-ryr.png  used on input line 1618.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-FConstrAll_sh-ryr.png, id=448, 803.0pt x 58
+4.1825pt>
+File: figures/localpolpct_votes_UKIP-did-FConstrAll_sh-ryr.png Graphic file (ty
+pe png)
+<use figures/localpolpct_votes_UKIP-did-FConstrAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-FConstrAll_sh-ryr.p
+ng  used on input line 1621.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+File: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.png Graphic file (typ
+e png)
+<use figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr.pn
+g  used on input line 1622.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-HHotelsAll_sh-ryr.png, id=449, 803.0pt x 58
+4.1825pt>
+File: figures/localpolpct_votes_UKIP-did-HHotelsAll_sh-ryr.png Graphic file (ty
+pe png)
+<use figures/localpolpct_votes_UKIP-did-HHotelsAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-HHotelsAll_sh-ryr.p
+ng  used on input line 1625.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+<figures/localpolpct_votes_UKIP-did-NHealthAll_sh-ryr.png, id=450, 803.0pt x 58
+4.1825pt>
+File: figures/localpolpct_votes_UKIP-did-NHealthAll_sh-ryr.png Graphic file (ty
+pe png)
+<use figures/localpolpct_votes_UKIP-did-NHealthAll_sh-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-NHealthAll_sh-ryr.p
+ng  used on input line 1626.
+(pdftex.def)             Requested size: 160.59715pt x 116.83443pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_shDManufAll_sh-import_shock-ry
+r.png, id=451, 803.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_shDManufAll_sh-import_sho
+ck-ryr.png Graphic file (type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_shDManufAll_sh-import_shoc
+k-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_shDMan
+ufAll_sh-import_shock-ryr.png  used on input line 1645.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-RoutineOccAll_shDManufAll_sh-import_shock-r
+yr.png, id=452, 803.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-RoutineOccAll_shDManufAll_sh-import_sh
+ock-ryr.png Graphic file (type png)
+<use figures/localpolpct_votes_UKIP-did-RoutineOccAll_shDManufAll_sh-import_sho
+ck-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-RoutineOccAll_shDMa
+nufAll_sh-import_shock-ryr.png  used on input line 1646.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+<figures/localpolpct_votes_UKIP-did-GRetailAll_shDManufAll_sh-import_shock-ryr.
+png, id=453, 803.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-GRetailAll_shDManufAll_sh-import_shock
+-ryr.png Graphic file (type png)
+<use figures/localpolpct_votes_UKIP-did-GRetailAll_shDManufAll_sh-import_shock-
+ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-GRetailAll_shDManuf
+All_sh-import_shock-ryr.png  used on input line 1650.
+(pdftex.def)             Requested size: 240.90186pt x 175.25609pt.
+
+Overfull \hbox (77.74338pt too wide) in paragraph at lines 1642--1653
+ []$ 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr-samplebal.png, id=456, 
+803.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr-samplebal.png Grap
+hic file (type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr-samplebal.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ryr
+-samplebal.png  used on input line 1667.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr-samplebal.png, id=457,
+ 803.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr-samplebal.png Gra
+phic file (type png)
+<use figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr-samplebal.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ry
+r-samplebal.png  used on input line 1668.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr-samplebal.png, id=458, 80
+3.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr-samplebal.png Graphi
+c file (type png)
+<use figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr-samplebal.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr-s
+amplebal.png  used on input line 1671.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr-samplebal.png, id=459, 803
+.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr-samplebal.png Graphic
+ file (type png)
+<use figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr-samplebal.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr-sa
+mplebal.png  used on input line 1672.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ewryr.png, id=460, 803.0pt 
+x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ewryr.png Graphic file
+ (type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ewryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ewr
+yr.png  used on input line 1693.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ewryr.png, id=461, 803.0pt
+ x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ewryr.png Graphic fil
+e (type png)
+<use figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ewryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ew
+ryr.png  used on input line 1694.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ewryr.png, id=462, 803.0pt x 
+584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ewryr.png Graphic file (
+type png)
+<use figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ewryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ewryr
+.png  used on input line 1697.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-DManufAll_sh-ewryr.png, id=463, 803.0pt x 5
+84.1825pt>
+File: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ewryr.png Graphic file (t
+ype png)
+<use figures/localpolpct_votes_UKIP-did-DManufAll_sh-ewryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-DManufAll_sh-ewryr.
+png  used on input line 1698.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-year.png, id=464, 803.0pt x
+ 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-year.png Graphic file 
+(type png)
+<use figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-year.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-yea
+r.png  used on input line 1717.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-year.png, id=465, 803.0pt 
+x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-year.png Graphic file
+ (type png)
+<use figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-year.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ye
+ar.png  used on input line 1718.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-GRetailAll_sh-year.png, id=466, 803.0pt x 5
+84.1825pt>
+File: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-year.png Graphic file (t
+ype png)
+<use figures/localpolpct_votes_UKIP-did-GRetailAll_sh-year.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-GRetailAll_sh-year.
+png  used on input line 1721.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-DManufAll_sh-year.png, id=467, 803.0pt x 58
+4.1825pt>
+File: figures/localpolpct_votes_UKIP-did-DManufAll_sh-year.png Graphic file (ty
+pe png)
+<use figures/localpolpct_votes_UKIP-did-DManufAll_sh-year.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-DManufAll_sh-year.p
+ng  used on input line 1722.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<figures/localpolpct_votes_UKIP-did-NoQualUKShareWithin-ryr.png, id=468, 803.0p
+t x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-NoQualUKShareWithin-ryr.png Graphic fi
+le (type png)
+<use figures/localpolpct_votes_UKIP-did-NoQualUKShareWithin-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-NoQualUKShareWithin
+-ryr.png  used on input line 1741.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-RoutineOccUKShareWithin-ryr.png, id=469, 80
+3.0pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-RoutineOccUKShareWithin-ryr.png Graphi
+c file (type png)
+<use figures/localpolpct_votes_UKIP-did-RoutineOccUKShareWithin-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-RoutineOccUKShareWi
+thin-ryr.png  used on input line 1742.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-GRetailUKShareWithin-ryr.png, id=470, 803.0
+pt x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-GRetailUKShareWithin-ryr.png Graphic f
+ile (type png)
+<use figures/localpolpct_votes_UKIP-did-GRetailUKShareWithin-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-GRetailUKShareWithi
+n-ryr.png  used on input line 1745.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+<figures/localpolpct_votes_UKIP-did-DManufUKShareWithin-ryr.png, id=471, 803.0p
+t x 584.1825pt>
+File: figures/localpolpct_votes_UKIP-did-DManufUKShareWithin-ryr.png Graphic fi
+le (type png)
+<use figures/localpolpct_votes_UKIP-did-DManufUKShareWithin-ryr.png>
+Package pdftex.def Info: figures/localpolpct_votes_UKIP-did-DManufUKShareWithin
+-ryr.png  used on input line 1746.
+(pdftex.def)             Requested size: 200.74951pt x 146.04526pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[44 <./figures/localpolpct_votes_UKIP-did-MEducationAll_sh-ryr.png> <./figures/
+localpolpct_votes_UKIP-did-KRealEstateAll_sh-ryr.png> <./figures/localpolpct_vo
+tes_UKIP-did-ITransportICTAll_sh-ryr.png> <./figures/localpolpct_votes_UKIP-did
+-FConstrAll_sh-ryr.png> <./figures/localpolpct_votes_UKIP-did-HHotelsAll_sh-ryr
+.png> <./figures/localpolpct_votes_UKIP-did-NHealthAll_sh-ryr.png>] [45 <./figu
+res/localpolpct_votes_UKIP-did-QUAL_ALL_noq_shDManufAll_sh-import_shock-ryr.png
+> <./figures/localpolpct_votes_UKIP-did-RoutineOccAll_shDManufAll_sh-import_sho
+ck-ryr.png> <./figures/localpolpct_votes_UKIP-did-GRetailAll_shDManufAll_sh-imp
+ort_shock-ryr.png>] [46 <./figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-r
+yr-samplebal.png> <./figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ryr-sa
+mplebal.png> <./figures/localpolpct_votes_UKIP-did-GRetailAll_sh-ryr-samplebal.
+png> <./figures/localpolpct_votes_UKIP-did-DManufAll_sh-ryr-samplebal.png>]
+[47 <./figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_sh-ewryr.png> <./figures
+/localpolpct_votes_UKIP-did-RoutineOccAll_sh-ewryr.png> <./figures/localpolpct_
+votes_UKIP-did-GRetailAll_sh-ewryr.png> <./figures/localpolpct_votes_UKIP-did-D
+ManufAll_sh-ewryr.png>] [48 <./figures/localpolpct_votes_UKIP-did-QUAL_ALL_noq_
+sh-year.png> <./figures/localpolpct_votes_UKIP-did-RoutineOccAll_sh-year.png> <
+./figures/localpolpct_votes_UKIP-did-GRetailAll_sh-year.png> <./figures/localpo
+lpct_votes_UKIP-did-DManufAll_sh-year.png>] [49 <./figures/localpolpct_votes_UK
+IP-did-NoQualUKShareWithin-ryr.png> <./figures/localpolpct_votes_UKIP-did-Routi
+neOccUKShareWithin-ryr.png> <./figures/localpolpct_votes_UKIP-did-GRetailUKShar
+eWithin-ryr.png> <./figures/localpolpct_votes_UKIP-did-DManufUKShareWithin-ryr.
+png>] (./tables/localpol-QUAL_ALL_noq_sh-did-ryr.tex)
+(./tables/localpol-RoutineOccAll_sh-did-ryr.tex)
+(./tables/localpol-GRetailAll_sh-did-ryr.tex)
+(./tables/localpol-DManufAll_sh-did-ryr.tex)
+(./tables/europeanparliamentary-QUAL_ALL_noq_sh-did-ryr.tex)
+(./tables/europeanparliamentary-RoutineOccAll_sh-did-ryr.tex)
+(./tables/europeanparliamentary-GRetailAll_sh-did-ryr.tex)
+(./tables/europeanparliamentary-DManufAll_sh-did-ryr.tex)
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+(./tables/westminster-QUAL_ALL_noq_sh-did-ryr.tex
+./tables/westminster-QUAL_ALL_noq_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ QUAL_
+                           ALL_noq_sh&      43.760 &      -3.329 &     -28.8...
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+./tables/westminster-QUAL_ALL_noq_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ QUAL_ALL_noq_sh&
+                                            43.760 &      -3.329 &     -28.8...
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+) (./tables/westminster-RoutineOccAll_sh-did-ryr.tex
+./tables/westminster-RoutineOccAll_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ RoutineOccAll_
+                                    sh&      94.636 &     -28.686 &     -23....
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+./tables/westminster-RoutineOccAll_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ RoutineOccAll_sh&
+                                             94.636 &     -28.686 &     -23....
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+) (./tables/westminster-GRetailAll_sh-did-ryr.tex
+./tables/westminster-GRetailAll_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ GRetailAll_
+                                 sh&      98.643 &     -35.264 &      -8.779...
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+./tables/westminster-GRetailAll_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ GRetailAll_sh&
+                                          98.643 &     -35.264 &      -8.779...
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+) (./tables/westminster-DManufAll_sh-did-ryr.tex
+./tables/westminster-DManufAll_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ DManufAll_
+                                sh&      41.079 &     -20.702 &       1.617 ...
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+./tables/westminster-DManufAll_sh-did-ryr.tex:1: Missing $ inserted.
+<inserted text> 
+                $
+l.1 post2010 $\times$ DManufAll_sh&
+                                         41.079 &     -20.702 &       1.617 ...
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+)
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+(./tables/localpol-QUAL_ALL_noq_sh-did-ryr-pre2012.tex)
+(./tables/localpol-RoutineOccAll_sh-did-ryr-pre2012.tex)
+(./tables/localpol-GRetailAll_sh-did-ryr-pre2012.tex)
+(./tables/localpol-DManufAll_sh-did-ryr-pre2012.tex)
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+\tf@thm=\write4
+\openout4 = `readme.thm'.
+
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1992.
+[50
+
+
+
+
+
+
+
+
+
+] [51] [52] [53]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1992.
+ (./readme.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1992.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1992.
+
+Package rerunfilecheck Info: File `readme.out' has not changed.
+(rerunfilecheck)             Checksum: 33B741AA8371B339A11CEF9C8A3D3CD7;320.
+
+
+LaTeX Warning: There were undefined references.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1992.
+ ) 
+Here is how much of TeX's memory you used:
+ 11494 strings out of 492649
+ 197436 string characters out of 6129622
+ 323927 words of memory out of 5000000
+ 14714 multiletter control sequences out of 15000+600000
+ 42018 words of font info for 117 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 37i,15n,50p,1370b,455s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
+exlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/te
+xlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texl
+ive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texli
+ve/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texliv
+e/2018/texmf-dist/fonts/type1/public/mathpazo/fplmbb.pfb></usr/local/texlive/20
+18/texmf-dist/fonts/type1/public/mathpazo/fplmr.pfb></usr/local/texlive/2018/te
+xmf-dist/fonts/type1/public/mathpazo/fplmri.pfb></usr/local/texlive/2018/texmf-
+dist/fonts/type1/urw/palatino/uplb8a.pfb></usr/local/texlive/2018/texmf-dist/fo
+nts/type1/urw/palatino/uplbi8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/ty
+pe1/urw/palatino/uplr8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw
+/palatino/uplri8a.pfb>
+Output written on readme.pdf (53 pages, 8936825 bytes).
+PDF statistics:
+ 625 PDF objects out of 1000 (max. 8388607)
+ 371 compressed objects within 4 object streams
+ 147 named destinations out of 1000 (max. 500000)
+ 501 words of extra memory for PDF output out of 10000 (max. 10000000)
+

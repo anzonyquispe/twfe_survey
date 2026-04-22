@@ -1,0 +1,242 @@
+**------This file analyzes how PAN victories impact the homicide rate
+**---The sample consists of municipalities with elections in 2007 through 2010 with at least six months of pre-election drug trade-related homicide data and at least a year of post-innauguration drug trade-related homicide data. The post-innauguration period includes the year following the mayor's innauguration. 
+**---Confidential data on drug-trade related homicides have been redacted.
+
+clear
+set more off, permanently
+
+******************
+*Table 2, Panel A
+******************
+
+*********Post-innauguration period
+use table3, clear
+
+keep if postInn==1	
+keep if drughom!=.
+
+g DummyDeaths=0
+replace DummyDeaths=1 if drughom>0
+
+collapse (mean) DummyDeaths drughom spread PANwin pob_total, by(id_mun elec_c)
+
+*rate
+g xhom=(drughom/pob_t)*12*100000  
+
+*rd terms
+g spreadPW=spread*PANwin
+g spread2=spread^2
+g spreadPW2=spreadPW^2
+tempfile post_innaug
+save `post_innaug', replace
+
+**********Lame duck period
+use table3, clear
+
+keep if postElec==1 
+keep if drughom!=.
+
+g DummyDeaths=0
+replace DummyDeaths=1 if drughom>0
+
+collapse (mean) DummyDeaths drughom spread PANwin pob_total, by(id_mun elec_c)
+
+*rate
+g xhom=(drughom/pob_t)*12*100000  
+
+*rd terms
+g spreadPW=spread*PANwin
+g spread2=spread^2
+g spreadPW2=spreadPW^2
+
+tempfile post_elec
+save `post_elec', replace	
+
+*******PreElec
+use table3, clear
+keep if (postElec==0 & postInn==0)
+keep if drughom!=.
+
+g DummyDeaths=0
+replace DummyDeaths=1 if drughom>0
+
+collapse (mean) DummyDeaths drughom spread PANwin pob_total, by(id_mun elec_c)
+
+*rate
+g xhom=(drughom/pob_t)*12*100000  
+
+*rd terms
+g spreadPW=spread*PANwin
+g spread2=spread^2
+g spreadPW2=spreadPW^2
+
+tempfile pre_elec
+save `pre_elec', replace
+
+******define global variables for regressions    
+global x1 "PANwin spread spreadPW"  
+global x2 "PANwin spread spread2 spreadPW spreadPW2"
+
+use `post_innaug', clear
+reg DummyDeaths $x2 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons replace bdec(3)
+
+use `post_elec', clear
+reg DummyDeaths $x2 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg DummyDeaths $x2 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)
+
+use `post_innaug', clear
+reg DummyDeaths $x1 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)
+
+use `post_elec', clear
+reg DummyDeaths $x1 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg DummyDeaths $x1 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)
+
+use `post_innaug', clear
+reg xhom $x2 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)
+
+use `post_elec', clear
+reg xhom $x2 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg xhom $x2 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)
+
+use `post_innaug', clear
+reg xhom $x1 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)
+
+use `post_elec', clear
+reg xhom $x1 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg xhom $x1 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panela, excel less(0) nocons append bdec(3)
+
+******************
+*Table 2, Panel B
+******************
+
+*********Post-innauguration period
+use table3, clear
+
+keep if postInn==1	
+
+g DummyDeaths=0
+replace DummyDeaths=1 if hom>0
+
+collapse (mean) DummyDeaths hom spread PANwin pob_total, by(id_mun elec_c)
+
+*rate
+g xhom=(hom/pob_t)*12*100000  
+
+*rd terms
+g spreadPW=spread*PANwin
+g spread2=spread^2
+g spreadPW2=spreadPW^2
+tempfile post_innaug
+save `post_innaug', replace
+
+**********Lame duck period
+use table3, clear
+
+keep if postElec==1
+
+g DummyDeaths=0
+replace DummyDeaths=1 if hom>0
+
+collapse (mean) DummyDeaths hom spread PANwin pob_total, by(id_mun elec_c)
+
+*rate
+g xhom=(hom/pob_t)*12*100000  
+
+*rd terms
+g spreadPW=spread*PANwin
+g spread2=spread^2
+g spreadPW2=spreadPW^2
+
+tempfile post_elec
+save `post_elec', replace	
+
+*******PreElec
+use table3, clear
+
+keep if (postElec==0 & postInn==0)
+
+g DummyDeaths=0
+replace DummyDeaths=1 if hom>0
+
+collapse (mean) DummyDeaths hom spread PANwin pob_total, by(id_mun elec_c)
+
+*rate
+g xhom=(hom/pob_t)*12*100000  
+
+*rd terms
+g spreadPW=spread*PANwin
+g spread2=spread^2
+g spreadPW2=spreadPW^2
+
+tempfile pre_elec
+save `pre_elec', replace
+
+******define global variables for regressions
+
+use `post_innaug', clear
+reg DummyDeaths $x2 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons replace bdec(3)
+
+use `post_elec', clear
+reg DummyDeaths $x2 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg DummyDeaths $x2 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)
+
+use `post_innaug', clear
+reg DummyDeaths $x1 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)
+
+use `post_elec', clear
+reg DummyDeaths $x1 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg DummyDeaths $x1 if abs(spread)<.05, robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)
+
+use `post_innaug', clear
+reg xhom $x2 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)
+
+use `post_elec', clear
+reg xhom $x2 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg xhom $x2 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)
+	
+use `post_innaug', clear
+reg xhom $x1 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)
+
+use `post_elec', clear
+reg xhom $x1 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)	
+
+use `pre_elec', clear
+reg xhom $x1 if abs(spread)<.05 [aw=pob_t], robust cluster(id_m)
+outreg2 PANwin using t3_panelb, excel less(0) nocons append bdec(3)

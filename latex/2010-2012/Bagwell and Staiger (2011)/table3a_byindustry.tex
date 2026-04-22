@@ -1,0 +1,23 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Table 3a: OLS Estimates --- By Industry}
+\begin{tabular}{l*{10}{c}}
+\toprule
+            &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   &\multicolumn{1}{c}{(5)}   &\multicolumn{1}{c}{(6)}   &\multicolumn{1}{c}{(7)}   &\multicolumn{1}{c}{(8)}   &\multicolumn{1}{c}{(9)}   &\multicolumn{1}{c}{(10)}   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   \\
+\midrule
+Pre-accession MFN Tariff&      0.3750***&      0.2226***&      0.6502***&      0.2679***&      0.3285***&      0.3136***&      0.1342***&      0.3705***&      0.4013***&      0.3715***\\
+            &    (0.0284)   &    (0.0311)   &    (0.0707)   &    (0.0162)   &    (0.0142)   &    (0.0104)   &    (0.0144)   &    (0.0185)   &    (0.0159)   &    (0.0176)   \\
+Import (millions)&     -0.0733** &     -0.0476***&     -0.0001   &     -0.0044***&     -0.0059***&     -0.0055***&     -0.0134***&     -0.0111***&     -0.0044***&     -0.0112*  \\
+            &    (0.0338)   &    (0.0104)   &    (0.0015)   &    (0.0008)   &    (0.0017)   &    (0.0015)   &    (0.0044)   &    (0.0025)   &    (0.0006)   &    (0.0063)   \\
+\midrule
+R-squared   &      0.3738   &      0.4436   &      0.5078   &      0.6748   &      0.8141   &      0.8417   &      0.7843   &      0.7747   &      0.6555   &      0.6948   \\
+Observations&        2037   &        1811   &        4417   &        4030   &        3264   &        4271   &        4176   &        4293   &       10956   &        3466   \\
+HS2 Fixed Effects&         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   \\
+Country Fixed Effects&         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   &         Yes   \\
+\bottomrule
+\multicolumn{11}{l}{\footnotesize Robust (HC1) standard errors in parentheses.}\\
+\multicolumn{11}{l}{\footnotesize Dependent variable: WTO Final Bound Tariff Rate.}\\
+\multicolumn{11}{l}{\footnotesize Industries defined by HS6 product code ranges.}\\
+\end{tabular}
+\end{table}

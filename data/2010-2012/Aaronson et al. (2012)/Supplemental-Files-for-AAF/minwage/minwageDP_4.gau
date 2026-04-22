@@ -1,0 +1,256 @@
+/*minwageDP.gau : This is a program using dynamic programming to solve the decision rules
+on a model with durables and non-durables consumption.  It then runs a simulation 
+with those rules.
+Writes to disk decision rules, utility matrix, and all parameters for other files to use e.g.
+for future use.
+*/
+/*consider breaking decision rule solver and the simulation into separate programs */
+/*Should first run the beginning program and the end program as broken into two files to make sure it works ..*/
+/*some nomenclature rules:
+    variables beginning with "C" or "I" refer to consumption or investment, respectively 
+    variables beginning with "S" or "A" or "PI" refer to durable stock or assets or permanent income status, respectively.
+    Note pi=3.14 is declare'd already.
+    variables with Shk refer to income shocks of some sort.
+    variables ending with "M" simply mean matrix
+    variables ending with "R" refer to rate
+    Underscore indicates that what follows the underscore can be thought of as a subscript
+*/
+
+/*Timing:
+The time state variable goes from 1 to periods.  A sim makes periods-1 decisions.
+A1, S1 are initial assets/stock; i.e., At,St are the assets/stock _before_ the t-th decisions
+are made.
+[this is curreently being modified.   changing the time state to be same format as other state vars, i.e.
+using Tstates instead of assuming 1 to periods.  Periods will correspond to numTstates.
+This is useful since if we want to switch to using a yearly model, we don't have to change 
+all the parameters, we just change Tstates.  Tstates right now must be sequential integers.  The
+next step will be to allow it to be any grid, like Astates etc, requiring that utility is summed over
+previous decisions, similarly for income] 
+*/
+
+/* Global variables such as maxAssets are relatively unreliable. It is uniformly better to just use
+Astates[rows(Astates)] instead of maxAssets.  for instance: 
+if an increment is a decimal and maxAssets is
+divided by the increment in calculating Astates, then depending on the way the division goes and on
+the approximation of the decimal, Astates[rows(Astates)] (the effective maximum asset level) may be
+slightly different than maxAssets, and comparisons to determine boundaries may fail.
+*/
+
+/*  Guessing:
+ DP uses last periods optimal solution as a guess, and searches through +/- "guess" % of the arrays. set guess=1 to compare to non-guessing solution.
+ Will look +- guess% * prevbestIndex.  for example, set guess=1 guarantees you look through whole space.
+ Setting guess >= .5 then if prevbestIndex was right in the middle, you will still look through the whole space,
+but if it's at one end, you will only look through half the space.  guess<.5 you won't look thru whole space.
+ if this is screwing results up too much, you may want to add more intial periods that search the whole space.
+ currently the first and last two do this.  
+*/
+
+/*
+The Consumption floor (previously "Cfloor" var) that is guaranteed by the govt is the first/smallest value 
+of the Cdec grid.
+*/
+
+/*
+Differences between minwageDP and minwageDP_2 can be found by searching _1 ( or _2, resp.):
+ newResults_tmp becomes newResults_tmp2 
+"minwageDP.gau" becomes "minwageDP_2.gau"
+ "graphs" becomes "graphs_2" in sim_graph();
+*/
+
+new; 
+cls;
+
+
+/*#include "C:\\Documents and Settings\g1psd00\\My Documents\minwage\initializations.gau"; //Need to be able to change gauss.cfg to change path ...
+  #include "C:\TEMP\msgf.gau"; // note the "\\" before the parts with spaces.  hundreds of hours ...
+  #include "C:\\Documents and Settings\g1psd00\\My Documents\minwage\minwage_functions.gau"; //Need to be able to change gauss.cfg to change path ...
+*/
+
+////////////////////////////////////// Parameters/Preferences/Grid Def'n /////////////////////////////////////////
+
+   
+
+/* SettingsSwitch options:
+1 for short,  2 for different Afloor (analytic) shorter version, 2.5 different Afloor (analytic) long version,  
+[there are now many versions between 2 and 3, see intializations],
+3 for long, 4 for lottery/1 period hike, 5 is temporary&quick, 6 is a first round try at transitory shocks code;
+
+Other cases should error because nothing will intialize (transitionM won't get set, it won't run then).
+*/
+/* hikeSwitch options: 0 means no hike, 1 means appropriate hike happens.  Note the actual hike def'n is unchanged */
+
+settingsSwitch = 79.1;
+hikeSwitch = 1;
+{rho, R, beta, theta, PIgrowthR, incomeLevelAtHike, downpaymentR, delta, fixedDurableCost, numPIstates, 
+transitionM, PIstates, TSprobabilities, TSvals, Tstates, hikeStart, 
+wageHike, PIgrowthChangeTime, AfloorFnVersion, Cdec, Idec, Astates, Sstates, 
+CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh, IzeroIdxGAUSS, gridScale, initialPI} = set_paramsAndGrids(settingsSwitch, hikeSwitch);    //actually sets everything.  found in intializations.gau
+
+
+//these are parameters for the simulation run at the end of this file.  they are not saved 
+simRandomnessSwitch = 0; //1 means randomness, 0 means rndseed is fixed;  not used til sim/graphing in sim_graph() fn
+numsims = 10001; 
+
+user = 2; /* doss==0; french==1; AERpackage == 2 */
+if user == 0;
+    outpath = "C:\\Documents and Settings\\g1crd01\\My Documents\\minwage\\results\\newResults_tmp_4"; // no extra quotes .. b/C it concatenates names at the end anyway?
+    dplogFilename = "minwageDP.log";
+elseif user==1;
+    outpath = "C:\\Documents and Settings\\g1crd01\\My Documents\\minwage\\results\\newResults_tmp_4"; // no extra quotes .. b/C it concatenates names at the end anyway?
+    dplogFilename = "minwageDP.log";
+elseif user==2;
+    outpath = "C:\\Research\\minwage\\results\\newResults_tmp_4"; // no extra quotes .. b/C it concatenates names at the end anyway?
+    dplogFilename = "minwageDP.log";
+endif;
+
+////////////////////////////////////// End Parameters/Preferences/Grid Def'n /////////////////////////////////////////
+
+/******************************** BEGIN FUNCTIONS ***********************************/
+
+  #include "C:\Research\minwage\initializations.gau"; //Need to be able to change gauss.cfg to change path ...
+  #include "C:\Research\minwage\minwage_Sim_Graph_f.gau"; // note the "\\" before the parts with spaces.  hundreds of hours ...
+  #include "C:\Research\minwage\minwage_functions.gau"; //Need to be able to change gauss.cfg to change path ...
+
+
+/******************************** END FUNCTIONS ***********************************/
+
+
+
+////////////////////////////////////// begin starting output  /////////////////////////////////////////
+if user == 0;
+  d = changeDir "C:\\Documents and Settings\\g1crd01\\My Documents\\minwage\\results\\newResults_tmp_4";  // it'd be nice if could write  ^outpath   here
+elseif user==2;
+  d = changeDir "C:\\Research\\minwage\\results\\newResults_tmp_4";  // it'd be nice if could write  ^outpath   here
+endif;
+
+format /ldn 10,5; //width,precision
+pathTmp = outpath $+ "\\" $+ dplogFilename;
+output file = ^pathTmp reset;
+outwidth 256; 
+screen on;
+
+"minwageDP_4.gau:";
+
+////////////////////////////////////// end starting output  /////////////////////////////////////////
+
+////////////////////////////////////// Error checking //////////////////////////////////////
+/* Commented out for the moment since we've set transitionM to zero
+transMtester = sumr(transitionM);
+if not ((transMtester >= .99999) and (transMtester<=1.00001)); print "transitionMatrix rows do not sum to 1, error."; end; endif;
+if (rows(TSprobabilities) > 1); transMtester = sumc(TSprobabilities); else; transMtester = sumr(TSprobabilities); endif;
+if not ((transMtester >= .9999) and (transMtester<=1.0001)); print "TSprobabilities rows do not sum to 1, error."; end; endif;
+//output transM to a file below.
+*/
+if rho==1; /* don't want division by zero */
+  "Rho==1, exiting"; end;
+endif;
+
+////////////////////////////////////// end error checking //////////////////////////////////////
+
+
+// some variable initializations/definitions////////////////////////////////////////////////////////////////////
+
+//this is arbitrary.  the numbers are used repeatedly below, but not saved.
+//All the following should be vectors, so either rows or cols should be ==1.
+numCdecs = rows(Cdec)*cols(Cdec);
+numIdecs = rows(Idec)*cols(Idec);
+numAstates = rows(Astates)*cols(Astates); 
+numSstates = rows(Sstates)*cols(Sstates); 
+numTstates = rows(Tstates)*cols(Tstates);
+numTSvals = rows(TSvals)*cols(TSvals);
+hikeLength = rows(wageHike)*cols(wageHike);
+//numPIstates set above
+
+
+//Error checks.  Don't delete unless you want hours of torment.  
+//Also, dont move them higher up, because they may get lost ...
+if not (sortc(Cdec,1) == Cdec); print /flush "You've got a world of pain coming."; end; endif;
+if not (sortc(Idec,1) == Idec); print /flush "You will meet a violent end."; end; endif;
+//if (fixedDurableCost > 0 and (Iguess < 1 or Cguess < 1)); print /flush "You might have a problem. ending for safety's sake"; end; endif;
+
+
+//output transM to a file, in case C++ is run separately ... kind of useless.
+output off; //close other output file now;
+if user == 0;
+  output file = "C:\\Documents and Settings\\g1crd01\\My Documents\\minwage\\C\\minwageDP\\minwageDP\\transitionM.data" reset; 
+elseif user == 2;
+  output file = "C:\\Research\\minwage\\C\\minwageDP\\transitionM.data" reset;
+endif;
+
+outwidth 256;
+screen off;
+format 1, 4; //CAREFUL don't set the precision too small or else C++ has trouble reading it.
+print numPIstates;
+format 18, 16;
+print PIstates;
+print transitionM;
+output off;
+pathTmp = outpath $+ "\\" $+ dplogFilename;
+output file = ^pathTmp on;
+screen on;
+format /ldn 10,5; //width,precision
+
+output_paramsAndGrids(settingsSwitch, hikeSwitch, Cdec, Idec, Astates, Sstates, PIstates, TSvals,
+        transitionM, TSprobabilities, wageHike, hikeStart, R, fixedDurableCost, delta, downpaymentR, PIgrowthR, beta,
+        rho, theta, CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh, numTstates,
+        AfloorFnVersion, gridScale);
+
+print /flush;
+//end;  //Check numops/speed & memory requirements before running by end'ing here
+
+/* find decision rules here */
+
+//Timing
+timer=zeros(4,2);
+days= zeros(1,2);
+timer[.,1]=time;
+days[1,1]=dayinyr(date());
+print /flush "start time " days[1,1]|timer[.,1];
+
+//initialize result vectors
+VM = zeros(numAstates*numSstates*numPIstates*numTstates,1);
+bestCM = zeros(numAstates*numSstates*numPIstates*(numTstates-1),1);
+bestIM = zeros(numAstates*numSstates*numPIstates*(numTstates-1),1);
+
+dlibrary C:\\Research\\minwage\\C\minwageDP_DLL.dll; //DLL version of minwageDP
+timer[.,1] = time;
+days[1,1] = dayinyr(date());
+
+dllcall getDecisionRulesGAUSS(  Tstates, numTstates, Astates, numAstates, Sstates, numSstates, 
+                                PIstates, numPIstates, Cdec, numCdecs, Idec, numIdecs, TSvals, numTSvals,
+                                CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh, IzeroIdxGAUSS,
+                                downpaymentR, delta, R, PIgrowthR, PIgrowthChangeTime, wageHike, hikeLength, hikeStart, incomeLevelAtHike,
+                                theta, rho, beta, fixedDurableCost,
+                                transitionM, TSprobabilities, AfloorFnVersion,
+                                VM, bestCM, bestIM, initialPI); //results come into VM, bestCM, bestIM as one-dimension
+
+timer[.,2] = time;
+days[1,2]=dayinyr(date());
+"Time taken for C to do decision rules is " (days[1,2]-days[1,1])|(timer[.,2]-timer[.,1]);
+
+VM = areshape(VM, numAstates|numSstates|numPIstates|numTstates);
+bestCM = areshape(bestCM, numAstates|numSstates|numPIstates|(numTstates-1)); 
+bestIM = areshape(bestIM, numAstates|numSstates|numPIstates|(numTstates-1));
+
+dlibrary -d;
+
+output off;
+
+/*************************************SAVE DATA ***********************************/
+//This save-data section is for gauss.  Separate from output to C. (e.g. transitionM is output above also)
+
+save path=^outpath bestIM, bestCM, VM, 
+        beta, R, rho, theta, PIgrowthR, downpaymentR, delta, numPIstates, transitionM, 
+        PIstates, Astates, Sstates, Tstates, Cdec, Idec,hikeStart, wageHike,  PIgrowthChangeTime,
+        AfloorFnVersion, fixedDurableCost, TSvals, TSprobabilities, incomeLevelAtHike, gridScale, initialPI;
+//probably soon add another parameter for which versioin of "setFixedDurCostFunction" is passed
+
+
+/*************************************END SAVE DATA ***********************************/
+
+
+
+
+
+
+//ecs

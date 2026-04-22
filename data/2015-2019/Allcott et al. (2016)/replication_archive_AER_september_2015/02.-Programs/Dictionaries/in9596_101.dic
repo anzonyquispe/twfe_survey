@@ -1,0 +1,23 @@
+dictionary using 95-96/P9596101.C {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+
+_column(16)	linkcode	%3.0f	""
+
+_column(19)  	otherexp1	%11.0f 	""
+_column(30)  	otherexp2	%11.0f 	""
+_column(41)  	otherexp3	%11.0f 	""
+_column(52)  	otherexp4	%11.0f 	""
+_column(63)  	otherexp5	%11.0f 	""
+_column(74)	otherexp6	%11.0f 	""
+_column(85)	otherexp7	%11.0f 	""
+_column(96)	otherexp8	%11.0f 	""
+_column(107)	otherexp9	%11.0f 	""
+_column(118)	otherexp10	%11.0f 	""
+
+};
+

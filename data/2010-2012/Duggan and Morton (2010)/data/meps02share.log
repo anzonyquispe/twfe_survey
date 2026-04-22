@@ -1,0 +1,5961 @@
+-------------------------------------------------------------------------------
+       log:  /disk/bulkn/mgduggan/partd/meps/aerdata/meps02share.log
+  log type:  text
+ opened on:   3 Mar 2009, 23:06:17
+
+. 
+. set seed 1234567
+
+. set linesize 120
+
+. set mem 300m
+(307200k)
+
+. set matsize 800
+
+. set more off
+
+. 
+. * read in person-level file with medicare coverage for each person
+. * this raw file can be obtained from meps site - see the readme for more detail
+. 
+. infile using h70.dct, using(../year02/raw/H70.DAT)
+
+dictionary using H70.DAT {
+_column(9)    str8   dupersid   %8s  "person id"
+_column(200)  byte   age31x     %2f
+_column(202)  byte   age42x     %2f
+_column(204)  byte   age53x     %2f
+_column(206)  byte   age02x     %2f  "age as of 12/31/02"
+_column(1259) str1   mcrev02    %1s  "ever have medicare in 2002?"
+_column(1260) str1   mcdev02    %1s  "ever have medicaid in 2002?"   }
+
+(39165 observations read)
+
+. sort dupersid
+
+. save meps02person
+file meps02person.dta saved
+
+. d
+
+Contains data from meps02person.dta
+  obs:        39,165                          
+ vars:             7                          3 Mar 2009 23:06
+ size:       704,970 (99.8% of memory free)
+------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+------------------------------------------------------------------------------------------------------------------------
+dupersid        str8   %9s                    person id
+age31x          byte   %8.0g                  
+age42x          byte   %8.0g                  
+age53x          byte   %8.0g                  
+age02x          byte   %8.0g                  age as of 12/31/02
+mcrev02         str1   %9s                    ever have medicare in 2002?
+mcdev02         str1   %9s                    ever have medicaid in 2002?
+------------------------------------------------------------------------------------------------------------------------
+Sorted by:  dupersid
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    dupersid |         0
+      age31x |     39165      32.824    22.73971         -1         85
+      age42x |     39165    33.44246    22.51268         -1         85
+      age53x |     39165    33.78665    22.35051         -1         85
+      age02x |     39165    33.71367     22.3572         -1         85
+-------------+--------------------------------------------------------
+     mcrev02 |         0
+     mcdev02 |         0
+
+. clear
+
+. 
+. * read in prescription events file
+. 
+. infile using h67a.dct, using(../year02/raw/H67A.DAT)
+
+dictionary using ../raw/H67A.DAT {
+_column(9)   str8   dupersid        %8s
+_column(53)  str50  medicationname  %50s 
+_column(133) str11  rxndc           %11s 
+_column(392) str2   gbo             %2s
+_column(436)        pd_self         %7f
+_column(443)        pd_medicare     %7f
+_column(450)        pd_medicaid     %7f
+_column(457)        pd_privins      %7f
+_column(464)        pd_veterans     %6f
+_column(470)        pd_tricare      %7f
+_column(477)        pd_otherfed     %6f
+_column(483)        pd_stateloc     %6f
+_column(489)        pd_workcomp     %6f
+_column(495)        pd_othins       %6f
+_column(501)        pd_othpriv      %6f
+_column(507)        pd_othpublic    %6f
+_column(513)        pd_total        %7f
+_column(520)        personwgt       %12f  }
+
+(339308 observations read)
+
+. 
+. sort dupersid
+
+. 
+. * how many people in this data and how many scripts per person
+. quietly by dupersid: gen temp_n = _n
+
+. quietly by dupersid: gen temp_N = _N
+
+. sum temp_N if temp_n==1, detail
+
+                           temp_N
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              1
+ 5%            1              1
+10%            1              1       Obs               23660
+25%            2              1       Sum of Wgt.       23660
+
+50%            6                      Mean             14.341
+                        Largest       Std. Dev.      21.55292
+75%           17            276
+90%           38            289       Variance       464.5285
+95%           56            290       Skewness       3.532092
+99%          103            319       Kurtosis       22.71787
+
+. drop temp_*
+
+. 
+. * merge with data that has info on person - esp if they were on medicare
+. count
+339308
+
+. sort dupersid
+
+. merge dupersid using meps02person
+variable dupersid does not uniquely identify observations in the master data
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          2 |     15,505        4.37        4.37
+          3 |    339,308       95.63      100.00
+------------+-----------------------------------
+      Total |    354,813      100.00
+
+. sort _merge
+
+. by _merge: sum pd_total
+
+------------------------------------------------------------------------------------------------------------------------
+-> _merge = 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    pd_total |         0
+
+------------------------------------------------------------------------------------------------------------------------
+-> _merge = 3
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    pd_total |    339308     56.0306    104.2174         .1    4842.11
+
+
+. 
+. * decent number of people have zero scripts - drop them
+. drop if pd_total==.
+(15505 observations deleted)
+
+. drop _merge
+
+. 
+. * also drop people with zero weight
+. sum personwgt, detail
+
+                          personwgt
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     1782.152              0
+10%      2705.74              0       Obs              339308
+25%      4479.01              0       Sum of Wgt.      339308
+
+50%     7217.653                      Mean           7936.653
+                        Largest       Std. Dev.      4822.287
+75%     10379.29       44304.06
+90%     14034.29       44389.82       Variance       2.33e+07
+95%     16691.96       44389.82       Skewness       1.310745
+99%     23453.81        46765.6       Kurtosis       6.491642
+
+. drop if personwgt==0
+(6986 observations deleted)
+
+. 
+. * code as medicare eligible if they had medicare at any point during year
+. gen mcarscript = (mcrev02=="1")
+
+. tab mcarscript, missing
+
+ mcarscript |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |    193,759       58.30       58.30
+          1 |    138,563       41.70      100.00
+------------+-----------------------------------
+      Total |    332,322      100.00
+
+. 
+. * define dual script as share of spending for this script done by medicaid
+. * require that person said they were on medicare and medicaid at some point
+. 
+. gen dualscript = (pd_medicaid / pd_total) if mcrev02=="1" & mcdev02=="1"
+(295896 missing values generated)
+
+. replace dualscript = 0 if dualscript==.
+(295896 real changes made)
+
+. sum dualscript, detail
+
+                         dualscript
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              332322
+25%            0              0       Sum of Wgt.      332322
+
+50%            0                      Mean           .0686161
+                        Largest       Std. Dev.      .2464458
+75%            0              1
+90%            0              1       Variance       .0607356
+95%     .9548329              1       Skewness       3.350595
+99%            1              1       Kurtosis       12.31415
+
+. 
+. * define medicare out-of-pocket script as share of spending for this script
+. * that is out of pocket . . . require that person was on medicare at some point
+. 
+. gen mcselfscript = (pd_self / pd_total) if mcrev02=="1"
+(193759 missing values generated)
+
+. replace mcselfscript = 0 if mcselfscript==.
+(193759 real changes made)
+
+. sum mcselfscript, detail
+
+                        mcselfscript
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              332322
+25%            0              0       Sum of Wgt.      332322
+
+50%            0                      Mean           .2445459
+                        Largest       Std. Dev.      .4016544
+75%     .3343587              1
+90%            1              1       Variance       .1613263
+95%            1              1       Skewness       1.236345
+99%            1              1       Kurtosis       2.670495
+
+. 
+. sum mcarscript dualscript mcselfscript
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+  mcarscript |    332322     .416954    .4930559          0          1
+  dualscript |    332322    .0686161    .2464458          0          1
+mcselfscript |    332322    .2445459    .4016544          0          1
+
+. 
+. * some prescriptions were actually paid by medicare
+. * almost always those person have mcrev02=="01" so just stick with
+. * that definition below
+. gen anymcrpd = (pd_medicare > 0 & pd_medicare!=.)
+
+. tab anymcrpd, missing
+
+   anymcrpd |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |    318,411       95.81       95.81
+          1 |     13,911        4.19      100.00
+------------+-----------------------------------
+      Total |    332,322      100.00
+
+. tab mcarscript anymcrpd, missing
+
+           |       anymcrpd
+mcarscript |         0          1 |     Total
+-----------+----------------------+----------
+         0 |   193,746         13 |   193,759 
+         1 |   124,665     13,898 |   138,563 
+-----------+----------------------+----------
+     Total |   318,411     13,911 |   332,322 
+
+
+. 
+. * large number of ndc's are not identified so we won't use this for now
+. count
+332322
+
+. count if rxndc=="-9"
+67835
+
+. 
+. *********************************************************************
+. ** 1. Recode drug names for top 1000 (gen shortnam) **
+. 
+. * clean up the name variable (capitalize, remove leading/trailing blanks)
+. replace medicationname = upper(ltrim(rtrim(medicationname)))
+(0 real changes made)
+
+. 
+. * these are defined to match up with IMS data
+. 
+. gen str20 shortnam = ""
+(332322 missing values generated)
+
+. 
+. **DRUGS 1-10
+. 
+. * 42 rx with generic name 
+. replace   shortnam = "LIPITOR" if substr(medicationname,1,7)=="LIPITOR"
+(7459 real changes made)
+
+. replace   shortnam = "LIPITOR" if substr(medicationname,1,12)=="ATORVASTATIN"            
+(61 real changes made)
+
+. 
+. * 495 rx with generic name  (zocor off patent 2006)
+. replace   shortnam = "ZOCOR" if substr(medicationname,1,5)=="ZOCOR"
+(3845 real changes made)
+
+. replace   shortnam = "ZOCOR" if substr(medicationname,1,11)=="SIMVASTATIN"
+(607 real changes made)
+
+. replace   shortnam = "ZOCOR" if substr(medicationname,1,10)=="SIMVSTATIN"
+(0 real changes made)
+
+. 
+. * 81 rx with generic name   
+. replace   shortnam = "PREVACID" if substr(medicationname,1,8)=="PREVACID"
+(2824 real changes made)
+
+. replace  shortnam = "PREVACID" if substr(medicationname,1,12)=="LANSOPRAZOLE"
+(96 real changes made)
+
+. 
+. * 3 rx with generic name 
+. replace   shortnam = "NEXIUM"  if substr(medicationname,1,6)=="NEXIUM"           
+(1536 real changes made)
+
+. replace  shortnam = "NEXIUM" if substr(medicationname,1,12)=="ESOMEPRAZOLE" 
+(8 real changes made)
+
+. 
+. * 101 rx with generic name (zoloft off patent 2006)
+. replace   shortnam = "ZOLOFT" if substr(medicationname,1,6)=="ZOLOFT"
+(2986 real changes made)
+
+. replace   shortnam = "ZOLOFT" if substr(medicationname,1,10)=="SERTRALINE"
+(126 real changes made)
+
+. 
+. *too few obs; other brand (procrit) with same generic name ERYTHROPOIETIN ALFA, EPOETIN ALFA              
+. replace   shortnam = "EPOGEN" if substr(medicationname,1,6)=="EPOGEN"
+(41 real changes made)
+
+. 
+. * 16 rx with generic name 
+. replace   shortnam = "CELEBREX" if substr(medicationname,1,8)=="CELEBREX"         
+(3162 real changes made)
+
+. replace   shortnam = "CELEBREX" if substr(medicationname,1,9)=="CELECOXIB" 
+(26 real changes made)
+
+. 
+. * 41 rx with generic name
+. replace   shortnam = "ZYPREXA" if substr(medicationname,1,7)=="ZYPREXA"
+(665 real changes made)
+
+. replace   shortnam = "ZYPREXA" if substr(medicationname,1,10)=="OLANZAPINE"
+(73 real changes made)
+
+. 
+. * generic gabapentin on the mkt, late 2003    
+. replace   shortnam = "NEURONTIN" if substr(medicationname,1,9)=="NEURONTIN"
+(1522 real changes made)
+
+. 
+. *too few obs; other brand (epogen) with same generic name ERYTHROPOIETIN ALFA, EPOETIN ALFA  
+. replace   shortnam = "PROCRIT" if substr(medicationname,1,7)=="PROCRIT"
+(101 real changes made)
+
+. 
+. ** DRUGS 11-20
+. 
+. * 22 rx with generic name
+. replace   shortnam = "EFFEXOR" if substr(medicationname,1,7)=="EFFEXOR"
+(1447 real changes made)
+
+. replace   shortnam = "EFFEXOR" if substr(medicationname,1,11)=="VENLAFAXINE"
+(20 real changes made)
+
+. 
+. * 15 rx with generic name             
+. replace   shortnam = "ADVAIR" if substr(medicationname,1,6)=="ADVAIR"
+(1271 real changes made)
+
+. replace   shortnam = "ADVAIR" if substr(medicationname,1,19)=="FLUTICAS/SALMETEROL"
+(0 real changes made)
+
+. replace   shortnam = "ADVAIR" if substr(medicationname,1,22)=="FLUTICASONE/SALMETEROL"
+(0 real changes made)
+
+. 
+. * generic PAROXETINE on mkt in 2003                
+. replace   shortnam = "PAXIL" if substr(medicationname,1,5)=="PAXIL"
+(3174 real changes made)
+
+.             
+. ***
+. * other brand (amvaz -- which doesn't show up in meps) with same generic name AMLODIPINE on mkt in late 2003 (should r
+> evisit this one)
+. replace   shortnam = "NORVASC" if substr(medicationname,1,7)=="NORVASC"
+(4575 real changes made)
+
+. ****
+. 
+. * 15 rx with generic name (off patent 2006)         
+. replace   shortnam = "PRAVACHOL" if substr(medicationname,1,9)=="PRAVACHOL"
+(1959 real changes made)
+
+. replace   shortnam = "PRAVACHOL" if substr(medicationname,1,11)=="PRAVASTATIN"
+(40 real changes made)
+
+. 
+. * 55 rx with generic name           
+. replace   shortnam = "PLAVIX" if substr(medicationname,1,6)=="PLAVIX"
+(1583 real changes made)
+
+. replace   shortnam = "PLAVIX" if substr(medicationname,1,11)=="CLOPIDOGREL"
+(45 real changes made)
+
+.     
+. * 69 rx with generic name      
+. replace   shortnam = "ALLEGRA" if substr(medicationname,1,7)=="ALLEGRA"
+(2740 real changes made)
+
+. replace   shortnam = "ALLEGRA" if substr(medicationname,1,12)=="FEXOFENADINE"
+(128 real changes made)
+
+. 
+. * spelling error; other brand (Zyban) or generic BUPROPION on the mkt                 
+. replace   shortnam = "WELLBUTRIN" if substr(medicationname,1,10)=="WELLBUTRIN"
+(1146 real changes made)
+
+. replace   shortnam = "WELLBUTRIN" if substr(medicationname,1,10)=="WELLBURTIN"
+(0 real changes made)
+
+. 
+. * too few obs; generic OXYCODONE on the mkt
+. replace   shortnam = "OXYCONTIN" if substr(medicationname,1,9)=="OXYCONTIN"
+(536 real changes made)
+
+.    
+. * 21 rx with generic name 
+. replace   shortnam = "FOSAMAX" if substr(medicationname,1,7)=="FOSAMAX"
+(1795 real changes made)
+
+. replace   shortnam = "FOSAMAX" if substr(medicationname,1,11)=="ALENDRONATE"
+(20 real changes made)
+
+.   
+. ** DRUGS 21-30
+. 
+. * 10 rx with generic name     
+. replace   shortnam ="VIOXX"       if substr(medicationname,1,5)=="VIOXX"          
+(2628 real changes made)
+
+. replace   shortnam ="VIOXX"       if substr(medicationname,1,9)=="ROFECOXIB"
+(22 real changes made)
+
+. replace   shortnam ="VIOXX"       if substr(medicationname,1,9)=="ROFECOXIE"
+(0 real changes made)
+
+. 
+. * spelling error; 23 rx with generic name
+. replace   shortnam = "SINGULAIR" if substr(medicationname,1,9)=="SINGULAIR"
+(1481 real changes made)
+
+. replace   shortnam = "SINGULAIR" if substr(medicationname,1,8)=="SINGULAR"
+(200 real changes made)
+
+. replace   shortnam = "SINGULAIR" if substr(medicationname,1,11)=="MONTELUKAST"
+(20 real changes made)
+
+. replace   shortnam = "SINGULAIR" if substr(medicationname,1,11)=="MONTFLUKAST"
+(0 real changes made)
+
+. 
+. * no generic Pantoprazole in meps              
+. replace   shortnam = "PROTONIX" if substr(medicationname,1,8)=="PROTONIX"
+(1251 real changes made)
+
+.          
+. * spelling error; 347 rx with generic name (zithromax off patent 2005)
+. replace   shortnam = "ZITHROMAX" if substr(medicationname,1,9)=="ZITHROMAX"
+(1692 real changes made)
+
+. replace   shortnam = "ZITHROMAX" if substr(medicationname,1,9)=="ZITHROIMA"         
+(0 real changes made)
+
+. replace   shortnam = "ZITHROMAX" if substr(medicationname,1,12)=="AZITHROMYCIN"
+(40 real changes made)
+
+. 
+. * 2 rx with generic name
+. replace   shortnam = "ACTOS" if substr(medicationname,1,5)=="ACTOS"
+(1016 real changes made)
+
+. replace   shortnam = "ACTOS" if substr(medicationname,1,12)=="PIOGLITAZONE"               
+(26 real changes made)
+
+. 
+. * spelling error; 73 rx with generic name
+. replace   shortnam = "RISPERDAL" if substr(medicationname,1,9)=="RISPERDAL"
+(742 real changes made)
+
+. replace   shortnam = "RISPERDAL" if substr(medicationname,1,9)=="RISPERDOL"         
+(17 real changes made)
+
+. replace   shortnam = "RISPERDAL" if substr(medicationname,1,11)=="RISPERIDONE"
+(42 real changes made)
+
+. 
+. * 4 rx with generic name
+. replace   shortnam = "AMBIEN" if substr(medicationname,1,6)=="AMBIEN"
+(1227 real changes made)
+
+. replace   shortnam = "AMBIEN" if substr(medicationname,1,8)=="ZOLPIDEM" 
+(5 real changes made)
+
+. 
+. * 48 rx with generic name (zyrtec off patent 2007)
+. replace   shortnam = "ZYRTEC" if substr(medicationname,1,6)=="ZYRTEC"
+(2347 real changes made)
+
+. replace   shortnam = "ZYRTEC" if substr(medicationname,1,10)=="CETIRIZINE"
+(27 real changes made)
+
+.              
+. * spelling error; other brand and generic Estrogen and Progestin on the mkt
+. replace   shortnam = "ORTHO" if substr(medicationname,1,5)=="ORTHO"
+(2362 real changes made)
+
+. replace   shortnam = "ORTHO" if substr(medicationname,1,12)=="E-ORTHO EVRA"            
+(0 real changes made)
+
+. 
+. * other brand or generic OMEPRAZOLE on the mkt 
+. replace   shortnam = "PRILOSEC" if substr(medicationname,1,8)=="PRILOSEC"
+(2389 real changes made)
+
+.        
+. ** DRUGS 31-40
+.     
+. * 16 rx with generic name
+. replace   shortnam = "DIOVAN" if substr(medicationname,1,6)=="DIOVAN" 
+(2128 real changes made)
+
+. replace   shortnam = "DIOVAN" if substr(medicationname,1,9)=="VALSARTAN"             
+(0 real changes made)
+
+.  
+. * too few obs; no generic Etanercept Injection in meps            
+. replace   shortnam = "ENBREL" if substr(medicationname,1,6)=="ENBREL"
+(0 real changes made)
+
+. 
+. * 17 rx with generic name
+. replace   shortnam = "CELEXA" if substr(medicationname,1,6)=="CELEXA" 
+(1894 real changes made)
+
+. replace   shortnam = "CELEXA" if substr(medicationname,1,10)=="CITALOPRAM" 
+(48 real changes made)
+
+.             
+. * 45 rx with generic name (assume "ROSIGLITAZONE" not combo treatment ROSIGLITAZONE/METFORMIN, aka avandamet)
+. replace   shortnam = "AVANDIA" if substr(medicationname,1,7)=="AVANDIA"
+(1183 real changes made)
+
+. replace   shortnam = "AVANDIA" if substr(medicationname,1,13)=="ROSIGLITAZONE"            
+(41 real changes made)
+
+. 
+. * 224 rx with generic name
+. replace   shortnam = "ACIPHEX" if substr(medicationname,1,7)=="ACIPHEX"       
+(845 real changes made)
+
+. replace   shortnam = "ACIPHEX" if substr(medicationname,1,11)=="RABEPRAZOLE"  
+(202 real changes made)
+
+. 
+. * this is a generic 
+. replace   shortnam = "OMEPRAZOLE" if substr(medicationname,1,10)=="OMEPRAZOLE"       
+(56 real changes made)
+
+.     
+. * too few obs; 30 rx with generic name
+. replace   shortnam = "VIAGRA" if substr(medicationname,1,6)=="VIAGRA"          
+(229 real changes made)
+
+. replace   shortnam = "VIAGRA" if substr(medicationname,1,10)=="SILDENAFIL"
+(11 real changes made)
+
+. 
+. * spelling error; 12 rx with generic name
+. replace   shortnam = "SEROQUEL" if substr(medicationname,1,8)=="SEROQUEL"
+(509 real changes made)
+
+. replace   shortnam = "SEROQUEL" if substr(medicationname,1,8)=="SEROGNEL"           
+(0 real changes made)
+
+. replace   shortnam = "SEROQUEL" if substr(medicationname,1,10)=="QUETIAPINE"           
+(0 real changes made)
+
+. 
+. * no brand or generic Infliximab Injection in meps
+. replace   shortnam = "REMICADE" if substr(medicationname,1,8)=="REMICADE"
+(0 real changes made)
+
+. 
+. * too few obs; 1 rx with generic name 
+. replace   shortnam = "IMITREX" if substr(medicationname,1,7)=="IMITREX"
+(147 real changes made)
+
+. replace   shortnam = "IMITREX" if substr(medicationname,1,11)=="SUMATRIPTAN"  
+(0 real changes made)
+
+. 
+. ** DRUGS 41-50            
+. 
+. * too few obs; other brand or generic Levofloxacin Oral on the mkt
+. replace   shortnam = "LEVAQUIN" if substr(medicationname,1,8)=="LEVAQUIN"           
+(533 real changes made)
+
+. 
+. * too few obs; no generic Fentanyl Skin Patches in meps
+. replace   shortnam = "DURAGESIC" if substr(medicationname,1,9)=="DURAGESIC"           
+(183 real changes made)
+
+. 
+. * 42 rx with generic name
+. replace   shortnam = "DEPAKOTE" if substr(medicationname,1,8)=="DEPAKOTE" 
+(901 real changes made)
+
+. replace   shortnam = "DEPAKOTE" if substr(medicationname,1,10)=="DIVALPROEX"          
+(32 real changes made)
+
+.   
+. * other brand or generic ESTROGEN on the mkt
+. replace   shortnam = "PREMARIN" if substr(medicationname,1,8)=="PREMARIN"
+(5088 real changes made)
+
+. replace   shortnam = "PREMARIN" if medicationname=="ESTROGENS (PREMARIN)"          
+(0 real changes made)
+
+.  
+. *10 rx with generic name  (do not use "METROROLOL" since could be METOPROLOL TARTRATE)
+. replace   shortnam = "TOPROL" if substr(medicationname,1,6)=="TOPROL"             
+(2748 real changes made)
+
+. replace   shortnam = "TOPROL" if substr(medicationname,1,12)=="METOPROLOL S"  
+(4 real changes made)
+
+. 
+. * 1 rx with generic name
+. replace   shortnam = "LEXAPRO" if substr(medicationname,1,7)=="LEXAPRO"  
+(147 real changes made)
+
+. replace   shortnam = "LEXAPRO" if substr(medicationname,1,12)=="ESCITALOPRAM"
+(0 real changes made)
+
+.         
+. * no generic Amlodipine/Benazepril in meps
+. replace   shortnam = "LOTREL" if substr(medicationname,1,6)=="LOTREL"             
+(1209 real changes made)
+
+. 
+. 
+. * 3 rx with generic name
+. replace   shortnam = "TOPAMAX" if substr(medicationname,1,7)=="TOPAMAX"           
+(354 real changes made)
+
+. replace   shortnam = "TOPAMAX" if substr(medicationname,1,10)=="TOPIRAMATE" 
+(0 real changes made)
+
+. 
+. * other brand and generic FLUTICASONE PROPIONATE
+. replace   shortnam = "FLONASE" if substr(medicationname,1,7)=="FLONASE"           
+(1401 real changes made)
+
+.               
+. * 1 rx with generic name
+. replace   shortnam = "BEXTRA" if substr(medicationname,1,6)=="BEXTRA"
+(504 real changes made)
+
+. replace   shortnam = "BEXTRA" if substr(medicationname,1,10)=="VALDECOXIB"
+(0 real changes made)
+
+. 
+. ** DRUGS 51-60  
+. 
+. * no brand or generic PEGFILGRASTIM in meps
+. replace   shortnam = "NEULASTA" if substr(medicationname,1,8)=="NEULASTA"           
+(0 real changes made)
+
+. 
+. * no brand or generic RITUXIMAB in meps
+. replace   shortnam = "RITUXAN" if substr(medicationname,1,7)=="RITUXAN"           
+(0 real changes made)
+
+. 
+. 
+. * spelling error; this is a generic; note: alt name "Amox Tr-Potassium Clavulanate" 
+. replace   shortnam = "AMOX" if substr(medicationname,1,23)=="AMOXICILLIN/CLAVULANATE"              
+(72 real changes made)
+
+. replace   shortnam = "AMOX" if substr(medicationname,1,5)=="AMOX "
+(0 real changes made)
+
+. replace   shortnam = "AMOX" if medicationname=="GENERIC AUGMENTIN 5"
+(0 real changes made)
+
+. 
+. * no brand or generic INTERFERON BETA 1A in meps
+. replace   shortnam = "AVONEX" if substr(medicationname,1,6)=="AVONEX"           
+(99 real changes made)
+
+. 
+. * careful, other drugs with same prefix; other brand (ciloxan) and generic CIPROFLOXACIN on the mkt
+. replace   shortnam = "CIPRO" if substr(medicationname,1,6)=="CIPRO "             
+(397 real changes made)
+
+. 
+. * other brand or generic LEVOTHYROXINE on the mkt
+. replace   shortnam = "SYNTHROID" if substr(medicationname,1,9)=="SYNTHROID"
+(5219 real changes made)
+
+. replace   shortnam = "SYNTHROID" if medicationname=="LEVOTHYROXINE (SYNTHROID)"
+(11 real changes made)
+
+. replace   shortnam = "SYNTHROID" if medicationname=="LEVOTHYROXINE NA (SYNTHROID)"          
+(16 real changes made)
+
+. 
+. * no brand or generic DARBEPOETIN ALFA in meps
+. replace   shortnam = "ARANESP" if substr(medicationname,1,7)=="ARANESP"         
+(0 real changes made)
+
+. 
+. * 2 rx with generic INSULIN LISPRO HUMAN (LISPRO is unique ingredient to HUMALOG; other brand or generic INSULIN on th
+> e mkt)
+. replace   shortnam = "HUMALOG" if substr(medicationname,1,7)=="HUMALOG"            
+(702 real changes made)
+
+. replace   shortnam = "HUMALOG" if medicationname=="INSULIN LISPRO HUMAN"
+(0 real changes made)
+
+. 
+. * too few obs; other brand or generic Leuprolide on the mkt
+. replace   shortnam = "LUPRON" if substr(medicationname,1,6)=="LUPRON"             
+(17 real changes made)
+
+. 
+. * 11 rx with generic name
+. replace   shortnam = "EVISTA" if substr(medicationname,1,6)=="EVISTA"
+(860 real changes made)
+
+. replace   shortnam = "EVISTA" if substr(medicationname,1,10)=="RALOXIFENE"        
+(4 real changes made)
+
+.      
+. ** DRUGS 61-70
+. 
+. * no generic ONDANSETRON in meps
+. replace   shortnam = "ZOFRAN" if substr(medicationname,1,6)=="ZOFRAN"             
+(68 real changes made)
+
+.  
+. * no generic DESLORATADINE in meps
+. replace   shortnam = "CLARINEX" if substr(medicationname,1,8)=="CLARINEX"         
+(616 real changes made)
+
+.              
+. * 20 rx with generic name
+. replace   shortnam = "ALTACE" if substr(medicationname,1,6)=="ALTACE"
+(977 real changes made)
+
+. replace   shortnam = "ALTACE" if substr(medicationname,1,8)=="RAMIPRIL"
+(15 real changes made)
+
+.             
+. * no brand or generic DOCETAXEL in meps
+. replace   shortnam = "TAXOTERE" if substr(medicationname,1,8)=="TAXOTERE"
+(0 real changes made)
+
+.   
+. * other brand or generic INSULIN on the mkt
+. replace   shortnam = "HUMULIN" if substr(medicationname,1,7)=="HUMULIN"           
+(1736 real changes made)
+
+.   
+. * too few obs, 3 with generic
+. replace   shortnam = "VALTREX" if substr(medicationname,1,7)=="VALTREX"   
+(194 real changes made)
+
+. replace   shortnam = "VALTREX" if substr(medicationname,1,12)=="VALACYCLOVIR"       
+(0 real changes made)
+
+. 
+. * other brand (DEXTROSTAT) or generic DEXTROAMPHETAMINE on the mkt
+. replace   shortnam = "ADDERALL" if substr(medicationname,1,8)=="ADDERALL"          
+(725 real changes made)
+
+.    
+. * 4 rx with generic name
+. replace   shortnam = "DETROL" if substr(medicationname,1,6)=="DETROL"  
+(689 real changes made)
+
+. replace   shortnam = "DETROL" if substr(medicationname,1,11)=="TOLTERODINE"  
+(5 real changes made)
+
+. 
+. * 20 rx with generic name; (assume "LOSARTAN" not combo HYDROCHLOROTHIAZIDE/LOSARTAN)
+. replace   shortnam = "COZAAR" if substr(medicationname,1,6)=="COZAAR"             
+(1094 real changes made)
+
+. replace   shortnam = "COZAAR" if substr(medicationname,1,8)=="LOSARTAN"
+(21 real changes made)
+
+. 
+. *143 rx with generic name (biaxin off patent 2005); (assume "CLARITHROMYCIN" not combo, prevpac: AMOXICILLIN/CLARITHRO
+> MYCIN/LANSOPRAZOLE)
+. replace   shortnam = "BIAXIN" if substr(medicationname,1,6)=="BIAXIN"
+(468 real changes made)
+
+. replace   shortnam = "BIAXIN" if medicationname=="CLARITHROMYCIN"
+(84 real changes made)
+
+. 
+. ** DRUGS 71-80            
+. 
+. * generic FENOFIBRATE on the mkt 
+. replace   shortnam = "TRICOR" if substr(medicationname,1,6)=="TRICOR"             
+(497 real changes made)
+
+. 
+. * no generic LAMOTRIGINE in meps
+. replace   shortnam = "LAMICTAL" if substr(medicationname,1,8)=="LAMICTAL"           
+(128 real changes made)
+
+.  
+. * spelling error; other brand or generic METFORMIN on the mkt
+. replace   shortnam = "GLUCOPHAGE" if substr(medicationname,1,10)=="GLUCOPHAGE"        
+(2467 real changes made)
+
+. replace   shortnam = "GLUCOPHAGE" if medicationname=="GLUCOPHAG" 
+(0 real changes made)
+
+. 
+. * other brand and generic METHYLPHENIDATE on the mkt
+. replace   shortnam = "CONCERTA" if substr(medicationname,1,8)=="CONCERTA"          
+(695 real changes made)
+
+. 
+. * other brand and generic RIBAVIRIN on the mkt
+. replace   shortnam = "REBETOL" if substr(medicationname,1,7)=="REBETOL"           
+(28 real changes made)
+
+. 
+. * generic AMOXICILLIN/CLAVULANATE on the mkt 
+. replace   shortnam = "AUGMENTIN" if substr(medicationname,1,9)=="AUGMENTIN"          
+(1047 real changes made)
+
+. 
+. * 31 rx with generic name (coreg off patent 2007)
+. replace   shortnam = "COREG" if substr(medicationname,1,5)=="COREG"  
+(519 real changes made)
+
+. replace   shortnam = "COREG" if substr(medicationname,1,10)=="CARVEDILOL"            
+(27 real changes made)
+
+. 
+. * 8 rx with generic name
+. replace   shortnam = "ACCUPRIL" if substr(medicationname,1,8)=="ACCUPRIL"           
+(1690 real changes made)
+
+. replace   shortnam = "ACCUPRIL" if substr(medicationname,1,9)=="QUINAPRIL"
+(54 real changes made)
+
+. 
+. * no generic TERBINAFINE in meps
+. replace   shortnam = "LAMISIL" if substr(medicationname,1,7)=="LAMISIL"             
+(102 real changes made)
+
+.   
+. * 22 rx with generic name
+. replace   shortnam = "ARICEPT" if substr(medicationname,1,7)=="ARICEPT"          
+(284 real changes made)
+
+. replace   shortnam = "ARICEPT" if substr(medicationname,1,9)=="DONEPEZIL"
+(19 real changes made)
+
+. 
+. ** DRUGS 81-90
+. 
+. * 17 rx with generic name
+. replace   shortnam = "FLOMAX" if substr(medicationname,1,6)=="FLOMAX"            
+(662 real changes made)
+
+. replace   shortnam = "FLOMAX" if substr(medicationname,1,10)=="TAMSULOSIN"
+(27 real changes made)
+
+. 
+. * other brand and generic FLUTICASONE on the mkt
+. replace   shortnam = "FLOVENT" if substr(medicationname,1,7)=="FLOVENT"             
+(1079 real changes made)
+
+. replace   shortnam = "FLOVENT" if medicationname=="FLUTICASONE (FLOVENT)" 
+(0 real changes made)
+
+. 
+. * 11 rx with generic name
+. replace   shortnam = "ACTONEL" if substr(medicationname,1,7)=="ACTONEL"   
+(319 real changes made)
+
+. replace   shortnam = "ACTONEL" if substr(medicationname,1,11)=="RISEDRONATE"         
+(0 real changes made)
+
+. 
+. * other brand or generic BUDESONIDE on the mkt
+. replace   shortnam = "PULMICORT" if substr(medicationname,1,9)=="PULMICORT"           
+(408 real changes made)
+
+. 
+. * no brand or generic FILGRASTIM in meps
+. replace   shortnam = "NEUPOGEN" if substr(medicationname,1,8)=="NEUPOGEN"           
+(0 real changes made)
+
+. 
+. * other brand or generic ACETAMINOPHEN on the mkt
+. replace   shortnam = "TYLENOL" if substr(medicationname,1,7)=="TYLENOL"            
+(939 real changes made)
+
+. 
+. * other brand and generic MOMETASONE on the mkt
+. replace   shortnam = "NASONEX" if substr(medicationname,1,7)=="NASONEX"             
+(780 real changes made)
+
+.            
+. * 4 rx with generic name
+. replace   shortnam = "COMBIVIR" if substr(medicationname,1,8)=="COMBIVIR"
+(86 real changes made)
+
+. replace   shortnam = "COMBIVIR" if medicationname=="LAMIVUDINE/ZIDOVUDINE"  
+(2 real changes made)
+
+. 
+. * no generic Glatiramer in meps
+. replace   shortnam = "COPAXONE" if substr(medicationname,1,8)=="COPAXONE"          
+(40 real changes made)
+
+.  
+. * no generic Mycophenolate in meps
+. replace   shortnam = "CELLCEPT" if substr(medicationname,1,8)=="CELLCEPT"
+(0 real changes made)
+
+. 
+. ** DRUGS 91-100          
+.   
+. * no brand or generic Peginterferon alfa-2b in meps
+. replace   shortnam = "PEG-INTRON" if substr(medicationname,1,10)=="PEG-INTRON"        
+(0 real changes made)
+
+. 
+. * glucovance is combo Glyburide/Metformin, only the separate ingredients are listed and these correspond to other bran
+> ds
+. replace   shortnam = "GLUCOVANCE" if substr(medicationname,1,10)=="GLUCOVANCE"         
+(888 real changes made)
+
+. 
+. * no brand or generic Carboplatin in meps
+. replace   shortnam = "PARAPLATIN" if substr(medicationname,1,10)=="PARAPLATIN"          
+(0 real changes made)
+
+.    
+. ***
+. * spelling error; lisinopril is a generic (pat includes combo hctz/lisinopril in his top 1000 for "lisinopril"-- revis
+> it?)
+. replace   shortnam = "LISINOPRIL" if substr(medicationname,1,10)=="LISINOPRIL"      
+(1966 real changes made)
+
+. replace   shortnam = "LISINOPRIL" if substr(medicationname,1,10)=="LISONOPRIL"
+(0 real changes made)
+
+. replace   shortnam = "LISINOPRIL" if substr(medicationname,1,6)=="LISINO"
+(14 real changes made)
+
+. replace   shortnam = "LISINOPRIL" if medicationname=="HCTZ/LISINOPRIL"
+(173 real changes made)
+
+. ***
+. 
+. * no generic Tacrolimus in meps
+. replace   shortnam = "PROGRAF" if substr(medicationname,1,7)=="PROGRAF"           
+(0 real changes made)
+
+.  
+. * no generic Enoxaparin in meps
+. replace   shortnam = "LOVENOX" if substr(medicationname,1,7)=="LOVENOX"            
+(26 real changes made)
+
+. 
+. * no generic combo Losartan/Hydrochlorothiazide in meps
+. replace   shortnam = "HYZAAR" if substr(medicationname,1,6)=="HYZAAR"              
+(761 real changes made)
+
+. 
+. * other brand (DUONEB) or generic ALBUTEROL/IPRATROPIUM on the mkt
+. replace   shortnam = "COMBIVENT" if substr(medicationname,1,9)=="COMBIVENT"           
+(761 real changes made)
+
+. * replace   shortnam = "COMBIVENT" if medicationname=="IPRATROP 0.5 / ALBUT 2.5 COM S"
+.   
+. * no brand or generic Zoledronic in meps
+. replace   shortnam = "ZOMETA" if substr(medicationname,1,6)=="ZOMETA"           
+(0 real changes made)
+
+. 
+. 
+. * other brand pneumococcal vaccine on mkt
+. replace   shortnam = "PREVNAR" if substr(medicationname,1,7)=="PREVNAR"
+(0 real changes made)
+
+. 
+. ** DRUGS 101-110            
+. 
+. * 11 rx with generic name (off patent in 2004)
+. replace   shortnam = "DIFLUCAN" if substr(medicationname,1,8)=="DIFLUCAN"
+(357 real changes made)
+
+. replace   shortnam = "DIFLUCAN" if substr(medicationname,1,11)=="FLUCONAZOLE"           
+(4 real changes made)
+
+.  
+. * no generic Ezetimibe in meps
+. replace   shortnam = "ZETIA" if substr(medicationname,1,5)=="ZETIA"             
+(6 real changes made)
+
+. 
+. * no brand or generic IRINOTECAN in meps
+. replace   shortnam = "CAMPTOSAR" if substr(medicationname,1,9)=="CAMPTOSAR"          
+(0 real changes made)
+
+. 
+. * 47 rx with generic name (assume "BENAZEPRIL" not combo BENAZEPRIL/AMLODIPINE) 
+. replace   shortnam = "LOTENSIN" if substr(medicationname,1,8)=="LOTENSIN" 
+(1286 real changes made)
+
+. replace   shortnam = "LOTENSIN" if substr(medicationname,1,10)=="BENAZEPRIL"                      
+(76 real changes made)
+
+. 
+. * no generic Aripiprazole in meps
+. replace   shortnam = "ABILIFY" if substr(medicationname,1,7)=="ABILIFY"
+(0 real changes made)
+
+. 
+. * 23 rx with generic name
+. replace   shortnam = "XALATAN" if substr(medicationname,1,7)=="XALATAN"           
+(918 real changes made)
+
+. replace   shortnam = "XALATAN" if substr(medicationname,1,11)=="LATANOPROST"  
+(39 real changes made)
+
+. 
+. * other brand (sarafem) or generic Fluoxetine on the mkt
+. replace   shortnam = "PROZAC" if substr(medicationname,1,6)=="PROZAC"          
+(954 real changes made)
+
+. replace   shortnam = "PROZAC" if medicationname=="FLUOXETINE (PROZAC)"
+(7 real changes made)
+
+. 
+. * other brand (oxytrol) or generic OXYBUTYNIN on the mkt
+. replace   shortnam = "DITROPAN" if substr(medicationname,1,8)=="DITROPAN"           
+(299 real changes made)
+
+. 
+. * no generic Atomoxetine in meps
+. replace   shortnam = "STRATTERA" if substr(medicationname,1,9)=="STRATTERA"          
+(0 real changes made)
+
+.  
+. * no brand or generic Gemcitabine in meps
+. replace   shortnam = "GEMZAR" if substr(medicationname,1,6)=="GEMZAR"            
+(0 real changes made)
+
+. 
+. ** DRUGS 111-120 
+. 
+. * other brand (canasa) or generic MESALAMINE on the mkt
+. replace   shortnam = "ASACOL" if substr(medicationname,1,6)=="ASACOL"             
+(154 real changes made)
+
+. 
+. * no generic Fluvastatin in meps
+. replace   shortnam = "LESCOL" if substr(medicationname,1,6)=="LESCOL"
+(742 real changes made)
+
+.               
+. * no generic ARV combo Lamivudine/Abacavir Sulfate/Zidovudine in meps
+. replace   shortnam = "TRIZIVIR" if substr(medicationname,1,8)=="TRIZIVIR"          
+(18 real changes made)
+
+.    
+. * 12 rx with generic name
+. replace   shortnam = "LANTUS" if substr(medicationname,1,6)=="LANTUS"            
+(515 real changes made)
+
+. replace   shortnam = "LANTUS" if medicationname=="INSULIN, GLARGINE (LANTUS)"
+(0 real changes made)
+
+. replace   shortnam = "LANTUS" if medicationname=="INSULIN, GLARGINE, HUMAN" 
+(0 real changes made)
+
+. 
+. * this is a generic
+. replace   shortnam = "METFORMIN" if substr(medicationname,1,9)=="METFORMIN"         
+(1973 real changes made)
+
+.  
+. * 8 rx with generic name, ARV combo LOPINAVIR/RITONAVIR
+. replace   shortnam = "KALETRA" if substr(medicationname,1,7)=="KALETRA"   
+(49 real changes made)
+
+. replace   shortnam = "KALETRA" if medicationname=="LOPINAVIR-RITONAVIR"        
+(0 real changes made)
+
+. 
+. * no generic Oxcarbazepine in meps
+. replace   shortnam = "TRILEPTAL" if substr(medicationname,1,9)=="TRILEPTAL"           
+(136 real changes made)
+
+. 
+. * 39 rx with generic name; * note there is a combination product, but assume that if it just says irbesartan then it i
+> s avapro
+. replace   shortnam = "AVAPRO" if substr(medicationname,1,6)=="AVAPRO"
+(583 real changes made)
+
+. replace   shortnam = "AVAPRO" if substr(medicationname,1,10)=="IRBESARTAN"  
+(38 real changes made)
+
+. 
+. * no brand or generic Imatinib in meps
+. replace   shortnam = "GLEEVEC" if substr(medicationname,1,7)=="GLEEVEC"            
+(0 real changes made)
+
+. 
+. * no generic Metaxalone in meps
+. replace   shortnam = "SKELAXIN" if substr(medicationname,1,8)=="SKELAXIN"
+(426 real changes made)
+
+.             
+. ** DRUGS 121-130
+.  
+. * no brand or generic Interferon Beta-1b Injection in meps
+. replace   shortnam = "BETASERON" if substr(medicationname,1,9)=="BETASERON"        
+(18 real changes made)
+
+.  
+. * 12 rx with generic name
+. replace   shortnam = "VIREAD" if substr(medicationname,1,6)=="VIREAD" 
+(35 real changes made)
+
+. replace   shortnam = "VIREAD" if substr(medicationname,1,9)=="TENOFOVIR"           
+(1 real change made)
+
+.    
+. * no generic Oxaliplatin in meps
+. replace   shortnam = "ELOXATIN" if substr(medicationname,1,8)=="ELOXATIN"       
+(0 real changes made)
+
+.           
+. * other brand or generic Leuprolide on the mkt
+. replace   shortnam = "NASACORT" if substr(medicationname,1,8)=="NASACORT"
+(468 real changes made)
+
+. 
+. * 3 rx with generic name
+. replace   shortnam = "SUSTIVA" if substr(medicationname,1,7)=="SUSTIVA"
+(56 real changes made)
+
+. replace   shortnam = "SUSTIVA" if substr(medicationname,1,9)=="EFAVIRENZ"
+(14 real changes made)
+
+.             
+. * other brand or generic Warfarin on the mkt
+. replace   shortnam = "COUMADIN" if substr(medicationname,1,8)=="COUMADIN"
+(1621 real changes made)
+
+. replace   shortnam = "COUMADIN" if medicationname=="WARFARIN (COUMADIN)"
+(15 real changes made)
+
+. 
+. * 34 rx with generic name (off patent 2008)
+. replace   shortnam = "SEREVENT" if substr(medicationname,1,8)=="SEREVENT"            
+(907 real changes made)
+
+. replace   shortnam = "SEREVENT" if substr(medicationname,1,10)=="SALMETEROL"  
+(58 real changes made)
+
+. 
+. * this is a generic
+. replace   shortnam = "CIPROFLOXACIN" if substr(medicationname,1,13)=="CIPROFLOXACIN"    
+(9 real changes made)
+
+. 
+. * generic Glipizide available
+. replace   shortnam = "GLUCOTROL" if substr(medicationname,1,9)=="GLUCOTROL"           
+(1500 real changes made)
+
+. 
+. * other brand or generic BUDESONIDE on the mkt
+. replace   shortnam = "RHINOCORT" if substr(medicationname,1,9)=="RHINOCORT"         
+(351 real changes made)
+
+. 
+. ** DRUGS 131-140
+. 
+. * no generic Cefprozil in meps
+. replace   shortnam = "CEFZIL" if substr(medicationname,1,6)=="CEFZIL"              
+(195 real changes made)
+
+.  
+. * no generic Cefdinir in meps
+. replace   shortnam = "OMNICEF" if substr(medicationname,1,7)=="OMNICEF"            
+(122 real changes made)
+
+.           
+. * other brand (propecia) or generic Finasteride on the mkt  
+. replace   shortnam = "PROSCAR" if substr(medicationname,1,7)=="PROSCAR"
+(193 real changes made)
+
+.    
+. * 9 rx with generic name (off patent 2006)
+. replace   shortnam = "MOBIC" if substr(medicationname,1,5)=="MOBIC"            
+(258 real changes made)
+
+. replace   shortnam = "MOBIC" if substr(medicationname,1,9)=="MELOXICAM"  
+(7 real changes made)
+
+.          
+. * no generic Isotretinoin in meps
+. replace   shortnam = "ACCUTANE" if substr(medicationname,1,8)=="ACCUTANE"
+(92 real changes made)
+
+.            
+. **
+. * forget this one as it is generic and something of a mess (MD) -- revisit
+. replace   shortnam = "HYCD/APAP" if substr(medicationname,1,9)=="HYCD/APAP"
+(0 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if medicationname=="HYDROC/APAP"
+(11 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if medicationname=="HYDROCO/APAP"
+(135 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if medicationname=="HYDROCOD/APAP"
+(111 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if medicationname=="HYDROCODONE APAP"
+(31 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if medicationname=="HYDROCODONE-APAP"
+(0 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if medicationname=="HYDROCODONE/APAP"
+(413 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if medicationname=="APAP/HYDROCODONE"
+(7 real changes made)
+
+. replace   shortnam = "HYCD/APAP" if substr(medicationname,1,27)=="APAP/HYDROCODONE BITARTRATE"
+(1462 real changes made)
+
+. **
+. 
+. * no brand or generic PARICALCITOL in meps
+. replace   shortnam = "ZEMPLAR" if substr(medicationname,1,7)=="ZEMPLAR"             
+(0 real changes made)
+
+.           
+. * no generic Modafinil in meps
+. replace   shortnam = "PROVIGIL" if substr(medicationname,1,8)=="PROVIGIL"
+(0 real changes made)
+
+. 
+. * no generic Trastuzumab in meps
+. replace   shortnam = "HERCEPTIN" if substr(medicationname,1,9)=="HERCEPTIN"           
+(0 real changes made)
+
+.  
+. * this is a generic
+. replace   shortnam = "PAROXETINE" if substr(medicationname,1,10)=="PAROXETINE"
+(90 real changes made)
+
+.         
+. ** DRUGS 141-150
+.  
+. * 12 rx with generic name (assume that if lamivudine alone, it is epivir)
+. replace   shortnam = "EPIVIR" if substr(medicationname,1,6)=="EPIVIR"  
+(136 real changes made)
+
+. replace   shortnam = "EPIVIR" if medicationname=="LAMIVUDINE"          
+(0 real changes made)
+
+. 
+. * 3 rx with generic name
+. replace   shortnam = "MAXALT" if substr(medicationname,1,6)=="MAXALT"           
+(169 real changes made)
+
+. replace   shortnam = "MAXALT" if substr(medicationname,1,11)=="RIZATRIPTAN"
+(0 real changes made)
+
+.             
+. * other brand and generic TESTOSTERONE on the mkt
+. replace   shortnam = "ANDROGEL" if substr(medicationname,1,8)=="ANDROGEL"
+(0 real changes made)
+
+.             
+. * other brand or generic NIACIN on the mkt
+. replace   shortnam = "NIASPAN" if substr(medicationname,1,7)=="NIASPAN"
+(359 real changes made)
+
+.          
+. * no generic Ziprasidone in meps   
+. replace   shortnam = "GEODON" if substr(medicationname,1,6)=="GEODON"
+(78 real changes made)
+
+.           
+. * this is a generic 
+. replace   shortnam = "FLUOXETINE" if substr(medicationname,1,9)=="FLUOXETIN" & medicationname~="FLUOXETINE (PROZAC)"
+(1316 real changes made)
+
+.              
+. * no generic Peginterferon alfa-2a in meps
+. replace   shortnam = "PEGASYS" if substr(medicationname,1,7)=="PEGASYS"
+(0 real changes made)
+
+.              
+. * 15 rx with generic name
+. replace   shortnam = "ATACAND" if substr(medicationname,1,7)=="ATACAND"
+(130 real changes made)
+
+. replace   shortnam = "ATACAND" if substr(medicationname,1,11)=="CANDESARTAN"           
+(15 real changes made)
+
+. 
+. * generic Fosinopril on the mkt, late 2003
+. replace   shortnam = "MONOPRIL" if substr(medicationname,1,8)=="MONOPRIL"
+(687 real changes made)
+
+.    
+. * no generic Levalbuterol in meps
+. replace   shortnam = "XOPENEX" if substr(medicationname,1,7)=="XOPENEX"
+(192 real changes made)
+
+. 
+. ** DRUGS 151-160
+.  
+. * no generic Olopatadine in meps
+. replace   shortnam = "PATANOL" if substr(medicationname,1,7)=="PATANOL"            
+(176 real changes made)
+
+.       
+. * other brand (ultram) or generic Tramadol on the mkt      
+. replace   shortnam = "ULTRACET" if substr(medicationname,1,8)=="ULTRACET"
+(343 real changes made)
+
+.             
+. * other brand (alavert) or generic Loratadine on the mkt
+. replace   shortnam = "CLARITIN" if substr(medicationname,1,8)=="CLARITIN"
+(3041 real changes made)
+
+.   
+. * 12 rx with generic name
+. replace   shortnam = "AMARYL" if substr(medicationname,1,6)=="AMARYL"
+(905 real changes made)
+
+. replace   shortnam = "AMARYL" if substr(medicationname,1,11)=="GLIMEPIRIDE"           
+(1 real change made)
+
+.             
+. * other brand (SYNTHROID) or generic Levothyroxine on the mkt
+. replace   shortnam = "LEVOXYL" if substr(medicationname,1,7)=="LEVOXYL"
+(2357 real changes made)
+
+.               
+. * no generic Fentanyl in meps
+. replace   shortnam = "ACTIQ" if substr(medicationname,1,5)=="ACTIQ"
+(17 real changes made)
+
+.         
+. * other brand or generic ESTROGEN on the mkt    
+. replace   shortnam = "PREMPRO" if substr(medicationname,1,7)=="PREMPRO"
+(1313 real changes made)
+
+.             
+. * no generic Bicalutamide in meps
+. replace   shortnam = "CASODEX" if substr(medicationname,1,7)=="CASODEX"
+(53 real changes made)
+
+.             
+. * no generic Levetiracetam in meps
+. replace   shortnam = "KEPPRA" if substr(medicationname,1,6)=="KEPPRA"
+(68 real changes made)
+
+. 
+. * 12 rx with generic name
+. replace   shortnam = "VIRACEPT" if substr(medicationname,1,8)=="VIRACEPT"
+(41 real changes made)
+
+. replace   shortnam = "VIRACEPT" if substr(medicationname,1,10)=="NELFINAVIR"
+(0 real changes made)
+
+. 
+. ** DRUGS 161-170            
+.   
+. * no generic Adalimumab in meps
+. replace   shortnam = "HUMIRA" if substr(medicationname,1,6)=="HUMIRA"           
+(0 real changes made)
+
+.      
+. * spelling error; this is a generic  
+. replace   shortnam = "DILTIAZEM" if substr(medicationname,1,9)=="DILTIAZEM"
+(1412 real changes made)
+
+. replace   shortnam = "DILTIAZEM" if medicationname=="DILTIAZ ER(CD)"
+(0 real changes made)
+
+. replace   shortnam = "DILTIAZEM" if medicationname=="DILITIAZEM"
+(0 real changes made)
+
+.     
+. * no brand or generic Palivizumab in meps     
+. replace   shortnam = "SYNAGIS" if substr(medicationname,1,7)=="SYNAGIS"
+(0 real changes made)
+
+.       
+. * no generic Pimecrolimus in meps       
+. replace   shortnam = "ELIDEL" if substr(medicationname,1,6)=="ELIDEL"
+(50 real changes made)
+
+.  
+. * other brand (oxycodone) and generic Acetaminophen/Oxycodone on the mkt
+. replace   shortnam = "PERCOCET" if substr(medicationname,1,8)=="PERCOCET"           
+(430 real changes made)
+
+.        
+. * generic Mirtazapine on the mkt in 2003      
+. replace   shortnam = "REMERON" if substr(medicationname,1,7)=="REMERON"
+(464 real changes made)
+
+.  
+. * spelling error; other brand and generic insulin on the mkt         
+. replace   shortnam = "NOVOLIN" if substr(medicationname,1,7)=="NOVOLIN"
+(423 real changes made)
+
+. replace   shortnam = "NOVOLIN" if medicationname=="INSULIN (NOVOLIN)"
+(0 real changes made)
+
+. replace   shortnam = "NOVOLIN" if medicationname=="INSULIN NOVOLIN"
+(4 real changes made)
+
+. replace   shortnam = "NOVOLIN" if medicationname=="INSULIN, NOVOLIN N"             
+(0 real changes made)
+
+. 
+. * no generic Moxifloxacin in meps
+. replace   shortnam = "AVELOX" if substr(medicationname,1,6)=="AVELOX"
+(91 real changes made)
+
+.       
+. * this is a generic (careful not to include combo)   
+. replace   shortnam = "ALBUTEROL" if substr(medicationname,1,9)=="ALBUTEROL" & medicationname~="ALBUTEROL/IPRATROPIUM"
+(5103 real changes made)
+
+.           
+. * generic Brimonidine on the mkt in late 2003
+. replace   shortnam = "ALPHAGAN" if substr(medicationname,1,8)=="ALPHAGAN"
+(395 real changes made)
+
+. 
+. 
+. ** DRUGS 171-180 
+.   
+. * no generic Calcitonin in meps
+. replace   shortnam = "MIACALCIN" if substr(medicationname,1,9)=="MIACALCIN"        
+(246 real changes made)
+
+.     
+. * 117 rx with generic name (off patent 2004); assume that "felodipine" is not combo felodipine/enalapril         
+. replace   shortnam = "PLENDIL" if substr(medicationname,1,7)=="PLENDIL"
+(552 real changes made)
+
+. replace   shortnam = "PLENDIL" if substr(medicationname,1,10)=="FELODIPINE"  
+(60 real changes made)
+
+. 
+. * no generic Zolmitriptan in meps
+. replace   shortnam = "ZOMIG" if substr(medicationname,1,5)=="ZOMIG"             
+(54 real changes made)
+
+.             
+. * no brand or generic Varicella (Chickenpox) Vaccine in meps
+. replace   shortnam = "VARIVAX" if substr(medicationname,1,7)=="VARIVAX"
+(0 real changes made)
+
+. 
+. * spelling error; too few obs; other brand and generic Ibuprofen on the mkt
+. replace   shortnam = "ADVIL" if substr(medicationname,1,5)=="ADVIL"              
+(1 real change made)
+
+. replace   shortnam = "ADVIL" if medicationname=="CHILD ADVIL"
+(0 real changes made)
+
+.       
+. * other brand and generic Propranolol on the mkt
+. replace   shortnam = "INDERAL" if substr(medicationname,1,7)=="INDERAL"
+(358 real changes made)
+
+.  
+. * no brand or generic Octreotide in meps
+. replace   shortnam = "SANDOSTATIN" if substr(medicationname,1,11)=="SANDOSTATIN"        
+(0 real changes made)
+
+.   
+. * no generic Capecitabine in meps
+. replace   shortnam = "XELODA" if substr(medicationname,1,6)=="XELODA"           
+(41 real changes made)
+
+.           
+. * other brand and generic Estrogen/Progestin on the mkt  
+. replace   shortnam = "YASMIN" if substr(medicationname,1,6)=="YASMIN"
+(216 real changes made)
+
+. 
+. * no generic Anastrozole in meps
+. replace   shortnam = "ARIMIDEX" if substr(medicationname,1,8)=="ARIMIDEX"          
+(76 real changes made)
+
+. 
+. ** DRUGS 181-190 
+. 
+. * other brand or generic Lidocaine on the mkt
+. replace   shortnam = "LIDODERM" if substr(medicationname,1,8)=="LIDODERM"            
+(61 real changes made)
+
+.       
+. * 5 rx with generic name        
+. replace   shortnam = "ZERIT" if substr(medicationname,1,5)=="ZERIT"
+(71 real changes made)
+
+. replace   shortnam = "ZERIT" if medicationname=="STAVUDINE"      
+(0 real changes made)
+
+.    
+. * this is a generic
+. replace   shortnam = "NIFEDIPINE" if substr(medicationname,1,10)=="NIFEDIPINE"
+(965 real changes made)
+
+.    
+. * no generic Sevelamer in meps      
+. replace   shortnam = "RENAGEL" if substr(medicationname,1,7)=="RENAGEL"
+(106 real changes made)
+
+.      
+. * other brand or generic Diltiazem on the mkt       
+. replace   shortnam = "CARTIA" if substr(medicationname,1,6)=="CARTIA"
+(397 real changes made)
+
+.   
+. * 2 rx with generic name           
+. replace   shortnam = "AVALIDE" if substr(medicationname,1,7)=="AVALIDE"
+(211 real changes made)
+
+. replace   shortnam = "AVALIDE" if medicationname=="HCTZ/IRBESARTAN"              
+(2 real changes made)
+
+. 
+. * no brand or generic Interferon beta-1a Subcutaneous Injection in meps
+. replace   shortnam = "REBIF" if substr(medicationname,1,5)=="REBIF"
+(0 real changes made)
+
+.        
+. * spelling error; other brand or generic MEDROXYPROGESTERONE on the mkt
+. replace   shortnam = "DEPO-PROVERA" if substr(medicationname,1,12)=="DEPO-PROVERA"
+(154 real changes made)
+
+. replace   shortnam = "DEPO-PROVERA" if substr(medicationname,1,12)=="DEPO PROVERA"      
+(1 real change made)
+
+.         
+. * no generic Leflunomide in meps
+. replace   shortnam = "ARAVA" if substr(medicationname,1,5)=="ARAVA"
+(54 real changes made)
+
+.  
+. * other brand or generic Ipratropium on the mkt          
+. replace   shortnam = "ATROVENT" if substr(medicationname,1,8)=="ATROVENT"
+(517 real changes made)
+
+. 
+. ** DRUGS 191-200
+. 
+. * other brand or generic Clonidine on the mkt
+. replace   shortnam = "CATAPRES" if substr(medicationname,1,8)=="CATAPRES"          
+(192 real changes made)
+
+.       
+. * 7 rx with generic name       
+. replace   shortnam = "COSOPT" if substr(medicationname,1,6)=="COSOPT"
+(171 real changes made)
+
+. replace   shortnam = "COSOPT" if medicationname=="DORZOLAMIDE/TIMOLOL"              
+(1 real change made)
+
+. 
+. * no generic Famciclovir in meps
+. replace   shortnam = "FAMVIR" if substr(medicationname,1,6)=="FAMVIR"
+(92 real changes made)
+
+.           
+. * other brand and generic Cyclosporine on the mkt  
+. replace   shortnam = "NEORAL" if substr(medicationname,1,6)=="NEORAL"
+(41 real changes made)
+
+. replace   shortnam = "NEORAL" if medicationname=="CYCLOSPORINE (NEORAL)"             
+(0 real changes made)
+
+. 
+. ***
+. * no brand or generic Hyalin (not sure if this is the generic name) on the mkt-- revisit
+. replace   shortnam = "SYNVISC" if substr(medicationname,1,7)=="SYNVISC"
+(2 real changes made)
+
+. ***   
+.           
+. * other brand or generic Ranitidine on the mkt
+. replace   shortnam = "ZANTAC" if substr(medicationname,1,6)=="ZANTAC"
+(516 real changes made)
+
+.             
+. * no brand or generic Thalidomide in meps
+. replace   shortnam = "THALOMID" if substr(medicationname,1,8)=="THALOMID"
+(0 real changes made)
+
+.             
+. * other brand or generic DESMOPRESSIN on the mkt
+. replace   shortnam = "DDAVP" if substr(medicationname,1,5)=="DDAVP"
+(93 real changes made)
+
+.             
+. * other brand and generic METROMIDOL on the mkt
+. replace   shortnam = "METROGEL" if substr(medicationname,1,8)=="METROGEL"
+(193 real changes made)
+
+.       
+. * this is a generic      
+. replace   shortnam = "MORPHINE" if substr(medicationname,1,8)=="MORPHINE"
+(225 real changes made)
+
+. 
+. ** DRUGS 201-210
+. 
+. * other brand or generic Diltiazem on the mkt
+. replace   shortnam = "TIAZAC" if substr(medicationname,1,6)=="TIAZAC"             
+(425 real changes made)
+
+.        
+. * no generic Pramipexole in meps
+. replace   shortnam = "MIRAPEX" if substr(medicationname,1,7)=="MIRAPEX"     
+(46 real changes made)
+
+.           
+. * no generic Clindamycin/BENZOYL PEROXIDE in meps
+. replace   shortnam = "BENZACLIN" if substr(medicationname,1,9)=="BENZACLIN"
+(114 real changes made)
+
+.           
+. * other brand or generic Mupirocin on the mkt, late 2003 
+. replace   shortnam = "BACTROBAN" if substr(medicationname,1,9)=="BACTROBAN"
+(245 real changes made)
+
+.          
+. * other brand and generic INSULIN on the mkt
+. replace   shortnam = "NOVOLOG" if substr(medicationname,1,7)=="NOVOLOG"
+(113 real changes made)
+
+.       
+. * no generic Rivastigmine in meps    
+. replace   shortnam = "EXELON" if substr(medicationname,1,6)=="EXELON"
+(115 real changes made)
+
+.      
+. * no generic Dolasetron in meps       
+. replace   shortnam = "ANZEMET" if substr(medicationname,1,7)=="ANZEMET"
+(3 real changes made)
+
+.   
+. * no generic Imiquimod in meps
+. replace   shortnam = "ALDARA" if substr(medicationname,1,6)=="ALDARA"           
+(26 real changes made)
+
+.    
+. * no brand or generic Temozolomide in meps
+. replace   shortnam = "TEMODAR" if substr(medicationname,1,7)=="TEMODAR"          
+(0 real changes made)
+
+.              
+. * no generic FOLLITROPIN in meps
+. replace   shortnam = "GONAL" if substr(medicationname,1,5)=="GONAL"
+(6 real changes made)
+
+. 
+. 
+. ** DRUGS 211-220
+. 
+. * 4 rx with generic name
+. replace   shortnam = "PLETAL" if substr(medicationname,1,6)=="PLETAL"              
+(133 real changes made)
+
+. replace   shortnam = "PLETAL" if substr(medicationname,1,10)=="CILOSTAZOL"            
+(4 real changes made)
+
+.  
+. * other brand (zymar) or generic Gatifloxacin on the mkt
+. replace   shortnam = "TEQUIN" if substr(medicationname,1,6)=="TEQUIN"
+(102 real changes made)
+
+.        
+. * no generic Influenza Vaccine in meps     
+. replace   shortnam = "FLUVIRIN" if substr(medicationname,1,8)=="FLUVIRIN"
+(0 real changes made)
+
+.             
+. * no brand or generic Goserelin in meps
+. replace   shortnam = "ZOLADEX" if substr(medicationname,1,7)=="ZOLADEX"
+(0 real changes made)
+
+.         
+. * this is a generic, no brand or generic Measles, Mumps, and Rubella Vaccines in meps    
+. replace   shortnam = "M-M-R" if substr(medicationname,1,5)=="M-M-R"
+(0 real changes made)
+
+.            
+. * no brand or generic VERTEPORFIN in meps
+. replace   shortnam = "VISUDYNE" if substr(medicationname,1,8)=="VISUDYNE"
+(0 real changes made)
+
+. 
+. * other brand and generic estrogent/ Methyltestosterone on the mkt
+. replace   shortnam = "ESTRATEST" if substr(medicationname,1,9)=="ESTRATEST"         
+(412 real changes made)
+
+. 
+. * generic NEFAZODONE on the mkt late 2003
+. replace   shortnam = "SERZONE" if substr(medicationname,1,7)=="SERZONE"
+(237 real changes made)
+
+.          
+. * 1 rx with generic name
+. replace   shortnam = "DOVONEX" if substr(medicationname,1,7)=="DOVONEX"
+(63 real changes made)
+
+. replace   shortnam = "DOVONEX" if substr(medicationname,1,13)=="CALCIPOTRIENE"         
+(0 real changes made)
+
+. 
+. * no brand or generic SOMATROPIN in meps
+. replace   shortnam = "GENOTROPIN" if substr(medicationname,1,10)=="GENOTROPIN"
+(0 real changes made)
+
+. 
+. ** DRUGS 221-230
+. 
+. ***
+. * this is a generic (pat includes combo CARBIDOPA/LEVODOPA; combo is only obs in meps) -- revisit
+. replace   shortnam = "CARBIDOPA" if substr(medicationname,1,9)=="CARBIDOPA"  
+(200 real changes made)
+
+. ***   
+.    
+. * 10 rx with generic name 
+. replace   shortnam = "VIRAMUNE" if substr(medicationname,1,8)=="VIRAMUNE"           
+(35 real changes made)
+
+. replace   shortnam = "VIRAMUNE" if substr(medicationname,1,10)=="NEVIRAPINE"   
+(0 real changes made)
+
+. 
+. * other brand and generic Tobramycin on the mkt
+. replace   shortnam = "TOBRADEX" if substr(medicationname,1,8)=="TOBRADEX"         
+(113 real changes made)
+
+.    
+. * no generic Abacavir in meps         
+. replace   shortnam = "ZIAGEN" if substr(medicationname,1,6)=="ZIAGEN"
+(61 real changes made)
+
+.    
+. * 3 rx with generic name 
+. replace   shortnam = "ARTHROTEC" if substr(medicationname,1,9)=="ARTHROTEC"        
+(274 real changes made)
+
+. replace   shortnam = "ARTHROTEC" if medicationname=="DICLOFENAC NA/MISOPROSTOL"
+(2 real changes made)
+
+. 
+. * no generic Itraconazole in meps
+. replace   shortnam = "SPORANOX" if substr(medicationname,1,8)=="SPORANOX"           
+(34 real changes made)
+
+.          
+. * no combo generic METFORMIN/ROSIGLITAZONE in meps 
+. replace   shortnam = "AVANDAMET" if substr(medicationname,1,9)=="AVANDAMET"
+(2 real changes made)
+
+.            
+. * 1 rx with generic name 
+. replace   shortnam = "LUMIGAN" if substr(medicationname,1,7)=="LUMIGAN"
+(191 real changes made)
+
+. replace   shortnam = "LUMIGAN" if substr(medicationname,1,11)=="BIMATOPROST"            
+(0 real changes made)
+
+. 
+. * no brand or generic IRON SUCROSE in meps
+. replace   shortnam = "VENOFER" if substr(medicationname,1,7)=="VENOFER"
+(0 real changes made)
+
+.             
+. * spelling error; this is a generic
+. replace   shortnam = "WARFARIN" if substr(medicationname,1,8)=="WARFARIN" & medicationname~="WARFARIN (COUMADIN)"
+(1197 real changes made)
+
+. replace   shortnam = "WARFARIN" if medicationname=="WARFIN SODIUM"
+(0 real changes made)
+
+. 
+. ** DRUGS 231-240
+.   
+. * no generic Colesevelam in meps
+. replace   shortnam = "WELCHOL" if substr(medicationname,1,7)=="WELCHOL"           
+(56 real changes made)
+
+.           
+. * this is a generic
+. replace   shortnam = "CEFUROXIME" if substr(medicationname,1,10)=="CEFUROXIME"
+(40 real changes made)
+
+.            
+. * no generic Adapalene in meps
+. replace   shortnam = "DIFFERIN" if substr(medicationname,1,8)=="DIFFERIN"
+(137 real changes made)
+
+.  
+. * no generic Tegaserod in meps
+. replace   shortnam = "ZELNORM" if substr(medicationname,1,7)=="ZELNORM"           
+(12 real changes made)
+
+.            
+. * other brand (furadantin) or generic NITROFURANTOIN on the mkt
+. replace   shortnam = "MACROBID" if substr(medicationname,1,8)=="MACROBID"
+(146 real changes made)
+
+.            
+. * no generic Isotretinoin in meps
+. replace   shortnam = "AMNESTEEM" if substr(medicationname,1,9)=="AMNESTEEM"
+(4 real changes made)
+
+.           
+. * no generic CHLORPHENIRAMINE POLISTIREX/HYDROCODONE POLISTIREX in meps
+. replace   shortnam = "TUSSIONEX" if substr(medicationname,1,9)=="TUSSIONEX"
+(118 real changes made)
+
+.         
+. * spelling error; this is a generic
+. replace   shortnam = "LOVASTATIN" if substr(medicationname,1,10)=="LOVASTATIN"
+(470 real changes made)
+
+. replace   shortnam = "LOVASTATIN" if medicationname=="LOVASTATI"
+(0 real changes made)
+
+.       
+. * other brand or generic DILTIAZEM on the mkt 
+. replace   shortnam = "CARDIZEM" if substr(medicationname,1,8)=="CARDIZEM"
+(80 real changes made)
+
+.    
+. * no brand or generic Granisetron in meps
+. replace   shortnam = "KYTRIL" if substr(medicationname,1,6)=="KYTRIL"
+(3 real changes made)
+
+. 
+. ** DRUGS 241-250           
+.   
+. * this is a generic
+. replace   shortnam = "CLINDAMYCIN" if substr(medicationname,1,11)=="CLINDAMYCIN"       
+(59 real changes made)
+
+.          
+. * this is a generic
+. replace   shortnam = "MINOCYCLINE" if substr(medicationname,1,11)=="MINOCYCLINE"
+(443 real changes made)
+
+.          
+. * this is a generic -- include all types of potassium, even those not in pat's list? -- revisit
+. replace   shortnam = "POTASSIUM" if substr(medicationname,1,9)=="POTASSIUM"
+(1943 real changes made)
+
+.             
+. * no brand or generic Interferon Alfa-2a and Alfa-2b Injection in meps
+. replace   shortnam = "INTRON" if substr(medicationname,1,6)=="INTRON"
+(0 real changes made)
+
+.           
+. * no generic Ceftriaxone in meps
+. replace   shortnam = "ROCEPHIN" if substr(medicationname,1,8)=="ROCEPHIN"
+(13 real changes made)
+
+.    
+. ****
+. * what is generic centrum? -- revisit
+. replace   shortnam = "CENTRUM" if substr(medicationname,1,7)=="CENTRUM"          
+(24 real changes made)
+
+. ****          
+.  
+. * no brand or generic Galantamine in meps
+. replace   shortnam = "RAZADYNE" if substr(medicationname,1,8)=="RAZADYNE"
+(0 real changes made)
+
+.            
+. * other brand (CARBATROL) or generic Carbamazepine on the mkt
+. replace   shortnam = "TEGRETOL" if substr(medicationname,1,8)=="TEGRETOL"
+(489 real changes made)
+
+.         
+. * no generic FOLLITROPIN in meps
+. replace   shortnam = "FOLLISTIM" if substr(medicationname,1,9)=="FOLLISTIM"
+(0 real changes made)
+
+.            
+. * other brand or generic Phenytoin on the mkt
+. replace   shortnam = "DILANTIN" if substr(medicationname,1,8)=="DILANTIN"
+(702 real changes made)
+
+. 
+. ** DRUGS 251-260  
+. 
+. * this is a generic
+. replace   shortnam = "VERAPAMIL" if substr(medicationname,1,9)=="VERAPAMIL"          
+(1462 real changes made)
+
+.         
+. * other brand and generic GUAIFENESIN on the mkt
+. replace   shortnam = "ROBITUSSIN" if substr(medicationname,1,10)=="ROBITUSSIN"
+(88 real changes made)
+
+.             
+. * other brand or generic Alprazolam on the mkt
+. replace   shortnam = "XANAX" if substr(medicationname,1,5)=="XANAX"
+(265 real changes made)
+
+.          
+. * this is a generic; careful not to include the combo
+. replace   shortnam = "AMOXICILLIN" if substr(medicationname,1,11)=="AMOXICILLIN" & substr(medicationname,1,23)~="AMOXI
+> CILLIN/CLAVULANATE" 
+(2798 real changes made)
+
+. 
+. **
+. * this is a generic; include all combos like pat? revisit
+. replace   shortnam = "PROMETHAZINE" if substr(medicationname,1,12)=="PROMETHAZINE"
+(496 real changes made)
+
+. replace   shortnam = "PROMETHAZINE" if substr(medicationname,1,29)=="DEXTROMETHORPHAN/PROMETHAZINE" 
+(47 real changes made)
+
+. replace   shortnam = "PROMETHAZINE" if substr(medicationname,1,31)=="MEPERIDINE HCL/PROMETHAZINE HCL"
+(11 real changes made)
+
+. replace   shortnam = "PROMETHAZINE" if substr(medicationname,1,20)=="CODEINE-PROMETHAZINE"
+(0 real changes made)
+
+. replace   shortnam = "PROMETHAZINE" if substr(medicationname,1,20)=="CODEINE/PROMETHAZINE"
+(140 real changes made)
+
+. **        
+. 
+. * this is a generic
+. replace   shortnam = "TAMOXIFEN" if substr(medicationname,1,9)=="TAMOXIFEN"
+(386 real changes made)
+
+.           
+. * no brand or generic Interferon Gamma-1b Injection in meps
+. replace   shortnam = "ACTIMMUNE" if substr(medicationname,1,9)=="ACTIMMUNE"
+(0 real changes made)
+
+. 
+. * no generic Oseltamivir in meps            
+. replace   shortnam = "TAMIFLU" if substr(medicationname,1,7)=="TAMIFLU"
+(33 real changes made)
+
+.           
+. * no brand or generic Dornase Alfa in meps 
+. replace   shortnam = "PULMOZYME" if substr(medicationname,1,9)=="PULMOZYME"
+(0 real changes made)
+
+.               
+. * other brand (loprox) or generic Ciclopirox on the mkt
+. replace   shortnam = "PENLAC" if substr(medicationname,1,6)=="PENLAC"
+(101 real changes made)
+
+. 
+. ** DRUGS 261-270
+.  
+. * other brand and generic Estrogen and Progestin 
+. replace   shortnam = "APRI" if substr(medicationname,1,4)=="APRI"            
+(421 real changes made)
+
+.             
+. * no generic Repaglinide in meps
+. replace   shortnam = "PRANDIN" if substr(medicationname,1,7)=="PRANDIN"
+(100 real changes made)
+
+.          
+. * this is a generic
+. replace   shortnam = "CEPHALEXIN" if substr(medicationname,1,10)=="CEPHALEXIN"
+(1057 real changes made)
+
+.            
+. * other brand (OPTIVAR) or generic Azelastine on the mkt 
+. replace   shortnam = "ASTELIN" if substr(medicationname,1,7)=="ASTELIN"
+(141 real changes made)
+
+.         
+. * other brand and generic Ibuprofen on the mkt   
+. replace   shortnam = "MOTRIN" if substr(medicationname,1,6)=="MOTRIN"
+(499 real changes made)
+
+. replace   shortnam = "MOTRIN" if medicationname=="IBUPROFEN (MOTRIN)"    
+(10 real changes made)
+
+.   
+. * other brand and generic TRIAMCINOLONE on the mkt
+. replace   shortnam = "AZMACORT" if substr(medicationname,1,8)=="AZMACORT"
+(290 real changes made)
+
+.         
+. * other brand (proscar) or generic FINASTERIDE on the mkt
+. replace   shortnam = "PROPECIA" if substr(medicationname,1,8)=="PROPECIA"
+(95 real changes made)
+
+.              
+. * no generic AMOXICILLIN/CLARITHROMYCIN/LANSOPRAZOLE in meps
+. replace   shortnam = "PREVPAC" if substr(medicationname,1,7)=="PREVPAC"
+(25 real changes made)
+
+. 
+. * 2 rx with generic name
+. replace   shortnam = "AGGRENOX" if substr(medicationname,1,8)=="AGGRENOX"
+(141 real changes made)
+
+. replace   shortnam = "AGGRENOX" if medicationname=="ASPIRIN/DIPYRIDAMOLE"         
+(0 real changes made)
+
+. 
+. * no generic Telmisartan in meps
+. replace   shortnam = "MICARDIS" if substr(medicationname,1,8)=="MICARDIS"
+(87 real changes made)
+
+. 
+. ** DRUGS 271-280
+. 
+. * other brand and generic Estrogen and Progestin on the mkt
+. replace   shortnam = "MICROGESTIN" if substr(medicationname,1,11)=="MICROGESTIN"       
+(104 real changes made)
+
+.    
+. * this is a generic
+. replace   shortnam = "IBUPROFEN" if substr(medicationname,1,9)=="IBUPROFEN"
+(2077 real changes made)
+
+.     
+. * this is a generic
+. replace   shortnam = "TIZANIDINE" if substr(medicationname,1,10)=="TIZANIDINE"     
+(63 real changes made)
+
+.             
+. * no generic Olmesartan in meps
+. replace   shortnam = "BENICAR" if substr(medicationname,1,7)=="BENICAR"
+(44 real changes made)
+
+.            
+. * no brand rx in meps, but generic Tobramycin on the mkt
+. replace   shortnam = "TOBI" if substr(medicationname,1,4)=="TOBI"
+(0 real changes made)
+
+.             
+. * other brand and generic RIBAVIRIN on the mkt
+. replace   shortnam = "COPEGUS" if substr(medicationname,1,7)=="COPEGUS"
+(0 real changes made)
+
+.           
+. * no generic Sirolimus in meps
+. replace   shortnam = "RAPAMUNE" if substr(medicationname,1,8)=="RAPAMUNE"
+(0 real changes made)
+
+. 
+. * no brand and generic SODIUM FERRIC GLUCONATE COMPLEX in meps          
+. replace   shortnam = "FERRLECIT" if substr(medicationname,1,9)=="FERRLECIT"
+(0 real changes made)
+
+.       
+. * no generic Orlistat in meps 
+. replace   shortnam = "XENICAL" if substr(medicationname,1,7)=="XENICAL"
+(51 real changes made)
+
+.        
+. * other brand or generic Famotidine on the mkt    
+. replace   shortnam = "PEPCID" if substr(medicationname,1,6)=="PEPCID"
+(205 real changes made)
+
+. 
+. ** DRUGS 281-290
+. 
+. * other brand and generic Pseudoephedrine on the mkt
+. replace   shortnam = "SUDAFED" if substr(medicationname,1,7)=="SUDAFED"             
+(7 real changes made)
+
+.  
+. ** 
+. * spelling error; this is a generic; include all combos like pat? -- revisit   
+. replace   shortnam = "SPIRONOLACTONE" if substr(medicationname,1,14)=="SPIRONOLACTONE"
+(713 real changes made)
+
+. replace   shortnam = "SPIRONOLACTONE" if medicationname=="HCTZ/SPIRONOLACTONE"          
+(17 real changes made)
+
+. replace   shortnam = "SPIRONOLACTONE" if medicationname=="SPIRONO/HCTZ"
+(0 real changes made)
+
+. replace   shortnam = "SPIRONOLACTONE" if medicationname=="SPIRONOLAC"
+(0 real changes made)
+
+. replace   shortnam = "SPIRONOLACTONE" if medicationname=="SPIRONOLACT"
+(39 real changes made)
+
+. replace   shortnam = "SPIRONOLACTONE" if medicationname=="SPIRONOLACT/HCTZ"
+(0 real changes made)
+
+. replace   shortnam = "SPIRONOLACTONE" if medicationname=="SPIRONOLACTO"
+(0 real changes made)
+
+. **
+. 
+. * no brand or generic SOMATROPIN in meps
+. replace   shortnam = "HUMATROPE" if substr(medicationname,1,9)=="HUMATROPE"
+(0 real changes made)
+
+.       
+. * no generic Didanosine in meps      
+. replace   shortnam = "VIDEX" if substr(medicationname,1,5)=="VIDEX"
+(56 real changes made)
+
+.  
+. * no generic POLYETHYLENE GLYCOL 3350 in meps
+. replace   shortnam = "MIRALAX" if substr(medicationname,1,7)=="MIRALAX"          
+(121 real changes made)
+
+.         
+. * spelling error; this is a generic
+. replace   shortnam = "HYDROXYZINE" if substr(medicationname,1,11)=="HYDROXYZINE"
+(508 real changes made)
+
+. replace   shortnam = "HYDROXYZINE" if medicationname=="HYDROXYZ HCL"
+(27 real changes made)
+
+. replace   shortnam = "HYDROXYZINE" if medicationname=="HYDROXYZ PAM"            
+(19 real changes made)
+
+. 
+. * other brand (combivent) or generic ALBUTEROL/IPRATROPIUM on the mkt
+. replace   shortnam = "DUONEB" if substr(medicationname,1,6)=="DUONEB"
+(47 real changes made)
+
+.            
+. * no generic Zaleplon in meps
+. replace   shortnam = "SONATA" if substr(medicationname,1,6)=="SONATA"
+(75 real changes made)
+
+.        
+. * this is a generic
+. replace   shortnam = "AMPHETAMINE" if substr(medicationname,1,11)=="AMPHETAMINE"
+(89 real changes made)
+
+.         
+. * spelling error; this is a generic  
+. replace   shortnam = "RANITIDINE" if substr(medicationname,1,10)=="RANITIDINE"
+(1834 real changes made)
+
+. replace   shortnam = "RANITIDINE" if medicationname=="RANTIDINE"
+(26 real changes made)
+
+. 
+. ** DRUGS 291-300
+. 
+. * other brand and generic nifedipine on mkt
+. replace   shortnam = "NIFEDIAC" if substr(medicationname,1,8)=="NIFEDIAC"            
+(0 real changes made)
+
+.             
+. * no generic Linezolid in meps
+. replace   shortnam = "ZYVOX" if substr(medicationname,1,5)=="ZYVOX"
+(3 real changes made)
+
+.             
+. * other brand and generic Estrogen and Progestin
+. replace   shortnam = "NECON" if substr(medicationname,1,5)=="NECON"
+(252 real changes made)
+
+.         
+. * no generic Zonisamide in meps
+. replace   shortnam = "ZONEGRAN" if substr(medicationname,1,8)=="ZONEGRAN"
+(48 real changes made)
+
+.          
+. * this is a generic
+. replace   shortnam = "ATENOLOL" if substr(medicationname,1,8)=="ATENOLOL"
+(5826 real changes made)
+
+.           
+. * other brand or generic Acyclovir on the mkt
+. replace   shortnam = "ZOVIRAX" if substr(medicationname,1,7)=="ZOVIRAX"
+(47 real changes made)
+
+.            
+. * other brand (canasa) or generic MESALAMINE on the mkt
+. replace   shortnam = "PENTASA" if substr(medicationname,1,7)=="PENTASA"
+(13 real changes made)
+
+.          
+. * this is a generic   
+. replace   shortnam = "NAPROXEN" if substr(medicationname,1,8)=="NAPROXEN"
+(1601 real changes made)
+
+.             
+. * no brand or generic Doxorubicin in meps
+. replace   shortnam = "DOXIL" if substr(medicationname,1,5)=="DOXIL"
+(0 real changes made)
+
+. 
+. * other brand and generic Epinephrine on the mkt            
+. replace   shortnam = "EPIPEN" if substr(medicationname,1,6)=="EPIPEN"
+(6 real changes made)
+
+. 
+. ** DRUGS 301-310
+.  
+. * no brand in meps
+. replace   shortnam = "LISTERINE" if substr(medicationname,1,9)=="LISTERINE"         
+(0 real changes made)
+
+.  
+. * this is a generic
+. replace   shortnam = "MIRTAZAPINE" if substr(medicationname,1,11)=="MIRTAZAPINE"       
+(11 real changes made)
+
+.               
+. * other brand and generic Estrogen and Progestin
+. replace   shortnam = "AVIANE" if substr(medicationname,1,6)=="AVIANE"
+(181 real changes made)
+
+.              
+. * no generic Ofloxacin in meps
+. replace   shortnam = "FLOXIN" if substr(medicationname,1,6)=="FLOXIN"
+(107 real changes made)
+
+.             
+. * no brand in meps; generic Naproxen on the mkt 
+. replace   shortnam = "ALEVE" if substr(medicationname,1,5)=="ALEVE"
+(0 real changes made)
+
+. 
+. * other brand (VAGIFEM) and generic ESTRADIOL on the mkt
+. replace   shortnam = "VIVELLE" if substr(medicationname,1,7)=="VIVELLE"             
+(165 real changes made)
+
+.              
+. * no generic Nateglinide in meps
+. replace   shortnam = "STARLIX" if substr(medicationname,1,7)=="STARLIX"
+(113 real changes made)
+
+. 
+. * spelling error; this is a generic
+. replace   shortnam = "GEMFIBROZIL" if substr(medicationname,1,11)=="GEMFIBROZIL"
+(708 real changes made)
+
+. replace   shortnam = "GEMFIBROZIL" if substr(medicationname,1,9)=="GEMFIBROZ"             
+(0 real changes made)
+
+. 
+. * other brand (concerta) and generic Methylphenidate on the mkt
+. replace   shortnam = "RITALIN" if substr(medicationname,1,7)=="RITALIN"
+(348 real changes made)
+
+.    
+. * 8 rx with generic name        
+. replace   shortnam = "MARINOL" if substr(medicationname,1,7)=="MARINOL"
+(14 real changes made)
+
+. replace   shortnam = "MARINOL" if substr(medicationname,1,10)=="DRONABINOL"
+(8 real changes made)
+
+. 
+. ** DRUGS 311-320
+.           
+. * other brand and generic Diphenhydramine on the mkt
+. replace   shortnam = "BENADRYL" if substr(medicationname,1,8)=="BENADRYL"
+(124 real changes made)
+
+.            
+. * 5 rx with generic  
+. replace   shortnam = "ACCOLATE" if substr(medicationname,1,8)=="ACCOLATE"
+(190 real changes made)
+
+. replace   shortnam = "ACCOLATE" if substr(medicationname,1,11)=="ZAFIRLUKAST"
+(6 real changes made)
+
+.               
+. * brand not in meps
+. replace   shortnam = "VICKS" if substr(medicationname,1,5)=="VICKS"
+(0 real changes made)
+
+.             
+. * other brand (cipro) and generic CIPROFLOXACIN on the mkt
+. replace   shortnam = "CILOXAN" if substr(medicationname,1,7)=="CILOXAN"
+(166 real changes made)
+
+.           
+. * no generic MERCAPTOPURINE in meps
+. replace   shortnam = "PURINETHOL" if substr(medicationname,1,10)=="PURINETHOL"
+(8 real changes made)
+
+.             
+. * other brand (prograf) with same generic name TACROLIMUS
+. replace   shortnam = "PROTOPIC" if substr(medicationname,1,8)=="PROTOPIC"
+(102 real changes made)
+
+.         
+. * spelling error; this is a generic; use all combos like pat-- might revisit
+. replace   shortnam = "PROPOXYPHENE" if substr(medicationname,1,12)=="PROPOXYPHENE"
+(551 real changes made)
+
+. * many variants -- 'propo' will pick up most of them
+. replace   shortnam = "PROPOXYPHENE" if substr(medicationname,1,5)=="PROPO"
+(217 real changes made)
+
+. replace   shortnam = "PROPOXYPHENE" if substr(medicationname,1,17)=="APAP/PROPOXYPHENE"
+(991 real changes made)
+
+. replace   shortnam = "PROPOXYPHENE" if medicationname=="ASPIRIN/CAFFEINE/PROPOXYPHENE"
+(0 real changes made)
+
+.   
+. * no generic Naratriptan in meps            
+. replace   shortnam = "AMERGE" if substr(medicationname,1,6)=="AMERGE"
+(35 real changes made)
+
+.             
+. * no brand or generic Anagrelide in meps
+. replace   shortnam = "AGRYLIN" if substr(medicationname,1,7)=="AGRYLIN"
+(0 real changes made)
+
+.                
+. * other brand (avita) and generic Tretinoin on the mkt
+. replace   shortnam = "RETIN" if substr(medicationname,1,5)=="RETIN"
+(141 real changes made)
+
+. 
+. ** DRUGS 321-330
+.  
+. * other brand (prozac) or generic Fluoxetine on the mkt
+. replace   shortnam = "SARAFEM" if substr(medicationname,1,7)=="SARAFEM"            
+(26 real changes made)
+
+.         
+. * other brand and generic Progesterone on the mkt
+. replace   shortnam = "PROMETRIUM" if substr(medicationname,1,10)=="PROMETRIUM"
+(176 real changes made)
+
+.           
+. * no brand in meps; other generic Acetaminophen on the mkt
+. replace   shortnam = "EXCEDRIN" if substr(medicationname,1,8)=="EXCEDRIN"
+(0 real changes made)
+
+.               
+. * other brand and generic Verapamil on the mkt
+. replace   shortnam ="COVERA" if substr(medicationname,1,6)=="COVERA"
+(241 real changes made)
+
+.          
+. * no brand in meps; generic Clozapine on the mkt
+. replace   shortnam = "CLOZARIL" if substr(medicationname,1,8)=="CLOZARIL"
+(93 real changes made)
+
+.            
+. * no generic Gefitinib on the mkt 
+. replace   shortnam = "IRESSA" if substr(medicationname,1,6)=="IRESSA"
+(0 real changes made)
+
+. 
+. * no generic TAZAROTENE on the mkt             
+. replace   shortnam = "TAZORAC" if substr(medicationname,1,7)=="TAZORAC"
+(60 real changes made)
+
+.       
+. * other brand (penlac) or generic Ciclopirox on the mkt        
+. replace   shortnam = "LOPROX" if substr(medicationname,1,6)=="LOPROX"
+(63 real changes made)
+
+.          
+. * other brand or generic Nifedipine on the mkt
+. replace   shortnam = "NIFEDICAL" if substr(medicationname,1,9)=="NIFEDICAL"
+(151 real changes made)
+
+.  
+. * spelling error; this is a generic          
+. replace   shortnam = "LORAZEPAM" if substr(medicationname,1,9)=="LORAZEPAM"
+(1238 real changes made)
+
+. replace   shortnam = "LORAZEPAM" if substr(medicationname,1,9)=="LORAZEPAN"
+(0 real changes made)
+
+. 
+. ** DRUGS 331-340
+.   
+. * no brand in meps; other brand and generic Aspirin on the mkt
+. replace   shortnam = "BAYER" if substr(medicationname,1,5)=="BAYER"           
+(38 real changes made)
+
+.          
+. * this is a generic
+. replace   shortnam = "OXYCODONE" if substr(medicationname,1,9)=="OXYCODONE"
+(324 real changes made)
+
+. replace   shortnam = "OXYCODONE" if substr(medicationname,1,14)=="APAP/OXYCODONE"          
+(172 real changes made)
+
+. 
+. * this is a generic
+. replace   shortnam = "ALPRAZOLAM" if substr(medicationname,1,10)=="ALPRAZOLAM"
+(1690 real changes made)
+
+.          
+. * this is a generic  
+. replace   shortnam = "GLYBURIDE" if substr(medicationname,1,9)=="GLYBURIDE"
+(1832 real changes made)
+
+.         
+. * other brand and generic Albuterol on the mkt   
+. replace   shortnam = "PROVENTIL" if substr(medicationname,1,9)=="PROVENTIL"
+(319 real changes made)
+
+.           
+. * no generic Epirubicin in meps
+. replace   shortnam = "ELLENCE" if substr(medicationname,1,7)=="ELLENCE"
+(0 real changes made)
+
+.           
+. * this is a generic
+. replace   shortnam = "ENALAPRIL" if substr(medicationname,1,9)=="ENALAPRIL"
+(1416 real changes made)
+
+.              
+. * no generic Terconazole in meps
+. replace   shortnam = "TERAZOL" if substr(medicationname,1,7)=="TERAZOL"
+(93 real changes made)
+
+.             
+. * no generic Letrozole in meps
+. replace   shortnam = "FEMARA" if substr(medicationname,1,6)=="FEMARA"
+(9 real changes made)
+
+.             
+. * other brand and generic Estrogen and Progestin
+. replace   shortnam = "LOESTRIN" if substr(medicationname,1,8)=="LOESTRIN"
+(285 real changes made)
+
+. 
+. ** DRUGS 341-350
+.    
+. * no generic Hepatitis B vaccine in meps
+. replace   shortnam = "ENGERIX" if substr(medicationname,1,7)=="ENGERIX"          
+(2 real changes made)
+
+.           
+. * this is a generic
+. replace   shortnam = "NABUMETONE" if substr(medicationname,1,10)=="NABUMETONE"
+(220 real changes made)
+
+.          
+. * this is a generic 
+. replace   shortnam = "TRAMADOL" if substr(medicationname,1,8)=="TRAMADOL" & medicationname~="TRAMADOL (ULTRAM)" 
+(250 real changes made)
+
+.        
+. * no generic Ropinirole in meps     
+. replace   shortnam = "REQUIP" if substr(medicationname,1,6)=="REQUIP"
+(22 real changes made)
+
+. 
+. * no generic Indinavir in meps
+. replace   shortnam = "CRIXIVAN" if substr(medicationname,1,8)=="CRIXIVAN"
+(23 real changes made)
+
+.   
+. * spelling error; generic Potassium on the mkt
+. replace   shortnam = "KLOR-CON" if substr(medicationname,1,8)=="KLOR-CON"         
+(1206 real changes made)
+
+. replace   shortnam = "KLOR-CON" if substr(medicationname,1,8)=="KLOR CON"         
+(50 real changes made)
+
+.   
+. ****
+. * not sure what this is? not in databases
+. replace   shortnam = "HYALGAN" if substr(medicationname,1,7)=="HYALGAN"
+(0 real changes made)
+
+. ****   
+.          
+. * no generic Teriparatide in meps 
+. replace   shortnam = "FORTEO" if substr(medicationname,1,6)=="FORTEO"
+(0 real changes made)
+
+.   
+. * no brand or generic Topotecan  in meps         
+. replace   shortnam = "HYCAMTIN" if substr(medicationname,1,8)=="HYCAMTIN"
+(0 real changes made)
+
+.          
+. * other brand and generic Estrogen and Progestin
+. replace   shortnam = "MIRCETTE" if substr(medicationname,1,8)=="MIRCETTE"
+(243 real changes made)
+
+. 
+. ** DRUGS 351-360
+.  
+. * other brand (percocet) and generic Acetaminophen/Oxycodone on the mkt
+. replace   shortnam = "ENDOCET" if substr(medicationname,1,7)=="ENDOCET"           
+(174 real changes made)
+
+.           
+. * generic brand or Betamethasone on the mkt
+. replace   shortnam = "DIPROLENE" if substr(medicationname,1,9)=="DIPROLENE"
+(59 real changes made)
+
+.              
+. * no generic Sibutramine
+. replace   shortnam = "MERIDIA" if substr(medicationname,1,7)=="MERIDIA"
+(62 real changes made)
+
+.  
+. * spelling error; this is a generic
+. replace   shortnam = "HYDROCHLOROTHIAZIDE" if substr(medicationname,1,19)=="HYDROCHLOROTHIAZIDE"
+(3855 real changes made)
+
+. replace   shortnam = "HYDROCHLOROTHIAZIDE" if substr(medicationname,1,12)=="HYDROCHLOROT"
+(328 real changes made)
+
+. replace   shortnam = "HYDROCHLOROTHIAZIDE" if medicationname=="HYDROCHLORTHIAZIDE"
+(0 real changes made)
+
+.    
+. * no brand or generic Pentosan
+. replace   shortnam = "ELMIRON" if substr(medicationname,1,7)=="ELMIRON"        
+(0 real changes made)
+
+.   
+. * spelling error; this is a generic
+. replace   shortnam = "CLOTRIMAZOLE" if substr(medicationname,1,12)=="CLOTRIMAZOLE"      
+(141 real changes made)
+
+. replace   shortnam = "CLOTRIMAZOLE" if substr(medicationname,1,7)=="CLOTRIM"
+(0 real changes made)
+
+. replace   shortnam = "CLOTRIMAZOLE" if medicationname=="BETAMETHASONE/CLOTRIMAZOLE"
+(81 real changes made)
+
+.        
+. * spelling error; other brand (VAGIFEM) and generic ESTRADIOL on the mkt
+. replace   shortnam = "CLIMARA" if substr(medicationname,1,7)=="CLIMARA"
+(243 real changes made)
+
+. replace   shortnam = "CLIMARA" if medicationname=="CONTRACT CLIMARA"
+(0 real changes made)
+
+.             
+. * no generic Travoprost in meps
+. replace   shortnam = "TRAVATAN" if substr(medicationname,1,8)=="TRAVATAN"
+(88 real changes made)
+
+. 
+. * no generic Atazanavir in meps             
+. replace   shortnam = "REYATAZ" if substr(medicationname,1,7)=="REYATAZ"
+(0 real changes made)
+
+.             
+. * other brand and generic Estrogen and Progestin on the mkt
+. replace   shortnam = "TRIVORA" if substr(medicationname,1,7)=="TRIVORA"
+(226 real changes made)
+
+. 
+. ** DRUGS 361-370
+. 
+. * this is a generic
+. replace   shortnam = "MEGESTROL" if substr(medicationname,1,9)=="MEGESTROL"          
+(106 real changes made)
+
+.         
+. * no brand or generic Hepatitis B Vaccine in meps  
+. replace   shortnam = "RECOMBIVAX" if substr(medicationname,1,10)=="RECOMBIVAX"
+(0 real changes made)
+
+.        
+. * spelling errors; this is a generic
+. replace   shortnam = "TRIAMTERENE" if substr(medicationname,1,11)=="TRIAMTERENE"
+(206 real changes made)
+
+. replace   shortnam = "TRIAMTERENE" if substr(medicationname,1,6)=="TRIAMT"
+(209 real changes made)
+
+. replace   shortnam = "TRIAMTERENE" if medicationname=="HCTZ 50/TRIAMTERENE"
+(13 real changes made)
+
+. replace   shortnam = "TRIAMTERENE" if medicationname=="HCTZ/TRIAMTERENE"
+(1190 real changes made)
+
+.            
+. * no brand or generic CABERGOLINE in meps
+. replace   shortnam = "DOSTINEX" if substr(medicationname,1,8)=="DOSTINEX"
+(15 real changes made)
+
+.               
+. * other brand or generic Estrogen and Progestin on the mkt
+. replace   shortnam = "OVCON" if substr(medicationname,1,5)=="OVCON"
+(118 real changes made)
+
+.   
+. * other brand or generic Lisinopril on the mkt         
+. replace   shortnam = "ZESTRIL" if substr(medicationname,1,7)=="ZESTRIL"
+(1909 real changes made)
+
+.            
+. * no generic Ofloxacin in meps
+. replace   shortnam = "OCUFLOX" if substr(medicationname,1,7)=="OCUFLOX"
+(145 real changes made)
+
+.             
+. * other brand and generic Estrogen and Progestin on the mkt  
+. replace   shortnam = "ALESSE" if substr(medicationname,1,6)=="ALESSE"
+(191 real changes made)
+
+.              
+. * other brand and generic nifedipine on mkt
+. replace   shortnam = "ADALAT" if substr(medicationname,1,6)=="ADALAT"
+(312 real changes made)
+
+.         
+. * other brand (minocin) and generic Minocycline on the mkt     
+. replace   shortnam = "DYNACIN" if substr(medicationname,1,7)=="DYNACIN"
+(15 real changes made)
+
+. 
+. ** DRUGS 371-380
+. 
+. * other brand and generic Estrogen and Progestin (Hormone Replacement Therapy) on the mkt
+. replace   shortnam = "FEMHRT" if substr(medicationname,1,6)=="FEMHRT"              
+(65 real changes made)
+
+.          
+. * other brand and generic estrogen on the mkt    
+. replace   shortnam = "ESTRACE" if substr(medicationname,1,7)=="ESTRACE"
+(218 real changes made)
+
+.         
+. * no brand or generic diphtheria, hepatitis B, pertussis (acellular), polio, and tetanus vaccine in meps   
+. replace   shortnam = "PEDIARIX" if substr(medicationname,1,8)=="PEDIARIX"
+(0 real changes made)
+
+.              
+. * other brand and generic Verapamil on the mkt
+. replace   shortnam = "VERELAN" if substr(medicationname,1,7)=="VERELAN"
+(105 real changes made)
+
+.         
+. * spelling error; this is a generic
+. replace   shortnam = "LOW-OGESTREL" if substr(medicationname,1,12)=="LOW-OGESTREL"
+(127 real changes made)
+
+. replace   shortnam = "LOW-OGESTREL" if substr(medicationname,1,12)=="LOW OGESTREL"           
+(0 real changes made)
+
+. 
+. * this is a generic
+. replace   shortnam = "TORSEMIDE" if substr(medicationname,1,9)=="TORSEMIDE"
+(54 real changes made)
+
+. 
+. * spelling error; this is a generic      
+. replace   shortnam = "ERYTHROMYCIN" if substr(medicationname,1,12)=="ERYTHROMYCIN"
+(306 real changes made)
+
+. replace   shortnam = "ERYTHROMYCIN" if substr(medicationname,1,8)=="ERYTHROM"
+(22 real changes made)
+
+. 
+. * other brand or generic NIACIN on the mkt
+. replace   shortnam = "ADVICOR" if substr(medicationname,1,7)=="ADVICOR"
+(54 real changes made)
+
+.              
+. * no generic Balsalazide in meps
+. replace   shortnam = "COLAZAL" if substr(medicationname,1,7)=="COLAZAL"
+(26 real changes made)
+
+.   
+. * other brand (mykrox) or generic Metolazone on the mkt
+. replace   shortnam = "ZAROXOLYN" if substr(medicationname,1,9)=="ZAROXOLYN"         
+(233 real changes made)
+
+. 
+. ** DRUGS 381-390
+.             
+. * other brand or generic MOMETASONE on the mkt
+. replace   shortnam = "ELOCON" if substr(medicationname,1,6)=="ELOCON"
+(78 real changes made)
+
+.    
+. * spelling error; other brand and generic Morphine on the mkt      
+. replace   shortnam = "MS-CONTIN" if substr(medicationname,1,9)=="MS-CONTIN"
+(0 real changes made)
+
+. replace   shortnam = "MS-CONTIN" if substr(medicationname,1,9)=="MS CONTIN"       
+(49 real changes made)
+
+.        
+. * other brand and generic Doxycycline
+. replace   shortnam = "DORYX" if substr(medicationname,1,5)=="DORYX"
+(41 real changes made)
+
+. 
+. * no generic Acitretin in meps
+. replace   shortnam = "SORIATANE" if substr(medicationname,1,9)=="SORIATANE"
+(10 real changes made)
+
+.  
+. * no generic Valganciclovir in meps
+. replace   shortnam = "VALCYTE" if substr(medicationname,1,7)=="VALCYTE"           
+(0 real changes made)
+
+.             
+. * generic Ketorolac on the mkt 
+. replace   shortnam = "ACULAR" if substr(medicationname,1,6)=="ACULAR"
+(103 real changes made)
+
+.             
+. * generic Miconazole on the mkt
+. replace   shortnam = "MONISTAT" if substr(medicationname,1,8)=="MONISTAT"
+(16 real changes made)
+
+.            
+. * no brand or generic coagulation factor VII (rFVIIa)
+. replace   shortnam = "NOVOSEVEN" if substr(medicationname,1,9)=="NOVOSEVEN"
+(0 real changes made)
+
+.           
+. * other brand and generic nifedipine on mkt
+. replace   shortnam = "PROCARDIA" if substr(medicationname,1,9)=="PROCARDIA"
+(233 real changes made)
+
+. 
+. ***            
+. * could be more matches -- revisit  (codeine/acetaminophen=codeine/apap?)
+. replace   shortnam = "APAP/CD" if substr(medicationname,1,7)=="APAP/CD"
+(0 real changes made)
+
+. replace   shortnam = "APAP/CD" if substr(medicationname,1,12)=="APAP/CODEINE"
+(225 real changes made)
+
+. ****
+. 
+. ** DRUGS 391-400
+. 
+. * this is a generic
+. replace   shortnam = "PHENYTOIN" if substr(medicationname,1,9)=="PHENYTOIN"     
+(319 real changes made)
+
+.              
+. * no brand in meps; other brand and generic Calcium Carbonate on the mkt      
+. replace   shortnam = "TUMS" if substr(medicationname,1,4)=="TUMS"
+(3 real changes made)
+
+.            
+. * no brand in meps
+. replace   shortnam = "OPTI-FREE" if substr(medicationname,1,9)=="OPTI-FREE"
+(0 real changes made)
+
+.            
+. * brand or other generic Carbamazepine on the mkt
+. replace   shortnam = "CARBATROL" if substr(medicationname,1,9)=="CARBATROL"
+(35 real changes made)
+
+.             
+. * spelling error; other brand (ultracet) or generic Tramadol on the mkt 
+. replace   shortnam = "ULTRAM" if substr(medicationname,1,6)=="ULTRAM"
+(596 real changes made)
+
+. replace   shortnam = "ULTRAM" if medicationname=="TRAMADOL (ULTRAM)"
+(5 real changes made)
+
+.              
+. * no generic Trandolapril in meps
+. replace   shortnam = "MAVIK" if substr(medicationname,1,5)=="MAVIK"
+(231 real changes made)
+
+. 
+. * other brand and generic Estrogen and Progestin (Hormone Replacement Therapy) in meps
+. replace   shortnam = "ACTIVELLA" if substr(medicationname,1,9)=="ACTIVELLA"
+(152 real changes made)
+
+.            
+. * no generic Entacapone in meps
+. replace   shortnam = "COMTAN" if substr(medicationname,1,6)=="COMTAN"
+(28 real changes made)
+
+.              
+. * no generic PIRBUTEROL ACETATE in meps
+. replace   shortnam = "MAXAIR" if substr(medicationname,1,6)=="MAXAIR"
+(98 real changes made)
+
+.              
+. * other brand and generic DESOGESTREL/ETHINYL ESTRADIOL in meps
+. replace   shortnam = "KARIVA" if substr(medicationname,1,6)=="KARIVA"
+(59 real changes made)
+
+. 
+. ** DRUGS 401-410
+. 
+. * no generic Griseofulvin in meps
+. replace   shortnam = "GRIFULVIN" if substr(medicationname,1,9)=="GRIFULVIN"        
+(65 real changes made)
+
+.             
+. * generic Loperamide on the mkt
+. replace   shortnam = "IMODIUM" if substr(medicationname,1,7)=="IMODIUM"
+(24 real changes made)
+
+.           
+. * this is a generic
+. replace   shortnam = "FUROSEMIDE" if substr(medicationname,1,10)=="FUROSEMIDE" & medicationname~="FUROSEMIDE (LASIX)"
+(4479 real changes made)
+
+.           
+. * other brand and generic Estrogen and Progestin on the mkt
+. replace   shortnam = "ESTROSTEP" if substr(medicationname,1,9)=="ESTROSTEP"
+(132 real changes made)
+
+.            
+. * other brand (concerta) and generic Methylphenidate on the mkt
+. replace   shortnam = "METADATE" if substr(medicationname,1,8)=="METADATE"
+(111 real changes made)
+
+.         
+. * no brand in meps; other brand and generic Aspirin on the mkt
+. replace   shortnam = "ALKA-SELTZER" if substr(medicationname,1,12)=="ALKA-SELTZER"
+(0 real changes made)
+
+.  
+. * no brand or generic Hepatitis B Vaccine in meps
+. replace   shortnam = "COMVAX" if substr(medicationname,1,6)=="COMVAX"             
+(0 real changes made)
+
+.             
+. * no generic Fulvestrant in meps
+. replace   shortnam = "FASLODEX" if substr(medicationname,1,8)=="FASLODEX"
+(0 real changes made)
+
+.             
+. * no brand or generic Polio Vaccine
+. replace   shortnam = "IPOL" if substr(medicationname,1,4)=="IPOL"
+(0 real changes made)
+
+.           
+. * no brand in meps
+. replace   shortnam = "NEUTROGENA" if substr(medicationname,1,10)=="NEUTROGENA"
+(0 real changes made)
+
+. 
+. ** DRUGS 411-420
+.    
+. * no brand or generic Coagulation Factor IX in meps
+. replace   shortnam = "BENEFIX" if substr(medicationname,1,7)=="BENEFIX"        
+(0 real changes made)
+
+.           
+. * no brand in meps; other brand and generic NICOTINE POLACRILEX 
+. replace   shortnam = "NICORETTE" if substr(medicationname,1,9)=="NICORETTE"
+(0 real changes made)
+
+.            
+. * other brand and generic Betaxolol in meps
+. replace   shortnam = "BETOPTIC" if substr(medicationname,1,8)=="BETOPTIC"
+(100 real changes made)
+
+.              
+. * no brand or generic Ritonavir in meps
+. replace   shortnam = "NORVIR" if substr(medicationname,1,6)=="NORVIR"
+(13 real changes made)
+
+.            
+. * other brand or generic Diazepam in meps  
+. replace   shortnam = "VALIUM" if substr(medicationname,1,6)=="VALIUM"
+(236 real changes made)
+
+.             
+. * no generic Vardenafil in meps
+. replace   shortnam = "LEVITRA" if substr(medicationname,1,7)=="LEVITRA"
+(0 real changes made)
+
+.             
+. * this is a generic
+. replace   shortnam = "TIMOLOL" if substr(medicationname,1,7)=="TIMOLOL"
+(423 real changes made)
+
+.             
+. * other brand and generic Morphine on the mkt 
+. replace   shortnam = "KADIAN" if substr(medicationname,1,6)=="KADIAN"
+(13 real changes made)
+
+.            
+. * no generic Tiagabine in meps
+. replace   shortnam = "GABITRIL" if substr(medicationname,1,8)=="GABITRIL"
+(27 real changes made)
+
+.          
+. * this is a generic
+. replace   shortnam = "BUSPIRONE" if substr(medicationname,1,9)=="BUSPIRONE"
+(515 real changes made)
+
+. 
+. ** DRUGS 421-430
+. 
+. * spelling error; this is a generic  
+. replace   shortnam = "ISOSORBIDE" if substr(medicationname,1,10)=="ISOSORBIDE"        
+(652 real changes made)
+
+. replace   shortnam = "ISOSORBIDE" if substr(medicationname,1,7)=="ISOSORB"
+(59 real changes made)
+
+. 
+. * no brand or generic LEVONORGESTREL in meps
+. replace   shortnam = "MIRENA" if substr(medicationname,1,6)=="MIRENA"
+(0 real changes made)
+
+.    
+. * no brand or generic SOMATROPIN in meps 
+. replace   shortnam = "SEROSTIM" if substr(medicationname,1,8)=="SEROSTIM" 
+(0 real changes made)
+
+.      
+. * this is a generic; not in meps
+. replace   shortnam = "PAMIDRONATE" if substr(medicationname,1,11)=="PAMIDRONATE"
+(0 real changes made)
+
+.            
+. * this is a generic
+. replace   shortnam = "NICOTINE" if substr(medicationname,1,8)=="NICOTINE"
+(32 real changes made)
+
+.     
+. * no brand in meps; other brand (canasa) or generic MESALAMINE on the mkt       
+. replace   shortnam = "ROWASA" if substr(medicationname,1,6)=="ROWASA"
+(5 real changes made)
+
+.             
+. * this is a generic
+. replace   shortnam = "QUININE" if substr(medicationname,1,7)=="QUININE"
+(424 real changes made)
+
+. 
+. * no brand or generic Anakinra in meps
+. replace   shortnam = "KINERET" if substr(medicationname,1,7)=="KINERET"             
+(2 real changes made)
+
+.             
+. * no generic Almotriptan in meps
+. replace   shortnam = "AXERT" if substr(medicationname,1,5)=="AXERT"
+(30 real changes made)
+
+.            
+. * no generic Halobetasol in meps
+. replace   shortnam = "ULTRAVATE" if substr(medicationname,1,9)=="ULTRAVATE"
+(63 real changes made)
+
+. 
+. ** DRUGS 431-440
+. 
+. * this is a generic
+. replace   shortnam = "NITROGLYCERIN" if substr(medicationname,1,13)=="NITROGLYCERIN"      
+(613 real changes made)
+
+.             
+. * other brand (wellbutrin) or generic BUPROPION on the mkt
+. replace   shortnam = "ZYBAN" if substr(medicationname,1,5)=="ZYBAN"
+(58 real changes made)
+
+.              
+. * no generic Trandolapril/Verapamil in meps
+. replace   shortnam = "TARKA" if substr(medicationname,1,5)=="TARKA"
+(29 real changes made)
+
+.        
+. ***
+. * spelling error; this is a generic; include all combos like pat?  revisit    
+. replace   shortnam = "NEOMYCIN" if substr(medicationname,1,8)=="NEOMYCIN"
+(543 real changes made)
+
+. replace   shortnam = "NEOMYCIN" if medicationname=="BACITRACIN/HC/NEOMYCIN/POLYMYXIN"
+(1 real change made)
+
+. replace   shortnam = "NEOMYCIN" if medicationname=="BACITRACIN-NEO-POLY"
+(0 real changes made)
+
+. replace   shortnam = "NEOMYCIN" if medicationname=="GRAMICIDIN/NEOMYCIN/POLYMYXIN B"
+(5 real changes made)
+
+. replace   shortnam = "NEOMYCIN" if medicationname=="HC/NEOMYCIN/POLYMYXIN OTIC"
+(0 real changes made)
+
+. replace   shortnam = "NEOMYCIN" if medicationname=="HYDROCORTISONE/NEOMYCIN/POLYMYXIN B"
+(26 real changes made)
+
+. replace   shortnam = "NEOMYCIN" if medicationname=="HC/NEO SULF/POLYMYX OTIC SUSP"  
+(0 real changes made)
+
+. * not sure if should include these
+. *replace   shortnam = "NEOMYCIN" if medicationname=="DEXAMETHASONE/NEOMYCIN/POLYMIXIN"
+. *replace   shortnam = "NEOMYCIN" if medicationname=="DEXAMETHASONE/NEOMYCIN/POLYMYXIN"
+. *replace   shortnam = "NEOMYCIN" if medicationname=="DEXAMETHASONE/NEOMYCIN/POLYMYXIN (DROP-TAINER)"
+. ***
+. 
+. * other brand and generic METHYLPREDNISOLONE on the mkt
+. replace   shortnam = "DEPO-MEDROL" if substr(medicationname,1,11)=="DEPO-MEDROL"
+(4 real changes made)
+
+.          
+. * no brand or generic Paclitaxel in meps     
+. replace   shortnam = "TAXOL" if substr(medicationname,1,5)=="TAXOL"
+(0 real changes made)
+
+.           
+. * other brand and generic Cyclosporine on the mkt
+. replace   shortnam = "SANDIMMUNE" if substr(medicationname,1,10)=="SANDIMMUNE"
+(12 real changes made)
+
+.           
+. * this is a generic
+. replace   shortnam = "ETODOLAC" if substr(medicationname,1,8)=="ETODOLAC" & medicationname~="ETODOLAC (LODINE)"
+(231 real changes made)
+
+.             
+. * no generic Rosuvastatin in meps
+. replace   shortnam = "CRESTOR" if substr(medicationname,1,7)=="CRESTOR"
+(0 real changes made)
+
+.      
+. * other brand or generic Acetaminophen/Hydrocodone on the mkt       
+. replace   shortnam = "VICODIN" if substr(medicationname,1,7)=="VICODIN"
+(938 real changes made)
+
+. 
+. ** DRUGS 441-450
+.  
+. * this is a generic
+. replace   shortnam = "TRETINOIN" if substr(medicationname,1,9)=="TRETINOIN"         
+(48 real changes made)
+
+.          
+. * no brand in meps
+. replace   shortnam = "ONE-A-DAY" if substr(medicationname,1,9)=="ONE-A-DAY"
+(0 real changes made)
+
+. 
+. * 5 rx with generic
+. replace   shortnam = "FORADIL" if substr(medicationname,1,7)=="FORADIL"           
+(11 real changes made)
+
+. replace   shortnam = "FORADIL" if substr(medicationname,1,10)=="FORMOTEROL"           
+(0 real changes made)
+
+. 
+. * other brand or generic Clindamycin on the mkt
+. replace   shortnam = "CLEOCIN" if substr(medicationname,1,7)=="CLEOCIN"
+(32 real changes made)
+
+.           
+. * other brand or generic FLUNISOLIDE on the mkt
+. replace   shortnam = "AEROBID" if substr(medicationname,1,7)=="AEROBID"
+(117 real changes made)
+
+.          
+. * other brand Pneumococcal Polysaccharide Vaccine on the mkt 
+. replace   shortnam = "PNEUMOVAX" if substr(medicationname,1,9)=="PNEUMOVAX"
+(1 real change made)
+
+.         
+. * generic Hydrocodone Bitartrate/Ibuprofen on the mkt, in 2003
+. replace   shortnam = "VICOPROFEN" if substr(medicationname,1,10)=="VICOPROFEN"
+(127 real changes made)
+
+.  
+. * spelling error; this is a generic
+. replace   shortnam = "IPRATROPIUM" if substr(medicationname,1,11)=="IPRATROPIUM"      
+(233 real changes made)
+
+. replace   shortnam = "IPRATROPIUM" if substr(medicationname,1,12)=="IPRATROPRIUM"  
+(0 real changes made)
+
+. 
+. * this is a generic
+. replace   shortnam = "CYCLOSPORINE" if substr(medicationname,1,12)=="CYCLOSPORINE" & medicationname~="CYCLOSPORINE (NE
+> ORAL)"       
+(0 real changes made)
+
+.             
+. * other brand and generic Digoxin on the mkt
+. replace   shortnam = "LANOXIN" if substr(medicationname,1,7)=="LANOXIN"
+(1329 real changes made)
+
+. 
+. ** DRUGS 451-460
+.             
+. * other brand or generic Lisinopril on the mkt
+. replace   shortnam = "PRINIVIL" if substr(medicationname,1,8)=="PRINIVIL"
+(1300 real changes made)
+
+.           
+. * other brand and generic Estrogen and Progestin on the mkt
+. replace   shortnam = "TRIPHASIL" if substr(medicationname,1,9)=="TRIPHASIL"
+(235 real changes made)
+
+.            
+. * other brand or generic Sotalol on the mkt
+. replace   shortnam = "BETAPACE" if substr(medicationname,1,8)=="BETAPACE"
+(52 real changes made)
+
+.              
+. * generic Cefuroxime on the mkt
+. replace   shortnam = "CEFTIN" if substr(medicationname,1,6)=="CEFTIN"
+(134 real changes made)
+
+.     
+. * this is a generic
+. replace   shortnam = "CYCLOBENZAPRINE" if substr(medicationname,1,15)=="CYCLOBENZAPRINE"
+(634 real changes made)
+
+.          
+. * this is a generic
+. replace   shortnam = "PHENTERMINE" if substr(medicationname,1,11)=="PHENTERMINE"
+(57 real changes made)
+
+.                 
+. * brand not in meps
+. replace   shortnam = "RENU" if substr(medicationname,1,4)=="RENU"
+(0 real changes made)
+
+.             
+. * other brand or generic PREDNISOLONE SODIUM PHOSPHATE  on the mkt
+. replace   shortnam = "ORAPRED" if substr(medicationname,1,7)=="ORAPRED"
+(111 real changes made)
+
+.             
+. * no generic Oxandrolone in meps
+. replace   shortnam = "OXANDRIN" if substr(medicationname,1,8)=="OXANDRIN"
+(24 real changes made)
+
+.              
+. * no brand or generic Sargramostim in meps
+. replace   shortnam = "LEUKINE" if substr(medicationname,1,7)=="LEUKINE"
+(0 real changes made)
+
+. 
+. ** DRUGS 461-470
+.  
+. * this is a generic
+. replace   shortnam = "NYSTATIN" if substr(medicationname,1,8)=="NYSTATIN"           
+(216 real changes made)
+
+.            
+. * no generic Psyllium in meps
+. replace   shortnam = "METAMUCIL" if substr(medicationname,1,9)=="METAMUCIL"
+(7 real changes made)
+
+.              
+. * other brand or generic Clobetasol on the mkt   
+. replace   shortnam = "OLUX" if substr(medicationname,1,4)=="OLUX"
+(39 real changes made)
+
+.      
+. * this is a generic
+. replace   shortnam = "HYDROCORTISONE" if substr(medicationname,1,14)=="HYDROCORTISONE" & medicationname~="HYDROCORTISO
+> NE/NEOMYCIN/POLYMYXIN B" 
+(354 real changes made)
+
+. replace   shortnam = "HYDROCORTISONE" if medicationname=="CVS HYDROCORTISONE"
+(0 real changes made)
+
+.           
+. * no generic MITOXANTRONE in meps
+. replace   shortnam = "NOVANTRONE" if substr(medicationname,1,10)=="NOVANTRONE"
+(0 real changes made)
+
+.            
+. * this is a generic
+. replace   shortnam = "URSODIOL" if substr(medicationname,1,8)=="URSODIOL"
+(0 real changes made)
+
+.       
+. * this is a generic
+. replace   shortnam = "NITROFURANTOIN" if substr(medicationname,1,14)=="NITROFURANTOIN"
+(115 real changes made)
+
+.     
+. * no brand or generic Amifostine in meps          
+. replace   shortnam = "ETHYOL" if substr(medicationname,1,6)=="ETHYOL"
+(0 real changes made)
+
+.          
+. * generic MIDODRINE on the mkt, late 2003
+. replace   shortnam = "PROAMATINE" if substr(medicationname,1,10)=="PROAMATINE"
+(0 real changes made)
+
+.             
+. * 6 rx with generic
+. replace   shortnam = "DYNACIRC" if substr(medicationname,1,8)=="DYNACIRC"
+(60 real changes made)
+
+. replace   shortnam = "DYNACIRC" if substr(medicationname,1,10)=="ISRADIPINE"
+(0 real changes made)
+
+. 
+. ** DRUGS 471-480
+. 
+. * this is a generic
+. replace   shortnam = "DICLOFENAC" if substr(medicationname,1,10)=="DICLOFENAC" & medicationname~="DICLOFENAC NA/MISOPR
+> OSTOL"         
+(543 real changes made)
+
+. replace   shortnam = "DICLOFENAC" if substr(medicationname,1,8)=="DICLOFEN" & medicationname~="DICLOFENAC NA/MISOPROST
+> OL"         
+(96 real changes made)
+
+. 
+. * no brand in meps
+. replace   shortnam = "PREPARATION" if substr(medicationname,1,11)=="PREPARATION"
+(0 real changes made)
+
+.            
+. * this is a generic
+. replace   shortnam = "CLOZAPINE" if substr(medicationname,1,9)=="CLOZAPINE"
+(0 real changes made)
+
+.    
+. * brand or generic Enalapril on the mkt         
+. replace   shortnam = "VASOTEC" if substr(medicationname,1,7)=="VASOTEC"
+(345 real changes made)
+
+.            
+. * this is a generic
+. replace   shortnam = "BACLOFEN" if substr(medicationname,1,8)=="BACLOFEN"
+(265 real changes made)
+
+.              
+. * other brand and generic Acetaminophen/Hydrocodone on the mkt
+. replace   shortnam = "LORTAB" if substr(medicationname,1,6)=="LORTAB"
+(537 real changes made)
+
+.             
+. * other brand or generic Ketoconazole on the mkt
+. replace   shortnam = "NIZORAL" if substr(medicationname,1,7)=="NIZORAL"
+(74 real changes made)
+
+.       
+. * other brand and generic TRIAMCINOLONE on the mkt      
+. replace   shortnam = "KENALOG" if substr(medicationname,1,7)=="KENALOG"
+(118 real changes made)
+
+.            
+. * other brand or generic Testosterone
+. replace   shortnam = "ANDRODERM" if substr(medicationname,1,9)=="ANDRODERM"
+(2 real changes made)
+
+.   
+. * this is a generic
+. replace   shortnam = "KETOCONAZOLE" if substr(medicationname,1,12)=="KETOCONAZOLE"
+(91 real changes made)
+
+.     
+. ** DRUGS 481-490
+. 
+. * 9 rx with generic name
+. replace   shortnam = "BENZAMYCIN" if substr(medicationname,1,10)=="BENZAMYCIN" 
+(118 real changes made)
+
+. replace   shortnam = "BENZAMYCIN" if medicationname=="ERYTHROMYCIN-BENZOYL PEROXIDE"         
+(0 real changes made)
+
+.   
+. * no generic Immune Globulin 
+. replace   shortnam = "GAMIMUNE" if substr(medicationname,1,8)=="GAMIMUNE"          
+(0 real changes made)
+
+.         
+. * other brand or generic Beclomethasone on the mkt
+. replace   shortnam = "BECONASE" if substr(medicationname,1,8)=="BECONASE"
+(156 real changes made)
+
+.            
+. * no brand and generic SOMATROPIN in meps
+. replace   shortnam = "NUTROPIN" if substr(medicationname,1,8)=="NUTROPIN"
+(0 real changes made)
+
+.           
+. * other brand or generic Estrogen on the mkt
+. replace   shortnam = "CENESTIN" if substr(medicationname,1,8)=="CENESTIN"
+(192 real changes made)
+
+.             
+. * other brand or generic Estrogen and Progestin
+. replace   shortnam = "LO/OVRAL" if substr(medicationname,1,8)=="LO/OVRAL"
+(162 real changes made)
+
+. 
+. * other brand or generic Estrogen and Progestin
+. replace   shortnam = "NORTREL" if substr(medicationname,1,7)=="NORTREL"
+(8 real changes made)
+
+.             
+. * no brand or generic Pancrelipase in meps
+. replace   shortnam = "CREON" if substr(medicationname,1,5)=="CREON"
+(23 real changes made)
+
+.      
+. * this is a generic
+. replace   shortnam = "HYCD/IBUPROFEN" if substr(medicationname,1,14)=="HYCD/IBUPROFEN"
+(0 real changes made)
+
+. replace   shortnam = "HYCD/IBUPROFEN" if substr(medicationname,1,32)=="HYDROCODONE BITARTRATE/IBUPROFEN"
+(0 real changes made)
+
+. 
+. **
+. * what is generic name? revisit
+. replace   shortnam = "REFRESH" if substr(medicationname,1,7)=="REFRESH"            
+(37 real changes made)
+
+. **
+. 
+. ** DRUGS 491-500
+.      
+. * other brand or generic Clonazepam on the mkt    
+. replace   shortnam = "KLONOPIN" if substr(medicationname,1,8)=="KLONOPIN"
+(112 real changes made)
+
+. 
+. * no generic Eletriptan in meps
+. replace   shortnam = "RELPAX" if substr(medicationname,1,6)=="RELPAX"             
+(0 real changes made)
+
+.        
+. * brand or generic Fludarabine in meps
+. replace   shortnam = "FLUDARA" if substr(medicationname,1,7)=="FLUDARA" & substr(medicationname,1,11)!="FLUDARABINE"
+(0 real changes made)
+
+. 
+. * spelling error; this is a generic
+. replace   shortnam = "LORATADINE" if substr(medicationname,1,10)=="LORATADINE"         
+(10 real changes made)
+
+. replace   shortnam = "LORATADINE" if substr(medicationname,1,10)=="LORATIDINE"
+(0 real changes made)
+
+. 
+. * this is a generic
+. replace   shortnam = "CARISOPRODOL" if substr(medicationname,1,12)=="CARISOPRODOL"
+(426 real changes made)
+
+. replace   shortnam = "CARISOPRODOL" if substr(medicationname,1,20)=="ASPIRIN/CARISOPRODOL"       
+(138 real changes made)
+
+.            
+. * other brand or generic Nitroglycerin on the mkt
+. replace   shortnam = "NITRO-DUR" if substr(medicationname,1,9)=="NITRO-DUR"
+(53 real changes made)
+
+.             
+. * other brand or generic estrogen
+. replace   shortnam = "VAGIFEM" if substr(medicationname,1,7)=="VAGIFEM"
+(31 real changes made)
+
+.            
+. * other brand and generic Morphine on the mkt
+. replace   shortnam = "AVINZA" if substr(medicationname,1,6)=="AVINZA"
+(0 real changes made)
+
+.         
+. * this is a generic; not in meps
+. replace   shortnam = "VINORELBINE" if substr(medicationname,1,11)=="VINORELBINE"
+(0 real changes made)
+
+. 
+. * other brand or generic DILTIAZEM on the mkt
+. replace   shortnam = "TAZTIA" if substr(medicationname,1,6)=="TAZTIA"
+(0 real changes made)
+
+. 
+. gen top500 = (shortnam!="")
+
+. tab top500, missing
+
+     top500 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     98,263       29.57       29.57
+          1 |    234,059       70.43      100.00
+------------+-----------------------------------
+      Total |    332,322      100.00
+
+. 
+. ** DRUGS 501-510             
+.  
+. replace   shortnam = "ACCURETIC" if substr(medicationname,1,9)=="ACCURETIC"         
+(56 real changes made)
+
+. 
+. * careful with this one b/c there is somavert below
+. replace   shortnam = "SOMA" if substr(medicationname,1,4)=="SOMA" & substr(medicationname,1,8)!="SOMAVERT"
+(180 real changes made)
+
+.  
+. replace   shortnam = "METOPROLOL" if substr(medicationname,1,10)=="METOPROLOL" & substr(medicationname,1,12)~="METOPRO
+> LOL S"        
+(2527 real changes made)
+
+.           
+. replace   shortnam = "BISOPROLOL" if substr(medicationname,1,10)=="BISOPROLOL"
+(488 real changes made)
+
+.              
+. replace   shortnam = "AMOXIL" if substr(medicationname,1,6)=="AMOXIL"
+(587 real changes made)
+
+.           
+. replace   shortnam = "PREDNISONE" if substr(medicationname,1,10)=="PREDNISONE"
+(2182 real changes made)
+
+.          
+. replace   shortnam = "LOPRESSOR" if substr(medicationname,1,9)=="LOPRESSOR"
+(281 real changes made)
+
+.     
+. replace   shortnam = "CLONIDINE" if substr(medicationname,1,9)=="CLONIDINE"       
+(938 real changes made)
+
+.           
+. replace   shortnam = "INFANRIX" if substr(medicationname,1,8)=="INFANRIX"
+(0 real changes made)
+
+.             
+. replace   shortnam = "SPRINTEC" if substr(medicationname,1,8)=="SPRINTEC"
+(10 real changes made)
+
+. 
+. ** DRUGS 511-520 
+. 
+. replace   shortnam = "MEPRON" if substr(medicationname,1,6)=="MEPRON"              
+(0 real changes made)
+
+.               
+. replace   shortnam = "HALLS" if substr(medicationname,1,5)=="HALLS" 
+(0 real changes made)
+
+.  
+. replace   shortnam = "URECHOLINE" if substr(medicationname,1,10)=="URECHOLINE"         
+(29 real changes made)
+
+.             
+. replace   shortnam = "ELIGARD" if substr(medicationname,1,7)=="ELIGARD"
+(0 real changes made)
+
+.     
+. replace   shortnam = "URSO" if substr(medicationname,1,4)=="URSO"           
+(0 real changes made)
+
+.              
+. replace   shortnam = "VISINE" if substr(medicationname,1,6)=="VISINE"
+(0 real changes made)
+
+.   
+. replace   shortnam = "GLIPIZIDE" if substr(medicationname,1,9)=="GLIPIZIDE"         
+(738 real changes made)
+
+.            
+. replace   shortnam = "PANCREASE" if substr(medicationname,1,9)=="PANCREASE"
+(45 real changes made)
+
+.          
+. replace   shortnam = "NEOSPORIN" if substr(medicationname,1,9)=="NEOSPORIN"
+(10 real changes made)
+
+.       
+. replace   shortnam = "ACETAMINOPHEN" if substr(medicationname,1,13)=="ACETAMINOPHEN"
+(949 real changes made)
+
+. 
+. ** DRUGS 521-530 
+. 
+. replace   shortnam = "FLEXERIL" if substr(medicationname,1,8)=="FLEXERIL"            
+(258 real changes made)
+
+.               
+. replace   shortnam = "ZOVIA" if substr(medicationname,1,5)=="ZOVIA"
+(47 real changes made)
+
+.             
+. replace   shortnam = "DARVOCET" if substr(medicationname,1,8)=="DARVOCET"
+(439 real changes made)
+
+.             
+. replace   shortnam = "HYTRIN" if substr(medicationname,1,6)=="HYTRIN"
+(161 real changes made)
+
+.                
+. replace   shortnam = "SULAR" if substr(medicationname,1,5)=="SULAR"
+(96 real changes made)
+
+.  
+. replace   shortnam = "REGRANEX" if substr(medicationname,1,8)=="REGRANEX"          
+(3 real changes made)
+
+.      
+. replace   shortnam = "CHOLESTYRAMINE" if substr(medicationname,1,14)=="CHOLESTYRAMINE"
+(62 real changes made)
+
+.           
+. replace   shortnam = "TRAZODONE" if substr(medicationname,1,9)=="TRAZODONE"
+(1159 real changes made)
+
+.         
+. replace   shortnam = "PROMETHEGAN" if substr(medicationname,1,11)=="PROMETHEGAN"
+(68 real changes made)
+
+.    
+. replace   shortnam = "VFEND" if substr(medicationname,1,5)=="VFEND"
+(0 real changes made)
+
+.             
+. ** DRUGS 531-540 
+.    
+. replace   shortnam = "ATIVAN" if substr(medicationname,1,6)=="ATIVAN"           
+(130 real changes made)
+
+.          
+. replace   shortnam = "AMIODARONE" if substr(medicationname,1,10)=="AMIODARONE"
+(389 real changes made)
+
+.                
+. replace   shortnam = "DUAC" if substr(medicationname,1,4)=="DUAC"
+(13 real changes made)
+
+.               
+. replace   shortnam = "PEPTO" if substr(medicationname,1,5)=="PEPTO"
+(1 real change made)
+
+.          
+. replace   shortnam = "LEVOTHROID" if substr(medicationname,1,10)=="LEVOTHROID"
+(700 real changes made)
+
+.             
+. replace   shortnam = "GENGRAF" if substr(medicationname,1,7)=="GENGRAF"
+(19 real changes made)
+
+.          
+. replace   shortnam = "CLONAZEPAM" if substr(medicationname,1,10)=="CLONAZEPAM"
+(936 real changes made)
+
+.           
+. replace   shortnam = "ROXICODONE" if substr(medicationname,1,10)=="ROXICODONE"
+(40 real changes made)
+
+.         
+. replace   shortnam = "BENZONATATE" if substr(medicationname,1,11)=="BENZONATATE"
+(165 real changes made)
+
+.           
+. replace   shortnam = "PERIOSTAT" if substr(medicationname,1,9)=="PERIOSTAT"
+(33 real changes made)
+
+. 
+. ** DRUGS 541-550 
+.  
+. replace   shortnam = "ALAVERT" if substr(medicationname,1,7)=="ALAVERT"           
+(0 real changes made)
+
+.             
+. replace   shortnam = "RESTASIS" if substr(medicationname,1,8)=="RESTASIS"
+(0 real changes made)
+
+.             
+. replace   shortnam = "NICODERM" if substr(medicationname,1,8)=="NICODERM"
+(9 real changes made)
+
+.               
+. replace   shortnam = "VAQTA" if substr(medicationname,1,5)=="VAQTA"
+(0 real changes made)
+
+.         
+. replace   shortnam = "LOTRISONE" if substr(medicationname,1,9)=="LOTRISONE"
+(41 real changes made)
+
+.        
+. replace   shortnam = "FLUVOXAMINE" if substr(medicationname,1,11)=="FLUVOXAMINE"
+(75 real changes made)
+
+.        
+. replace   shortnam = "ALLOPURINOL" if substr(medicationname,1,11)=="ALLOPURINOL"
+(1114 real changes made)
+
+.            
+. replace   shortnam = "NOLVADEX" if substr(medicationname,1,8)=="NOLVADEX"
+(75 real changes made)
+
+. 
+. replace   shortnam = "TRUSOPT" if substr(medicationname,1,7)=="TRUSOPT"             
+(100 real changes made)
+
+. 
+. replace   shortnam = "HYDROXYCHLOROQUINE" if substr(medicationname,1,18)=="HYDROXYCHLOROQUINE"
+(221 real changes made)
+
+. 
+. ** DRUGS 551-560
+.  
+. replace   shortnam = "LEVORA" if substr(medicationname,1,6)=="LEVORA"           
+(48 real changes made)
+
+.              
+. replace   shortnam = "FROVA" if substr(medicationname,1,5)=="FROVA"
+(7 real changes made)
+
+.         
+. replace   shortnam = "TERAZOSIN" if substr(medicationname,1,9)=="TERAZOSIN"
+(661 real changes made)
+
+.          
+. replace   shortnam = "NIZATIDINE" if substr(medicationname,1,10)=="NIZATIDINE"
+(12 real changes made)
+
+.             
+. replace   shortnam = "VELCADE" if substr(medicationname,1,7)=="VELCADE"
+(0 real changes made)
+
+.            
+. replace   shortnam = "NUVARING" if substr(medicationname,1,8)=="NUVARING"
+(3 real changes made)
+
+.    
+. replace   shortnam = "METHYLPHENIDATE" if substr(medicationname,1,15)=="METHYLPHENIDATE"
+(199 real changes made)
+
+.        
+. replace   shortnam = "METHOTREXATE" if substr(medicationname,1,12)=="METHOTREXATE"
+(418 real changes made)
+
+.               
+. replace   shortnam = "CARMOL" if substr(medicationname,1,6)=="CARMOL"
+(35 real changes made)
+
+.             
+. replace   shortnam = "DIASTAT" if substr(medicationname,1,7)=="DIASTAT"
+(14 real changes made)
+
+. 
+. ** DRUGS 561-570
+.  
+. replace   shortnam = "PENICILLIN" if substr(medicationname,1,10)=="PENICILLIN"        
+(627 real changes made)
+
+.             
+. replace   shortnam = "ULTRASE" if substr(medicationname,1,7)=="ULTRASE"
+(0 real changes made)
+
+.             
+. replace   shortnam = "TENORMIN" if substr(medicationname,1,8)=="TENORMIN"
+(231 real changes made)
+
+.             
+. replace   shortnam = "SINEMET" if substr(medicationname,1,7)=="SINEMET"
+(42 real changes made)
+
+.         
+. replace   shortnam = "ESTRADERM" if substr(medicationname,1,9)=="ESTRADERM"
+(103 real changes made)
+
+.         
+. replace   shortnam = "CALCITRIOL" if substr(medicationname,1,10)=="CALCITRIOL"
+(77 real changes made)
+
+.               
+. replace   shortnam = "VANTIN" if substr(medicationname,1,6)=="VANTIN"
+(31 real changes made)
+
+.          
+. replace   shortnam = "LABETALOL" if substr(medicationname,1,9)=="LABETALOL"
+(353 real changes made)
+
+.             
+. replace   shortnam = "FLUZONE" if substr(medicationname,1,7)=="FLUZONE"
+(0 real changes made)
+
+.              
+. replace   shortnam = "UNIVASC" if substr(medicationname,1,7)=="UNIVASC"
+(289 real changes made)
+
+. 
+. ** DRUGS 571-580
+. 
+. replace   shortnam = "ABREVA" if substr(medicationname,1,6)=="ABREVA"             
+(0 real changes made)
+
+.              
+. replace   shortnam = "DIGITEK" if substr(medicationname,1,7)=="DIGITEK"
+(738 real changes made)
+
+.           
+. replace   shortnam = "AGENERASE" if substr(medicationname,1,9)=="AGENERASE"
+(4 real changes made)
+
+. 
+. replace   shortnam = "PRIMATENE" if substr(medicationname,1,9)=="PRIMATENE"           
+(0 real changes made)
+
+.                
+. replace   shortnam = "ZICAM" if substr(medicationname,1,5)=="ZICAM"
+(0 real changes made)
+
+.           
+. replace   shortnam = "FIORICET" if substr(medicationname,1,8)=="FIORICET"
+(57 real changes made)
+
+.            
+. replace   shortnam = "HEPARIN" if substr(medicationname,1,7)=="HEPARIN"
+(2 real changes made)
+
+.             
+. replace   shortnam = "HAVRIX" if substr(medicationname,1,6)=="HAVRIX"
+(0 real changes made)
+
+.               
+. replace   shortnam = "ACEON" if substr(medicationname,1,5)=="ACEON"
+(83 real changes made)
+
+.      
+. replace   shortnam = "BUTALB/ASA/CAF/CD" if substr(medicationname,1,17)=="BUTALB/ASA/CAF/CD"
+(0 real changes made)
+
+. 
+. ** DRUGS 581-590
+. 
+. replace   shortnam = "DESOGEN" if substr(medicationname,1,7)=="DESOGEN"            
+(121 real changes made)
+
+.            
+. replace   shortnam = "ACYCLOVIR" if substr(medicationname,1,9)=="ACYCLOVIR"
+(210 real changes made)
+
+.   
+. replace   shortnam = "VOLTAREN" if substr(medicationname,1,8)=="VOLTAREN"         
+(88 real changes made)
+
+. 
+. replace   shortnam = "PROPAFENONE" if substr(medicationname,1,11)=="PROPAFENONE"        
+(56 real changes made)
+
+.             
+. replace   shortnam = "ASPIRIN" if substr(medicationname,1,7)=="ASPIRIN" & (medicationname~="ASPIRIN/DIPYRIDAMOLE" & me
+> dicationname~="ASPIRIN/CAFFEINE/PROPOXYPHENE" & medicationname~="ASPIRIN/CARISOPRODOL")
+(1559 real changes made)
+
+.          
+. replace   shortnam = "DIMETAPP" if substr(medicationname,1,8)=="DIMETAPP"
+(18 real changes made)
+
+.        
+. replace   shortnam = "DESMOPRESSIN" if substr(medicationname,1,12)=="DESMOPRESSIN"
+(10 real changes made)
+
+.              
+. replace   shortnam = "MYCELEX" if substr(medicationname,1,7)=="MYCELEX"
+(31 real changes made)
+
+. 
+. replace   shortnam = "FOLTX" if substr(medicationname,1,5)=="FOLTX"             
+(50 real changes made)
+
+. 
+. replace   shortnam = "RILUTEK" if substr(medicationname,1,7)=="RILUTEK"
+(0 real changes made)
+
+. 
+. ** DRUGS 591-600            
+.              
+. replace   shortnam = "TROJANS" if substr(medicationname,1,7)=="TROJANS"
+(0 real changes made)
+
+. 
+. replace   shortnam = "PROPOFOL" if substr(medicationname,1,8)=="PROPOFOL"            
+(0 real changes made)
+
+.            
+. replace   shortnam = "EFUDEX" if substr(medicationname,1,6)=="EFUDEX"
+(12 real changes made)
+
+.           
+. replace   shortnam = "PEDIALYTE" if substr(medicationname,1,9)=="PEDIALYTE"
+(24 real changes made)
+
+.            
+. replace   shortnam = "TAMBOCOR" if substr(medicationname,1,8)=="TAMBOCOR"
+(49 real changes made)
+
+.            
+. replace   shortnam = "FRAGMIN" if substr(medicationname,1,7)=="FRAGMIN"
+(3 real changes made)
+
+.             
+. replace   shortnam = "FUZEON" if substr(medicationname,1,6)=="FUZEON"
+(0 real changes made)
+
+.             
+. replace   shortnam = "INVIRASE" if substr(medicationname,1,8)=="INVIRASE"
+(0 real changes made)
+
+.            
+. replace   shortnam = "REPRONEX" if substr(medicationname,1,8)=="REPRONEX"
+(9 real changes made)
+
+.     
+. replace   shortnam = "FOLIC" if substr(medicationname,1,5)=="FOLIC"
+(818 real changes made)
+
+. 
+. ** DRUGS 601-610          
+.          
+. replace   shortnam = "METROCREAM" if substr(medicationname,1,10)=="METROCREAM"
+(92 real changes made)
+
+. 
+. replace   shortnam = "TRIAMINIC" if substr(medicationname,1,9)=="TRIAMINIC"          
+(2 real changes made)
+
+. 
+. replace   shortnam = "BUSPAR" if substr(medicationname,1,6)=="BUSPAR"             
+(207 real changes made)
+
+.              
+. replace   shortnam = "ACTHIB" if substr(medicationname,1,6)=="ACTHIB"
+(0 real changes made)
+
+. 
+. replace   shortnam = "CUTIVATE" if substr(medicationname,1,8)=="CUTIVATE"           
+(43 real changes made)
+
+.   
+. replace   shortnam = "VIGAMOX" if substr(medicationname,1,7)=="VIGAMOX"          
+(0 real changes made)
+
+.      
+. replace   shortnam = "AMITRIPTYLINE" if substr(medicationname,1,13)=="AMITRIPTYLINE"
+(1749 real changes made)
+
+.           
+. replace   shortnam = "PROLEUKIN" if substr(medicationname,1,9)=="PROLEUKIN"
+(0 real changes made)
+
+.             
+. replace   shortnam = "UNIPHYL" if substr(medicationname,1,7)=="UNIPHYL"
+(90 real changes made)
+
+.               
+. replace   shortnam = "ADOXA" if substr(medicationname,1,5)=="ADOXA"
+(3 real changes made)
+
+. 
+. ** DRUGS 611-620
+.  
+. replace   shortnam = "PLEXION" if substr(medicationname,1,7)=="PLEXION"           
+(25 real changes made)
+
+.            
+. replace   shortnam = "DAYQUIL" if substr(medicationname,1,7)=="DAYQUIL"
+(0 real changes made)
+
+.           
+. replace   shortnam = "PHENERGAN" if substr(medicationname,1,9)=="PHENERGAN"
+(179 real changes made)
+
+.  
+. replace   shortnam = "FLUMIST" if substr(medicationname,1,7)=="FLUMIST"            
+(0 real changes made)
+
+.             
+. replace   shortnam = "PARAGARD" if substr(medicationname,1,8)=="PARAGARD"
+(0 real changes made)
+
+.          
+. replace   shortnam = "PACLITAXEL" if substr(medicationname,1,10)=="PACLITAXEL"
+(0 real changes made)
+
+.            
+. replace   shortnam = "RETROVIR" if substr(medicationname,1,8)=="RETROVIR"
+(20 real changes made)
+
+. 
+. replace   shortnam = "THERAFLU" if substr(medicationname,1,8)=="THERAFLU"
+(0 real changes made)
+
+.             
+. replace   shortnam = "KOGENATE" if substr(medicationname,1,8)=="KOGENATE"
+(0 real changes made)
+
+. 
+. replace   shortnam = "ULTANE" if substr(medicationname,1,6)=="ULTANE"
+(0 real changes made)
+
+.   
+. ** DRUGS 621-630           
+. 
+. replace   shortnam = "HEPSERA" if substr(medicationname,1,7)=="HEPSERA"            
+(0 real changes made)
+
+.              
+. replace   shortnam = "MYLANTA" if substr(medicationname,1,7)=="MYLANTA"
+(0 real changes made)
+
+.              
+. replace   shortnam = "ZYMAR" if substr(medicationname,1,5)=="ZYMAR"
+(0 real changes made)
+
+.           
+. replace   shortnam = "NAVELBINE" if substr(medicationname,1,9)=="NAVELBINE"
+(0 real changes made)
+
+. 
+. replace   shortnam = "CYTOMEL" if substr(medicationname,1,7)=="CYTOMEL"            
+(53 real changes made)
+
+.         
+. replace   shortnam = "FLECAINIDE" if substr(medicationname,1,10)=="FLECAINIDE"
+(12 real changes made)
+
+.             
+. replace   shortnam = "AVODART" if substr(medicationname,1,7)=="AVODART"
+(0 real changes made)
+
+.         
+. replace   shortnam = "AZATHIOPRINE" if substr(medicationname,1,12)=="AZATHIOPRINE"
+(58 real changes made)
+
+.             
+. replace   shortnam = "TRIMOX" if substr(medicationname,1,6)=="TRIMOX"
+(678 real changes made)
+
+. 
+. replace   shortnam = "ZADITOR" if substr(medicationname,1,7)=="ZADITOR"
+(30 real changes made)
+
+.            
+. ** DRUGS 631-640 
+. 
+. replace   shortnam = "AFRIN" if substr(medicationname,1,5)=="AFRIN"               
+(3 real changes made)
+
+.            
+. replace   shortnam = "METAGLIP" if substr(medicationname,1,8)=="METAGLIP"
+(0 real changes made)
+
+.              
+. replace   shortnam = "TRIAZ" if substr(medicationname,1,5)=="TRIAZ"
+(101 real changes made)
+
+.   
+. replace   shortnam = "DEXTROAMPHETAMINE" if substr(medicationname,1,17)=="DEXTROAMPHETAMINE"
+(30 real changes made)
+
+.      
+. replace   shortnam = "ALTOPREV" if substr(medicationname,1,8)=="ALTOPREV"     
+(0 real changes made)
+
+.             
+. replace   shortnam = "NULYTELY" if substr(medicationname,1,8)=="NULYTELY" 
+(24 real changes made)
+
+.             
+. replace   shortnam = "OCUVITE" if substr(medicationname,1,7)=="OCUVITE"
+(0 real changes made)
+
+.  
+. replace   shortnam = "ENTOCORT" if substr(medicationname,1,8)=="ENTOCORT"          
+(6 real changes made)
+
+.             
+. replace   shortnam = "SALAGEN" if substr(medicationname,1,7)=="SALAGEN"
+(0 real changes made)
+
+. 
+. replace   shortnam = "TRIAMCINOLONE" if substr(medicationname,1,13)=="TRIAMCINOLONE"
+(313 real changes made)
+
+. 
+. ** DRUGS 641-650        
+.  
+. replace   shortnam = "SAIZEN" if substr(medicationname,1,6)=="SAIZEN"            
+(0 real changes made)
+
+.             
+. replace   shortnam = "CARAFATE" if substr(medicationname,1,8)=="CARAFATE"
+(45 real changes made)
+
+.    
+. replace   shortnam = "DEPO-TESTOSTERONE" if substr(medicationname,1,17)=="DEPO-TESTOSTERONE"
+(36 real changes made)
+
+.  
+. replace   shortnam = "CARNITOR" if substr(medicationname,1,8)=="CARNITOR"           
+(6 real changes made)
+
+. 
+. replace   shortnam = "BUTALB/ASA/CAF/CD" if substr(medicationname,1,17)=="BUTALB/ASA/CAF/CD"
+(0 real changes made)
+
+.      
+. replace   shortnam = "CALTRATE" if substr(medicationname,1,8)=="CALTRATE"     
+(13 real changes made)
+
+.   
+. replace   shortnam = "CANASA" if substr(medicationname,1,6)=="CANASA"            
+(16 real changes made)
+
+. 
+. * careful lots of drugs that start with 'tussi'
+. replace   shortnam = "TUSSI" if substr(medicationname,1,6)=="TUSSI " 
+(0 real changes made)
+
+. replace   shortnam = "TUSSI" if substr(medicationname,1,6)=="TUSSI-"              
+(19 real changes made)
+
+. 
+. replace   shortnam = "MAALOX" if substr(medicationname,1,6)=="MAALOX"              
+(52 real changes made)
+
+.  
+. replace   shortnam = "CALAN" if substr(medicationname,1,5)=="CALAN"
+(66 real changes made)
+
+.              
+. ** DRUGS 651-660
+. 
+. replace   shortnam = "RESTORIL" if substr(medicationname,1,8)=="RESTORIL"            
+(69 real changes made)
+
+.           
+. replace   shortnam = "FAMOTIDINE" if substr(medicationname,1,10)=="FAMOTIDINE"
+(421 real changes made)
+
+.              
+. replace   shortnam = "PRECOSE" if substr(medicationname,1,7)=="PRECOSE"
+(34 real changes made)
+
+.              
+. replace   shortnam = "AZOPT" if substr(medicationname,1,5)=="AZOPT"
+(75 real changes made)
+
+.           
+. replace   shortnam = "DIPRIVAN" if substr(medicationname,1,8)=="DIPRIVAN"
+(0 real changes made)
+
+.         
+. replace   shortnam = "IMIPRAMINE" if substr(medicationname,1,10)=="IMIPRAMINE"
+(188 real changes made)
+
+.             
+. replace   shortnam = "AXID" if substr(medicationname,1,4)=="AXID"
+(154 real changes made)
+
+.               
+. replace   shortnam = "IMDUR" if substr(medicationname,1,5)=="IMDUR"
+(130 real changes made)
+
+. 
+. replace   shortnam = "DOXYCYCLINE" if substr(medicationname,1,11)=="DOXYCYCLINE"         
+(375 real changes made)
+
+.             
+. replace   shortnam = "LINDANE" if substr(medicationname,1,7)=="LINDANE"
+(5 real changes made)
+
+. 
+. ** DRUGS 661-670
+.             
+. replace   shortnam = "ZANAFLEX" if substr(medicationname,1,8)=="ZANAFLEX"
+(205 real changes made)
+
+.           
+. replace   shortnam = "PREMPHASE" if substr(medicationname,1,9)=="PREMPHASE"
+(116 real changes made)
+
+.        
+. replace   shortnam = "CLOBETASOL" if substr(medicationname,1,10)=="CLOBETASOL"
+(97 real changes made)
+
+.             
+. replace   shortnam = "KLARON" if substr(medicationname,1,6)=="KLARON"
+(8 real changes made)
+
+. 
+. replace   shortnam = "METHOCARBAMOL" if substr(medicationname,1,13)=="METHOCARBAMOL"
+(243 real changes made)
+
+.          
+. replace   shortnam = "ECONAZOLE" if substr(medicationname,1,9)=="ECONAZOLE"
+(2 real changes made)
+
+.          
+. replace   shortnam = "DOXAZOSIN" if substr(medicationname,1,9)=="DOXAZOSIN"
+(783 real changes made)
+
+. 
+. replace   shortnam = "HECTOROL" if substr(medicationname,1,8)=="HECTOROL"
+(32 real changes made)
+
+.             
+. replace   shortnam = "CATHFLO" if substr(medicationname,1,7)=="CATHFLO"
+(0 real changes made)
+
+.        
+. replace   shortnam = "THEOPHYLLINE" if substr(medicationname,1,12)=="THEOPHYLLINE"
+(528 real changes made)
+
+. 
+. ** DRUGS 671-680
+. 
+. replace   shortnam = "CETAPHIL" if substr(medicationname,1,8)=="CETAPHIL"            
+(30 real changes made)
+
+.             
+. replace   shortnam = "ADIPEX" if substr(medicationname,1,6)=="ADIPEX"
+(0 real changes made)
+
+.          
+. replace   shortnam = "ZESTORETIC" if substr(medicationname,1,10)=="ZESTORETIC"  
+(475 real changes made)
+
+. 
+. replace   shortnam = "NICOTROL" if substr(medicationname,1,8)=="NICOTROL"           
+(8 real changes made)
+
+.         
+. replace   shortnam = "PREDNISOLONE" if substr(medicationname,1,12)=="PREDNISOLONE"
+(242 real changes made)
+
+.             
+. replace   shortnam = "PARLODEL" if substr(medicationname,1,8)=="PARLODEL"
+(3 real changes made)
+
+.             
+. replace   shortnam = "CAMPATH" if substr(medicationname,1,7)=="CAMPATH"
+(0 real changes made)
+
+.              
+. replace   shortnam = "LITHIUM" if substr(medicationname,1,7)=="LITHIUM"
+(213 real changes made)
+
+.         
+. replace   shortnam = "NORDITROPIN" if substr(medicationname,1,11)=="NORDITROPIN"
+(0 real changes made)
+
+.         
+. replace   shortnam = "HALOPERIDOL" if substr(medicationname,1,11)=="HALOPERIDOL"
+(161 real changes made)
+
+. 
+. ** DRUGS 681-690
+.             
+. replace   shortnam = "CITRACAL" if substr(medicationname,1,8)=="CITRACAL"
+(33 real changes made)
+
+.            
+. replace   shortnam = "GLUCAGON" if substr(medicationname,1,8)=="GLUCAGON"
+(17 real changes made)
+
+.          
+. replace   shortnam = "AEROCHAMBER" if substr(medicationname,1,11)=="AEROCHAMBER"
+(75 real changes made)
+
+.             
+. replace   shortnam = "PHILLIPS" if substr(medicationname,1,8)=="PHILLIPS"
+(0 real changes made)
+
+.             
+. replace   shortnam = "LORCET" if substr(medicationname,1,6)=="LORCET"
+(82 real changes made)
+
+.            
+. replace   shortnam = "DIP/TET" if substr(medicationname,1,7)=="DIP/TET"
+(0 real changes made)
+
+.           
+. replace   shortnam = "FORTOVASE" if substr(medicationname,1,9)=="FORTOVASE"
+(17 real changes made)
+
+. 
+. replace   shortnam = "DURICEF" if substr(medicationname,1,7)=="DURICEF"            
+(14 real changes made)
+
+.            
+. replace   shortnam = "CYTOXAN" if substr(medicationname,1,7)=="CYTOXAN"
+(12 real changes made)
+
+. 
+. replace   shortnam = "SMX/TMP" if substr(medicationname,1,7)=="SMX/TMP"           
+(0 real changes made)
+
+. 
+. ** DRUGS 691-700
+.            
+. replace   shortnam = "BICILLIN" if substr(medicationname,1,8)=="BICILLIN"
+(0 real changes made)
+
+.                
+. replace   shortnam = "INTAL" if substr(medicationname,1,5)=="INTAL"
+(148 real changes made)
+
+.              
+. replace   shortnam = "INFED" if substr(medicationname,1,5)=="INFED"
+(0 real changes made)
+
+.        
+. replace   shortnam = "METROLOTION" if substr(medicationname,1,11)=="METROLOTION"
+(45 real changes made)
+
+.          
+. replace   shortnam = "COMBIPATCH" if substr(medicationname,1,10)=="COMBIPATCH"
+(11 real changes made)
+
+.                 
+. replace   shortnam = "GAS" if substr(medicationname,1,3)=="GAS"
+(0 real changes made)
+
+. 
+. replace   shortnam = "CARBAMAZEPINE" if substr(medicationname,1,13)=="CARBAMAZEPINE"      
+(302 real changes made)
+
+.           
+. replace   shortnam = "ESTRADIOL" if substr(medicationname,1,9)=="ESTRADIOL"
+(1028 real changes made)
+
+.             
+. replace   shortnam = "RYTHMOL" if substr(medicationname,1,7)=="RYTHMOL"
+(0 real changes made)
+
+.   
+. replace   shortnam = "BUTALB/ASA/CAF/CD" if substr(medicationname,1,17)=="BUTALB/ASA/CAF/CD"
+(0 real changes made)
+
+. 
+. ** DRUGS 701-710    
+.  
+. replace   shortnam = "UNIRETIC" if substr(medicationname,1,8)=="UNIRETIC"           
+(64 real changes made)
+
+.              
+. replace   shortnam = "THYROID" if substr(medicationname,1,7)=="THYROID"
+(141 real changes made)
+
+.              
+. replace   shortnam = "DELSYM" if substr(medicationname,1,6)=="DELSYM"
+(3 real changes made)
+
+.         
+. replace   shortnam = "TRI-NORINYL" if substr(medicationname,1,11)=="TRI-NORINYL"
+(13 real changes made)
+
+. 
+. replace   shortnam = "DENAVIR" if substr(medicationname,1,7)=="DENAVIR"            
+(30 real changes made)
+
+.     
+. replace   shortnam = "ZIAC" if substr(medicationname,1,4)=="ZIAC"           
+(265 real changes made)
+
+.          
+. replace   shortnam = "CEFADROXIL" if substr(medicationname,1,10)=="CEFADROXIL"
+(34 real changes made)
+
+.            
+. replace   shortnam = "COLESTID" if substr(medicationname,1,8)=="COLESTID"
+(36 real changes made)
+
+. 
+. replace   shortnam = "MENTAX" if substr(medicationname,1,6)=="MENTAX"             
+(93 real changes made)
+
+.             
+. replace   shortnam = "TANAFED" if substr(medicationname,1,7)=="TANAFED"
+(32 real changes made)
+
+. 
+. ** DRUGS 711-720   
+.   
+. replace   shortnam = "DEXEDRINE" if substr(medicationname,1,9)=="DEXEDRINE"         
+(98 real changes made)
+
+.             
+. replace   shortnam = "DEMADEX" if substr(medicationname,1,7)=="DEMADEX"
+(229 real changes made)
+
+.              
+. replace   shortnam = "MEVACOR" if substr(medicationname,1,7)=="MEVACOR"
+(61 real changes made)
+
+. 
+. replace   shortnam = "LOCOID" if substr(medicationname,1,6)=="LOCOID"             
+(20 real changes made)
+
+.             
+. replace   shortnam = "CYCLESSA" if substr(medicationname,1,8)=="CYCLESSA"
+(42 real changes made)
+
+.  
+. replace   shortnam = "ECOTRIN" if substr(medicationname,1,7)=="ECOTRIN"            
+(182 real changes made)
+
+. 
+. replace   shortnam = "EUCERIN" if substr(medicationname,1,7)=="EUCERIN"            
+(119 real changes made)
+
+.             
+. replace   shortnam = "FIORINAL" if substr(medicationname,1,8)=="FIORINAL"
+(47 real changes made)
+
+.           
+. replace   shortnam = "PRIMIDONE" if substr(medicationname,1,9)=="PRIMIDONE"
+(52 real changes made)
+
+.              
+. replace   shortnam = "NORCO" if substr(medicationname,1,5)=="NORCO"
+(42 real changes made)
+
+. 
+. ** DRUGS 721-730 
+.      
+. replace   shortnam = "LAC-HYDRIN" if substr(medicationname,1,10)=="LAC-HYDRIN"     
+(70 real changes made)
+
+. 
+. replace   shortnam = "CLARAVIS" if substr(medicationname,1,8)=="CLARAVIS"           
+(0 real changes made)
+
+. 
+. replace   shortnam = "MEPROBAMATE" if substr(medicationname,1,11)=="MEPROBAMATE"         
+(59 real changes made)
+
+. 
+. replace   shortnam = "CAMILA" if substr(medicationname,1,6)=="CAMILA"              
+(0 real changes made)
+
+. 
+. replace   shortnam = "BOSTON" if substr(medicationname,1,6)=="BOSTON"              
+(0 real changes made)
+
+.             
+. replace   shortnam = "CARDURA" if substr(medicationname,1,7)=="CARDURA" 
+(295 real changes made)
+
+. 
+. replace   shortnam = "LITHOBID" if substr(medicationname,1,8)=="LITHOBID"           
+(77 real changes made)
+
+.            
+. replace   shortnam = "DULCOLAX" if substr(medicationname,1,8)=="DULCOLAX"
+(1 real change made)
+
+.             
+. replace   shortnam = "SOTALOL" if substr(medicationname,1,7)=="SOTALOL"
+(120 real changes made)
+
+. 
+. replace   shortnam = "CORTIZONE" if substr(medicationname,1,9)=="CORTIZONE"
+(0 real changes made)
+
+. 
+. ** DRUGS 731-740            
+. 
+. replace   shortnam = "ESTRING" if substr(medicationname,1,7)=="ESTRING"             
+(87 real changes made)
+
+.            
+. replace   shortnam = "CITRUCEL" if substr(medicationname,1,8)=="CITRUCEL"
+(0 real changes made)
+
+.            
+. replace   shortnam = "ESKALITH" if substr(medicationname,1,8)=="ESKALITH"
+(145 real changes made)
+
+. 
+. replace   shortnam = "CIALIS" if substr(medicationname,1,6)=="CIALIS"            
+(0 real changes made)
+
+.              
+. replace   shortnam = "LUXIQ" if substr(medicationname,1,5)=="LUXIQ"
+(16 real changes made)
+
+.              
+. replace   shortnam = "STADOL" if substr(medicationname,1,6)=="STADOL" 
+(0 real changes made)
+
+. 
+. replace   shortnam = "BUPROPION" if substr(medicationname,1,9)=="BUPROPION"          
+(91 real changes made)
+
+.  
+. replace   shortnam = "QVAR" if substr(medicationname,1,4)=="QVAR"            
+(74 real changes made)
+
+.       
+. replace   shortnam = "DESOXIMETASONE" if substr(medicationname,1,14)=="DESOXIMETASONE"
+(34 real changes made)
+
+.   
+. replace   shortnam = "RENOVA" if substr(medicationname,1,6)=="RENOVA"
+(10 real changes made)
+
+. 
+. ** DRUGS 741-750            
+. 
+. replace   shortnam = "PROCTOFOAM" if substr(medicationname,1,10)=="PROCTOFOAM"         
+(19 real changes made)
+
+.            
+. replace   shortnam = "PRECARE" if substr(medicationname,1,7)=="PRECARE"
+(58 real changes made)
+
+.   
+. replace   shortnam = "CAVERJECT" if substr(medicationname,1,9)=="CAVERJECT"         
+(0 real changes made)
+
+.            
+. replace   shortnam = "ROGAINE" if substr(medicationname,1,7)=="ROGAINE"
+(0 real changes made)
+
+. 
+. replace   shortnam = "METHYLPREDNISOLONE" if substr(medicationname,1,18)=="METHYLPREDNISOLONE" 
+(255 real changes made)
+
+.     
+. replace   shortnam = "TRI-LEVLEN" if substr(medicationname,1,10)=="TRI-LEVLEN"    
+(58 real changes made)
+
+.         
+. replace   shortnam = "CIMETIDINE" if substr(medicationname,1,10)=="CIMETIDINE"
+(525 real changes made)
+
+. 
+. replace   shortnam = "ROBINUL" if substr(medicationname,1,7)=="ROBINUL"            
+(45 real changes made)
+
+.            
+. replace   shortnam = "TRIPEDIA" if substr(medicationname,1,8)=="TRIPEDIA" 
+(0 real changes made)
+
+. 
+. replace   shortnam = "DIAZEPAM" if substr(medicationname,1,8)=="DIAZEPAM"
+(528 real changes made)
+
+. 
+. ** DRUGS 751-760            
+. 
+. replace   shortnam = "SYNTEST" if substr(medicationname,1,7)=="SYNTEST"             
+(0 real changes made)
+
+.      
+. replace   shortnam = "METOCLOPRAMIDE" if substr(medicationname,1,14)=="METOCLOPRAMIDE"
+(446 real changes made)
+
+.           
+. replace   shortnam = "VANCOCIN" if substr(medicationname,1,8)=="VANCOCIN"
+(2 real changes made)
+
+.           
+. replace   shortnam = "TRANSDERM" if substr(medicationname,1,9)=="TRANSDERM"
+(6 real changes made)
+
+.            
+. replace   shortnam = "BREVOXYL" if substr(medicationname,1,8)=="BREVOXYL"
+(7 real changes made)
+
+.        
+. replace   shortnam = "METHIMAZOLE" if substr(medicationname,1,11)=="METHIMAZOLE"
+(74 real changes made)
+
+.              
+. replace   shortnam = "PERMAX" if substr(medicationname,1,6)=="PERMAX"
+(36 real changes made)
+
+.  
+. replace   shortnam = "CALCIUM" if substr(medicationname,1,7)=="CALCIUM"           
+(430 real changes made)
+
+.   
+. replace   shortnam = "CEREZYME" if substr(medicationname,1,8)=="CEREZYME"         
+(0 real changes made)
+
+. 
+. replace   shortnam = "BUTORPHANOL" if substr(medicationname,1,11)=="BUTORPHANOL"
+(0 real changes made)
+
+. 
+. ** DRUGS 761-770          
+.     
+. replace   shortnam = "PENTOXIFYLLINE" if substr(medicationname,1,14)=="PENTOXIFYLLINE"  
+(213 real changes made)
+
+. 
+. replace   shortnam = "PEDIACARE" if substr(medicationname,1,9)=="PEDIACARE"          
+(24 real changes made)
+
+.             
+. replace   shortnam = "LOTRIMIN" if substr(medicationname,1,8)=="LOTRIMIN"
+(16 real changes made)
+
+.             
+. replace   shortnam = "CRYSELLE" if substr(medicationname,1,8)=="CRYSELLE"
+(0 real changes made)
+
+.             
+. replace   shortnam = "RELAFEN" if substr(medicationname,1,7)=="RELAFEN"
+(190 real changes made)
+
+.  
+. replace   shortnam = "TEVETEN" if substr(medicationname,1,7)=="TEVETEN"            
+(28 real changes made)
+
+.              
+. replace   shortnam = "PEDVAX" if substr(medicationname,1,6)=="PEDVAX"
+(0 real changes made)
+
+.               
+. replace   shortnam = "TUSSIN" if substr(medicationname,1,6)=="TUSSIN"
+(28 real changes made)
+
+.            
+. replace   shortnam = "ENPRESSE" if substr(medicationname,1,8)=="ENPRESSE"
+(3 real changes made)
+
+.  
+. replace   shortnam = "MAXZIDE" if substr(medicationname,1,7)=="MAXZIDE"
+(249 real changes made)
+
+. 
+. ** DRUGS 771-780            
+.  
+. replace   shortnam = "OS-CAL" if substr(medicationname,1,6)=="OS-CAL"             
+(30 real changes made)
+
+.               
+. replace   shortnam = "K-DUR" if substr(medicationname,1,5)=="K-DUR" 
+(419 real changes made)
+
+.  
+. replace   shortnam = "NEUMEGA" if substr(medicationname,1,7)=="NEUMEGA"            
+(0 real changes made)
+
+.             
+. replace   shortnam = "WINRHO" if substr(medicationname,1,6)=="WINRHO"
+(0 real changes made)
+
+.               
+. replace   shortnam = "PHOSLO" if substr(medicationname,1,6)=="PHOSLO"
+(171 real changes made)
+
+.              
+. replace   shortnam = "VOLMAX" if substr(medicationname,1,6)=="VOLMAX"
+(66 real changes made)
+
+. 
+. replace   shortnam = "OPTIVAR" if substr(medicationname,1,7)=="OPTIVAR"             
+(14 real changes made)
+
+.  
+. replace   shortnam = "INDOMETHACIN" if substr(medicationname,1,12)=="INDOMETHACIN"       
+(358 real changes made)
+
+.              
+. replace   shortnam = "PRENATE" if substr(medicationname,1,7)=="PRENATE"
+(133 real changes made)
+
+.              
+. replace   shortnam = "PAMELOR" if substr(medicationname,1,7)=="PAMELOR"
+(51 real changes made)
+
+. 
+. ** DRUGS 781-790 
+. 
+. replace   shortnam = "LOTEMAX" if substr(medicationname,1,7)=="LOTEMAX"            
+(38 real changes made)
+
+.             
+. replace   shortnam = "ANBESOL" if substr(medicationname,1,7)=="ANBESOL"
+(0 real changes made)
+
+. 
+. replace   shortnam = "NORITATE" if substr(medicationname,1,8)=="NORITATE"           
+(29 real changes made)
+
+.             
+. replace   shortnam = "NOR-Q.D." if substr(medicationname,1,8)=="NOR-Q.D."  
+(0 real changes made)
+
+. 
+. replace   shortnam = "BROMOCRIPTINE" if substr(medicationname,1,13)=="BROMOCRIPTINE"       
+(24 real changes made)
+
+.             
+. replace   shortnam = "NORDETTE" if substr(medicationname,1,8)=="NORDETTE"
+(41 real changes made)
+
+. 
+. replace   shortnam = "PACERONE" if substr(medicationname,1,8)=="PACERONE"           
+(95 real changes made)
+
+.         
+. replace   shortnam = "FLUOCINONIDE" if substr(medicationname,1,12)=="FLUOCINONIDE"
+(130 real changes made)
+
+.            
+. replace   shortnam = "AROMASIN" if substr(medicationname,1,8)=="AROMASIN"
+(0 real changes made)
+
+.  
+. replace   shortnam = "MEDERMA" if substr(medicationname,1,7)=="MEDERMA"
+(0 real changes made)
+
+.            
+. ** DRUGS 791-800
+.  
+. replace   shortnam = "DYAZIDE" if substr(medicationname,1,7)=="DYAZIDE"            
+(191 real changes made)
+
+.                
+. replace   shortnam = "BABY" if substr(medicationname,1,4)=="BABY"
+(0 real changes made)
+
+.           
+. replace   shortnam = "NITETIME" if substr(medicationname,1,8)=="NITETIME"
+(0 real changes made)
+
+. 
+. replace   shortnam = "METHADONE" if substr(medicationname,1,9)=="METHADONE"           
+(0 real changes made)
+
+.            
+. replace   shortnam = "FELBATOL" if substr(medicationname,1,8)=="FELBATOL"
+(0 real changes made)
+
+.             
+. replace   shortnam = "BLISTEX" if substr(medicationname,1,7)=="BLISTEX"
+(0 real changes made)
+
+.            
+. replace   shortnam = "MOEXIPRIL" if substr(medicationname,1,9)=="MOEXIPRIL"
+(0 real changes made)
+
+. 
+. replace   shortnam = "TEMAZEPAM" if substr(medicationname,1,9)=="TEMAZEPAM"           
+(592 real changes made)
+
+.           
+. replace   shortnam = "LIDOCAINE" if substr(medicationname,1,9)=="LIDOCAINE"
+(24 real changes made)
+
+.          
+. replace   shortnam = "MYSOLINE" if substr(medicationname,1,8)=="MYSOLINE"
+(79 real changes made)
+
+. 
+. ** DRUGS 801-810
+.     
+. replace   shortnam = "CEFACLOR" if substr(medicationname,1,8)=="CEFACLOR"       
+(59 real changes made)
+
+.   
+. replace   shortnam = "UNISOM" if substr(medicationname,1,6)=="UNISOM"            
+(0 real changes made)
+
+.                
+. replace   shortnam = "ONTAK" if substr(medicationname,1,5)=="ONTAK"
+(0 real changes made)
+
+.             
+. replace   shortnam = "MUCINEX" if substr(medicationname,1,7)=="MUCINEX"
+(0 real changes made)
+
+.             
+. replace   shortnam = "GYNAZOLE" if substr(medicationname,1,8)=="GYNAZOLE"
+(5 real changes made)
+
+.            
+. replace   shortnam = "OXAZEPAM" if substr(medicationname,1,8)=="OXAZEPAM"
+(56 real changes made)
+
+.  
+. replace   shortnam = "TIMOPTIC" if substr(medicationname,1,8)=="TIMOPTIC"
+(20 real changes made)
+
+.  
+. replace   shortnam = "REFACTO" if substr(medicationname,1,7)=="REFACTO"           
+(0 real changes made)
+
+.             
+. replace   shortnam = "CIPRODEX" if substr(medicationname,1,8)=="CIPRODEX"
+(0 real changes made)
+
+.              
+. replace   shortnam = "ALOCRIL" if substr(medicationname,1,7)=="ALOCRIL"           
+(21 real changes made)
+
+. 
+. 
+. ** DRUGS 811-820
+. 
+. replace   shortnam = "MALARONE" if substr(medicationname,1,8)=="MALARONE"            
+(4 real changes made)
+
+.             
+. replace   shortnam = "TOFRANIL" if substr(medicationname,1,8)=="TOFRANIL"
+(21 real changes made)
+
+.             
+. replace   shortnam = "BEN-GAY" if substr(medicationname,1,7)=="BEN-GAY"
+(0 real changes made)
+
+.               
+. replace   shortnam = "MUSE" if substr(medicationname,1,4)=="MUSE"
+(3 real changes made)
+
+.            
+. replace   shortnam = "LEVLITE" if substr(medicationname,1,7)=="LEVLITE"
+(37 real changes made)
+
+.   
+. replace   shortnam = "LORABID" if substr(medicationname,1,7)=="LORABID"         
+(32 real changes made)
+
+.           
+. replace   shortnam = "CALCIJEX" if substr(medicationname,1,8)=="CALCIJEX"
+(0 real changes made)
+
+. 
+. replace   shortnam = "SULINDAC" if substr(medicationname,1,8)=="SULINDAC"           
+(191 real changes made)
+
+.              
+. replace   shortnam = "EMEND" if substr(medicationname,1,5)=="EMEND"
+(0 real changes made)
+
+.              
+. replace   shortnam = "EX-LAX" if substr(medicationname,1,6)=="EX-LAX"
+(0 real changes made)
+
+. 
+. ** DRUGS 821-830
+. 
+. replace   shortnam = "CLORAZEPATE" if substr(medicationname,1,11)=="CLORAZEPATE"         
+(76 real changes made)
+
+.             
+. replace   shortnam = "LIPRAM" if substr(medicationname,1,6)=="LIPRAM"
+(39 real changes made)
+
+.         
+. replace   shortnam = "PROBENECID" if substr(medicationname,1,10)=="PROBENECID"
+(87 real changes made)
+
+.           
+. replace   shortnam = "PERGOLIDE" if substr(medicationname,1,9)=="PERGOLIDE"
+(0 real changes made)
+
+.            
+. replace   shortnam = "PLAQUENIL" if substr(medicationname,1,9)=="PLAQUENIL"
+(71 real changes made)
+
+.           
+. replace   shortnam = "ORAMORPH" if substr(medicationname,1,8)=="ORAMORPH"
+(20 real changes made)
+
+. 
+. replace   shortnam = "THEO-24" if substr(medicationname,1,7)=="THEO-24"             
+(64 real changes made)
+
+.            
+. replace   shortnam = "TRANXENE" if substr(medicationname,1,8)=="TRANXENE"
+(29 real changes made)
+
+. 
+. replace   shortnam = "ORA-JEL" if substr(medicationname,1,7)=="ORA-JEL"             
+(0 real changes made)
+
+.  
+. replace   shortnam = "PERGONAL" if substr(medicationname,1,8)=="PERGONAL"             
+(0 real changes made)
+
+. 
+. 
+. ** DRUGS 831-840           
+.             
+. replace   shortnam = "LASIX" if substr(medicationname,1,5)=="LASIX"
+(613 real changes made)
+
+. 
+. replace   shortnam = "SENOKOT" if substr(medicationname,1,7)=="SENOKOT"            
+(9 real changes made)
+
+. 
+. replace   shortnam = "DESONIDE" if substr(medicationname,1,8)=="DESONIDE"
+(79 real changes made)
+
+.             
+. replace   shortnam = "CARIMUNE" if substr(medicationname,1,8)=="CARIMUNE"
+(0 real changes made)
+
+.  
+. replace   shortnam = "CLINDAGEL" if substr(medicationname,1,9)=="CLINDAGEL"
+(6 real changes made)
+
+.             
+. replace   shortnam = "DILAUDID" if substr(medicationname,1,8)=="DILAUDID"
+(13 real changes made)
+
+. 
+. replace   shortnam = "GAMMAGARD" if substr(medicationname,1,9)=="GAMMAGARD"
+(0 real changes made)
+
+.       
+. replace   shortnam = "DEXAMETHASONE" if substr(medicationname,1,13)=="DEXAMETHASONE"
+(166 real changes made)
+
+.  
+. replace   shortnam = "METHADOSE" if substr(medicationname,1,9)=="METHADOSE"         
+(0 real changes made)
+
+. 
+. replace   shortnam = "LEUCOVORIN" if substr(medicationname,1,10)=="LEUCOVORIN"
+(0 real changes made)
+
+. 
+. ** DRUGS 841-850          
+.          
+. replace   shortnam = "QUINIDINE" if substr(medicationname,1,9)=="QUINIDINE"         
+(52 real changes made)
+
+. 
+. replace   shortnam = "BLEPHAMIDE" if substr(medicationname,1,10)=="BLEPHAMIDE"
+(13 real changes made)
+
+.               
+. replace   shortnam = "CEDAX" if substr(medicationname,1,5)=="CEDAX"
+(16 real changes made)
+
+.            
+. replace   shortnam = "REMODULIN" if substr(medicationname,1,9)=="REMODULIN"
+(0 real changes made)
+
+.      
+. replace   shortnam = "NORTRIPTYLINE" if substr(medicationname,1,13)=="NORTRIPTYLINE"
+(281 real changes made)
+
+.         
+. replace   shortnam = "LACLOTION" if substr(medicationname,1,9)=="LACLOTION"
+(2 real changes made)
+
+.         
+. replace   shortnam = "CORTISPORIN" if substr(medicationname,1,11)=="CORTISPORIN"
+(98 real changes made)
+
+.  
+. replace   shortnam = "CARAC" if substr(medicationname,1,5)=="CARAC"
+(6 real changes made)
+
+.          
+. replace   shortnam = "DECLOMYCIN" if substr(medicationname,1,10)=="DECLOMYCIN"
+(0 real changes made)
+
+. 
+. replace   shortnam = "ETOPOSIDE" if substr(medicationname,1,9)=="ETOPOSIDE"
+(0 real changes made)
+
+. 
+. 
+. ** DRUGS 851-860           
+. 
+. replace   shortnam = "OXYTROL" if substr(medicationname,1,7)=="OXYTROL"            
+(0 real changes made)
+
+.            
+. replace   shortnam = "PREVIDENT" if substr(medicationname,1,9)=="PREVIDENT"
+(42 real changes made)
+
+.     
+. replace   shortnam = "LUBRIDERM" if substr(medicationname,1,9)=="LUBRIDERM"       
+(0 real changes made)
+
+.             
+. replace   shortnam = "DIDREX" if substr(medicationname,1,6)=="DIDREX"
+(0 real changes made)
+
+.      
+. replace   shortnam = "DIPHENHYDRAMINE" if substr(medicationname,1,15)=="DIPHENHYDRAMINE"
+(223 real changes made)
+
+.            
+. replace   shortnam = "BUPRENEX" if substr(medicationname,1,8)=="BUPRENEX"
+(0 real changes made)
+
+.  
+. replace   shortnam = "CLEARASIL" if substr(medicationname,1,9)=="CLEARASIL"          
+(0 real changes made)
+
+.             
+. replace   shortnam = "TAGAMET" if substr(medicationname,1,7)=="TAGAMET"          
+(1 real change made)
+
+.     
+. replace   shortnam = "TEARS" if substr(medicationname,1,5)=="TEARS"          
+(23 real changes made)
+
+. 
+. replace   shortnam = "VENTOLIN" if substr(medicationname,1,8)=="VENTOLIN"          
+(249 real changes made)
+
+. 
+. ** DRUGS 861-870           
+.  
+. replace   shortnam = "UROCIT" if substr(medicationname,1,6)=="UROCIT"             
+(0 real changes made)
+
+. 
+. replace   shortnam = "NORETHINDRONE" if substr(medicationname,1,13)=="NORETHINDRONE"       
+(3 real changes made)
+
+. 
+. replace   shortnam = "CORICIDIN" if substr(medicationname,1,9)=="CORICIDIN"           
+(0 real changes made)
+
+.            
+. replace   shortnam = "CONDYLOX" if substr(medicationname,1,8)=="CONDYLOX"
+(2 real changes made)
+
+.              
+. replace   shortnam = "DARVON" if substr(medicationname,1,6)=="DARVON"
+(1 real change made)
+
+.   
+. replace   shortnam = "ONXOL" if substr(medicationname,1,5)=="ONXOL"
+(0 real changes made)
+
+. 
+. replace   shortnam = "MICRONASE" if substr(medicationname,1,9)=="MICRONASE"          
+(34 real changes made)
+
+.  
+. replace   shortnam = "ALLERGY" if substr(medicationname,1,7)=="ALLERGY"
+(2 real changes made)
+
+. 
+. replace   shortnam = "DIPYRIDAMOLE" if substr(medicationname,1,12)=="DIPYRIDAMOLE"
+(53 real changes made)
+
+.  
+. replace   shortnam = "ANALPRAM" if substr(medicationname,1,8)=="ANALPRAM"
+(7 real changes made)
+
+. 
+. ** DRUGS 871-880           
+.            
+. replace   shortnam = "TRISENOX" if substr(medicationname,1,8)=="TRISENOX"
+(0 real changes made)
+
+.             
+. replace   shortnam = "MENEST" if substr(medicationname,1,6)=="MENEST"
+(144 real changes made)
+
+.  
+. replace   shortnam = "XYLOCAINE" if substr(medicationname,1,9)=="XYLOCAINE"
+(3 real changes made)
+
+. 
+. replace   shortnam = "PREFEST" if substr(medicationname,1,7)=="PREFEST"             
+(0 real changes made)
+
+.             
+. replace   shortnam = "DEMULEN" if substr(medicationname,1,7)=="DEMULEN"             
+(62 real changes made)
+
+. 
+. replace   shortnam = "KETOROLAC" if substr(medicationname,1,9)=="KETOROLAC"          
+(44 real changes made)
+
+.               
+. replace   shortnam = "ANUSOL" if substr(medicationname,1,6)=="ANUSOL"
+(9 real changes made)
+
+. 
+. replace   shortnam = "TRI-LUMA" if substr(medicationname,1,8)=="TRI-LUMA"            
+(10 real changes made)
+
+.            
+. replace   shortnam = "MINOXIDIL" if substr(medicationname,1,9)=="MINOXIDIL"
+(48 real changes made)
+
+.   
+. replace   shortnam = "IMURAN" if substr(medicationname,1,9)=="IMURAN"
+(16 real changes made)
+
+. 
+. ** DRUGS 881-890           
+. 
+. replace   shortnam = "FIBERCON" if substr(medicationname,1,8)=="FIBERCON"
+(0 real changes made)
+
+.  
+. * what drug is this - too broad
+. * replace   shortnam = "CLEAR" if substr(medicationname,1,5)=="CLEAR"             
+.  
+. replace   shortnam = "MESTINON" if substr(medicationname,1,8)=="MESTINON"   
+(1 real change made)
+
+.  
+. replace   shortnam = "ACTIGALL" if substr(medicationname,1,8)=="ACTIGALL"            
+(0 real changes made)
+
+.               
+. replace   shortnam = "OGEN" if substr(medicationname,1,4)=="OGEN"            
+(2 real changes made)
+
+.  
+. replace   shortnam = "DIPENTUM" if substr(medicationname,1,8)=="DIPENTUM"
+(11 real changes made)
+
+.            
+. replace   shortnam = "CAPTOPRIL" if substr(medicationname,1,9)=="CAPTOPRIL"
+(723 real changes made)
+
+. 
+. replace   shortnam = "CORGARD" if substr(medicationname,1,7)=="CORGARD"      
+(30 real changes made)
+
+. 
+. replace   shortnam = "EVOXAC" if substr(medicationname,1,6)=="EVOXAC"
+(3 real changes made)
+
+. 
+. replace   shortnam = "TARGRETIN" if substr(medicationname,1,9)=="TARGRETIN"
+(0 real changes made)
+
+. 
+. ** DRUGS 891-900           
+. 
+. replace   shortnam = "PSORCON" if substr(medicationname,1,7)=="PSORCON"
+(28 real changes made)
+
+.  
+. replace   shortnam = "METHYLIN" if substr(medicationname,1,8)=="METHYLIN"           
+(89 real changes made)
+
+. 
+. replace   shortnam = "LACTAID" if substr(medicationname,1,7)=="LACTAID"
+(0 real changes made)
+
+. 
+. replace   shortnam = "NIVEA" if substr(medicationname,1,5)=="NIVEA"              
+(0 real changes made)
+
+.              
+. replace   shortnam = "DESYREL" if substr(medicationname,1,7)=="DESYREL"              
+(18 real changes made)
+
+. 
+. replace   shortnam = "VIACTIV" if substr(medicationname,1,7)=="VIACTIV"            
+(0 real changes made)
+
+. 
+. replace   shortnam = "METRONIDAZOLE" if substr(medicationname,1,13)=="METRONIDAZOLE"       
+(174 real changes made)
+
+.  
+. * what drug is this - too broad
+. * replace   shortnam = "ST" if substr(medicationname,1,2)=="ST"                 
+.   
+. replace   shortnam = "NASAREL" if substr(medicationname,1,7)=="NASAREL"
+(12 real changes made)
+
+. 
+. replace   shortnam = "MECLIZINE" if substr(medicationname,1,9)=="MECLIZINE"
+(642 real changes made)
+
+. 
+. ** DRUGS 901-910          
+.   
+. replace   shortnam = "MINITRAN" if substr(medicationname,1,8)=="MINITRAN"
+(72 real changes made)
+
+.             
+. replace   shortnam = "VOSPIRE" if substr(medicationname,1,7)=="VOSPIRE"
+(0 real changes made)
+
+.        
+. replace   shortnam = "VENOGLOBULIN" if substr(medicationname,1,12)=="VENOGLOBULIN"
+(0 real changes made)
+
+.               
+. replace   shortnam = "QUIXIN" if substr(medicationname,1,6)=="QUIXIN"
+(17 real changes made)
+
+. 
+. replace   shortnam = "AMANTADINE" if substr(medicationname,1,10)=="AMANTADINE"
+(73 real changes made)
+
+.   
+. replace   shortnam = "VISICOL" if substr(medicationname,1,7)=="VISICOL"
+(5 real changes made)
+
+.      
+. replace   shortnam = "COLYTE" if substr(medicationname,1,6)=="COLYTE"
+(12 real changes made)
+
+. 
+. replace   shortnam = "NITROLINGUAL" if substr(medicationname,1,12)=="NITROLINGUAL"
+(15 real changes made)
+
+.  
+. * what drugs are these - maybe too broad
+. * replace   shortnam = "PRENATAL" if substr(medicationname,1,8)=="PRENATAL"     
+.        
+. replace   shortnam = "CHLORASEPTIC" if substr(medicationname,1,12)=="CHLORASEPTIC"
+(0 real changes made)
+
+. 
+. ** DRUGS 911-920 
+.       
+. replace   shortnam = "MIDOL" if substr(medicationname,1,5)=="MIDOL"        
+(0 real changes made)
+
+.             
+. replace   shortnam = "LESSINA" if substr(medicationname,1,7)=="LESSINA"        
+(4 real changes made)
+
+.  
+. replace   shortnam = "ICY" if substr(medicationname,1,3)=="ICY"           
+(0 real changes made)
+
+.                
+. replace   shortnam = "ENTEX" if substr(medicationname,1,5)=="ENTEX"        
+(117 real changes made)
+
+. 
+. replace   shortnam = "SULFASALAZINE" if substr(medicationname,1,13)=="SULFASALAZINE"     
+(129 real changes made)
+
+. 
+. replace   shortnam = "GUAIFENEX" if substr(medicationname,1,9)=="GUAIFENEX"                  
+(139 real changes made)
+
+.  
+. replace   shortnam = "BUMETANIDE" if substr(medicationname,1,10)=="BUMETANIDE"        
+(257 real changes made)
+
+.           
+. replace   shortnam = "CORDARONE" if substr(medicationname,1,10)=="CORDARONE"        
+(0 real changes made)
+
+.   
+. replace   shortnam = "FLUDROCORTISONE" if substr(medicationname,1,15)=="FLUDROCORTISONE"   
+(11 real changes made)
+
+.  
+. replace   shortnam = "BUTALB/APAP/CAF/CD" if substr(medicationname,1,18)=="BUTALB/APAP/CAF/CD"   
+(0 real changes made)
+
+. 
+. ** DRUGS 921-930 
+. 
+. replace   shortnam = "ALREX" if substr(medicationname,1,5)=="ALREX"              
+(25 real changes made)
+
+. 
+. replace   shortnam = "ASCOMP" if substr(medicationname,1,6)=="ASCOMP"            
+(0 real changes made)
+
+.  
+. replace   shortnam = "HYDROMORPHONE" if substr(medicationname,1,13)=="HYDROMORPHONE"     
+(36 real changes made)
+
+.     
+. replace   shortnam = "AOSEPT" if substr(medicationname,1,6)=="AOSEPT"         
+(0 real changes made)
+
+.             
+. replace   shortnam = "PRINZIDE" if substr(medicationname,1,8)=="PRINZIDE"         
+(184 real changes made)
+
+. 
+. replace   shortnam = "GENTEAL" if substr(medicationname,1,7)=="GENTEAL"             
+(6 real changes made)
+
+. 
+. replace   shortnam = "PROPRANOLOL" if substr(medicationname,1,11)=="PROPRANOLOL"         
+(708 real changes made)
+
+.            
+. replace   shortnam = "ACTICIN" if substr(medicationname,1,7)=="ACTICIN"             
+(14 real changes made)
+
+.  
+. replace   shortnam = "TESTIM" if substr(medicationname,1,6)=="TESTIM"            
+(0 real changes made)
+
+. 
+. replace   shortnam = "CAPOTEN" if substr(medicationname,1,7)=="CAPOTEN"             
+(32 real changes made)
+
+. 
+. ** DRUGS 931-940
+.               
+. replace   shortnam = "ERRIN" if substr(medicationname,1,5)=="ERRIN" 
+(0 real changes made)
+
+. 
+. replace   shortnam = "NAFTIN" if substr(medicationname,1,6)=="NAFTIN"
+(1 real change made)
+
+. 
+. replace   shortnam = "MEFLOQUINE" if substr(medicationname,1,10)=="MEFLOQUINE"
+(2 real changes made)
+
+. 
+. replace   shortnam = "AZELEX" if substr(medicationname,1,6)=="AZELEX"             
+(15 real changes made)
+
+. 
+. replace   shortnam = "ROLAIDS" if substr(medicationname,1,7)=="ROLAIDS"           
+(0 real changes made)
+
+.               
+. replace   shortnam = "LEVLEN" if substr(medicationname,1,7)=="LEVLEN"           
+(35 real changes made)
+
+. 
+. replace   shortnam = "DOCUSATE" if substr(medicationname,1,8)=="DOCUSATE"
+(343 real changes made)
+
+.  
+. replace   shortnam = "MISOPROSTOL" if substr(medicationname,1,11)=="MISOPROSTOL"
+(15 real changes made)
+
+. 
+. replace   shortnam = "VESANOID" if substr(medicationname,1,8)=="VESANOID"
+(0 real changes made)
+
+. 
+. replace   shortnam = "BACITRACIN" if substr(medicationname,1,10)=="BACITRACIN"
+(87 real changes made)
+
+.          
+. ** DRUGS 941-950
+.   
+. replace   shortnam = "RHOGAM" if substr(medicationname,1,6)=="RHOGAM"            
+(0 real changes made)
+
+. 
+. replace   shortnam = "DOXORUBICIN" if substr(medicationname,1,11)=="DOXORUBICIN"        
+(1 real change made)
+
+. 
+. replace   shortnam = "NADOLOL" if substr(medicationname,1,7)=="NADOLOL"           
+(177 real changes made)
+
+.           
+. replace   shortnam = "CYTOVENE" if substr(medicationname,1,7)=="CYTOVENE"           
+(0 real changes made)
+
+. 
+. replace   shortnam = "BENZOYL" if substr(medicationname,1,7)=="BENZOYL"            
+(24 real changes made)
+
+.       
+. replace   shortnam = "SLOW" if substr(medicationname,1,4)=="SLOW"           
+(19 real changes made)
+
+. 
+. replace   shortnam = "BETAMETHASONE" if substr(medicationname,1,13)=="BETAMETHASONE"       
+(128 real changes made)
+
+.              
+. replace   shortnam = "NYSTOP" if substr(medicationname,1,6)=="NYSTOP"            
+(21 real changes made)
+
+.          
+. replace   shortnam = "METABOLIFE" if substr(medicationname,1,10)=="METABOLIFE"            
+(0 real changes made)
+
+.                 
+. replace   shortnam = "PRED" if substr(medicationname,1,4)=="PRED"            
+(2522 real changes made)
+
+. 
+. ** DRUGS 951-960
+.              
+. replace   shortnam = "GLYSET" if substr(medicationname,1,6)=="GLYSET"            
+(42 real changes made)
+
+.  
+. replace   shortnam = "AMEVIVE" if substr(medicationname,1,7)=="AMEVIVE"           
+(0 real changes made)
+
+.                
+. * too broad-- what is this? 
+. *replace   shortnam = "RID" if substr(medicationname,1,3)=="RID"            
+.  
+. replace   shortnam = "SUCRALFATE" if substr(medicationname,1,10)=="SUCRALFATE"         
+(114 real changes made)
+
+.  
+. replace   shortnam = "RYNATAN" if substr(medicationname,1,7)=="RYNATAN"                   
+(18 real changes made)
+
+.  
+. replace   shortnam = "OXAPROZIN" if substr(medicationname,1,9)=="OXAPROZIN"        
+(73 real changes made)
+
+.            
+. replace   shortnam = "FLAGYL" if substr(medicationname,1,6)=="FLAGYL"                   
+(41 real changes made)
+
+. 
+. replace   shortnam = "FOSINOPRIL" if substr(medicationname,1,10)=="FOSINOPRIL"         
+(159 real changes made)
+
+.  
+. replace   shortnam = "MOMETASONE" if substr(medicationname,1,10)=="MOMETASONE"         
+(13 real changes made)
+
+. 
+. replace   shortnam = "HUMIBID" if substr(medicationname,1,6)=="HUMIBID"                   
+(0 real changes made)
+
+.   
+. ** DRUGS 961-970           
+.            
+. * careful, other drugs with same prefix  
+. replace   shortnam = "DILTIA" if substr(medicationname,1,7)=="DILTIA "                   
+(334 real changes made)
+
+.             
+. replace   shortnam = "CORZIDE" if substr(medicationname,1,7)=="CORZIDE"                   
+(0 real changes made)
+
+. 
+. replace   shortnam = "RECOMBINATE" if substr(medicationname,1,11)=="RECOMBINATE"       
+(0 real changes made)
+
+.   
+. replace   shortnam = "RIFAMPIN" if substr(medicationname,1,8)=="RIFAMPIN"          
+(13 real changes made)
+
+.            
+. replace   shortnam = "DERMATOP" if substr(medicationname,1,8)=="DERMATOP"          
+(7 real changes made)
+
+.           
+. replace   shortnam = "FLUTAMIDE" if substr(medicationname,1,9)=="FLUTAMIDE"          
+(0 real changes made)
+
+.          
+. replace   shortnam = "PENTAZOCINE" if substr(medicationname,1,11)=="PENTAZOCINE"          
+(8 real changes made)
+
+. 
+. replace   shortnam = "FOCALIN" if substr(medicationname,1,7)=="FOCALIN"            
+(3 real changes made)
+
+.  
+. replace   shortnam = "AFEDITAB" if substr(medicationname,1,8)=="AFEDITAB"
+(0 real changes made)
+
+.  
+. replace   shortnam = "CONTAC" if substr(medicationname,1,6)=="CONTAC"            
+(0 real changes made)
+
+. 
+. ** DRUGS 971-980                        
+. 
+. replace   shortnam = "COLACE" if substr(medicationname,1,6)=="COLACE"              
+(61 real changes made)
+
+.              
+. replace   shortnam = "TRIPLE" if substr(medicationname,1,6)=="TRIPLE"              
+(1905 real changes made)
+
+.            
+. replace   shortnam = "ACCUHIST" if substr(medicationname,1,8)=="ACCUHIST"              
+(14 real changes made)
+
+.               
+. replace   shortnam = "LOPID" if substr(medicationname,1,5)=="LOPID"              
+(99 real changes made)
+
+.   
+. replace   shortnam = "BETIMOL" if substr(medicationname,1,7)=="BETIMOL"           
+(146 real changes made)
+
+.               
+. replace   shortnam = "STOOL" if substr(medicationname,1,7)=="STOOL"           
+(0 real changes made)
+
+.             
+. replace   shortnam = "ROXICET" if substr(medicationname,1,7)=="ROXICET"           
+(115 real changes made)
+
+.    
+. replace   shortnam = "NORPACE" if substr(medicationname,1,7)=="NORPACE"                   
+(14 real changes made)
+
+.               
+. replace   shortnam = "CAPEX" if substr(medicationname,1,5)=="CAPEX"                   
+(31 real changes made)
+
+. 
+. replace   shortnam = "DIGOXIN" if substr(medicationname,1,7)=="DIGOXIN"
+(516 real changes made)
+
+.  
+. ** DRUGS 981-990           
+.   
+. * what drug is this - maybe too broad?
+. * replace   shortnam = "AMMONIUM" if substr(medicationname,1,8)=="AMMONIUM"          
+.              
+. replace   shortnam = "D.H.E." if substr(medicationname,1,6)=="D.H.E."
+(0 real changes made)
+
+.  
+. replace   shortnam = "NALTREXONE" if substr(medicationname,1,10)=="NALTREXONE"         
+(0 real changes made)
+
+.             
+. replace   shortnam = "ERY-TAB" if substr(medicationname,1,7)=="ERY-TAB"
+(84 real changes made)
+
+.   
+. replace   shortnam = "BOTOX" if substr(medicationname,1,5)=="BOTOX"
+(0 real changes made)
+
+.  
+. replace   shortnam = "FLOLAN" if substr(medicationname,1,6)=="FLOLAN"           
+(0 real changes made)
+
+.         
+. replace   shortnam = "DELATESTRYL" if substr(medicationname,1,11)=="DELATESTRYL"         
+(4 real changes made)
+
+.             
+. replace   shortnam = "AREDIA" if substr(medicationname,1,6)=="AREDIA"           
+(0 real changes made)
+
+. 
+. replace   shortnam = "SEASONALE" if substr(medicationname,1,9)=="SEASONALE"           
+(0 real changes made)
+
+.   
+. replace   shortnam = "KETOPROFEN" if substr(medicationname,1,10)=="KETOPROFEN"           
+(59 real changes made)
+
+. 
+. ** DRUGS 991-1000        
+.  
+. replace   shortnam = "GAMMAR" if substr(medicationname,1,6)=="GAMMAR"             
+(0 real changes made)
+
+. 
+. replace   shortnam = "MIDAZOLAM" if substr(medicationname,1,9)=="MIDAZOLAM"          
+(0 real changes made)
+
+.          
+. replace   shortnam = "MEPERIDINE" if substr(medicationname,1,9)=="MEPERIDINE"          
+(0 real changes made)
+
+.             
+. replace   shortnam = "FLEET" if substr(medicationname,1,5)=="FLEET"             
+(6 real changes made)
+
+.             
+. replace   shortnam = "VANIQA" if substr(medicationname,1,6)=="VANIQA"             
+(9 real changes made)
+
+. 
+. replace   shortnam = "HEAD & SHOULDERS" if substr(medicationname,1,16)=="HEAD & SHOULDERS"           
+(0 real changes made)
+
+. 
+. replace   shortnam = "SOLARAZE" if substr(medicationname,1,8)=="SOLARAZE"            
+(0 real changes made)
+
+.           
+. replace   shortnam = "CLOMIPHENE" if substr(medicationname,1,10)=="CLOMIPHENE"            
+(31 real changes made)
+
+.             
+. replace   shortnam = "DEPAKENE" if substr(medicationname,1,8)=="DEPAKENE"            
+(0 real changes made)
+
+.           
+. replace   shortnam = "DANTRIUM" if substr(medicationname,1,8)=="DANTRIUM"            
+(39 real changes made)
+
+. egen totpd_total = sum(pd_total), by(medicationname)
+
+. sort medicationname
+
+. quietly by medicationname: gen numobs = _N
+
+. quietly by medicationname: gen temp = _n
+
+. 
+. * which relatively high util treatments do we not have shortnam for?
+. 
+. gsort temp - totpd_total
+
+. list medicationname totpd_total numobs if temp==1 & _n<=500 & shortnam==""
+
+        +---------------------------------------------------------------------+
+        |                                  medicationname   totpd_~l   numobs |
+        |---------------------------------------------------------------------|
+     2. |                                              -9   546725.1     1545 |
+    49. |                                         INSULIN   74851.92     1316 |
+    69. |                                         LANCETS   51913.07     1070 |
+    89. |                                        DYRENIUM   40627.16      778 |
+   112. |                               INSULIN REG HUMAN   32404.21      517 |
+        |---------------------------------------------------------------------|
+   140. |                                           CIPRO   26322.87      303 |
+   159. |                                   OT ULTRA SOFT   24312.72     1717 |
+   164. |                                 PRECISION Q-I-D   23932.06      500 |
+   190. |                                      ISOXUPRINE   18739.98      298 |
+   192. |                                          PLAN B   18339.26      717 |
+        |---------------------------------------------------------------------|
+   226. |           GLUCOMETER DEX (DIABETES CARE SYSTEM)    15242.8      212 |
+   228. |                         HOMATROPINE/HYDROCODONE   15006.21      958 |
+   265. |                                    TRI-ESTROGEN    12433.5      133 |
+   277. |                                          ENSURE   11797.26      106 |
+   288. |                                      INDAPAMIDE   11418.29      380 |
+        |---------------------------------------------------------------------|
+   291. |                               GOSERELIN ACETATE   11279.84        8 |
+   296. |                                        PRENATAL    10999.5      363 |
+   301. |                                      ANADROL-50   10779.89       11 |
+   324. |                               MIGRANAL (AMPULE)      10107       90 |
+   335. |                                          KEFLEX    9758.87      141 |
+        |---------------------------------------------------------------------|
+   354. |                                          ELAVIL    9086.19      193 |
+   358. |                                      GABAPENTIN    8930.44      126 |
+   368. |                                            EDTA       8723      244 |
+   381. |                                         PROVERA    8272.97      208 |
+   394. |                                    Z-LEUPROLIDE       7725        4 |
+        |---------------------------------------------------------------------|
+   395. |                                       NEBULIZER       7712       60 |
+   396. |                                     DOXEPIN HCL    7647.31      237 |
+   414. |                                     INSULIN REG    7169.95      122 |
+   425. |      GLUCOMETER ELITE XL (DIABETES CARE SYSTEM)     6917.4      105 |
+   428. |                                    PROPRAN/HCTZ    6836.71      544 |
+        |---------------------------------------------------------------------|
+   429. |                                         REMINYL    6823.57       43 |
+   441. |                                       PIROXICAM    6547.03      136 |
+   449. |                                         DIABETA    6386.82      167 |
+   462. |                             OXYBUTYNIN CHLORIDE    6178.96      154 |
+   481. |                                         SMZ-TMP    5798.52      282 |
+        |---------------------------------------------------------------------|
+   483. |                                       TRICYCLEN    5787.82      144 |
+   486. |                                    TENORETIC 50    5715.06       39 |
+   490. |                                      METHYLDOPA    5651.83      188 |
+   492. |                                     ESTROPIPATE    5639.43      264 |
+   497. | PROGESTERONE WETTABLE (U.S.P.,MICROCRYSTALLINE)    5551.95       82 |
+        +---------------------------------------------------------------------+
+
+. 
+. * replace   shortnam = "" if substr(medicationname,1,)==""
+. 
+. * we'll see what share of scripts for each short name are coded as generic
+. tab gbo, missing
+
+        gbo |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         -9 |     24,739        7.44        7.44
+          G |    122,404       36.83       44.28
+          N |    185,179       55.72      100.00
+------------+-----------------------------------
+      Total |    332,322      100.00
+
+. gen generic = (gbo=="G")
+
+. gen brand   = (gbo=="N")
+
+. 
+. gen mcarpaid = pd_total
+
+. replace mcarpaid = 0 if mcarscript!=1
+(193759 real changes made)
+
+. 
+. tab mcarscript anymcrpd, missing
+
+           |       anymcrpd
+mcarscript |         0          1 |     Total
+-----------+----------------------+----------
+         0 |   193,746         13 |   193,759 
+         1 |   124,665     13,898 |   138,563 
+-----------+----------------------+----------
+     Total |   318,411     13,911 |   332,322 
+
+
+. 
+. sum mcarscript dualscript mcselfscript mcarpaid pd_total generic personwgt if shortnam==""
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+  mcarscript |     45452    .3809073    .4856152          0          1
+  dualscript |     45452    .0592206    .2296045          0          1
+mcselfscript |     45452    .2323992    .3969833          0          1
+    mcarpaid |     45452    13.87386    52.53881          0    4842.11
+    pd_total |     45452    41.94027    160.3864         .1    4842.11
+-------------+--------------------------------------------------------
+     generic |     45452     .446097    .4970914          0          1
+   personwgt |     45452     7844.12      4682.4   490.0466   44389.82
+
+. sum mcarscript dualscript mcselfscript mcarpaid pd_total generic personwgt if shortnam!=""
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+  mcarscript |    286870    .4226653     .493984          0          1
+  dualscript |    286870    .0701047    .2489775          0          1
+mcselfscript |    286870    .2464705    .4023566          0          1
+    mcarpaid |    286870     24.2313    48.83256          0    1699.99
+    pd_total |    286870      57.353    64.24398        .36    3658.12
+-------------+--------------------------------------------------------
+     generic |    286870    .3560079    .4788184          0          1
+   personwgt |    286870    8144.591    4738.452   405.7138    46765.6
+
+. 
+. keep if shortnam!=""
+(45452 observations deleted)
+
+. drop medicationname
+
+. 
+. keep mcarscript dualscript mcselfscript mcarpaid pd_total generic brand personwgt shortnam top500
+
+. 
+. sort shortnam
+
+. quietly by shortnam: gen numscripts = _N
+
+. 
+. gen wgtpaid = personwgt * pd_total / 1000
+
+. egen meps02paid = sum(wgtpaid), by(shortnam)
+
+. rename pd_total avgpaid
+
+. rename mcarpaid avgmcarpaid
+
+. 
+. collapse (mean) mcarscript dualscript mcselfscript avgmcarpaid avgpaid generic brand numscripts meps02paid top500 [aw=
+> personwgt], by(shortnam)
+
+. 
+. rename mcarscript mcar02mepsrx
+
+. rename dualscript dual02mepsrx
+
+. rename mcselfscript mcself02mepsrx
+
+. 
+. gen mcar02mepspd = avgmcarpaid / avgpaid
+
+. 
+. drop avgmcarpaid avgpaid
+
+. rename generic gen02meps
+
+. rename brand brand02meps
+
+. rename numscripts meps02scripts
+
+. 
+. label var meps02paid "weighted amt paid / 1000"
+
+. label var mcar02mepsrx "meps medicare share - weighted script share"
+
+. label var dual02mepsrx "dual share - weighted script share"
+
+. label var mcself02mepsrx "meps medicare self share - weighted script share"
+
+. label var mcar02mepspd "meps medicare share - weighted $ share"
+
+. label var gen02meps "fraction of 02 meps scripts generic"
+
+. label var brand02meps "fraction of 02 meps scripts brand"
+
+. label var meps02scripts "# of scripts in 2002 meps"
+
+. 
+. sort shortnam
+
+. d, fullname
+
+Contains data
+  obs:           741                          
+ vars:            10                          
+ size:        44,460 (99.9% of memory free)
+------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+------------------------------------------------------------------------------------------------------------------------
+shortnam        str20  %20s                   
+mcar02mepsrx    float  %9.0g                  meps medicare share - weighted script share
+dual02mepsrx    float  %9.0g                  dual share - weighted script share
+mcself02mepsrx  float  %9.0g                  meps medicare self share - weighted script share
+gen02meps       float  %9.0g                  fraction of 02 meps scripts generic
+brand02meps     float  %9.0g                  fraction of 02 meps scripts brand
+meps02scripts   float  %9.0g                  # of scripts in 2002 meps
+meps02paid      float  %9.0g                  weighted amt paid / 1000
+top500          float  %9.0g                  (mean) top500
+mcar02mepspd    float  %9.0g                  meps medicare share - weighted $ share
+------------------------------------------------------------------------------------------------------------------------
+Sorted by:  shortnam
+     Note:  dataset has changed since last saved
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcar02mepsrx |       741    .3772392    .2879838          0          1
+dual02mepsrx |       741    .0482202    .0942209          0    .958194
+mcself02me~x |       741    .2264947    .2198389          0          1
+   gen02meps |       741    .2642214    .4171712          0          1
+-------------+--------------------------------------------------------
+ brand02meps |       741    .6870364    .4348919          0          1
+meps02scri~s |       741     387.139    772.9107          1       7520
+  meps02paid |       741    182608.7    437637.4   2.171612    5961980
+      top500 |       741      .54475    .4979878          0          1
+mcar02mepspd |       741    .3824992    .2938923          0          1
+
+. 
+. merge shortnam using otc0305
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        116       12.08       12.08
+          2 |        219       22.81       34.90
+          3 |        625       65.10      100.00
+------------+-----------------------------------
+      Total |        960      100.00
+
+. sort _merge
+
+. by _merge: sum
+
+------------------------------------------------------------------------------------------------------------------------
+-> _merge = 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcar02mepsrx |       116    .3312843    .2934148          0          1
+dual02mepsrx |       116    .0346891    .0915005          0   .6523432
+mcself02me~x |       116    .2178698    .2389385          0          1
+   gen02meps |       116    .1780309    .3659376          0          1
+-------------+--------------------------------------------------------
+ brand02meps |       116    .7565907    .4022319          0          1
+meps02scri~s |       116    156.4483    368.7818          1       2522
+  meps02paid |       116    44472.64    62132.53   66.96535   303578.2
+      top500 |       116    .1637931    .3716933          0          1
+mcar02mepspd |       116    .3310957    .2982207          0          1
+-------------+--------------------------------------------------------
+mcd03paidamt |         0
+mcd03numndcs |         0
+mcd03otcfrac |         0
+      _merge |       116           1           0          1          1
+
+------------------------------------------------------------------------------------------------------------------------
+-> _merge = 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcar02mepsrx |         0
+dual02mepsrx |         0
+mcself02me~x |         0
+   gen02meps |         0
+-------------+--------------------------------------------------------
+ brand02meps |         0
+meps02scri~s |         0
+  meps02paid |         0
+      top500 |         0
+mcar02mepspd |         0
+-------------+--------------------------------------------------------
+mcd03paidamt |       219     9744337    2.40e+07       8.18   1.96e+08
+mcd03numndcs |       219    3.940639    6.421805          1         56
+mcd03otcfrac |       219    .0957015    .2914224          0          1
+      _merge |       219           2           0          2          2
+
+------------------------------------------------------------------------------------------------------------------------
+-> _merge = 3
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcar02mepsrx |       625    .3857685    .2863917          0          1
+dual02mepsrx |       625    .0507316    .0945757          0    .958194
+mcself02me~x |       625    .2280955    .2162761          0          1
+   gen02meps |       625    .2802184    .4243438          0          1
+-------------+--------------------------------------------------------
+ brand02meps |       625    .6741271    .4397801          0          1
+meps02scri~s |       625    429.9552    819.5432          1       7520
+  meps02paid |       625    208246.7    471395.5   2.171612    5961980
+      top500 |       625    .6154556    .4864619          0          1
+mcar02mepspd |       625    .3920397    .2923292          0          1
+-------------+--------------------------------------------------------
+mcd03paidamt |       625    4.58e+07    1.21e+08    1424.14   1.81e+09
+mcd03numndcs |       625      10.008    15.19388          1        114
+mcd03otcfrac |       625    .0492384    .2057181          0          1
+      _merge |       625           3           0          3          3
+
+
+. rename _merge merge1
+
+. 
+. label var merge1 "merge of meps 02 to medicaid 03"
+
+. 
+. sort shortnam
+
+. save meps02share
+file meps02share.dta saved
+
+. d, fullname
+
+Contains data from meps02share.dta
+  obs:           960                          
+ vars:            14                          3 Mar 2009 23:16
+ size:        77,760 (99.9% of memory free)
+------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+------------------------------------------------------------------------------------------------------------------------
+shortnam        str20  %20s                   
+mcar02mepsrx    float  %9.0g                  meps medicare share - weighted script share
+dual02mepsrx    float  %9.0g                  dual share - weighted script share
+mcself02mepsrx  float  %9.0g                  meps medicare self share - weighted script share
+gen02meps       float  %9.0g                  fraction of 02 meps scripts generic
+brand02meps     float  %9.0g                  fraction of 02 meps scripts brand
+meps02scripts   float  %9.0g                  # of scripts in 2002 meps
+meps02paid      float  %9.0g                  weighted amt paid / 1000
+top500          float  %9.0g                  (mean) top500
+mcar02mepspd    float  %9.0g                  meps medicare share - weighted $ share
+mcd03paidamt    double %10.0g                 (sum) paidamt
+mcd03numndcs    double %9.0g                  (sum) numndcs
+mcd03otcfrac    float  %9.0g                  
+merge1          byte   %8.0g                  merge of meps 02 to medicaid 03
+------------------------------------------------------------------------------------------------------------------------
+Sorted by:  shortnam
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcar02mepsrx |       741    .3772392    .2879838          0          1
+dual02mepsrx |       741    .0482202    .0942209          0    .958194
+mcself02me~x |       741    .2264947    .2198389          0          1
+   gen02meps |       741    .2642214    .4171712          0          1
+-------------+--------------------------------------------------------
+ brand02meps |       741    .6870364    .4348919          0          1
+meps02scri~s |       741     387.139    772.9107          1       7520
+  meps02paid |       741    182608.7    437637.4   2.171612    5961980
+      top500 |       741      .54475    .4979878          0          1
+mcar02mepspd |       741    .3824992    .2938923          0          1
+-------------+--------------------------------------------------------
+mcd03paidamt |       844    3.64e+07    1.06e+08       8.18   1.81e+09
+mcd03numndcs |       844    8.433649    13.73419          1        114
+mcd03otcfrac |       844    .0612946    .2317396          0          1
+      merge1 |       960    2.530208    .7009036          1          3
+
+. 
+. clear
+
+. 
+. log close
+       log:  /disk/bulkn/mgduggan/partd/meps/aerdata/meps02share.log
+  log type:  text
+ closed on:   3 Mar 2009, 23:16:23
+------------------------------------------------------------------------------------------------------------------------

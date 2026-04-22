@@ -1,0 +1,175 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\tableA1.log
+  log type:  text
+ opened on:  17 Nov 2010, 16:05:59
+
+. 
+. 
+. use ../data/dis70panx.dta
+
+. 
+. gen menroll = (mpublicelemt+mpublichst+mprivatelemt+mprivatehst)/1000
+(171 missing values generated)
+
+. gen enroll = (publicelemt+publichst+privatelemt+privatehst)/1000
+(172 missing values generated)
+
+. replace publicelemhst = (publicelemt+publichst)/1000 if year<1990
+(506 real changes made)
+
+. gen frblack = (publicelemb+publichsb)/(1000*publicelemhst)
+(172 missing values generated)
+
+. 
+. gen STU69 = stu/1000 if year==1970
+(583 missing values generated)
+
+. egen stu69 = max(STU69), by(msa)
+(298 missing values generated)
+
+. 
+. gen PUB70 = publicelemhst if year==1970
+(507 missing values generated)
+
+. egen public70 = max(PUB70), by(msa)
+
+. 
+. sort leaid areaname
+
+. by leaid: replace areaname = areaname[1]
+(0 real changes made)
+
+. sort areaname
+
+. 
+. *** Panel A
+. l areaname menroll enroll publicelemhst frblack imp cntydis if year==1970 & stu69>50 & major==1, separator(0)
+
+     +--------------------------------------------------------------------------------------+
+     |                  areaname    menroll    enroll   pub~mhst    frblack   imp   cntydis |
+     |--------------------------------------------------------------------------------------|
+298. |       AL, Birmingham city    178.097    68.702     65.494   .5208263    70         0 |
+301. |           AL, Mobile city     99.136    83.622     72.382   .4198281    71         1 |
+310. |           AZ, Tucson city     83.455    56.312     52.603   .0433625    78         0 |
+311. |           CA, Fresno city     114.89    58.615     56.567   .0888857    78         0 |
+315. |      CA, Los Angeles city   1537.508    697.69      613.8   .2333007    78         0 |
+323. |          CA, Oakland city     376.76    68.541     60.065   .5598934    66         0 |
+328. |       CA, Sacramento city    189.219    52.696     47.552    .123591    76         0 |
+338. |        CA, San Diego city    298.566   132.464    121.753   .1173031    77         0 |
+342. |    CA, San Francisco city    279.208   108.199      84.08   .2629519    71         1 |
+354. |           CO, Denver city    270.023   104.383     88.501   .1426764    74         0 |
+360. |       DE, Wilmington city    109.507    17.658     13.827   .7343603    78         0 |
+368. |  FL, Fort Lauderdale city    122.482   122.482    109.662   .2128176    70         1 |
+378. | FL, Jacksonville city (re    151.128   128.645    120.312   .2780853    71         1 |
+382. |         FL, Lakeland city     52.604    52.604     50.956    .230022    69         1 |
+385. |            FL, Miami city    262.933   262.933    233.022   .2345143    70         1 |
+390. |          FL, Orlando city     125.51    84.097      78.91   .1753137    72         1 |
+392. |            FL, Tampa city    213.186   112.383    102.001   .1797924    71         1 |
+397. |       FL, Titusville city     62.967    62.174      58.44   .1073066    69         1 |
+399. |  FL, West Palm Beach city     72.083    72.083     64.348   .2693324    70         1 |
+409. |          GA, Atlanta city    411.422    94.784     88.444   .6354756    73         0 |
+416. |          IL, Chicago city   1674.167   724.115    541.655   .5428308    82         0 |
+431. | IN, Indianapolis city (re    304.675   110.271     97.933   .3490243    73         0 |
+441. |          KS, Wichita city    100.901    67.094     60.714   .1329018    71         0 |
+449. |       KY, Louisville city    226.216    59.735     49.984   .4516645    75         0 |
+457. |      LA, Baton Rouge city     96.741    72.301     65.413    .343739    70         1 |
+470. |      LA, New Orleans city    292.896   140.652    105.168   .6593831    61         1 |
+473. |       LA, Shreveport city     84.243    56.921     52.783   .4533088    69         1 |
+475. |           MA, Boston city    942.796   118.419     85.158   .2973414    74         0 |
+486. |        MD, Baltimore city    497.825   208.089    178.274   .6538026    74         1 |
+489. |          MI, Detroit city   1131.025   321.744    260.508   .6252169    75         0 |
+501. |      MN, Minneapolis city    501.766    76.875     62.789   .0760802    74         0 |
+506. |      MO, Kansas City city    329.017    75.316     64.882   .4747079    77         0 |
+510. |        MO, St. Louis city    604.172   134.401    106.424   .6374878    80         1 |
+514. |        NC, Charlotte city    196.561    85.611     82.005   .2861777    70         1 |
+520. |            NE, Omaha city    142.952    77.533     58.458    .178299    76         0 |
+529. |           NJ, Newark city    454.871    90.237     78.289   .7125394    61         0 |
+538. |        NV, Las Vegas city      70.87     63.56     61.194    .117054    72         1 |
+541. |          NY, Buffalo city    326.261    97.183      68.61   .3737356    76         0 |
+552. |            OH, Akron city    165.829    62.726     54.052   .2556242    77         0 |
+555. |       OH, Cincinnati city    351.526   102.367     76.656   .4255114    73         0 |
+562. |        OH, Cleveland city    582.014    168.78    138.481   .5621999    79         0 |
+566. |         OH, Columbus city    262.777   109.992     96.495   .2714234    79         0 |
+568. |           OH, Dayton city    235.965    62.701     54.329    .357415    76         0 |
+573. |           OH, Toledo city    143.804     74.55     56.907   .2643963    80         0 |
+579. |    OK, Oklahoma City city    167.925    73.737     69.305   .2053964    72         0 |
+583. |            OK, Tulsa city    124.631    77.065     72.502   .1259551    71         0 |
+588. |         OR, Portland city    250.501     80.71      70.39   .0828385    74         0 |
+591. |     PA, Philadelphia city   1134.488   411.006    265.284   .5954863    78         1 |
+598. |       PA, Pittsburgh city    622.374   106.999     69.558   .3866845    80         0 |
+600. |       SC, Charleston city     88.381    62.533     56.252   .4544194    70         1 |
+607. |       SC, Greenville city     141.13    57.522     54.943    .207233    70         0 |
+612. |          TN, Memphis city    219.614   158.995    147.618   .4940929    73         0 |
+615. | TN, Nashville-Davidson (r    158.992   101.978     93.063   .2339168    71         1 |
+626. |           TX, Austin city     83.807    57.124     54.859   .1463023    80         0 |
+627. |           TX, Dallas city    374.179   177.041    163.635   .3246983    71         0 |
+632. |          TX, El Paso city    100.616    62.852     59.836   .0290461    78         0 |
+638. |       TX, Fort Worth city     187.08     86.98     82.743   .2558162    73         0 |
+639. |          TX, Houston city    469.115   252.432    234.538   .3244421    71         0 |
+653. |      TX, San Antonio city     230.94    83.397     72.701   .1501905    69         0 |
+661. |          VA, Norfolk city     261.81    61.439     55.216    .410334    70         1 |
+667. |          WA, Seattle city    341.522     94.75     81.787   .1177571    78         0 |
+675. |        WI, Milwaukee city    343.379   158.082    120.453    .253601    76         0 |
+     +--------------------------------------------------------------------------------------+
+
+. 
+. *** Panel B
+. l mname state menroll enroll publicelemhst frblack imp cntydis if year==1970 & public70>50 & major~=1, separator(0)
+
+     +---------------------------------------------------------------------------------+
+     |       mname   state    menroll     enroll   pub~mhst    frblack   imp   cntydis |
+     |---------------------------------------------------------------------------------|
+ 14. |     Phoenix       .    254.822    103.441     94.461   .0880257     .         0 |
+ 54. |  Charleston       .     60.155     53.723     51.649   .0628279     .         0 |
+ 87. | Bakersfield       .     84.308     59.621     57.825   .0815737     .         0 |
+149. |  Washington       .    754.143    152.669    135.184   .9279649     .         0 |
+199. |     Anaheim       .     364.02     78.989     72.596   .0011709     .         0 |
+534. | Albuquerque      NM    103.255     85.608     80.395   .0266186   999         0 |
+545. |    New York      NY   1745.951   1467.913   1087.986   .3525983   999         0 |
+     +---------------------------------------------------------------------------------+
+
+. 
+. *** Panel C
+. l areaname menroll enroll publicelemhst frblack imp cntydis if year==1970 & stu69<50 & major==1, separator(0)
+
+     +------------------------------------------------------------------------------------+
+     |                  areaname   menroll   enroll   pub~mhst    frblack   imp   cntydis |
+     |------------------------------------------------------------------------------------|
+304. |      AR, Little Rock city    86.819   28.285     25.705   .3758413    71         0 |
+334. |   CA, San Bernardino city   277.314   38.441     35.944   .1411084    78         0 |
+343. |         CA, San Jose city   267.537    37.35     34.685   .0152804    86         0 |
+349. |          CA, Vallejo city    57.596   14.421     13.136   .2452801    75         0 |
+357. |         CT, Hartford city    241.71   31.405     26.014   .4623664    66         0 |
+364. |    FL, Daytona Beach city    33.149     32.1     29.838   .2208258    69         1 |
+373. |       FL, Fort Myers city     19.54    19.54     18.819   .1824752    69         1 |
+406. |           GA, Albany city    24.734   23.005     22.394   .3950612    80         1 |
+412. | GA, Columbus city (remain    57.854    39.94     39.099   .3071178    71         1 |
+422. |         IL, Rockford city    77.463   44.225     38.181   .1119405    73         0 |
+424. |       IN, Fort Wayne city   104.286   50.939     38.952   .1416102    71         0 |
+436. |       IN, South Bend city    57.602   41.145     33.631   .1593768    81         0 |
+444. |     KY, Lexington-Fayette    64.269   35.877     34.292   .1594833    72         1 |
+454. |       LA, Alexandria city    29.913   29.913     27.783   .3156247    69         1 |
+459. |            LA, Houma city    39.605   21.392     19.584   .1726409    69         1 |
+465. |     LA, Lake Charles city    40.043   40.043      38.15   .2522674    69         1 |
+482. |      MA, Springfield city   132.858   36.655     28.337   .2001976    74         0 |
+491. |     MI, Grand Rapids city    205.39   47.547     32.707   .2085792    68         0 |
+497. |          MI, Lansing city    88.162   32.122     28.518   .1196087    72         0 |
+518. |       NC, Wilmington city     24.79   18.848      18.27   .2904762    69         1 |
+524. |      NJ, Jersey City city   120.658   54.267     35.458   .4129393    76         0 |
+548. |        NY, Rochester city   237.043   55.752     40.743   .3259456    70         0 |
+576. |           OK, Lawton city    23.327   20.748     20.261   .1446128    73         0 |
+603. |         SC, Columbia city    73.778   41.534     39.777   .4342208    70         0 |
+620. |         TX, Amarillo city    34.303   29.706     28.383   .0595075    72         0 |
+646. |          TX, Lubbock city    42.311   34.054     33.212   .1096893    78         0 |
+650. |           TX, Odessa city    42.724   24.494     24.172   .0590766    82         1 |
+657. |             TX, Waco city    32.419   19.342     18.475   .2128281    73         0 |
+665. |          VA, Roanoke city    44.045   18.529     17.846   .2606186    70         1 |
+674. |           WA, Tacoma city    94.614   38.802     35.161   .0927732    68         0 |
+     +------------------------------------------------------------------------------------+
+
+. 
+. log close
+       log:  c:\research\segregation\AER-DATA\tables\tableA1.log
+  log type:  text
+ closed on:  17 Nov 2010, 16:06:00
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

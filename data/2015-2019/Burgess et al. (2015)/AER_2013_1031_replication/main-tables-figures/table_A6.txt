@@ -1,0 +1,19 @@
+Effect																
+)																
+	(1)	(2)	(3)	(4)	(5)	(6)	(7)	(8)	(9)	(10)	(11)	(12)	(13)	(14)	(15)	(16)
+VARIABLES	exp_dens_share	exp_dens_share	exp_dens_share	exp_dens_share	exp_dens_share2	exp_dens_share2	exp_dens_share2	exp_dens_share2	change_paved_share	change_paved_share	change_paved_share	change_paved_share	change_paved_share2	change_paved_share2	change_paved_share2	change_paved_share2
+																
+president	1.00***		1.72***		1.78*		2.98***		3.71**		4.26**		4.54***		5.67***	
+	[0.350]		[0.489]		[0.886]		[0.988]		[1.691]		[1.744]		[1.543]		[1.677]	
+																
+presshare		1.23***		2.28***		2.28**		4.36***		4.20**		5.03**		4.22**		5.76***
+		[0.379]		[0.564]		[0.997]		[1.136]		[1.882]		[1.979]		[1.931]		[1.756]
+presidentMP			-1.32**				-2.22*				-2.38*				-4.82	
+			[0.623]				[1.285]				[1.358]				[2.889]	
+presshareMP				-1.88***				-3.74**				-2.85*				-5.35
+				[0.658]				[1.453]				[1.663]				[4.025]
+																
+Observations	2,009	2,009	2,009	2,009	2,009	2,009	2,009	2,009	410	410	410	410	410	410	410	410
+Adjusted R-squared	0.112	0.112	0.119	0.121	0.383	0.383	0.385	0.388	0.012	0.008	0.012	0.008	0.143	0.133	0.151	0.138
+Robust standard errors clustered at the district level in parentheses																
+* significant at 10%; ** significant at 5%; *** significant at 1%																

@@ -1,0 +1,1 @@
+replace specificdrug=1 if (class ==27| class ==117) & arthritis==1

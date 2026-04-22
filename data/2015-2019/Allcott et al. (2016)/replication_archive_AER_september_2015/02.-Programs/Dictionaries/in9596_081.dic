@@ -1,0 +1,21 @@
+dictionary using 95-96/P9596081.C {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+_column(16)	linkcode	%3.0f	"Link Code"
+
+_column(19)     wages_workers        %11.0f        "Wages and salaries-workers"
+_column(30)     wages_supervis        %11.0f        " Wages and salariesSuper.& Mang. Staff"
+_column(41)     wages_oth        %11.0f        "Wages and salaries Others"
+_column(52)     total_wages        %11.0f        "Wages and salaries Total"
+_column(63)     bonus_workers        %11.0f        "Bonus-workers"
+_column(74)     bonus_supervis        %11.0f        "Bonus-Super. &Mang. Stafff"
+_column(85)     bonus_oth        %11.0f        "Bonus-Others"
+_column(96)     total_bonus        %11.0f        "Bonus - Total"
+
+
+
+};

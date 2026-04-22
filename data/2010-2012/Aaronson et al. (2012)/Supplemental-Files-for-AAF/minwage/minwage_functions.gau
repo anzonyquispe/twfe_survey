@@ -1,0 +1,453 @@
+/************************************* FUNCTIONS/PROCEDURES *****************************/
+
+
+
+/*
+output_paramsAndGrids():
+Prints all the parameters.
+*/
+proc(0) = output_paramsAndGrids(settingsSwitch, hikeSwitch, Cdec, Idec, Astates, Sstates, PIstates, TSvals,
+        transitionM, TSprobabilities, wageHike, hikeStart, R, fixedDurableCost, delta, downpaymentR, PIgrowthR, beta,
+        rho, theta, CadjustmentLow, CadjustmentHigh, IadjustmentLow, IadjustmentHigh, numTstates,
+        AfloorFnVersion, gridScale);
+    local 	numCdecs, numIdecs, numAstates, numSstates, numPIstates, numTSvals,
+		numops_total, numops_timeBoundary, numops_main, numops_Izero, numTimeBoundaryCases; //numops vars
+
+    numCdecs=rows(Cdec); numIdecs=rows(Idec); 
+    numAstates=rows(Astates)*cols(Astates); numSstates=rows(Sstates)*cols(Sstates); numPIstates=rows(PIstates)*cols(PIstates); numTSvals=rows(TSvals)*cols(TSvals);
+    format /ldn 10,5; //set back to old format
+    //Logging
+    "SettingsSwitch is " settingsSwitch;
+    "Grid Scale (ie gridScale is conversion multiplier from sim units to actual dollars; if c==1 in sim, c==Gridscale*1 in real dollars) " gridScale;
+    "Hikeswitch is " hikeswitch;
+    "Cdec (length: " rows(Cdec) "): " Cdec;
+    "Idec: (length: " rows(Idec) "): " Idec;
+    "Astates: (length: " rows(Astates) "): " Astates;
+    "Sstates: (length: " rows(Sstates) "): " Sstates;
+    "PIstates: (length: " rows(PIstates) "): " PIstates;
+    "transitionM (rows denote time t values, cols time t+1 values): " transitionM;
+    "TSvals: (length: " rows(TSvals) "): " TSvals;
+    "TSprobabilities : " TSprobabilities;
+    "wageHike " wageHike;
+    "Hikestart " hikeStart;
+    "R, fixedDurableCost, delta, downpaymentR: " R~fixedDurableCost~delta~downpaymentR;
+    "PIgrowthR, beta, rho, theta " PIgrowthR~beta~rho~theta;
+    //"Cfloor, Cinc, Iinc, Aincr, Sincr, Cguess, Iguess: " Cfloor~Cinc~Iinc~Aincr~Sincr~Cguess~Iguess;
+    "C: low, high" CadjustmentLow CadjustmentHigh;
+    "I: low, high" IadjustmentLow IadjustmentHigh;
+    
+    "dimensions: numTstates, numCdecs, numIdecs, numAstates, numSstates, numPIstates, numTSvals";//Iguess, cguess were here.
+    numTstates~numCdecs~numIdecs~numAstates~numSstates~numPIstates~numTSvals; //Iguess, cguess were here.
+    if (AfloorFnVersion == 0); "AfloorFnVersion: Standard."; else; "AfloorFnVersion: no liquidity constraints"; endif;
+    
+    format /len 6,2; //e-notation for the order of ops
+    numTimeBoundaryCases = 1;
+    //numops_Izero = (numTstates-numTimeBoundaryCases)*numAstates*numSstates*numPIstates*numPIstates*numTSvals*1*numCdecs;  //Izero with NO guessing for izero
+    numops_Izero = (numTstates-numTimeBoundaryCases)*numAstates*numSstates*numPIstates*numPIstates*numTSvals*1*(CadjustmentHigh+CadjustmentLow+1); //Izero WITH guessing for Izero
+    numops_main = (numTstates-numTimeBoundaryCases)*(numAstates*numSstates*numPIstates*numPIstates*numTSvals*(IadjustmentHigh+IadjustmentLow+1)*(CadjustmentHigh+CadjustmentLow+1));
+    numops_timeBoundary = numTimeBoundaryCases*numAstates*numSstates*numPIstates*numPIstates*numTSvals*numIdecs*numCdecs;
+    numops_total = numops_main+numops_Izero+numops_timeBoundary;
+    "Num total operations [doesnt account for edge of guessing]: " numops_total;
+    "Num operations for main cases: " numops_main;
+    "num operations for I==0 case: " numops_Izero;
+    "num operations for boundary time cases: " numops_timeBoundary;
+    "Memory required: " numTstates*numAstates*numSstates*numPIstates*3; // 3 bc VM, CM, IM. // *8bytes per entry for GAUSS
+    format /ldn 10,5; //set back to old format
+    retp;
+endp;
+
+
+/*getFDC: (get Fixed Durable Cost)
+--note, i started off using "FDC" as an abbreviation for fixed durable cost.
+Since it's not a flat rate any more, i donno if  "fixed" is still appropriate. 
+Maybe it is, since the amount paid has nothing to do with how much you buy.
+--the function Takes a state and the DC multiplier, and returns the FDC,
+ie what must be paid on top of the cost of the durable goods, if a sim decides to have I>0.
+*/
+proc(1) = getFDC(Sval, FDC_multiplier);
+    retp(FDC_multiplier*Sval);
+endp;
+
+
+
+ /* getIncome should take the state variables as args and return a scalar */
+/* getIncome uses global R and global PIgrowthR and PIstates vector and wageHike*/
+/*right now, permIncome should be a non\negative integer, an index for PIstates */
+//incomeLevelAtHike is what income will be at the time of the wagehike, given that the PI adjustment is 0.
+/*note variable "time" is already taken*/
+/*
+    New intercept adjustment: ignoring randomness (pistates) and adjustment (wagehike), 
+i.e. letting lnY = b + PIgrowthR*T          let b = fixedValue -PIgrowthR*timeBeforeStart
+==> lnY(timeBeforeStart) = b + PIgrowthR*timeBeforeStart= fixedValue 
+i.e. after timeBeforeStart periods, lnY is fixedvalue.  
+*/
+// at theTime==PIgrowthChangeTime, PIgrowth stops.  i.e. it is same as what it was previous period.
+proc(1) = getIncome(theTime, permIncomeIdx, PIstates, PIgrowthR, wageHike, hikeStart, incomeLevelAtHike, PIgrowthChangeTime, initialPI);
+    local income, logIncome, interest, adjustment, hikeLength, hikeIndex, 
+            b, timeBeforeStart, fixedValue;
+
+    //inits//
+    timeBeforeStart = hikeStart; //1; // recall theTime state goes from 1 to periods (or periods-1)
+    fixedValue = ln(incomeLevelAtHike);  
+//    b = fixedValue - PIgrowthR*timeBeforeStart;
+    b = initialPI;
+    hikeLength = rows(wageHike)*cols(wageHike);
+    hikeIndex = theTime - hikeStart; 
+    //endinits//
+
+    if (hikeLength < 199);
+      //interest = (R-1).*assets; // note assets can be negative
+
+      if ((0<=hikeIndex) and (hikeIndex < hikeLength)); //line up with C [also this is the more natural way to have hikeStart defined]
+          adjustment = wageHike[hikeIndex+1]; //+1 for gauss' start at 1 indexing
+      else;
+          adjustment = 0;
+      endif;
+
+      /* end min wage hike calculation */
+
+      if (theTime < PIgrowthChangeTime);
+          logIncome = b + PIstates[permIncomeIdx] + PIgrowthR*theTime + adjustment;
+      else;
+          logIncome = b + PIstates[permIncomeIdx] + PIgrowthR*(PIgrowthChangeTime-1) + adjustment;
+      endif;
+    else;
+      logincome = wageHike[theTime] + PIstates[permIncomeIdx];
+    endif;
+    //income = interest + exp(logIncome); /* uses global var R,  */
+    income = exp(logIncome); 
+    retp(income);
+endp;
+
+
+//print "getincome "  getIncome(5, 1, 0, .001, 0, 30, 3.6, 81 );
+//print "getincome "  getIncome(5, 1|2|3, -.3|0|.3, .001, 0, 30, 3.6, 81 );
+
+
+
+//fn: income2PI converts raw income data from the SCF to perm income indices as used in the simulation
+//note that incomeData should ALREADY be converted to the same units that getIncome returns.
+// ie if Y==1 means $1000, set simScaleFactor to 1000
+/* The current method is to use getIncome_hikeStart to calculate the simulation level incomes at the time
+of the hike (which is when the data come from) and see where these incomes fall. 
+This is built to work with tauchen's method.  ie it takes two parameters, ltail and utail, which specify
+how far in the distribution the upper and lower tails fall [and all other points are equispaced in tauch]
+so that it can tell how to distribute the data to PI states.
+
+PSD-- I'm hard coding this to look at time period zero and compare that to the SCF data instead of scaling time zero up
+to the hikeStart.  This was at Eric's request.  IE getIncome(0,......)
+
+*/
+//proc(1) = income2PI(incomeData, hikeStart, PIstates, PIgrowthR, incomeLevelAtHike, PIgrowthRChangeTime, ltail, utail);
+proc(1) = income2PI(incomeData, hikeStart, PIstates, PIgrowthR, incomeLevelAtHike, PIgrowthRChangeTime, initialPI);
+    local PIindices, PIlevelsAtHike, PIcutpoints, numPIstates, numIncomePoints, somePIindices, index, piRangeTest;
+
+    //initializatoins
+    numPIstates = rows(PIstates)*cols(PIstates);
+    numIncomePoints = rows(incomeData)*cols(incomeData);
+    PIindices = -1*ones(numIncomePoints,1);
+    //end inits
+
+    if (numPIstates>1);
+        PIlevelsAtHike = getIncome(0, seqa(1,1,numPIstates), PIstates, PIgrowthR, 0, hikeStart, incomeLevelAtHike, PIgrowthRChangeTime, initialPI);  
+//        PIlevelsAtHike = getIncome(hikeStart, seqa(1,1,numPIstates), PIstates, PIgrowthR, 0, hikeStart, incomeLevelAtHike, PIgrowthRChangeTime, initialPI);  
+        PIcutpoints = PIlevelsAtHike[2:rows(PIlevelsAtHike)]|0;
+        PIcutpoints = (PIcutpoints+PIlevelsAtHike)/2; //PIlevelsAtHike+(PIcutpoints-PIlevelsAtHike)/2;
+        PIcutpoints = PIcutpoints[1:(numPIstates-1)]; //Now PIcutpoints is  the halfway points between each PIlevels.  
+        somePIindices = seqa(1,1, numPIstates-1); // all indices but the last
+    else;
+        PIcutpoints = -1/0; //dont set somePIindices;
+        //PIcutpoints = 1/0; somePIindices = 1;
+    endif;
+
+    
+    for n (1, numIncomePoints, 1);
+        PIrangeTest = (incomeData[n].<=PIcutpoints);
+        if (not (PIrangeTest == 0));
+            index = selif(somePIindices, PIrangeTest);
+            index = index[1];
+        else; //income > all cutpoints so it goes to last index
+            index = numPIstates;
+        endif;
+        PIindices[n]=index;
+    endfor;
+
+    retp(PIindices);
+endp;
+
+
+
+
+
+
+//should work with matrices? 
+proc(1) = getAfloor(stockState, downpaymentR, theTime, periods, fnVersion);
+    local indicator; //only used for 'no liquidity limits version'
+
+    if (fnVersion == 0);     //standard version
+
+        retp((downpaymentR-1).*stockState);
+
+    elseif (fnVersion == 1);  // No liquidity limits version
+
+        //stock time periods are all states.
+        indicator = missrv(miss( (theTime .< (periods)), 1), -1/0);
+        retp( indicator );
+
+    endif;
+
+
+endp;
+
+
+/*this is unnecessary now that i've found arrayalloc.  */
+/*If M is IxJxK matrix and i<=I, j<=J, k<=K, this returns an index.
+Note that once you use this function, it has defined an indexing system
+so you can't do it by hand (unless you write by hand the same system*/
+/* IxJxKmatrix[i,j,k] <==> i + j*numAstates + k*(numAstates*numSstates);  1<=i<=numAstates, 1<=j<=numSstates, 1<=k<=periods */
+/*
+proc(1) = getIndex(i,j,k, I,J,K);
+    retp(i + (j-1)*I + (k-1)*(I*J));
+endp;
+*/
+
+
+/*requires: This version of  requires baseArray INCR and newArray DECR */
+/* matchArray: Nx1 baseArray, Mx1 newArray.  Returns: 
+1) Mx1 vector, indicesHigh. 1<=indicesHigh<=N. 
+2) Mx1 vector, indicesLow. 1<=indicesLow<=N.
+3) Mx1 vector, weightsHigh. 0<=weights<=1.
+It will be true that baseArray[indicesLow[m]]<=newArray[m]<=baseArray[indicesHigh[m]]
+for baseArray[1]<newArray[m]<baseArray[N].  Any values of newArray outside the range
+of baseArray will have both indices values set to the max/min.
+The third vector, weights, will have weights for linear interpolation such that
+ (1- weightsHigh[m]) * baseArray[indicesLow[m]] + (weightsHigh[m]) * baseArray[indicesHigh[m]] == newArray[m]
+as long as, again, newArray falls within the range of baseArray. Otherwise it will be "set" to the max/min 
+of baseArray.
+Big-O order of matchArray=M+N.
+Requires both baseArray and newArray to be sorted (see above).
+indicesHigh[m] might equal indicesLow[m]. (so careful of dividing by indicesHigh-IndicesLow. Rather,
+use weightsHigh).  if there are multiple indices in baseArray with the same value, behavior
+is not well-defined.
+*/
+proc(3) = matchArray(baseArray, newArray);
+    /*Base case: all elts less than baseArray[1] */
+    local N, M, i, j, indicesHigh, indicesLow, weightsHigh;
+    N=rows(baseArray); M=rows(newArray);
+    indicesHigh = zeros(M,1);
+    indicesLow =  zeros(M,1);
+    weightsHigh = zeros(M,1);
+
+    i=M;// i>=1
+    do while (newArray[i] <= baseArray[1]);
+        indicesLow[i]=1;
+        indicesHigh[i]=1;
+        weightsHigh[i]=0;
+        i=i-1;
+        if i<1; break; endif; //no short-circuit eval
+    endo;
+    
+    /*walk through newArray comparing to base, using fact that both arrays are monotonically ordered (asc, desc here)*/
+    /*newArray[i] >= baseArray[j-1] always */
+    let j=2;// j<=N
+    do while (i>=1 and j<=N); //j<=N test here is necessary in case N==1.
+        do while (newArray[i]>=baseArray[j]); // ">" moves through newArray quickest ; ">=" moves through baseArray quickest
+            j=j+1;
+            if (j>N); break; endif;
+        endo;
+        if (j>N); break; endif;  //"want" to iterate once more; can't; so go to final case loop.
+        indicesLow[i] = j-1;
+        indicesHigh[i] = j;
+//        if (baseArray[j] == baseArray[j-1]); //This test is only useful if baseArray[1]==baseArray[2]. i believe that using ">=" above makes this test useless
+//print "should never land here";
+//            weightsHigh[i] = 0; 
+//        else;
+        weightsHigh[i] = (newArray[i] - baseArray[j-1]) / (baseArray[j] - baseArray[j-1]);
+//        endif;
+    i=i-1;
+    endo;
+
+    /* final cases */
+    do while (i>=1);
+        indicesLow[i]=N;
+        indicesHigh[i]=N;
+        weightsHigh[i]=1;
+        i=i-1;
+    endo;
+
+    retp(indicesLow, indicesHigh, weightsHigh);
+endp;
+
+
+/*  Locates nearest point in an array
+   (mostly) From Numerical Recipes in C, p. 117
+Weight returned is for the higher index.
+*/
+proc(3) = binaryLocate( Xarray,  x);
+   local j_L, j_U, j_M, ascend, dif, j_Star, DIM, wghtHigh;
+   DIM = rows(Xarray);
+   ascend = 1;
+   if (Xarray[DIM]<Xarray[1]); ascend = 0; endif;
+
+   j_L = 1;
+   j_U = DIM;
+   dif = j_U-j_L;
+
+   if (ascend==1);
+      do while (dif>1);
+         j_M = floor((j_U+j_L)/2);
+         if (x>Xarray[j_M]);
+            j_L = j_M;
+         else;
+            j_U = j_M;
+         endif;
+         dif = j_U-j_L;
+      endo;
+     
+      //j_Star = j_L;
+
+   else;
+      do while (dif>1);
+         j_M = floor((j_U+j_L)/2);
+         if (x<Xarray[j_M]) ;
+            j_L = j_M;
+         else; 
+            j_U = j_M;
+         endif;
+         dif = j_U-j_L;
+      endo;
+      
+      //j_Star = j_L;
+   endif;
+    
+    if (Xarray[j_U] == Xarray[j_L]) or (Xarray[j_U] < x); //Can't guarantee Xarray[j_U] != Xarray[j_L] even if j_U>j_L always
+        wghtHigh=1;
+    elseif Xarray[j_L] > x;
+        wghtHigh = 0;
+    else;
+        wghtHigh = (x - Xarray[j_L]) ./ (Xarray[j_U] - Xarray[j_L]);
+    endif;
+   retp(j_L, j_U, wghtHigh);
+endp;
+
+/*linear interp procedure for __2__ dimensional matrix. (e.g. not an array)  */
+proc(1) = linearInterpolation(xMatrix, lowIndex1,highIndex1,lowIndex2,highIndex2, weightHigh1, weightHigh2);
+    local avg;
+    		avg = ((1-weightHigh1)*(1-weightHigh2)).*xMatrix[lowIndex1, lowIndex2] +  
+                  ((1-weightHigh1)*(weightHigh2)).*xMatrix[lowIndex1, highIndex2]  +
+                  ((weightHigh1)*(1-weightHigh2)).*xMatrix[highIndex1, lowIndex2]  +  
+                  ((weightHigh1)*(weightHigh2)).*xMatrix[highIndex1, highIndex2];
+retp(avg);
+endp;
+
+
+
+proc(1) = getResults_C(path, filename, numAstates, numSstates, numPIstates, periods);
+    local tmpArray, order, x, fullPath;
+    fullPath = path $+ filename;
+    load x[] = ^fullPath;
+    order = numAstates|numSstates|numPIstates|(periods-1);
+    tmpArray = areshape(x,order);
+retp(tmpArray);
+endp;
+
+proc(1) = getDP_C(path, filename, numAstates, numSstates, numPIstates, periods);
+    local tmpArray, order, x, fullPath;
+    fullPath = path $+ filename;
+    load x[] = ^fullPath;
+    order = numAstates|numSstates|numPIstates|(periods);
+    tmpArray = areshape(x,order);
+retp(tmpArray);
+endp;
+
+
+
+
+
+@-----------------------------------------------------------------------------@
+@-----------------------------------------------------------------------------@
+/* tmp function for approximating normal distribution.  Produces
+a uniform distribution as result.  Better than tauch in that, with
+small numbers of states space, approximates distribution better.
+*/
+
+proc(2) = normal_approx(stddev, numStates, utail, ltail);
+    local theStates, theProbabilities, prev, oldprev; //distMin, distMax, i,
+
+    theProbabilities = seqa(1/numStates, 1/numStates, numStates); //start inc n
+    theProbabilities[numStates] = 1-utail;
+    prev = cdfni(ltail);
+    theStates = cdfni(theProbabilities);
+
+    for i (1, numStates, 1);
+        oldprev = prev;
+        prev = theStates[i];
+        theStates[i] = oldprev + (theStates[i]-oldprev)/2;
+    endfor;
+
+    theStates = theStates * stddev;
+    theProbabilities = ones(numStates,1)*(1/numStates);
+    retp(theProbabilities, theStates);
+endp;
+
+/*
+   Tauch:    Converts an AR(1) process into a Markov chain
+             Follows Tauchen (Ec. Letters, 1986)
+   Inputs:
+       stdi:       Scalar, std. dev. of innovation (std. dev. of
+epsilon in tauchen)
+       rho:        Scalar, AR(1) correlation coefficient
+       M:          Scalar indicating number of elements in the chain
+       Tail:       Scalar indicating percentages left in each tail
+   Output:
+       pmtx:       MxM transition matrix
+                   rows denote time t values, cols time t+1 values
+       values:     Mx1 vector of values
+*/
+
+proc(3) = tauch(stdi,rho,m,utail,ltail);
+
+   local v_min, v_max, stdy, pmtx, values, yold, ynew, i, j, w, fe,
+intvals;
+
+   stdy    = sqrt(stdi^2/(1-rho^2));
+
+   v_min   = cdfni(ltail)*stdy;
+   v_max   = cdfni(1-utail)*stdy;
+
+//" v_min and v_max = " ;
+//v_min; v_max;
+
+   pmtx    = zeros(M,M);
+   values  = zeros(M,1);
+   values  = seqa(v_min,(v_max-v_min)/(m-1),m);
+   intvals = seqa((values[2,1]+values[1,1])/2,(v_max-v_min)/(m-1),m-1);
+
+   i=1; do until i>m;
+       yold = values[i,1];
+       ynew = values[1,1];
+       w = (values[2,1] - values[1,1])/2; //" zz w/2 = " w; /* this is w/2 from the paper */
+       fe = (ynew - rho*yold);
+       pmtx[i,1] = cdfn((fe+w)/stdi); /* this is equation 3b */
+
+       j=2; do until j>m-1;
+           ynew = values[j,1];
+           w = (ynew-values[j-1,1])/2; 
+            //" w/2 = " w;
+           fe = ynew - rho*yold;
+           pmtx[i,j] = cdfn((fe+w)/stdi) - cdfn((fe-w)/stdi); /* this
+is equation 3a */
+       j=j+1;  endo;
+
+       ynew =values[m,1];
+       w = (values[m,1] - values[m-1,1])/2;
+       fe = (ynew - rho*yold);
+       pmtx[i,m] = 1 - cdfn((fe-w)/stdi); /* this is equation 3b */
+   i=i+1; endo;
+
+
+
+    retp(pmtx,values,intvals);
+endp;
+
+

@@ -1,0 +1,63 @@
+Contains data from transactions1.dta
+  obs:       977,877                          
+ vars:            46                          30 May 2010 08:05
+ size:   151,570,935 (81.9% of memory free)
+--------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+--------------------------------------------------------------------------------------------------------------------
+squishvin       str10  %10s                   
+age             int    %9.2f                  Age of buyer
+daystoturn      int    %9.2f                  Inventory days
+manurebate      float  %8.0g                  Manufacturer rebate
+msrp            double %9.2f                  Suggested retail price
+day             byte   %10.0g                 Transaction day
+month           byte   %8.0g                  Transaction month
+year            int    %10.0g      year       Transaction year
+date            int    %8.0g                  Transaction date
+type            byte   %15.0g      type       Transaction type
+state           byte   %21.0g      state      Transaction state
+make            str12  %12s                   Manufacturer nameplate
+trimlevel       str17  %17s                   Trim
+displacement    double %10.0g      displacement
+                                              Engine displacement (liters)
+modelyear       int    %8.0g                  Model year
+fueltype        byte   %8.0g       fueltype   Fuel type
+cylinders       byte   %8.0g       cylinders
+                                              Number of cylinders
+bodytype        byte   %20.0g      bodytype   Body type
+doors           byte   %13.0g      doors      Number of doors
+drivetype       byte   %8.0g       drivetype
+                                              Drive type
+transmissiont~e byte   %9.0g       transmissiontype
+                                              Transmission type
+aspiration      byte   %12.0g      aspiration
+                                              Aspiration type
+ffv             byte   %13.2f      ffv        Flexible-fuel vehicle
+group           int    %9.0g                * Vehicle type identifier
+count           byte   %10.0g      count      Number of unique VINs for vehicle type
+e85             int    %9.0g                  Number of ethanol stations in state
+sta             int    %12.0g                 Number of fueling stations in state
+pg              float  %9.0g                  Price of gasoline in state
+price           float  %9.2f                  Transaction price
+e85pen          float  %9.2f                  Ethanol availability (percent)
+loandealer      byte   %9.2f                  Dealer loan
+tradein         byte   %9.2f                  Trade-in vehicle
+tradebal        float  %9.2f                  Trade-in balance
+female          byte   %9.2f                  Female buyer
+irate           float  %9.2f                  Interest rate (percent APR)
+downpay         float  %9.2f                  Down payment
+monthly         float  %9.2f                  Monthly payment
+lterm           byte   %9.2f                  Loan term (months)
+model_name      str19  %19s                   Model name
+model_num       byte   %19.0g      model_num
+                                              Unique model number
+group_all       float  %9.0g                  Vehicle type-state-month identifier
+group_nostate   int    %9.0g                  Vehicle type-month identifier
+group_notimes   int    %9.0g                  Vehicle type-state identifier
+ffvvar          byte   %9.0g                  Variation in FFV capacity within group
+ffvvar2         byte   %9.0g                  Variation in FFV capacity within group_all
+sample          byte   %9.0g                  Estimation sample
+                                            * indicated variables have notes
+--------------------------------------------------------------------------------------------------------------------
+Sorted by:  

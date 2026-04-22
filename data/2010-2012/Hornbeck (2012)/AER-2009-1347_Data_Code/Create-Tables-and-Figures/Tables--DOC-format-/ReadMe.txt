@@ -1,0 +1,1 @@
+These Word document files contain the estimated coefficients, though note that the alignment and line breaks are slightly different than in the full PDF.  The full PDF better reflects the desired design.

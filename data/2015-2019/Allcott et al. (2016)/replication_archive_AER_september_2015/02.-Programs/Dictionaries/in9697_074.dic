@@ -1,0 +1,27 @@
+dictionary using 96-97/P9697074.C {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+
+_column(16)	linkcode	%3.0f	"Link Code"
+
+_column(19)	work_men_avg	%7.0f	"Men"
+_column(26)	work_women_avg	%7.0f	"Women"
+_column(33)	work_child_avg	%7.0f	"Children"
+_column(40)	work_cont_avg	%7.0f	"Workers employed through Contractors"
+_column(47)	supervis_avg		%7.0f	"Supervisory and Managerial Staff"
+_column(54)	other_avg	%7.0f	"Other Employees"
+_column(61)	workingprops	%7.0f	"Working Proprietors"
+_column(68)	unpaidfamilyemp	%7.0f	"Unpaid family workers"
+_column(75)	coopemp		%7.0f	"If co-operative, etc"
+_column(82) 	totpersons	%7.0f	"Total"
+
+
+
+
+
+
+};

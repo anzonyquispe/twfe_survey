@@ -1,0 +1,18 @@
+dictionary using 98-99/block98a.txt {
+
+_column(4)	dsl		%5.0f	"DSL"
+_column(9)	nic98		%5.0f	"Industry - NIC-87 Industry Code"
+_column(14)	stcode		%2.0f	"State Code (ST)"
+_column(16)	permid		%5.0f	"Permanent Serial No.
+_column(21)	schcode   	%1.0f  	"Scheme Code"
+
+_column(22)	nic98_4		%4.0f	"Ind. Code as per Frame (4-digit level of NIC-98)"
+
+_column(28)	ROSROCode	%5.0f	"R.O/S.R.O.CODE"
+_column(34)	numfact  	%3.0f  "No. of Units"
+_column(37)	opclcode	%1.0f  "Open-Close Code"
+
+_column(38)   	mult      	%9.0f  	"MULTIPLIER "
+
+};
+

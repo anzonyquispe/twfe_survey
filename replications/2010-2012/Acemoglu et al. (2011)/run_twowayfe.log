@@ -1,0 +1,1128 @@
+-----------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Acemoglu et al. (2011)/run_twowayfe.log
+  log type:  text
+ opened on:  20 Apr 2026, 10:23:34
+
+. 
+. * Install packages if needed
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. cap which gtools
+
+. if _rc ssc install gtools, replace
+
+. 
+. * Helper program: significance stars
+. cap program drop _stars
+
+. program define _stars, rclass
+  1.     args b se
+  2.     local s ""
+  3.     if `se' > 0 & `se' < . {
+  4.         local t = abs(`b'/`se')
+  5.         if `t' > 2.576      local s "***"
+  6.         else if `t' > 1.960 local s "**"
+  7.         else if `t' > 1.645 local s "*"
+  8.     }
+  9.     return local s "`s'"
+ 10. end
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1: DATA PREPARATION
+>   Load panel of 19 pre-unitary German polities, 1700-1900
+>   Treatment: fpresence = years of French military/administrative presence
+> ==============================================================================*/
+. 
+. use "$datadir/20100816_replication_dataset.dta", clear
+(Replication dataset for "Consequences of Radical Reform")
+
+. 
+. * Keep only the 6 time periods used in Tables 3-4
+. keep if year==1700 | year==1750 | year==1800 | year==1850 | year==1875 | year==1900
+(95 observations deleted)
+
+. 
+. * Drop unused year dummies
+. cap drop yr1880 yr1885 yr1895 yr1905 yr1910
+
+. 
+. * Create napoleon indicator (treated vs control)
+. gen napoleon = (fpresence > 0)
+
+. 
+. di _n "=== DATA SUMMARY ==="
+
+=== DATA SUMMARY ===
+
+. di "Total observations: " _N
+Total observations: 114
+
+. di ""
+
+
+. di "--- Panel structure ---"
+--- Panel structure ---
+
+. tab year
+
+       Year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1700 |         19       16.67       16.67
+       1750 |         19       16.67       33.33
+       1800 |         19       16.67       50.00
+       1850 |         19       16.67       66.67
+       1875 |         19       16.67       83.33
+       1900 |         19       16.67      100.00
+------------+-----------------------------------
+      Total |        114      100.00
+
+. di ""
+
+
+. di "--- Treatment variable: years of French presence ---"
+--- Treatment variable: years of French presence ---
+
+. summ fpresence
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+   fpresence |        114    3.736842    5.855264          0         19
+
+. tab fpresence if year==1800
+
+   Years of |
+     French |
+   Presence |
+  (see also |
+     Online |
+   Appendix |
+        D1) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |         11       57.89       57.89
+          3 |          1        5.26       63.16
+          6 |          5       26.32       89.47
+         19 |          2       10.53      100.00
+------------+-----------------------------------
+      Total |         19      100.00
+
+. di ""
+
+
+. di "--- West of Elbe sample ---"
+--- West of Elbe sample ---
+
+. count if westelbe==1
+  78
+
+. di "  West of Elbe obs: " r(N)
+  West of Elbe obs: 78
+
+. qui tab id if westelbe==1 & year==1700
+
+. di "  West of Elbe polities: " r(r)
+  West of Elbe polities: 13
+
+. di ""
+
+
+. di "--- Treated vs Control (West of Elbe, at 1800) ---"
+--- Treated vs Control (West of Elbe, at 1800) ---
+
+. tab napoleon if westelbe==1 & year==1800
+
+   napoleon |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |          5       38.46       38.46
+          1 |          8       61.54      100.00
+------------+-----------------------------------
+      Total |         13      100.00
+
+. di ""
+
+
+. di "--- Outcome: urbanization rate ---"
+--- Outcome: urbanization rate ---
+
+. summ urbrate
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     urbrate |        109     17.7432    14.50719          0   74.91717
+
+. di ""
+
+
+. di "--- Weights: 1750 total population ---"
+--- Weights: 1750 total population ---
+
+. summ totalpop1750
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+totalpop1750 |        114    639167.8    381877.5     149869    1438817
+
+. 
+. sort id year
+
+. 
+. 
+. /*==============================================================================
+>   STEP 2: TABLE 3 — URBANIZATION IN GERMANY
+>   Dep var: urbanization rate (urbrate)
+>   FE regression with polity and year fixed effects
+> 
+>   Paper verification targets:
+>     Col 1 (West, weighted):   fpresence×1900 = 0.634 [0.408], N=74, 13 states
+>     Col 2 (West, unweight):   fpresence×1900 = 0.529 [0.401], N=74, 13 states
+>     Col 3 (All, weighted):    fpresence×1900 = 0.503 [0.376], N=109, 19 states
+>     Col 4 (All, unweight):    fpresence×1900 = 0.506 [0.423], N=109, 19 states
+>     p-value joint post-1800:  0.0532 / 0.463 / 0.0205 / 0.214
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 3: URBANIZATION IN GERMANY"
+TABLE 3: URBANIZATION IN GERMANY
+
+. di    "=============================================="
+==============================================
+
+. 
+. * Year labels for iteration
+. local yrlist "1750 1800 1850 1875 1900"
+
+. 
+. * Initialize storage
+. forvalues k = 1/4 {
+  2.     forvalues j = 1/5 {
+  3.         local b`j'_`k'  = .
+  4.         local se`j'_`k' = .
+  5.     }
+  6.     local nn_`k'   = 0
+  7.     local ns_`k'   = 0
+  8.     local pval_`k' = .
+  9. }
+
+. 
+. * --- Column 1: West of Elbe, weighted ---
+. di _n "--- Column 1: West of Elbe, Weighted ---"
+
+--- Column 1: West of Elbe, Weighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900 yr* ///
+>     if westelbe==1 [aweight=totalpop1750], fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9188                                         min =          5
+     Between = 0.1275                                         avg =        5.7
+     Overall = 0.6743                                         max =          6
+
+                                                F(10,12)          =     935.92
+corr(u_i, Xb) = 0.0165                          Prob > F          =     0.0000
+
+                                     (Std. err. adjusted for 13 clusters in id)
+-------------------------------------------------------------------------------
+              |               Robust
+      urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+fpresence1750 |  -.4910237   .2487343    -1.97   0.072    -1.032969    .0509218
+fpresence1800 |  -.2474441   .2251383    -1.10   0.293    -.7379783      .24309
+fpresence1850 |  -.1602948   .2501326    -0.64   0.534    -.7052869    .3846972
+fpresence1875 |    .402126   .3256276     1.23   0.240    -.3073556    1.111608
+fpresence1900 |   .6338689   .4075106     1.56   0.146    -.2540205    1.521758
+       yr1700 |  -29.21852   4.246675    -6.88   0.000    -38.47123   -19.96581
+       yr1750 |  -25.94389   3.390967    -7.65   0.000    -33.33217   -18.55561
+       yr1800 |  -24.91925   3.599626    -6.92   0.000    -32.76216   -17.07634
+       yr1850 |  -21.84132   2.862168    -7.63   0.000    -28.07745   -15.60519
+       yr1875 |  -12.94605   1.372624    -9.43   0.000    -15.93674   -9.955362
+       yr1900 |          0  (omitted)
+        _cons |   36.31077    3.37137    10.77   0.000     28.96519    43.65636
+--------------+----------------------------------------------------------------
+      sigma_u |  6.7749955
+      sigma_e |  4.3452422
+          rho |   .7085422   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    3.41
+            Prob > F =    0.0532
+
+. local pval_1 = r(p)
+
+. local nn_1 = e(N)
+
+. local ns_1 = e(df_a) + 1
+
+. forvalues j = 1/5 {
+  2.     local yr : word `j' of `yrlist'
+  3.     local b`j'_1  = _b[fpresence`yr']
+  4.     local se`j'_1 = _se[fpresence`yr']
+  5. }
+
+. di "  fpresence1900 = " %7.3f `b5_1' " [" %5.3f `se5_1' "]"
+  fpresence1900 =   0.634 [0.408]
+
+. di "  N = " `nn_1' ", States = " `ns_1' ", p-val post-1800 = " %6.4f `pval_1'
+  N = 74, States = 13, p-val post-1800 = 0.0532
+
+. 
+. * --- Column 2: West of Elbe, unweighted ---
+. di _n "--- Column 2: West of Elbe, Unweighted ---"
+
+--- Column 2: West of Elbe, Unweighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900 yr* ///
+>     if westelbe==1, fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.8442                                         min =          5
+     Between = 0.1749                                         avg =        5.7
+     Overall = 0.6879                                         max =          6
+
+                                                F(10,12)          =     193.21
+corr(u_i, Xb) = 0.0235                          Prob > F          =     0.0000
+
+                                     (Std. err. adjusted for 13 clusters in id)
+-------------------------------------------------------------------------------
+              |               Robust
+      urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+fpresence1750 |  -.2517311   .1723752    -1.46   0.170    -.6273044    .1238422
+fpresence1800 |  -.0425451   .1534457    -0.28   0.786    -.3768745    .2917843
+fpresence1850 |   .0331917   .1534879     0.22   0.832    -.3012297     .367613
+fpresence1875 |   .3540444   .2949798     1.20   0.253    -.2886614    .9967502
+fpresence1900 |   .5288898   .4014873     1.32   0.212     -.345876    1.403656
+       yr1700 |  -30.71882   4.729697    -6.49   0.000    -41.02395    -20.4137
+       yr1750 |   -27.2305   4.391724    -6.20   0.000    -36.79925   -17.66176
+       yr1800 |  -25.84024   3.609844    -7.16   0.000    -33.70541   -17.97506
+       yr1850 |  -23.10901   3.701157    -6.24   0.000    -31.17314   -15.04489
+       yr1875 |  -13.72183   1.894331    -7.24   0.000    -17.84923    -9.59444
+       yr1900 |          0  (omitted)
+        _cons |   36.23391   3.098298    11.69   0.000      29.4833    42.98452
+--------------+----------------------------------------------------------------
+      sigma_u |  6.6007385
+      sigma_e |  6.1047228
+          rho |  .53898016   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    0.91
+            Prob > F =    0.4632
+
+. local pval_2 = r(p)
+
+. local nn_2 = e(N)
+
+. local ns_2 = e(df_a) + 1
+
+. forvalues j = 1/5 {
+  2.     local yr : word `j' of `yrlist'
+  3.     local b`j'_2  = _b[fpresence`yr']
+  4.     local se`j'_2 = _se[fpresence`yr']
+  5. }
+
+. di "  fpresence1900 = " %7.3f `b5_2' " [" %5.3f `se5_2' "]"
+  fpresence1900 =   0.529 [0.401]
+
+. di "  N = " `nn_2' ", States = " `ns_2' ", p-val post-1800 = " %6.4f `pval_2'
+  N = 74, States = 13, p-val post-1800 = 0.4632
+
+. 
+. * --- Column 3: All polities, weighted ---
+. di _n "--- Column 3: All polities, Weighted ---"
+
+--- Column 3: All polities, Weighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900 yr* ///
+>     [aweight=totalpop1750], fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =        109
+Group variable: id                              Number of groups  =         19
+
+R-squared:                                      Obs per group:
+     Within  = 0.8948                                         min =          5
+     Between = 0.0170                                         avg =        5.7
+     Overall = 0.6401                                         max =          6
+
+                                                F(10,18)          =     222.22
+corr(u_i, Xb) = 0.0007                          Prob > F          =     0.0000
+
+                                     (Std. err. adjusted for 19 clusters in id)
+-------------------------------------------------------------------------------
+              |               Robust
+      urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+fpresence1750 |  -.4877689   .2346843    -2.08   0.052    -.9808224    .0052846
+fpresence1800 |  -.2683187   .2271092    -1.18   0.253    -.7454574      .20882
+fpresence1850 |  -.2205774   .2492595    -0.88   0.388    -.7442522    .3030974
+fpresence1875 |     .26588   .3031231     0.88   0.392     -.370958    .9027179
+fpresence1900 |   .5033205   .3757051     1.34   0.197    -.2860066    1.292648
+       yr1700 |  -30.76349   3.623264    -8.49   0.000    -38.37568   -23.15129
+       yr1750 |   -27.9112   3.143763    -8.88   0.000      -34.516    -21.3064
+       yr1800 |  -26.53178   3.043012    -8.72   0.000    -32.92491   -20.13865
+       yr1850 |  -22.87444    2.21262   -10.34   0.000    -27.52298   -18.22589
+       yr1875 |  -12.86228   1.168029   -11.01   0.000    -15.31622   -10.40834
+       yr1900 |          0  (omitted)
+        _cons |   38.30368    2.66125    14.39   0.000      32.7126    43.89476
+--------------+----------------------------------------------------------------
+      sigma_u |  7.2220801
+      sigma_e |   4.798038
+          rho |  .69378441   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    18) =    4.19
+            Prob > F =    0.0205
+
+. local pval_3 = r(p)
+
+. local nn_3 = e(N)
+
+. local ns_3 = e(df_a) + 1
+
+. forvalues j = 1/5 {
+  2.     local yr : word `j' of `yrlist'
+  3.     local b`j'_3  = _b[fpresence`yr']
+  4.     local se`j'_3 = _se[fpresence`yr']
+  5. }
+
+. di "  fpresence1900 = " %7.3f `b5_3' " [" %5.3f `se5_3' "]"
+  fpresence1900 =   0.503 [0.376]
+
+. di "  N = " `nn_3' ", States = " `ns_3' ", p-val post-1800 = " %6.4f `pval_3'
+  N = 109, States = 19, p-val post-1800 = 0.0205
+
+. 
+. * --- Column 4: All polities, unweighted ---
+. di _n "--- Column 4: All polities, Unweighted ---"
+
+--- Column 4: All polities, Unweighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900 yr*, ///
+>     fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =        109
+Group variable: id                              Number of groups  =         19
+
+R-squared:                                      Obs per group:
+     Within  = 0.8424                                         min =          5
+     Between = 0.0585                                         avg =        5.7
+     Overall = 0.6501                                         max =          6
+
+                                                F(10,18)          =     468.64
+corr(u_i, Xb) = 0.0058                          Prob > F          =     0.0000
+
+                                     (Std. err. adjusted for 19 clusters in id)
+-------------------------------------------------------------------------------
+              |               Robust
+      urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+fpresence1750 |  -.1973438   .1636937    -1.21   0.244    -.5412515    .1465639
+fpresence1800 |  -.0470785   .1784083    -0.26   0.795    -.4219004    .3277433
+fpresence1850 |  -.0234889   .1812587    -0.13   0.898    -.4042994    .3573215
+fpresence1875 |   .2524087   .2991659     0.84   0.410    -.3761155    .8809329
+fpresence1900 |   .5059934   .4229584     1.20   0.247    -.3826092    1.394596
+       yr1700 |  -30.98946   3.534578    -8.77   0.000    -38.41533   -23.56359
+       yr1750 |  -28.22213     3.3135    -8.52   0.000    -35.18353   -21.26072
+       yr1800 |  -26.07585   2.905187    -8.98   0.000    -32.17943   -19.97228
+       yr1850 |  -22.67553    2.52654    -8.97   0.000    -27.98359   -17.36747
+       yr1875 |  -12.71153   1.376103    -9.24   0.000    -15.60261   -9.820446
+       yr1900 |          0  (omitted)
+        _cons |   37.03718   2.306508    16.06   0.000     32.19139    41.88297
+--------------+----------------------------------------------------------------
+      sigma_u |  7.0855315
+      sigma_e |  5.8278844
+          rho |  .59647567   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    18) =    1.65
+            Prob > F =    0.2140
+
+. local pval_4 = r(p)
+
+. local nn_4 = e(N)
+
+. local ns_4 = e(df_a) + 1
+
+. forvalues j = 1/5 {
+  2.     local yr : word `j' of `yrlist'
+  3.     local b`j'_4  = _b[fpresence`yr']
+  4.     local se`j'_4 = _se[fpresence`yr']
+  5. }
+
+. di "  fpresence1900 = " %7.3f `b5_4' " [" %5.3f `se5_4' "]"
+  fpresence1900 =   0.506 [0.423]
+
+. di "  N = " `nn_4' ", States = " `ns_4' ", p-val post-1800 = " %6.4f `pval_4'
+  N = 109, States = 19, p-val post-1800 = 0.2140
+
+. 
+. * --- Verification against paper ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "VERIFICATION vs Paper Table 3"
+VERIFICATION vs Paper Table 3
+
+. di    "=============================================="
+==============================================
+
+. di "                    Col1(Paper)  Col1(Ours)  Col3(Paper)  Col3(Ours)"
+                    Col1(Paper)  Col1(Ours)  Col3(Paper)  Col3(Ours)
+
+. di "fpresence x 1750    -0.491     " %8.3f `b1_1' "       -0.488     " %8.3f `b1_3'
+fpresence x 1750    -0.491       -0.491       -0.488       -0.488
+
+. di "fpresence x 1800    -0.247     " %8.3f `b2_1' "       -0.268     " %8.3f `b2_3'
+fpresence x 1800    -0.247       -0.247       -0.268       -0.268
+
+. di "fpresence x 1850    -0.160     " %8.3f `b3_1' "       -0.221     " %8.3f `b3_3'
+fpresence x 1850    -0.160       -0.160       -0.221       -0.221
+
+. di "fpresence x 1875     0.402     " %8.3f `b4_1' "        0.266     " %8.3f `b4_3'
+fpresence x 1875     0.402        0.402        0.266        0.266
+
+. di "fpresence x 1900     0.634     " %8.3f `b5_1' "        0.503     " %8.3f `b5_3'
+fpresence x 1900     0.634        0.634        0.503        0.503
+
+. di "p-val post-1800      0.0532    " %8.4f `pval_1' "       0.0205    " %8.4f `pval_3'
+p-val post-1800      0.0532      0.0532       0.0205      0.0205
+
+. di "N                    74         " %5.0f `nn_1' "          109       " %5.0f `nn_3'
+N                    74            74          109         109
+
+. di "States               13         " %5.0f `ns_1' "          19        " %5.0f `ns_3'
+States               13            13          19           19
+
+. 
+. 
+. /*==============================================================================
+>   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+> 
+>   Treatment: fpresence × year interactions (multiple treatments)
+>   Strategy: use fpresence1900 as main D, others as other_treatments()
+>   Also test simplified D_post = fpresence × I(year >= 1850)
+> 
+>   feTR decomposition: Y = urbrate, G = id, T = year
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TWOWAYFEWEIGHTS DECOMPOSITION"
+TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- Approach 1: Col 1 spec with other_treatments (West, weighted) ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A1: feTR — fpresence1900 with other_treatments"
+A1: feTR — fpresence1900 with other_treatments
+
+. di    "    Sample: West of Elbe, weighted by 1750 pop"
+    Sample: West of Elbe, weighted by 1750 pop
+
+. di    "=============================================="
+==============================================
+
+. di "  Syntax: twowayfeweights urbrate id year fpresence1900 if westelbe==1,"
+  Syntax: twowayfeweights urbrate id year fpresence1900 if westelbe==1,
+
+. di "          type(feTR) other_treatments(...) weight(totalpop1750)"
+          type(feTR) other_treatments(...) weight(totalpop1750)
+
+. di ""
+
+
+. cap noisily twowayfeweights urbrate id year fpresence1900 if westelbe==1, ///
+>     type(feTR) ///
+>     other_treatments(fpresence1750 fpresence1800 fpresence1850 fpresence1875) ///
+>     weight(totalpop1750) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.6339, estimates the sum of several terms.
+
+The first term is a weighted sum of 8 ATTs of the treatment.
+7 ATTs receive a positive weight, and 1 receive a negative weight.
+------------------------------------------------
+Treat. var: fpresen~1900# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        7           1.0115      
+Negative weights        1           -0.0115     
+------------------------------------------------
+Total                   8           1.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 1 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1750# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1730      
+Negative weights        3           -0.1730     
+------------------------------------------------
+Total                   8           0.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 2 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1800# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1730      
+Negative weights        3           -0.1730     
+------------------------------------------------
+Total                   8           0.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 3 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1850# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1730      
+Negative weights        3           -0.1730     
+------------------------------------------------
+Total                   8           0.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 4 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1875# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1730      
+Negative weights        3           -0.1730     
+------------------------------------------------
+Total                   8           0.0000      
+------------------------------------------------
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. * --- Approach 2: Simplified post-treatment variable ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A2: feTR — D_post = fpresence x I(year >= 1850)"
+A2: feTR — D_post = fpresence x I(year >= 1850)
+
+. di    "    Simpler specification for weight decomposition"
+    Simpler specification for weight decomposition
+
+. di    "=============================================="
+==============================================
+
+. gen D_post = fpresence * (year >= 1850)
+
+. label var D_post "French presence x post-1850"
+
+. 
+. di "  D_post summary (West of Elbe only):"
+  D_post summary (West of Elbe only):
+
+. tab D_post if westelbe==1
+
+     French |
+ presence x |
+  post-1850 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |         54       69.23       69.23
+          3 |          3        3.85       73.08
+          6 |         15       19.23       92.31
+         19 |          6        7.69      100.00
+------------+-----------------------------------
+      Total |         78      100.00
+
+. 
+. di ""
+
+
+. di "  First verify the FE regression with D_post:"
+  First verify the FE regression with D_post:
+
+. xtreg urbrate D_post yr* if westelbe==1 [aweight=totalpop1750], fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.8974                                         min =          5
+     Between = 0.1775                                         avg =        5.7
+     Overall = 0.6871                                         max =          6
+
+                                                F(6,12)           =      86.60
+corr(u_i, Xb) = 0.0021                          Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+      D_post |    .627186   .2334214     2.69   0.020     .1186044    1.135768
+      yr1700 |  -30.24282   3.608614    -8.38   0.000    -38.10531   -22.38032
+      yr1750 |  -28.62206    3.11326    -9.19   0.000    -35.40527   -21.83885
+      yr1800 |  -26.28671   3.041935    -8.64   0.000    -32.91452   -19.65891
+      yr1850 |  -26.11473   3.374052    -7.74   0.000    -33.46616    -18.7633
+      yr1875 |  -14.19307    1.22919   -11.55   0.000    -16.87124   -11.51489
+      yr1900 |          0  (omitted)
+       _cons |   36.46565   2.355486    15.48   0.000     31.33349    41.59781
+-------------+----------------------------------------------------------------
+     sigma_u |   6.421791
+     sigma_e |  4.7030534
+         rho |  .65089377   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. di "  beta(D_post) = " %7.4f _b[D_post] " (" %5.4f _se[D_post] "), N = " e(N)
+  beta(D_post) =  0.6272 (0.2334), N = 74
+
+. 
+. di ""
+
+
+. cap noisily twowayfeweights urbrate id year D_post if westelbe==1, ///
+>     type(feTR) weight(totalpop1750) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.6272, estimates a weighted sum of 24 ATTs. 
+21 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Treat. var: D_post      # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        21          1.0162      
+Negative weights        3           -0.0162     
+------------------------------------------------
+Total                   24          1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    0.6272
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.9219
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:    9.9187
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. * --- Approach 3: All polities, weighted (Col 3 spec) ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A3: feTR — fpresence1900, all polities (Col 3)"
+A3: feTR — fpresence1900, all polities (Col 3)
+
+. di    "=============================================="
+==============================================
+
+. cap noisily twowayfeweights urbrate id year fpresence1900, ///
+>     type(feTR) ///
+>     other_treatments(fpresence1750 fpresence1800 fpresence1850 fpresence1875) ///
+>     weight(totalpop1750) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.5033, estimates the sum of several terms.
+
+The first term is a weighted sum of 8 ATTs of the treatment.
+8 ATTs receive a positive weight, and 0 receive a negative weight.
+------------------------------------------------
+Treat. var: fpresen~1900# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        8           1.0000      
+Negative weights        0           0.0000      
+------------------------------------------------
+Total                   8           1.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 1 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1750# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1676      
+Negative weights        3           -0.1676     
+------------------------------------------------
+Total                   8           -0.0000     
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 2 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1800# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1676      
+Negative weights        3           -0.1676     
+------------------------------------------------
+Total                   8           -0.0000     
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 3 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1850# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1676      
+Negative weights        3           -0.1676     
+------------------------------------------------
+Total                   8           -0.0000     
+------------------------------------------------
+
+The next term is a weighted sum of 8 ATTs of treatment 4 included in the other_treatments option.
+5 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Other treat.: fpres~1875# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        5           0.1676      
+Negative weights        3           -0.1676     
+------------------------------------------------
+Total                   8           -0.0000     
+------------------------------------------------
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. * --- Approach 4: All polities, D_post ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A4: feTR — D_post, all polities"
+A4: feTR — D_post, all polities
+
+. di    "=============================================="
+==============================================
+
+. cap noisily twowayfeweights urbrate id year D_post, ///
+>     type(feTR) weight(totalpop1750) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.5277, estimates a weighted sum of 24 ATTs. 
+21 ATTs receive a positive weight, and 3 receive a negative weight.
+------------------------------------------------
+Treat. var: D_post      # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        21          1.0032      
+Negative weights        3           -0.0032     
+------------------------------------------------
+Total                   24          1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    0.5277
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.9079
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:   41.6497
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. 
+. /*==============================================================================
+>   STEP 4: LATEX TABLES
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "LaTeX TABLE EXPORT"
+LaTeX TABLE EXPORT
+
+. di    "=============================================="
+==============================================
+
+. 
+. * ===== TABLE 3 =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table3.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Table 3---Urbanization in Germany}" _n
+
+. file write texfile "\label{tab:table3}" _n
+
+. file write texfile "\begin{tabular}{lcccc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & \multicolumn{2}{c}{West of the Elbe} & \multicolumn{2}{c}{All} \\\\" _n
+
+. file write texfile "\cmidrule(lr){2-3}\cmidrule(lr){4-5}" _n
+
+. file write texfile " & Weighted & Unweighted & Weighted & Unweighted \\\\" _n
+
+. file write texfile " & (1) & (2) & (3) & (4) \\\\" _n
+
+. file write texfile "\midrule" _n
+
+. 
+. * Row labels
+. local rowlbl1 "Years French presence \$\times\$ 1750"
+
+. local rowlbl2 "Years French presence \$\times\$ 1800"
+
+. local rowlbl3 "Years French presence \$\times\$ 1850"
+
+. local rowlbl4 "Years French presence \$\times\$ 1875"
+
+. local rowlbl5 "Years French presence \$\times\$ 1900"
+
+. 
+. * Write coefficient and SE rows
+. forvalues j = 1/5 {
+  2.     * Coefficients
+.     forvalues k = 1/4 {
+  3.         local bfmt_`k' : di %7.3f `b`j'_`k''
+  4.         local bfmt_`k' = strtrim("`bfmt_`k''")
+  5.         _stars `b`j'_`k'' `se`j'_`k''
+  6.         local s_`k' "`r(s)'"
+  7.     }
+  8.     file write texfile "`rowlbl`j'' & `bfmt_1'`s_1' & `bfmt_2'`s_2' & `bfmt_3'`s_3' & `bfmt_4'`s_4' \\\\" _n
+  9. 
+.     * Standard errors
+.     forvalues k = 1/4 {
+ 10.         local sfmt_`k' : di %7.3f `se`j'_`k''
+ 11.         local sfmt_`k' = strtrim("`sfmt_`k''")
+ 12.     }
+ 13.     file write texfile " & [`sfmt_1'] & [`sfmt_2'] & [`sfmt_3'] & [`sfmt_4'] \\\\" _n
+ 14. 
+.     if `j' < 5 {
+ 15.         file write texfile "\addlinespace" _n
+ 16.     }
+ 17. }
+
+. 
+. file write texfile "\addlinespace[6pt]" _n
+
+. 
+. * Observations row
+. file write texfile "Observations & `nn_1' & `nn_2' & `nn_3' & `nn_4' \\\\" _n
+
+. 
+. * Number of states
+. file write texfile "Number of states & `ns_1' & `ns_2' & `ns_3' & `ns_4' \\\\" _n
+
+. 
+. * p-value
+. forvalues k = 1/4 {
+  2.     local pfmt_`k' : di %6.4f `pval_`k''
+  3.     local pfmt_`k' = strtrim("`pfmt_`k''")
+  4. }
+
+. file write texfile "\textit{p}-value joint sig.\ after 1800 & `pfmt_1' & `pfmt_2' & `pfmt_3' & `pfmt_4' \\\\" _
+> n
+
+. 
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\multicolumn{5}{p{0.95\linewidth}}{\footnotesize" _n
+
+. file write texfile " \textit{Notes:} All regressions have full set of territory and year dummies." _n
+
+. file write texfile " Robust standard errors clustered by territory in brackets." _n
+
+. file write texfile " Weighted regressions are weighted by territories' total population in 1750." _n
+
+. file write texfile " *** Significant at 1\%, ** 5\%, * 10\%.}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table3.tex created"
+  -> table3.tex created
+
+. 
+. * ===== TWOWAYFEWEIGHTS SUMMARY =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table_twowayfeweights.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}"
+>  _n
+
+. file write texfile "\label{tab:twowayfe}" _n
+
+. file write texfile "\begin{tabular}{lc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 3 (feTR)}} \\\\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "Regression type & Fixed effects (feTR) \\\\" _n
+
+. file write texfile "Dependent variable & Urbanization rate \\\\" _n
+
+. file write texfile "Treatment variable & Years French presence \$\times\$ year \\\\" _n
+
+. file write texfile "Group (G) & Polity (territory) \\\\" _n
+
+. file write texfile "Time (T) & Year (1700--1900) \\\\" _n
+
+. file write texfile "Design & Sharp (polities with 0 French presence) \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weight distribution}} \\\\" _n
+
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table_twowayfeweights.tex created"
+  -> table_twowayfeweights.tex created
+
+. 
+. * ===== MASTER DOCUMENT =====
+. cap file close texfile
+
+. file open texfile using "$outdir/acemoglu_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write texfile "\geometry{margin=1in}" _n
+
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justification=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Acemoglu, Cantoni, Johnson \& Robinson (2011)}\\\\" _n
+
+. file write texfile "{\large The Consequences of Radical Reform:}\\\\" _n
+
+. file write texfile "{\large The French Revolution}\\\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}, 101(7), 3286--3307}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. file write texfile "\vspace{1em}" _n _n
+
+. file write texfile "\input{table3}" _n _n
+
+. file write texfile "\input{table_twowayfeweights}" _n _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  -> acemoglu_tables.tex created"
+  -> acemoglu_tables.tex created
+
+. 
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "ALL DONE - Acemoglu et al. (2011)"
+ALL DONE - Acemoglu et al. (2011)
+
+. di    "=============================================="
+==============================================
+
+. di "Output files:"
+Output files:
+
+. di "  1. $outdir/table3.tex"
+  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Acemoglu et al. (2011)/table3.tex
+
+. di "  2. $outdir/table_twowayfeweights.tex"
+  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Acemoglu et al. (2011)/table_twowayfeweights.tex
+
+. di "  3. $outdir/acemoglu_tables.tex (compilable master)"
+  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Acemoglu et al. (2011)/acemoglu_tables.tex (compilable mas
+> ter)
+
+. di "  4. $outdir/run_twowayfe.log"
+  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Acemoglu et al. (2011)/run_twowayfe.log
+
+. di "=============================================="
+==============================================
+
+. 
+. log close _all
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Acemoglu et al. (2011)/run_twowayfe.log
+  log type:  text
+ closed on:  20 Apr 2026, 10:23:37
+-----------------------------------------------------------------------------------------------------------------

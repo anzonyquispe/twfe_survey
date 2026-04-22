@@ -1,0 +1,9 @@
+dictionary using H70.DAT {
+_column(9)    str8   dupersid   %8s  "person id"
+_column(200)  byte   age31x     %2f
+_column(202)  byte   age42x     %2f
+_column(204)  byte   age53x     %2f
+_column(206)  byte   age02x     %2f  "age as of 12/31/02"
+_column(1259) str1   mcrev02    %1s  "ever have medicare in 2002?"
+_column(1260) str1   mcdev02    %1s  "ever have medicaid in 2002?"   }
+

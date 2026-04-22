@@ -1,0 +1,105 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/sampleTable.log
+  log type:  text
+ opened on:  24 Mar 2010, 12:47:44
+
+. * Columns 1 and 2
+. keep if pubCohort >= 1993 & pubCohort <=2003
+(2089 observations deleted)
+
+. drop if (rfctype == 1 | rfctype == 2 | rfctype == 7 | rfctype == 4)
+(286 observations deleted)
+
+. tab exiType wgDum
+
+1=Censored |
+         ; |
+2=Expired; |
+3=Nonstand | 1/0: ID submitted to
+ard;4=Stan |        IETF WG
+      dard |         0          1 |     Total
+-----------+----------------------+----------
+         1 |        47         62 |       109 
+         2 |     5,729      1,730 |     7,459 
+         3 |       534        641 |     1,175 
+         4 |       171      1,088 |     1,259 
+-----------+----------------------+----------
+     Total |     6,481      3,521 |    10,002 
+
+
+. bysort wg : gen wgInd = (_n==1)
+
+. count if (wgInd == 1)
+  283
+
+. drop wgInd
+
+. 
+. * Age > 1
+. drop if age == 1
+(4551 observations deleted)
+
+. tab exiType wgDum
+
+1=Censored |
+         ; |
+2=Expired; |
+3=Nonstand | 1/0: ID submitted to
+ard;4=Stan |        IETF WG
+      dard |         0          1 |     Total
+-----------+----------------------+----------
+         1 |        47         62 |       109 
+         2 |     2,179        950 |     3,129 
+         3 |       400        586 |       986 
+         4 |       163      1,064 |     1,227 
+-----------+----------------------+----------
+     Total |     2,789      2,662 |     5,451 
+
+
+. bysort wg : gen wgInd = (_n==1)
+
+. count if (wgInd == 1)
+  272
+
+. drop wgInd
+
+. 
+. * Estimation Sample
+. drop if (!wgDum | age == 1)
+(2789 observations deleted)
+
+. drop if (techarea == 0 | techarea == 2 | techarea == 9)
+(61 observations deleted)
+
+. tab exiType wgDum
+
+1=Censored |
+         ; |
+2=Expired; |  1/0: ID
+3=Nonstand | submitted
+ard;4=Stan | to IETF WG
+      dard |         1 |     Total
+-----------+-----------+----------
+         1 |        62 |        62 
+         2 |       933 |       933 
+         3 |       553 |       553 
+         4 |     1,053 |     1,053 
+-----------+-----------+----------
+     Total |     2,601 |     2,601 
+
+
+. bysort wg : gen wgInd = (_n==1)
+
+. count if (wgInd == 1)
+  249
+
+. drop wgInd
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/sampleTable.log
+  log type:  text
+ closed on:  24 Mar 2010, 12:47:44
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

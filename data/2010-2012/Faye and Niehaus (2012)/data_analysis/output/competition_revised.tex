@@ -1,0 +1,26 @@
+% hacktex(table.comp, file = paste(output.dir, "competition_revised.tex",      sep = "/"), label = "tab:competition_revised", table.env = FALSE,      caption.loc = "top", rowname = NULL, center = "none", colheads = c("Regressor",          "1", "2", "3", "4", "5", "6"), collabel.just = c("l",          "c", "c", "c", "c", "c", "c")) 
+%
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllllll}\hline\hline
+\multicolumn{1}{l}{Regressor}&\multicolumn{1}{c}{1}&\multicolumn{1}{c}{2}&\multicolumn{1}{c}{3}&\multicolumn{1}{c}{4}&\multicolumn{1}{c}{5}&\multicolumn{1}{c}{6}\tabularnewline
+\hline
+UN Agreement&-6.744&19.338&-40.689&-18.687&-49.965&-107.690\tabularnewline
+&{\scriptsize (13.585)$^{}$}&{\scriptsize (17.599)$^{}$}&{\scriptsize (27.763)$^{}$}&{\scriptsize (20.080)$^{}$}&{\scriptsize (24.209)$^{**}$}&{\scriptsize (45.997)$^{**}$}\tabularnewline
+Noncompetitive&-2.846&-9.551&-6.259&-7.570&-47.781&-39.873\tabularnewline
+&{\scriptsize (6.948)$^{}$}&{\scriptsize (6.947)$^{}$}&{\scriptsize (3.705)$^{*}$}&{\scriptsize (15.908)$^{}$}&{\scriptsize (1.461)$^{***}$}&{\scriptsize (7.766)$^{***}$}\tabularnewline
+UN * Noncompetitive&1.744&12.367&2.359&-4.212&59.927&51.410\tabularnewline
+&{\scriptsize (8.844)$^{}$}&{\scriptsize (9.802)$^{}$}&{\scriptsize (5.373)$^{}$}&{\scriptsize (16.483)$^{}$}&{\scriptsize (0.000)$^{***}$}&{\scriptsize (9.470)$^{***}$}\tabularnewline
+Competitive Election&-16.519&-8.528&-13.531&-43.488&-35.549&-38.683\tabularnewline
+&{\scriptsize (0.000)$^{***}$}&{\scriptsize (0.000)$^{***}$}&{\scriptsize (0.000)$^{***}$}&{\scriptsize (14.639)$^{***}$}&{\scriptsize (12.745)$^{***}$}&{\scriptsize (12.393)$^{***}$}\tabularnewline
+UN * Competitive Election&22.641&10.841&14.875&65.564&53.961&56.523\tabularnewline
+&{\scriptsize (0.000)$^{***}$}&{\scriptsize (0.000)$^{***}$}&{\scriptsize (0.000)$^{***}$}&{\scriptsize (24.683)$^{***}$}&{\scriptsize (21.564)$^{**}$}&{\scriptsize (21.078)$^{***}$}\tabularnewline
+Noncompetitive Election&-0.847&2.259&0.507&-3.541&5.429&4.490\tabularnewline
+&{\scriptsize (6.854)$^{}$}&{\scriptsize (4.245)$^{}$}&{\scriptsize (8.410)$^{}$}&{\scriptsize (5.449)$^{}$}&{\scriptsize (3.552)$^{}$}&{\scriptsize (5.176)$^{}$}\tabularnewline
+UN * Noncompetitive Election&1.671&-3.306&-3.125&14.484&-0.338&-0.667\tabularnewline
+&{\scriptsize (8.135)$^{}$}&{\scriptsize (2.796)$^{}$}&{\scriptsize (11.159)$^{}$}&{\scriptsize (10.697)$^{}$}&{\scriptsize (8.389)$^{}$}&{\scriptsize (10.830)$^{}$}\tabularnewline
+FEs&DR,Y&DR,DY&DR&DR,Y&DR,DY&DR\tabularnewline
+Controls&-&-&Yes&-&-&Yes\tabularnewline
+N&3310&3310&3005&15305&15305&13490\tabularnewline
+$R^2$&0.025&0.082&0.019&0.004&0.018&0.007\tabularnewline
+\hline
+\end{tabular*}
+

@@ -1,0 +1,9 @@
+dictionary using 98-99/block98e.txt {
+
+_column(4)	dsl		%5.0f	"DSL"
+_column(9)	slno		%2.0f	"S. No."
+
+_column(19)  	averagenumber	%7.0f 	"Average Number"
+
+};
+

@@ -1,0 +1,33 @@
+% hacktex(table.main, file = paste(output.dir, "main.tex", sep = "/"),      label = "tab:main", table.env = FALSE, caption.loc = "top",      rowname = NULL, center = "none", colheads = c("Regressor",          "1", "2", "3", "4", "5", "6", "7", "8", "9"), collabel.just = c("l",          "c", "c", "c", "c", "c", "c", "c", "c", "c")) 
+%
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llllllllll}\hline\hline
+\multicolumn{1}{l}{Regressor}&\multicolumn{1}{c}{1}&\multicolumn{1}{c}{2}&\multicolumn{1}{c}{3}&\multicolumn{1}{c}{4}&\multicolumn{1}{c}{5}&\multicolumn{1}{c}{6}&\multicolumn{1}{c}{7}&\multicolumn{1}{c}{8}&\multicolumn{1}{c}{9}\tabularnewline
+\hline
+Exec. Election&2.183&2.183&0.428&-27.346&-19.861&-23.102&-5.853&-5.853&-1.525\tabularnewline
+&{\scriptsize (3.290)$^{}$}&{\scriptsize (3.287)$^{}$}&{\scriptsize (3.275)$^{}$}&{\scriptsize (9.848)$^{***}$}&{\scriptsize (7.428)$^{***}$}&{\scriptsize (7.407)$^{***}$}&{\scriptsize (16.089)$^{}$}&{\scriptsize (17.217)$^{}$}&{\scriptsize (11.139)$^{}$}\tabularnewline
+UN * Election&&&&45.458&33.990&36.734&&&\tabularnewline
+&&&&{\scriptsize (17.687)$^{**}$}&{\scriptsize (13.956)$^{**}$}&{\scriptsize (14.387)$^{**}$}&&&\tabularnewline
+UN Avg. * Election&&&&&&&12.165&12.165&3.771\tabularnewline
+&&&&&&&{\scriptsize (28.920)$^{}$}&{\scriptsize (28.777)$^{}$}&{\scriptsize (21.320)$^{}$}\tabularnewline
+UN Residual * Election&&&&&&&51.590&34.971&40.753\tabularnewline
+&&&&&&&{\scriptsize (19.323)$^{***}$}&{\scriptsize (15.522)$^{**}$}&{\scriptsize (17.131)$^{**}$}\tabularnewline
+UN Agreement&&&&-16.450&-20.244&-81.142&&&\tabularnewline
+&&&&{\scriptsize (21.303)$^{}$}&{\scriptsize (23.978)$^{}$}&{\scriptsize (40.862)$^{**}$}&&&\tabularnewline
+UN Donor Avg.&&&&&&&25.292&25.292&-39.641\tabularnewline
+&&&&&&&{\scriptsize (23.867)$^{}$}&{\scriptsize (33.212)$^{}$}&{\scriptsize (36.098)$^{}$}\tabularnewline
+UN Residual&&&&&&&-53.023&-132.273&-179.880\tabularnewline
+&&&&&&&{\scriptsize (25.197)$^{**}$}&{\scriptsize (43.164)$^{***}$}&{\scriptsize (66.551)$^{***}$}\tabularnewline
+Population&&&-0.439&&&-0.447&&&-0.424\tabularnewline
+&&&{\scriptsize (0.374)$^{}$}&&&{\scriptsize (0.379)$^{}$}&&&{\scriptsize (0.374)$^{}$}\tabularnewline
+GDP&&&0.220&&&0.228&&&0.226\tabularnewline
+&&&{\scriptsize (0.000)$^{***}$}&&&{\scriptsize (0.000)$^{***}$}&&&{\scriptsize (0.000)$^{***}$}\tabularnewline
+Population (Donor)&&&-4.018&&&-4.430&&&-4.941\tabularnewline
+&&&{\scriptsize (0.830)$^{***}$}&&&{\scriptsize (0.852)$^{***}$}&&&{\scriptsize (0.760)$^{***}$}\tabularnewline
+GDP (Donor)&&&0.045&&&0.048&&&0.051\tabularnewline
+&&&{\scriptsize (0.010)$^{***}$}&&&{\scriptsize (0.009)$^{***}$}&&&{\scriptsize (0.008)$^{***}$}\tabularnewline
+Fixed Effects&DR,Y&DR,DY&DR&DR,Y&DR,DY&DR&DR,Y&DR,DY&DR\tabularnewline
+N&15315&15315&13495&15315&15315&13495&15315&15315&13495\tabularnewline
+$R^2$&0.003&0.017&0.006&0.004&0.017&0.007&0.004&0.017&0.008\tabularnewline
+\hline
+\end{tabular*}
+

@@ -1,0 +1,143 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/topNames.log
+  log type:  text
+ opened on:  24 Mar 2010, 12:48:08
+
+. list if rank<=6
+
+      +-----------------------------------------------+
+      | tldaff~e       affil   period   aflCnt   rank |
+      |-----------------------------------------------|
+   1. |      com       cisco        1       94      1 |
+   2. |      edu         cmu        1       51      2 |
+   3. |      gov          ca        1       48      3 |
+   4. |      com         ibm        1       45      4 |
+   5. |      com        snmp        1       38      5 |
+      |-----------------------------------------------|
+   6. |      edu         ucl        1       27      6 |
+ 218. |      com       cisco        2      218      1 |
+ 219. |      com   microsoft        2      147      2 |
+ 220. |      com         ibm        2      142      3 |
+ 221. |      com         sun        2       86      4 |
+      |-----------------------------------------------|
+ 222. |      edu         isi        2       81      5 |
+ 223. |      com    netscape        2       79      6 |
+ 880. |      com       cisco        3      521      1 |
+ 881. |      com      nortel        3      322      2 |
+ 882. |      com   microsoft        3      221      3 |
+      |-----------------------------------------------|
+ 883. |      com         att        3      214      4 |
+ 884. |      com         sun        3      182      5 |
+ 885. |      com         ibm        3      178      6 |
+2145. |      com       cisco        4      986      1 |
+2146. |      com       nokia        4      406      2 |
+      |-----------------------------------------------|
+2147. |      com      nortel        4      359      3 |
+2148. |      com    ericsson        4      281      4 |
+2149. |      com         sun        4      235      5 |
+2150. |      com         att        4      219      6 |
+      +-----------------------------------------------+
+
+. collapse (sum) aflCnt, by(affil tldaffiltype)
+
+. gsort -aflCnt
+
+. list if _n<=25
+
+      +---------------------------------+
+      | tldaff~e         affil   aflCnt |
+      |---------------------------------|
+   1. |      com         cisco     1819 |
+   2. |      com        nortel      700 |
+   3. |      com     microsoft      593 |
+   4. |      com         nokia      542 |
+   5. |      com           sun      519 |
+      |---------------------------------|
+   6. |      com           ibm      498 |
+   7. |      com           att      494 |
+   8. |      com      ericsson      400 |
+   9. |      com        lucent      345 |
+  10. |      com       alcatel      301 |
+      |---------------------------------|
+  11. |      com          bell      286 |
+  12. |      net       juniper      252 |
+  13. |      com         intel      226 |
+  14. |      edu      columbia      220 |
+  15. |      com   dynamicsoft      202 |
+      |---------------------------------|
+  16. |      com       siemens      201 |
+  17. |      edu           isi      198 |
+  18. |      org           acm      183 |
+  19. |      edu           mit      152 |
+  20. |      com           ntt      143 |
+      |---------------------------------|
+  21. |      com           nec      143 |
+  22. |      com         xerox      143 |
+  23. |      com   baynetworks      139 |
+  24. |      com            hp      132 |
+  25. |      com      netscape      129 |
+      +---------------------------------+
+
+. 
+. gsort tldaffiltype -aflCnt
+
+. by tldaffiltype : g rank = _n
+
+. list if rank<=6
+
+      +--------------------------------------+
+      | tldaff~e       affil   aflCnt   rank |
+      |--------------------------------------|
+   1. |      com       cisco     1819      1 |
+   2. |      com      nortel      700      2 |
+   3. |      com   microsoft      593      3 |
+   4. |      com       nokia      542      4 |
+   5. |      com         sun      519      5 |
+      |--------------------------------------|
+   6. |      com         ibm      498      6 |
+1472. |      edu    columbia      220      1 |
+1473. |      edu         isi      198      2 |
+1474. |      edu         mit      152      3 |
+1475. |      edu         cmu      112      4 |
+      |--------------------------------------|
+1476. |      edu       umich      109      5 |
+1477. |      edu         ucl      109      6 |
+1788. |      gov          ca       74      1 |
+1789. |      gov         lbl       51      2 |
+1790. |      gov        navy       47      3 |
+      |--------------------------------------|
+1791. |      gov        nasa       45      4 |
+1792. |      gov        nist       37      5 |
+1793. |      gov        ncsc       30      6 |
+1825. |      net     juniper      252      1 |
+1826. |      net          uu       58      2 |
+      |--------------------------------------|
+1827. |      net        wide       55      3 |
+1828. |      net     calient       51      4 |
+1829. |      net         mci       42      5 |
+1830. |      net   invisible       38      6 |
+2088. |      org         acm      183      1 |
+      |--------------------------------------|
+2089. |      org        ieee      119      2 |
+2090. |      org        etri       92      3 |
+2091. |      org    openldap       66      4 |
+2092. |      org          w3       56      5 |
+2093. |      org         imc       54      6 |
+      |--------------------------------------|
+2254. |      oth         oth       74      1 |
+2255. |      oth       oefeg       15      2 |
+2256. |      oth          uu       13      3 |
+2257. |      oth      sintef       10      4 |
+2258. |      oth     coritel       10      5 |
+      |--------------------------------------|
+2259. |      oth         vtt        9      6 |
+      +--------------------------------------+
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/topNames.log
+  log type:  text
+ closed on:  24 Mar 2010, 12:48:11
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

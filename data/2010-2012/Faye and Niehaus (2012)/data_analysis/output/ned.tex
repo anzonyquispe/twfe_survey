@@ -1,0 +1,25 @@
+% hacktex(table.ned, file = paste(output.dir, "ned.tex", sep = "/"),      label = "tab:ned", table.env = FALSE, caption.loc = "top",      rowname = NULL, center = "none", colheads = c("Regressor",          "1", "2", "3", "4"), collabel.just = c("l", "c", "c",          "c", "c")) 
+%
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll}\hline\hline
+\multicolumn{1}{l}{Regressor}&\multicolumn{1}{c}{1}&\multicolumn{1}{c}{2}&\multicolumn{1}{c}{3}&\multicolumn{1}{c}{4}\tabularnewline
+\hline
+Exec. Election&0.054&0.063&0.067&-140.143\tabularnewline
+&{\scriptsize (0.058)$^{}$}&{\scriptsize (0.053)$^{}$}&{\scriptsize (0.054)$^{}$}&{\scriptsize (71.982)$^{*}$}\tabularnewline
+UN * Election&-0.137&-0.179&-0.191&484.226\tabularnewline
+&{\scriptsize (0.159)$^{}$}&{\scriptsize (0.140)$^{}$}&{\scriptsize (0.142)$^{}$}&{\scriptsize (256.728)$^{*}$}\tabularnewline
+UN Agreement&-0.070&0.052&-0.023&-354.479\tabularnewline
+&{\scriptsize (0.110)$^{}$}&{\scriptsize (0.054)$^{}$}&{\scriptsize (0.068)$^{}$}&{\scriptsize (150.970)$^{**}$}\tabularnewline
+Population&&&-0.001&\tabularnewline
+&&&{\scriptsize (0.002)$^{}$}&\tabularnewline
+GDP&&&0.002&\tabularnewline
+&&&{\scriptsize (0.000)$^{***}$}&\tabularnewline
+Population (Donor)&&&0.002&\tabularnewline
+&&&{\scriptsize (0.002)$^{}$}&\tabularnewline
+GDP (Donor)&&&0.000&\tabularnewline
+&&&{\scriptsize (0.000)$^{}$}&\tabularnewline
+Fixed Effects&R&R,Y&R&R\tabularnewline
+N&1601&1601&1511&1601\tabularnewline
+$R^2$&0.002&0.025&0.201&0.004\tabularnewline
+\hline
+\end{tabular*}
+

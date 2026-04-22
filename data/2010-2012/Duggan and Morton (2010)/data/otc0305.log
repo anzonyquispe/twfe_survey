@@ -1,0 +1,4530 @@
+-------------------------------------------------------------------------------
+       log:  /disk/bulkn/mgduggan/partd/meps/aerdata/otc0305.log
+  log type:  text
+ opened on:   3 Mar 2009, 22:56:37
+
+. 
+. * figure out which drugs in our top group are otc
+. 
+. * we are using 2003 medicaid util data but 2005 drug product data
+. * b/c 2003 drug product data was not available - should be very very similar
+. * to comparable 2003 data - allows us to determine which ndcs are otc
+. 
+. * more recent version of drug product data is available on cms website at:
+. * http://www.cms.hhs.gov/MedicaidDrugRebateProgram/09_DrugProdData.asp
+. * can find utilization data at that same site
+. 
+. * this file aggregates ndcs to drug level to determine fraction of each drug'
+> s
+. * spending that are for otc ndcs
+. 
+. use otc05info
+
+. gen str11 ndc = labcode + prodcode + packcode
+(17 missing values generated)
+
+. keep prodname ndc drugtype
+
+. replace prodname = upper(ltrim(prodname))
+(2293 real changes made)
+
+. tab drugtype, missing
+
+2 if otc, 1 |
+ if non-otc |      Freq.     Percent        Cum.
+------------+-----------------------------------
+            |         18        0.04        0.04
+          1 |     30,855       70.17       70.21
+          2 |     13,100       29.79      100.00
+------------+-----------------------------------
+      Total |     43,973      100.00
+
+. destring drugtype, replace
+drugtype has all characters numeric; replaced as byte
+(18 missing values generated)
+
+. list if drugtype==.
+
+       +---------------------------+
+       | drugtype   prodname   ndc |
+       |---------------------------|
+ 5628. |        .                  |
+ 5631. |        .                  |
+ 5633. |        .                  |
+ 5635. |        .                  |
+ 5641. |        .                  |
+       |---------------------------|
+ 5646. |        .                  |
+ 5656. |        .              000 |
+ 5661. |        .                  |
+ 5663. |        .                  |
+ 5668. |        .                  |
+       |---------------------------|
+ 5674. |        .                  |
+ 5676. |        .                  |
+25242. |        .                  |
+25282. |        .                  |
+25286. |        .                  |
+       |---------------------------|
+25312. |        .                  |
+25318. |        .                  |
+25320. |        .                  |
+       +---------------------------+
+
+. drop if drugtype==.
+(18 observations deleted)
+
+. gen str9 ndc9 = substr(ndc,1,9)
+
+. sort ndc9
+
+. egen mintype = min(drugtype), by(ndc9)
+
+. egen maxtype = max(drugtype), by(ndc9)
+
+. count
+43955
+
+. count if mintype!=maxtype
+    0
+
+. sort ndc9
+
+. quietly by ndc9: gen temp = _n
+
+. keep if temp==1 
+(17846 observations deleted)
+
+. keep if mintype==maxtype
+(0 observations deleted)
+
+. keep ndc9 prodname drugtype
+
+. sort ndc9
+
+. save otc0305
+file otc0305.dta saved
+
+. d, fullname
+
+Contains data from otc0305.dta
+  obs:        26,109                          
+ vars:             3                          3 Mar 2009 22:56
+ size:     2,010,393 (99.7% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+drugtype        byte   %10.0g                 2 if otc, 1 if non-otc
+prodname        str63  %63s                   
+ndc9            str9   %9s                    
+-------------------------------------------------------------------------------
+Sorted by:  ndc9
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    drugtype |     26109    1.302846    .4594979          1          2
+    prodname |         0
+        ndc9 |         0
+
+. quietly by ndc9: gen temp = _n
+
+. tab temp
+
+       temp |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     26,109      100.00      100.00
+------------+-----------------------------------
+      Total |     26,109      100.00
+
+. clear
+
+. 
+. use mcd2003us
+
+. replace paidamt = paidamt / 100
+(128783 real changes made)
+
+. collapse (sum) paidamt numpresc, by(labcode prodcode)
+
+. gen str9 ndc9 = labcode + prodcode
+
+. drop labcode prodcode
+
+. sort ndc9
+
+. merge ndc9 using otc0305
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |      8,697       24.99       24.99
+          2 |      9,517       27.34       52.33
+          3 |     16,592       47.67      100.00
+------------+-----------------------------------
+      Total |     34,806      100.00
+
+. sum paidamt if _merge==3
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+     paidamt |     16592     2010639    1.50e+07        .01   6.92e+08
+
+. sum paidamt if _merge!=3
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+     paidamt |      8697    94291.22     2062646        .02   1.78e+08
+
+. 
+. keep if _merge==3
+(18214 observations deleted)
+
+. drop _merge
+
+. 
+. count
+16592
+
+. tab drugtype, missing
+
+2 if otc, 1 |
+ if non-otc |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     12,517       75.44       75.44
+          2 |      4,075       24.56      100.00
+------------+-----------------------------------
+      Total |     16,592      100.00
+
+. gen otcpaid = paidamt if drugtype==2
+(12517 missing values generated)
+
+. 
+. gen shortnam = ""
+(16592 missing values generated)
+
+. replace   shortnam = "LIPITOR" if substr(prodname,1,7)=="LIPITOR"
+shortnam was str1 now str7
+(4 real changes made)
+
+. replace   shortnam = "NEXIUM"  if substr(prodname,1,6)=="NEXIUM"
+(4 real changes made)
+
+. 
+. * fix this one - simvastatin is generic zocor
+. replace   shortnam = "ZOCOR" if substr(prodname,1,5)=="ZOCOR"
+(6 real changes made)
+
+. replace   shortnam = "ZOCOR" if substr(prodname,1,11)=="SIMVASTATIN"
+(0 real changes made)
+
+. 
+. replace   shortnam = "PREVACID" if substr(prodname,1,8)=="PREVACID"
+shortnam was str7 now str8
+(4 real changes made)
+
+. replace   shortnam = "ADVAIR" if substr(prodname,1,6)=="ADVAIR"
+(3 real changes made)
+
+. replace   shortnam = "PLAVIX" if substr(prodname,1,6)=="PLAVIX"
+(1 real change made)
+
+. replace   shortnam = "ZOLOFT" if substr(prodname,1,6)=="ZOLOFT"
+(4 real changes made)
+
+. replace   shortnam = "EPOGEN" if substr(prodname,1,6)=="EPOGEN"
+(7 real changes made)
+
+. replace   shortnam = "ENBREL" if substr(prodname,1,6)=="ENBREL"
+(1 real change made)
+
+. replace   shortnam = "EFFEXOR" if substr(prodname,1,7)=="EFFEXOR"
+(8 real changes made)
+
+. 
+. replace   shortnam = "NORVASC" if substr(prodname,1,7)=="NORVASC"
+(3 real changes made)
+
+. 
+. * FIX THIS - A FEW WITH SPELLING ERRORS
+. replace   shortnam = "SINGULAIR" if substr(prodname,1,9)=="SINGULAIR"
+shortnam was str8 now str9
+(4 real changes made)
+
+. replace   shortnam = "SINGULAIR" if substr(prodname,1,8)=="SINGULAR"
+(0 real changes made)
+
+. 
+. replace   shortnam = "PROTONIX" if substr(prodname,1,8)=="PROTONIX"
+(3 real changes made)
+
+. replace   shortnam = "ACTOS" if substr(prodname,1,5)=="ACTOS"
+(3 real changes made)
+
+. replace   shortnam = "AMBIEN" if substr(prodname,1,6)=="AMBIEN"
+(2 real changes made)
+
+. replace   shortnam = "ARANESP" if substr(prodname,1,7)=="ARANESP"
+(11 real changes made)
+
+. replace   shortnam = "FOSAMAX" if substr(prodname,1,7)=="FOSAMAX"
+(5 real changes made)
+
+. replace   shortnam = "PROCRIT" if substr(prodname,1,7)=="PROCRIT"
+(7 real changes made)
+
+. replace   shortnam = "LEXAPRO" if substr(prodname,1,7)=="LEXAPRO"
+(3 real changes made)
+
+. replace   shortnam = "SEROQUEL" if substr(prodname,1,8)=="SEROQUEL"
+(4 real changes made)
+
+. 
+. replace   shortnam = "DIOVAN" if substr(prodname,1,6)=="DIOVAN"
+(7 real changes made)
+
+. replace   shortnam = "ZYPREXA" if substr(prodname,1,7)=="ZYPREXA"
+(10 real changes made)
+
+. replace   shortnam = "RISPERDAL" if substr(prodname,1,9)=="RISPERDAL"
+(13 real changes made)
+
+. replace   shortnam = "AVANDIA" if substr(prodname,1,7)=="AVANDIA"
+(3 real changes made)
+
+. replace   shortnam = "NEULASTA" if substr(prodname,1,8)=="NEULASTA"
+(1 real change made)
+
+. replace   shortnam = "PRAVACHOL" if substr(prodname,1,9)=="PRAVACHOL"
+(4 real changes made)
+
+. replace   shortnam = "ZITHROMAX" if substr(prodname,1,9)=="ZITHROMAX"
+(9 real changes made)
+
+. replace   shortnam = "REMICADE" if substr(prodname,1,8)=="REMICADE"
+(1 real change made)
+
+. replace   shortnam = "WELLBUTRIN" if substr(prodname,1,10)=="WELLBUTRIN"
+shortnam was str9 now str10
+(7 real changes made)
+
+. replace   shortnam = "ALLEGRA" if substr(prodname,1,7)=="ALLEGRA"
+(5 real changes made)
+
+. 
+. replace   shortnam = "CELEBREX" if substr(prodname,1,8)=="CELEBREX"
+(3 real changes made)
+
+. replace   shortnam = "ZYRTEC" if substr(prodname,1,6)=="ZYRTEC"
+(4 real changes made)
+
+. replace   shortnam = "TOPROL" if substr(prodname,1,6)=="TOPROL"
+(4 real changes made)
+
+. replace   shortnam = "TOPAMAX" if substr(prodname,1,7)=="TOPAMAX"
+(5 real changes made)
+
+. replace   shortnam = "LEVAQUIN" if substr(prodname,1,8)=="LEVAQUIN"
+(8 real changes made)
+
+. replace   shortnam = "LOTREL" if substr(prodname,1,6)=="LOTREL"
+(4 real changes made)
+
+. replace   shortnam = "OXYCONTIN" if substr(prodname,1,9)=="OXYCONTIN"
+(5 real changes made)
+
+. replace   shortnam = "RITUXAN" if substr(prodname,1,7)=="RITUXAN"
+(2 real changes made)
+
+. replace   shortnam = "ABILIFY" if substr(prodname,1,7)=="ABILIFY"
+(5 real changes made)
+
+. replace   shortnam = "ACIPHEX" if substr(prodname,1,7)=="ACIPHEX"
+(1 real change made)
+
+. 
+. replace   shortnam = "LAMICTAL" if substr(prodname,1,8)=="LAMICTAL"
+(6 real changes made)
+
+. replace   shortnam = "ZETIA" if substr(prodname,1,5)=="ZETIA"
+(1 real change made)
+
+. replace   shortnam = "FLONASE" if substr(prodname,1,7)=="FLONASE"
+(1 real change made)
+
+. replace   shortnam = "DEPAKOTE" if substr(prodname,1,8)=="DEPAKOTE"
+(6 real changes made)
+
+. replace   shortnam = "IMITREX" if substr(prodname,1,7)=="IMITREX"
+(8 real changes made)
+
+. replace   shortnam = "VALTREX" if substr(prodname,1,7)=="VALTREX"
+(2 real changes made)
+
+. replace   shortnam = "MOBIC" if substr(prodname,1,5)=="MOBIC"
+(2 real changes made)
+
+. replace   shortnam = "ORTHO" if substr(prodname,1,5)=="ORTHO"
+(10 real changes made)
+
+. replace   shortnam = "COREG" if substr(prodname,1,5)=="COREG"
+(4 real changes made)
+
+. replace   shortnam = "AVONEX" if substr(prodname,1,6)=="AVONEX"
+(1 real change made)
+
+. 
+. replace   shortnam = "TRICOR" if substr(prodname,1,6)=="TRICOR"
+(2 real changes made)
+
+. replace   shortnam = "ADDERALL" if substr(prodname,1,8)=="ADDERALL"
+(13 real changes made)
+
+. replace   shortnam = "ACTONEL" if substr(prodname,1,7)=="ACTONEL"
+(3 real changes made)
+
+. replace   shortnam = "GABAPENTIN" if substr(prodname,1,10)=="GABAPENTIN"
+(2 real changes made)
+
+. replace   shortnam = "VYTORIN" if substr(prodname,1,7)=="VYTORIN"
+(0 real changes made)
+
+. replace   shortnam = "ZOFRAN" if substr(prodname,1,6)=="ZOFRAN"
+(8 real changes made)
+
+. replace   shortnam = "OXYCODONE" if substr(prodname,1,9)=="OXYCODONE"
+(23 real changes made)
+
+. replace   shortnam = "ALTACE" if substr(prodname,1,6)=="ALTACE"
+(4 real changes made)
+
+. replace   shortnam = "VIAGRA" if substr(prodname,1,6)=="VIAGRA"
+(3 real changes made)
+
+. replace   shortnam = "LANTUS" if substr(prodname,1,6)=="LANTUS"
+(1 real change made)
+
+. 
+. replace   shortnam = "HUMALOG" if substr(prodname,1,7)=="HUMALOG"
+(5 real changes made)
+
+. replace   shortnam = "HUMIRA" if substr(prodname,1,6)=="HUMIRA"
+(1 real change made)
+
+. replace   shortnam = "CRESTOR" if substr(prodname,1,7)=="CRESTOR"
+(4 real changes made)
+
+. replace   shortnam = "CONCERTA" if substr(prodname,1,8)=="CONCERTA"
+(4 real changes made)
+
+. replace   shortnam = "COPAXONE" if substr(prodname,1,8)=="COPAXONE"
+(1 real change made)
+
+. replace   shortnam = "ARICEPT" if substr(prodname,1,7)=="ARICEPT"
+(2 real changes made)
+
+. replace   shortnam = "ELOXATIN" if substr(prodname,1,8)=="ELOXATIN"
+(2 real changes made)
+
+. replace   shortnam = "PREMARIN" if substr(prodname,1,8)=="PREMARIN"
+(8 real changes made)
+
+. replace   shortnam = "COZAAR" if substr(prodname,1,6)=="COZAAR"
+(3 real changes made)
+
+. replace   shortnam = "FLOMAX" if substr(prodname,1,6)=="FLOMAX"
+(1 real change made)
+
+. 
+. replace   shortnam = "AMOX" if substr(prodname,1,4)=="AMOX"
+(93 real changes made)
+
+. replace   shortnam = "PULMICORT" if substr(prodname,1,9)=="PULMICORT"
+(3 real changes made)
+
+. replace   shortnam = "DETROL" if substr(prodname,1,6)=="DETROL"
+(4 real changes made)
+
+. replace   shortnam = "TAXOTERE" if substr(prodname,1,8)=="TAXOTERE"
+(1 real change made)
+
+. replace   shortnam = "AVASTIN" if substr(prodname,1,7)=="AVASTIN"
+(0 real changes made)
+
+. replace   shortnam = "LOVENOX" if substr(prodname,1,7)=="LOVENOX"
+(8 real changes made)
+
+. replace   shortnam = "NASONEX" if substr(prodname,1,7)=="NASONEX"
+(1 real change made)
+
+. replace   shortnam = "EVISTA" if substr(prodname,1,6)=="EVISTA"
+(1 real change made)
+
+. replace   shortnam = "LAMISIL" if substr(prodname,1,7)=="LAMISIL"
+(7 real changes made)
+
+. replace   shortnam = "CELLCEPT" if substr(prodname,1,8)=="CELLCEPT"
+(4 real changes made)
+
+. 
+. replace   shortnam = "STRATTERA" if substr(prodname,1,9)=="STRATTERA"
+(5 real changes made)
+
+. replace   shortnam = "OMNICEF" if substr(prodname,1,7)=="OMNICEF"
+(2 real changes made)
+
+. replace   shortnam = "CYMBALTA" if substr(prodname,1,8)=="CYMBALTA"
+(0 real changes made)
+
+. replace   shortnam = "PROGRAF" if substr(prodname,1,7)=="PROGRAF"
+(4 real changes made)
+
+. replace   shortnam = "SYNTHROID" if substr(prodname,1,9)=="SYNTHROID"
+(13 real changes made)
+
+. replace   shortnam = "LUPRON" if substr(prodname,1,6)=="LUPRON"
+(9 real changes made)
+
+. replace   shortnam = "HERCEPTIN" if substr(prodname,1,9)=="HERCEPTIN"
+(1 real change made)
+
+. replace   shortnam = "GLEEVEC" if substr(prodname,1,7)=="GLEEVEC"
+(2 real changes made)
+
+. replace   shortnam = "PROVIGIL" if substr(prodname,1,8)=="PROVIGIL"
+(2 real changes made)
+
+. replace   shortnam = "ZOMETA" if substr(prodname,1,6)=="ZOMETA"
+(2 real changes made)
+
+. 
+. replace   shortnam = "COMBIVENT" if substr(prodname,1,9)=="COMBIVENT"
+(1 real change made)
+
+. replace   shortnam = "DURAGESIC" if substr(prodname,1,9)=="DURAGESIC"
+(4 real changes made)
+
+. replace   shortnam = "LISINOPRIL" if substr(prodname,1,10)=="LISINOPRIL"
+(97 real changes made)
+
+. replace   shortnam = "FENTANYL" if substr(prodname,1,8)=="FENTANYL"
+(17 real changes made)
+
+. replace   shortnam = "HUMULIN" if substr(prodname,1,7)=="HUMULIN"
+(9 real changes made)
+
+. replace   shortnam = "COMBIVIR" if substr(prodname,1,8)=="COMBIVIR"
+(1 real change made)
+
+. replace   shortnam = "HYZAAR" if substr(prodname,1,6)=="HYZAAR"
+(2 real changes made)
+
+. replace   shortnam = "NOVOLOG" if substr(prodname,1,7)=="NOVOLOG"
+(6 real changes made)
+
+. replace   shortnam = "BENICAR" if substr(prodname,1,7)=="BENICAR"
+(6 real changes made)
+
+. replace   shortnam = "TRILEPTAL" if substr(prodname,1,9)=="TRILEPTAL"
+(4 real changes made)
+
+. 
+. replace   shortnam = "NEUPOGEN" if substr(prodname,1,8)=="NEUPOGEN"
+(4 real changes made)
+
+. replace   shortnam = "LIDODERM" if substr(prodname,1,8)=="LIDODERM"
+(1 real change made)
+
+. replace   shortnam = "FLOVENT" if substr(prodname,1,7)=="FLOVENT"
+(6 real changes made)
+
+. replace   shortnam = "TYLENOL" if substr(prodname,1,7)=="TYLENOL"
+(21 real changes made)
+
+. replace   shortnam = "NIASPAN" if substr(prodname,1,7)=="NIASPAN"
+(3 real changes made)
+
+. replace   shortnam = "PRILOSEC" if substr(prodname,1,8)=="PRILOSEC"
+(4 real changes made)
+
+. replace   shortnam = "GEMZAR" if substr(prodname,1,6)=="GEMZAR"
+(2 real changes made)
+
+. replace   shortnam = "OMEPRAZOLE" if substr(prodname,1,10)=="OMEPRAZOLE"
+(10 real changes made)
+
+. replace   shortnam = "GEODON" if substr(prodname,1,6)=="GEODON"
+(5 real changes made)
+
+. replace   shortnam = "ASACOL" if substr(prodname,1,6)=="ASACOL"
+(1 real change made)
+
+. 
+. replace   shortnam = "PAROXETINE" if substr(prodname,1,10)=="PAROXETINE"
+(12 real changes made)
+
+. replace   shortnam = "TRUVADA" if substr(prodname,1,7)=="TRUVADA"
+(0 real changes made)
+
+. replace   shortnam = "ARIMIDEX" if substr(prodname,1,8)=="ARIMIDEX"
+(1 real change made)
+
+. replace   shortnam = "ACTIQ" if substr(prodname,1,5)=="ACTIQ"
+(12 real changes made)
+
+. replace   shortnam = "SKELAXIN" if substr(prodname,1,8)=="SKELAXIN"
+(1 real change made)
+
+. replace   shortnam = "KEPPRA" if substr(prodname,1,6)=="KEPPRA"
+(3 real changes made)
+
+. replace   shortnam = "YASMIN" if substr(prodname,1,6)=="YASMIN"
+(1 real change made)
+
+. replace   shortnam = "AVAPRO" if substr(prodname,1,6)=="AVAPRO"
+(2 real changes made)
+
+. replace   shortnam = "REBIF" if substr(prodname,1,5)=="REBIF"
+(2 real changes made)
+
+. replace   shortnam = "CLARINEX" if substr(prodname,1,8)=="CLARINEX"
+(2 real changes made)
+
+. 
+. replace   shortnam = "REYATAZ" if substr(prodname,1,7)=="REYATAZ"
+(3 real changes made)
+
+. replace   shortnam = "XALATAN" if substr(prodname,1,7)=="XALATAN"
+(1 real change made)
+
+. replace   shortnam = "SUSTIVA" if substr(prodname,1,7)=="SUSTIVA"
+(4 real changes made)
+
+. replace   shortnam = "SPIRIVA" if substr(prodname,1,7)=="SPIRIVA"
+(0 real changes made)
+
+. replace   shortnam = "BIAXIN" if substr(prodname,1,6)=="BIAXIN"
+(5 real changes made)
+
+. replace   shortnam = "PREVNAR" if substr(prodname,1,7)=="PREVNAR"
+(0 real changes made)
+
+. replace   shortnam = "PEGASYS" if substr(prodname,1,7)=="PEGASYS"
+(1 real change made)
+
+. replace   shortnam = "BUPROPION" if substr(prodname,1,9)=="BUPROPION"
+(8 real changes made)
+
+. replace   shortnam = "PAXIL" if substr(prodname,1,5)=="PAXIL"
+(8 real changes made)
+
+. replace   shortnam = "BETASERON" if substr(prodname,1,9)=="BETASERON"
+(1 real change made)
+
+. 
+. replace   shortnam = "XOPENEX" if substr(prodname,1,7)=="XOPENEX"
+(3 real changes made)
+
+. replace   shortnam = "ZEMPLAR" if substr(prodname,1,7)=="ZEMPLAR"
+(1 real change made)
+
+. replace   shortnam = "KALETRA" if substr(prodname,1,7)=="KALETRA"
+(2 real changes made)
+
+. replace   shortnam = "FORTEO" if substr(prodname,1,6)=="FORTEO"
+(1 real change made)
+
+. replace   shortnam = "METFORMIN" if substr(prodname,1,9)=="METFORMIN"
+(49 real changes made)
+
+. replace   shortnam = "DITROPAN" if substr(prodname,1,8)=="DITROPAN"
+(5 real changes made)
+
+. 
+. * forget this one as it is generic and something of a mess
+. * replace   shortnam = "HYCD/APAP" if substr(prodname,1,9)=="HYCD/APAP"
+. 
+. replace   shortnam = "PROSCAR" if substr(prodname,1,7)=="PROSCAR"
+(1 real change made)
+
+. replace   shortnam = "ZELNORM" if substr(prodname,1,7)=="ZELNORM"
+(2 real changes made)
+
+. replace   shortnam = "VIREAD" if substr(prodname,1,6)=="VIREAD"
+(1 real change made)
+
+. 
+. replace   shortnam = "LESCOL" if substr(prodname,1,6)=="LESCOL"
+(2 real changes made)
+
+. replace   shortnam = "NASACORT" if substr(prodname,1,8)=="NASACORT"
+(2 real changes made)
+
+. replace   shortnam = "SYNAGIS" if substr(prodname,1,7)=="SYNAGIS"
+(0 real changes made)
+
+. replace   shortnam = "TRIZIVIR" if substr(prodname,1,8)=="TRIZIVIR"
+(1 real change made)
+
+. replace   shortnam = "THALOMID" if substr(prodname,1,8)=="THALOMID"
+(4 real changes made)
+
+. replace   shortnam = "NAMENDA" if substr(prodname,1,7)=="NAMENDA"
+(1 real change made)
+
+. replace   shortnam = "CAMPTOSAR" if substr(prodname,1,9)=="CAMPTOSAR"
+(1 real change made)
+
+. replace   shortnam = "ANDROGEL" if substr(prodname,1,8)=="ANDROGEL"
+(2 real changes made)
+
+. replace   shortnam = "CIALIS" if substr(prodname,1,6)=="CIALIS"
+(2 real changes made)
+
+. replace   shortnam = "RHINOCORT" if substr(prodname,1,9)=="RHINOCORT"
+(1 real change made)
+
+. 
+. replace   shortnam = "LUNESTA" if substr(prodname,1,7)=="LUNESTA"
+(0 real changes made)
+
+. replace   shortnam = "AVALIDE" if substr(prodname,1,7)=="AVALIDE"
+(2 real changes made)
+
+. replace   shortnam = "PATANOL" if substr(prodname,1,7)=="PATANOL"
+(1 real change made)
+
+. replace   shortnam = "ALBUTEROL" if substr(prodname,1,9)=="ALBUTEROL"
+(49 real changes made)
+
+. replace   shortnam = "AMARYL" if substr(prodname,1,6)=="AMARYL"
+(3 real changes made)
+
+. replace   shortnam = "SANDOSTATIN" if substr(prodname,1,11)=="SANDOSTATIN"
+shortnam was str10 now str11
+(8 real changes made)
+
+. replace   shortnam = "AVANDAMET" if substr(prodname,1,9)=="AVANDAMET"
+(3 real changes made)
+
+. replace   shortnam = "ERBITUX" if substr(prodname,1,7)=="ERBITUX"
+(0 real changes made)
+
+. replace   shortnam = "MAXALT" if substr(prodname,1,6)=="MAXALT"
+(4 real changes made)
+
+. replace   shortnam = "NOVOLIN" if substr(prodname,1,7)=="NOVOLIN"
+(12 real changes made)
+
+. 
+. replace   shortnam = "TEMODAR" if substr(prodname,1,7)=="TEMODAR"
+(4 real changes made)
+
+. replace   shortnam = "NEURONTIN" if substr(prodname,1,9)=="NEURONTIN"
+(6 real changes made)
+
+. replace   shortnam = "ATACAND" if substr(prodname,1,7)=="ATACAND"
+(6 real changes made)
+
+. replace   shortnam = "XELODA" if substr(prodname,1,6)=="XELODA"
+(2 real changes made)
+
+. replace   shortnam = "TARCEVA" if substr(prodname,1,7)=="TARCEVA"
+(0 real changes made)
+
+. replace   shortnam = "AVELOX" if substr(prodname,1,6)=="AVELOX"
+(2 real changes made)
+
+. replace   shortnam = "AUGMENTIN" if substr(prodname,1,9)=="AUGMENTIN"
+(13 real changes made)
+
+. replace   shortnam = "FEXOFENADINE" if substr(prodname,1,12)=="FEXOFENADINE"
+(0 real changes made)
+
+. replace   shortnam = "CASODEX" if substr(prodname,1,7)=="CASODEX"
+(1 real change made)
+
+. replace   shortnam = "RENAGEL" if substr(prodname,1,7)=="RENAGEL"
+(3 real changes made)
+
+. 
+. replace   shortnam = "NORVIR" if substr(prodname,1,6)=="NORVIR"
+(2 real changes made)
+
+. replace   shortnam = "FEMARA" if substr(prodname,1,6)=="FEMARA"
+(1 real change made)
+
+. replace   shortnam = "LOVASTATIN" if substr(prodname,1,10)=="LOVASTATIN"
+(28 real changes made)
+
+. replace   shortnam = "DILTIAZEM" if substr(prodname,1,9)=="DILTIAZEM"
+(76 real changes made)
+
+. replace   shortnam = "ELIDEL" if substr(prodname,1,6)=="ELIDEL"
+(1 real change made)
+
+. replace   shortnam = "MIRAPEX" if substr(prodname,1,7)=="MIRAPEX"
+(5 real changes made)
+
+. replace   shortnam = "PEG-INTRON" if substr(prodname,1,10)=="PEG-INTRON"
+(4 real changes made)
+
+. replace   shortnam = "GENOTROPIN" if substr(prodname,1,10)=="GENOTROPIN"
+(5 real changes made)
+
+. replace   shortnam = "COSOPT" if substr(prodname,1,6)=="COSOPT"
+(1 real change made)
+
+. replace   shortnam = "XOLAIR" if substr(prodname,1,6)=="XOLAIR"
+(1 real change made)
+
+. 
+. replace   shortnam = "COUMADIN" if substr(prodname,1,8)=="COUMADIN"
+(10 real changes made)
+
+. replace   shortnam = "PROZAC" if substr(prodname,1,6)=="PROZAC"
+(5 real changes made)
+
+. replace   shortnam = "ZANTAC" if substr(prodname,1,6)=="ZANTAC"
+(8 real changes made)
+
+. replace   shortnam = "ALOXI" if substr(prodname,1,5)=="ALOXI"
+(1 real change made)
+
+. replace   shortnam = "QUINAPRIL" if substr(prodname,1,9)=="QUINAPRIL"
+(0 real changes made)
+
+. replace   shortnam = "PREMPRO" if substr(prodname,1,7)=="PREMPRO"
+(4 real changes made)
+
+. replace   shortnam = "ALDARA" if substr(prodname,1,6)=="ALDARA"
+(1 real change made)
+
+. replace   shortnam = "CEFZIL" if substr(prodname,1,6)=="CEFZIL"
+(4 real changes made)
+
+. replace   shortnam = "ZOMIG" if substr(prodname,1,5)=="ZOMIG"
+(5 real changes made)
+
+. replace   shortnam = "INDERAL" if substr(prodname,1,7)=="INDERAL"
+(10 real changes made)
+
+. 
+. replace   shortnam = "ZYVOX" if substr(prodname,1,5)=="ZYVOX"
+(4 real changes made)
+
+. replace   shortnam = "LEVOTHYROXINE" if substr(prodname,1,13)=="LEVOTHYROXINE
+> "
+shortnam was str11 now str13
+(28 real changes made)
+
+. replace   shortnam = "NUTROPIN" if substr(prodname,1,8)=="NUTROPIN"
+(6 real changes made)
+
+. replace   shortnam = "ALPHAGAN" if substr(prodname,1,8)=="ALPHAGAN"
+(2 real changes made)
+
+. replace   shortnam = "LUMIGAN" if substr(prodname,1,7)=="LUMIGAN"
+(1 real change made)
+
+. replace   shortnam = "ALIMTA" if substr(prodname,1,6)=="ALIMTA"
+(0 real changes made)
+
+. replace   shortnam = "MIACALCIN" if substr(prodname,1,9)=="MIACALCIN"
+(2 real changes made)
+
+. replace   shortnam = "TRAMADOL" if substr(prodname,1,8)=="TRAMADOL"
+(15 real changes made)
+
+. replace   shortnam = "VENOFER" if substr(prodname,1,7)=="VENOFER"
+(1 real change made)
+
+. replace   shortnam = "FLUOXETINE" if substr(prodname,1,10)=="FLUOXETINE"
+(42 real changes made)
+
+. 
+. replace   shortnam = "CATAPRES" if substr(prodname,1,8)=="CATAPRES"
+(6 real changes made)
+
+. replace   shortnam = "VARIVAX" if substr(prodname,1,7)=="VARIVAX"
+(0 real changes made)
+
+. replace   shortnam = "EPIVIR" if substr(prodname,1,6)=="EPIVIR"
+(5 real changes made)
+
+. replace   shortnam = "ADVIL" if substr(prodname,1,5)=="ADVIL"
+(11 real changes made)
+
+. replace   shortnam = "ARAVA" if substr(prodname,1,5)=="ARAVA"
+(2 real changes made)
+
+. replace   shortnam = "MICARDIS" if substr(prodname,1,8)=="MICARDIS"
+(5 real changes made)
+
+. replace   shortnam = "BENZACLIN" if substr(prodname,1,9)=="BENZACLIN"
+(1 real change made)
+
+. replace   shortnam = "ARTHROTEC" if substr(prodname,1,9)=="ARTHROTEC"
+(2 real changes made)
+
+. replace   shortnam = "KETEK" if substr(prodname,1,5)=="KETEK"
+(0 real changes made)
+
+. replace   shortnam = "GLIPIZIDE" if substr(prodname,1,9)=="GLIPIZIDE"
+(28 real changes made)
+
+. 
+. replace   shortnam = "CADUET" if substr(prodname,1,6)=="CADUET"
+(0 real changes made)
+
+. replace   shortnam = "VISUDYNE" if substr(prodname,1,8)=="VISUDYNE"
+(1 real change made)
+
+. replace   shortnam = "PULMOZYME" if substr(prodname,1,9)=="PULMOZYME"
+(1 real change made)
+
+. replace   shortnam = "NIFEDIPINE" if substr(prodname,1,10)=="NIFEDIPINE"
+(27 real changes made)
+
+. replace   shortnam = "COPEGUS" if substr(prodname,1,7)=="COPEGUS"
+(1 real change made)
+
+. replace   shortnam = "AZITHROMYCIN" if substr(prodname,1,12)=="AZITHROMYCIN"
+(0 real changes made)
+
+. replace   shortnam = "GLYBURIDE" if substr(prodname,1,9)=="GLYBURIDE"
+(37 real changes made)
+
+. replace   shortnam = "SEREVENT" if substr(prodname,1,8)=="SEREVENT"
+(3 real changes made)
+
+. replace   shortnam = "METROGEL" if substr(prodname,1,8)=="METROGEL"
+(2 real changes made)
+
+. replace   shortnam = "RESTASIS" if substr(prodname,1,8)=="RESTASIS"
+(1 real change made)
+
+. 
+. replace   shortnam = "TUSSIONEX" if substr(prodname,1,9)=="TUSSIONEX"
+(1 real change made)
+
+. replace   shortnam = "MORPHINE" if substr(prodname,1,8)=="MORPHINE"
+(68 real changes made)
+
+. replace   shortnam = "TAMIFLU" if substr(prodname,1,7)=="TAMIFLU"
+(2 real changes made)
+
+. replace   shortnam = "FAMVIR" if substr(prodname,1,6)=="FAMVIR"
+(3 real changes made)
+
+. replace   shortnam = "CARTIA" if substr(prodname,1,6)=="CARTIA"
+(4 real changes made)
+
+. replace   shortnam = "CARDIZEM" if substr(prodname,1,8)=="CARDIZEM"
+(15 real changes made)
+
+. replace   shortnam = "AVINZA" if substr(prodname,1,6)=="AVINZA"
+(4 real changes made)
+
+. replace   shortnam = "LEVOXYL" if substr(prodname,1,7)=="LEVOXYL"
+(12 real changes made)
+
+. replace   shortnam = "SYNVISC" if substr(prodname,1,7)=="SYNVISC"
+(0 real changes made)
+
+. replace   shortnam = "RELPAX" if substr(prodname,1,6)=="RELPAX"
+(2 real changes made)
+
+. 
+. replace   shortnam = "DUONEB" if substr(prodname,1,6)=="DUONEB"
+(1 real change made)
+
+. replace   shortnam = "BEXTRA" if substr(prodname,1,6)=="BEXTRA"
+(2 real changes made)
+
+. replace   shortnam = "ASTELIN" if substr(prodname,1,7)=="ASTELIN"
+(1 real change made)
+
+. replace   shortnam = "VIRACEPT" if substr(prodname,1,8)=="VIRACEPT"
+(2 real changes made)
+
+. replace   shortnam = "RAPAMUNE" if substr(prodname,1,8)=="RAPAMUNE"
+(2 real changes made)
+
+. replace   shortnam = "XANAX" if substr(prodname,1,5)=="XANAX"
+(8 real changes made)
+
+. replace   shortnam = "RAZADYNE" if substr(prodname,1,8)=="RAZADYNE"
+(0 real changes made)
+
+. replace   shortnam = "AGGRENOX" if substr(prodname,1,8)=="AGGRENOX"
+(1 real change made)
+
+. replace   shortnam = "WARFARIN" if substr(prodname,1,8)=="WARFARIN"
+(25 real changes made)
+
+. replace   shortnam = "ZONEGRAN" if substr(prodname,1,8)=="ZONEGRAN"
+(1 real change made)
+
+. 
+. replace   shortnam = "DIFFERIN" if substr(prodname,1,8)=="DIFFERIN"
+(3 real changes made)
+
+. replace   shortnam = "EPZICOM" if substr(prodname,1,7)=="EPZICOM"
+(0 real changes made)
+
+. replace   shortnam = "TOBRADEX" if substr(prodname,1,8)=="TOBRADEX"
+(2 real changes made)
+
+. replace   shortnam = "RITALIN" if substr(prodname,1,7)=="RITALIN"
+(7 real changes made)
+
+. replace   shortnam = "AMOXICILLIN" if substr(prodname,1,11)=="AMOXICILLIN"
+(56 real changes made)
+
+. replace   shortnam = "TOBI" if substr(prodname,1,4)=="TOBI"
+(1 real change made)
+
+. replace   shortnam = "BUDEPRION" if substr(prodname,1,9)=="BUDEPRION"
+(0 real changes made)
+
+. replace   shortnam = "VIRAMUNE" if substr(prodname,1,8)=="VIRAMUNE"
+(2 real changes made)
+
+. replace   shortnam = "EXELON" if substr(prodname,1,6)=="EXELON"
+(5 real changes made)
+
+. replace   shortnam = "WELCHOL" if substr(prodname,1,7)=="WELCHOL"
+(1 real change made)
+
+. 
+. replace   shortnam = "LEVITRA" if substr(prodname,1,7)=="LEVITRA"
+(4 real changes made)
+
+. replace   shortnam = "VERAPAMIL" if substr(prodname,1,9)=="VERAPAMIL"
+(50 real changes made)
+
+. replace   shortnam = "DDAVP" if substr(prodname,1,5)=="DDAVP"
+(5 real changes made)
+
+. replace   shortnam = "HUMATROPE" if substr(prodname,1,9)=="HUMATROPE"
+(4 real changes made)
+
+. replace   shortnam = "POTASSIUM" if substr(prodname,1,9)=="POTASSIUM"
+(74 real changes made)
+
+. replace   shortnam = "REQUIP" if substr(prodname,1,6)=="REQUIP"
+(7 real changes made)
+
+. replace   shortnam = "DOVONEX" if substr(prodname,1,7)=="DOVONEX"
+(3 real changes made)
+
+. replace   shortnam = "CIPRO" if substr(prodname,1,5)=="CIPRO"
+(19 real changes made)
+
+. replace   shortnam = "VALCYTE" if substr(prodname,1,7)=="VALCYTE"
+(1 real change made)
+
+. replace   shortnam = "SENSIPAR" if substr(prodname,1,8)=="SENSIPAR"
+(0 real changes made)
+
+. 
+. replace   shortnam = "TRAVATAN" if substr(prodname,1,8)=="TRAVATAN"
+(1 real change made)
+
+. replace   shortnam = "FOLLISTIM" if substr(prodname,1,9)=="FOLLISTIM"
+(1 real change made)
+
+. replace   shortnam = "VIGAMOX" if substr(prodname,1,7)=="VIGAMOX"
+(1 real change made)
+
+. replace   shortnam = "ATROVENT" if substr(prodname,1,8)=="ATROVENT"
+(2 real changes made)
+
+. replace   shortnam = "ULTRACET" if substr(prodname,1,8)=="ULTRACET"
+(1 real change made)
+
+. replace   shortnam = "PROPECIA" if substr(prodname,1,8)=="PROPECIA"
+(1 real change made)
+
+. replace   shortnam = "KADIAN" if substr(prodname,1,6)=="KADIAN"
+(7 real changes made)
+
+. replace   shortnam = "ADVICOR" if substr(prodname,1,7)=="ADVICOR"
+(3 real changes made)
+
+. replace   shortnam = "MUCINEX" if substr(prodname,1,7)=="MUCINEX"
+(1 real change made)
+
+. replace   shortnam = "EPIPEN" if substr(prodname,1,6)=="EPIPEN"
+(2 real changes made)
+
+. 
+. replace   shortnam = "TRINESSA" if substr(prodname,1,8)=="TRINESSA"
+(0 real changes made)
+
+. replace   shortnam = "DOXIL" if substr(prodname,1,5)=="DOXIL"
+(1 real change made)
+
+. replace   shortnam = "PRANDIN" if substr(prodname,1,7)=="PRANDIN"
+(3 real changes made)
+
+. replace   shortnam = "KYTRIL" if substr(prodname,1,6)=="KYTRIL"
+(4 real changes made)
+
+. replace   shortnam = "AMNESTEEM" if substr(prodname,1,9)=="AMNESTEEM"
+(3 real changes made)
+
+. replace   shortnam = "CIPRODEX" if substr(prodname,1,8)=="CIPRODEX"
+(1 real change made)
+
+. replace   shortnam = "LEXIVA" if substr(prodname,1,6)=="LEXIVA"
+(1 real change made)
+
+. replace   shortnam = "CLINDAMYCIN" if substr(prodname,1,11)=="CLINDAMYCIN"
+(29 real changes made)
+
+. replace   shortnam = "MARINOL" if substr(prodname,1,7)=="MARINOL"
+(3 real changes made)
+
+. replace   shortnam = "M-M-R" if substr(prodname,1,5)=="M-M-R"
+(0 real changes made)
+
+. 
+. replace   shortnam = "VELCADE" if substr(prodname,1,7)=="VELCADE"
+(1 real change made)
+
+. replace   shortnam = "TEGRETOL" if substr(prodname,1,8)=="TEGRETOL"
+(6 real changes made)
+
+. replace   shortnam = "IBUPROFEN" if substr(prodname,1,9)=="IBUPROFEN"
+(114 real changes made)
+
+. replace   shortnam = "NABUMETONE" if substr(prodname,1,10)=="NABUMETONE"
+(5 real changes made)
+
+. replace   shortnam = "STARLIX" if substr(prodname,1,7)=="STARLIX"
+(2 real changes made)
+
+. replace   shortnam = "PROMETHAZINE" if substr(prodname,1,12)=="PROMETHAZINE"
+(35 real changes made)
+
+. replace   shortnam = "ESTRATEST" if substr(prodname,1,9)=="ESTRATEST"
+(0 real changes made)
+
+. replace   shortnam = "VIVELLE" if substr(prodname,1,7)=="VIVELLE"
+(10 real changes made)
+
+. replace   shortnam = "MIRENA" if substr(prodname,1,6)=="MIRENA"
+(1 real change made)
+
+. replace   shortnam = "NEORAL" if substr(prodname,1,6)=="NEORAL"
+(3 real changes made)
+
+. 
+. replace   shortnam = "ZOVIRAX" if substr(prodname,1,7)=="ZOVIRAX"
+(8 real changes made)
+
+. replace   shortnam = "AVODART" if substr(prodname,1,7)=="AVODART"
+(1 real change made)
+
+. replace   shortnam = "ATENOLOL" if substr(prodname,1,8)=="ATENOLOL"
+(49 real changes made)
+
+. replace   shortnam = "ROBITUSSIN" if substr(prodname,1,10)=="ROBITUSSIN"
+(23 real changes made)
+
+. replace   shortnam = "PENTASA" if substr(prodname,1,7)=="PENTASA"
+(1 real change made)
+
+. replace   shortnam = "FERRLECIT" if substr(prodname,1,9)=="FERRLECIT"
+(1 real change made)
+
+. replace   shortnam = "APRI" if substr(prodname,1,4)=="APRI"
+(1 real change made)
+
+. replace   shortnam = "PREVPAC" if substr(prodname,1,7)=="PREVPAC"
+(0 real changes made)
+
+. replace   shortnam = "ELMIRON" if substr(prodname,1,7)=="ELMIRON"
+(2 real changes made)
+
+. replace   shortnam = "SONATA" if substr(prodname,1,6)=="SONATA"
+(2 real changes made)
+
+. 
+. replace   shortnam = "INTRON" if substr(prodname,1,6)=="INTRON"
+(12 real changes made)
+
+. replace   shortnam = "TRI-SPRINTEC" if substr(prodname,1,12)=="TRI-SPRINTEC"
+(0 real changes made)
+
+. replace   shortnam = "PERCOCET" if substr(prodname,1,8)=="PERCOCET"
+(6 real changes made)
+
+. replace   shortnam = "CARBIDOPA" if substr(prodname,1,9)=="CARBIDOPA"
+(28 real changes made)
+
+. replace   shortnam = "DORYX" if substr(prodname,1,5)=="DORYX"
+(0 real changes made)
+
+. replace   shortnam = "ZERIT" if substr(prodname,1,5)=="ZERIT"
+(5 real changes made)
+
+. replace   shortnam = "GLUCOPHAGE" if substr(prodname,1,10)=="GLUCOPHAGE"
+(5 real changes made)
+
+. replace   shortnam = "ACCUTANE" if substr(prodname,1,8)=="ACCUTANE"
+(3 real changes made)
+
+. replace   shortnam = "PEPCID" if substr(prodname,1,6)=="PEPCID"
+(12 real changes made)
+
+. replace   shortnam = "MOTRIN" if substr(prodname,1,6)=="MOTRIN"
+(12 real changes made)
+
+. 
+. replace   shortnam = "ZIAGEN" if substr(prodname,1,6)=="ZIAGEN"
+(2 real changes made)
+
+. replace   shortnam = "FLEXERIL" if substr(prodname,1,8)=="FLEXERIL"
+(3 real changes made)
+
+. replace   shortnam = "COLAZAL" if substr(prodname,1,7)=="COLAZAL"
+(1 real change made)
+
+. replace   shortnam = "ROCEPHIN" if substr(prodname,1,8)=="ROCEPHIN"
+(7 real changes made)
+
+. replace   shortnam = "FUZEON" if substr(prodname,1,6)=="FUZEON"
+(1 real change made)
+
+. replace   shortnam = "HYDROXYZINE" if substr(prodname,1,11)=="HYDROXYZINE"
+(57 real changes made)
+
+. replace   shortnam = "GONAL" if substr(prodname,1,5)=="GONAL"
+(0 real changes made)
+
+. replace   shortnam = "DUAC" if substr(prodname,1,4)=="DUAC"
+(1 real change made)
+
+. replace   shortnam = "PROMETRIUM" if substr(prodname,1,10)=="PROMETRIUM"
+(2 real changes made)
+
+. replace   shortnam = "OVCON" if substr(prodname,1,5)=="OVCON"
+(1 real change made)
+
+. 
+. replace   shortnam = "GABITRIL" if substr(prodname,1,8)=="GABITRIL"
+(4 real changes made)
+
+. replace   shortnam = "NITROFURANTOIN" if substr(prodname,1,14)=="NITROFURANTO
+> IN"
+shortnam was str13 now str14
+(11 real changes made)
+
+. replace   shortnam = "PENLAC" if substr(prodname,1,6)=="PENLAC"
+(1 real change made)
+
+. replace   shortnam = "NUVARING" if substr(prodname,1,8)=="NUVARING"
+(1 real change made)
+
+. replace   shortnam = "MINOCYCLINE" if substr(prodname,1,11)=="MINOCYCLINE"
+(15 real changes made)
+
+. replace   shortnam = "SPIRONOLACTONE" if substr(prodname,1,14)=="SPIRONOLACTO
+> NE"
+(26 real changes made)
+
+. replace   shortnam = "DILANTIN" if substr(prodname,1,8)=="DILANTIN"
+(4 real changes made)
+
+. replace   shortnam = "ENDOCET" if substr(prodname,1,7)=="ENDOCET"
+(5 real changes made)
+
+. replace   shortnam = "AZMACORT" if substr(prodname,1,8)=="AZMACORT"
+(1 real change made)
+
+. replace   shortnam = "VICKS" if substr(prodname,1,5)=="VICKS"
+(5 real changes made)
+
+. 
+. replace   shortnam = "HECTOROL" if substr(prodname,1,8)=="HECTOROL"
+(2 real changes made)
+
+. replace   shortnam = "TAZORAC" if substr(prodname,1,7)=="TAZORAC"
+(4 real changes made)
+
+. replace   shortnam = "FELODIPINE" if substr(prodname,1,10)=="FELODIPINE"
+(0 real changes made)
+
+. replace   shortnam = "LYRICA" if substr(prodname,1,6)=="LYRICA"
+(0 real changes made)
+
+. replace   shortnam = "TARKA" if substr(prodname,1,5)=="TARKA"
+(4 real changes made)
+
+. replace   shortnam = "SEASONALE" if substr(prodname,1,9)=="SEASONALE"
+(1 real change made)
+
+. replace   shortnam = "NECON" if substr(prodname,1,5)=="NECON"
+(9 real changes made)
+
+. replace   shortnam = "BACTROBAN" if substr(prodname,1,9)=="BACTROBAN"
+(3 real changes made)
+
+. replace   shortnam = "DESMOPRESSIN" if substr(prodname,1,12)=="DESMOPRESSIN"
+(7 real changes made)
+
+. replace   shortnam = "ESTROSTEP" if substr(prodname,1,9)=="ESTROSTEP"
+(0 real changes made)
+
+. 
+. replace   shortnam = "NIFEDICAL" if substr(prodname,1,9)=="NIFEDICAL"
+(2 real changes made)
+
+. replace   shortnam = "NOVOSEVEN" if substr(prodname,1,9)=="NOVOSEVEN"
+(2 real changes made)
+
+. replace   shortnam = "SUDAFED" if substr(prodname,1,7)=="SUDAFED"
+(5 real changes made)
+
+. replace   shortnam = "NIFEDIAC" if substr(prodname,1,8)=="NIFEDIAC"
+(1 real change made)
+
+. replace   shortnam = "ABRAXANE" if substr(prodname,1,8)=="ABRAXANE"
+(0 real changes made)
+
+. replace   shortnam = "ALPRAZOLAM" if substr(prodname,1,10)=="ALPRAZOLAM"
+(35 real changes made)
+
+. replace   shortnam = "VIDAZA" if substr(prodname,1,6)=="VIDAZA"
+(0 real changes made)
+
+. replace   shortnam = "METADATE" if substr(prodname,1,8)=="METADATE"
+(4 real changes made)
+
+. replace   shortnam = "CLOTRIMAZOLE" if substr(prodname,1,12)=="CLOTRIMAZOLE"
+(28 real changes made)
+
+. replace   shortnam = "MICROGESTIN" if substr(prodname,1,11)=="MICROGESTIN"
+(4 real changes made)
+
+. 
+. replace   shortnam = "HYALGAN" if substr(prodname,1,7)=="HYALGAN"
+(0 real changes made)
+
+. replace   shortnam = "MIRTAZAPINE" if substr(prodname,1,11)=="MIRTAZAPINE"
+(34 real changes made)
+
+. replace   shortnam = "RETIN" if substr(prodname,1,5)=="RETIN"
+(8 real changes made)
+
+. replace   shortnam = "PROTOPIC" if substr(prodname,1,8)=="PROTOPIC"
+(2 real changes made)
+
+. replace   shortnam = "TEQUIN" if substr(prodname,1,6)=="TEQUIN"
+(5 real changes made)
+
+. replace   shortnam = "DEPO-PROVERA" if substr(prodname,1,12)=="DEPO-PROVERA"
+(2 real changes made)
+
+. replace   shortnam = "CITALOPRAM" if substr(prodname,1,10)=="CITALOPRAM"
+(0 real changes made)
+
+. replace   shortnam = "PEDIARIX" if substr(prodname,1,8)=="PEDIARIX"
+(0 real changes made)
+
+. replace   shortnam = "CEPHALEXIN" if substr(prodname,1,10)=="CEPHALEXIN"
+(36 real changes made)
+
+. replace   shortnam = "BENADRYL" if substr(prodname,1,8)=="BENADRYL"
+(14 real changes made)
+
+. 
+. replace   shortnam = "ACULAR" if substr(prodname,1,6)=="ACULAR"
+(3 real changes made)
+
+. replace   shortnam = "DOSTINEX" if substr(prodname,1,8)=="DOSTINEX"
+(1 real change made)
+
+. replace   shortnam = "XENICAL" if substr(prodname,1,7)=="XENICAL"
+(1 real change made)
+
+. replace   shortnam = "ALEVE" if substr(prodname,1,5)=="ALEVE"
+(0 real changes made)
+
+. replace   shortnam = "GAMUNEX" if substr(prodname,1,7)=="GAMUNEX"
+(1 real change made)
+
+. replace   shortnam = "FORADIL" if substr(prodname,1,7)=="FORADIL"
+(2 real changes made)
+
+. replace   shortnam = "FLUVIRIN" if substr(prodname,1,8)=="FLUVIRIN"
+(0 real changes made)
+
+. replace   shortnam = "FOSINOPRIL" if substr(prodname,1,10)=="FOSINOPRIL"
+(6 real changes made)
+
+. replace   shortnam = "ACTIMMUNE" if substr(prodname,1,9)=="ACTIMMUNE"
+(1 real change made)
+
+. replace   shortnam = "ZOLADEX" if substr(prodname,1,7)=="ZOLADEX"
+(3 real changes made)
+
+. 
+. replace   shortnam = "AROMASIN" if substr(prodname,1,8)=="AROMASIN"
+(1 real change made)
+
+. replace   shortnam = "CLIMARA" if substr(prodname,1,7)=="CLIMARA"
+(6 real changes made)
+
+. replace   shortnam = "EXCEDRIN" if substr(prodname,1,8)=="EXCEDRIN"
+(3 real changes made)
+
+. replace   shortnam = "HYCAMTIN" if substr(prodname,1,8)=="HYCAMTIN"
+(1 real change made)
+
+. replace   shortnam = "HYDROCHLOROTHIAZIDE" if substr(prodname,1,19)=="HYDROCH
+> LOROTHIAZIDE"
+shortnam was str14 now str19
+(19 real changes made)
+
+. replace   shortnam = "RANITIDINE" if substr(prodname,1,10)=="RANITIDINE"
+(44 real changes made)
+
+. replace   shortnam = "SUBOXONE" if substr(prodname,1,8)=="SUBOXONE"
+(2 real changes made)
+
+. replace   shortnam = "ZYMAR" if substr(prodname,1,5)=="ZYMAR"
+(1 real change made)
+
+. replace   shortnam = "KLOR-CON" if substr(prodname,1,8)=="KLOR-CON"
+(8 real changes made)
+
+. replace   shortnam = "PHENYTOIN" if substr(prodname,1,9)=="PHENYTOIN"
+(14 real changes made)
+
+. 
+. replace   shortnam = "NAPROXEN" if substr(prodname,1,8)=="NAPROXEN"
+(86 real changes made)
+
+. replace   shortnam = "HEPSERA" if substr(prodname,1,7)=="HEPSERA"
+(1 real change made)
+
+. replace   shortnam = "CARBATROL" if substr(prodname,1,9)=="CARBATROL"
+(4 real changes made)
+
+. replace   shortnam = "VERELAN" if substr(prodname,1,7)=="VERELAN"
+(7 real changes made)
+
+. replace   shortnam = "FLOXIN" if substr(prodname,1,6)=="FLOXIN"
+(4 real changes made)
+
+. replace   shortnam = "FLUZONE" if substr(prodname,1,7)=="FLUZONE"
+(0 real changes made)
+
+. replace   shortnam = "DEPO-MEDROL" if substr(prodname,1,11)=="DEPO-MEDROL"
+(5 real changes made)
+
+. replace   shortnam = "OLUX" if substr(prodname,1,4)=="OLUX"
+(1 real change made)
+
+. replace   shortnam = "SORIATANE" if substr(prodname,1,9)=="SORIATANE"
+(4 real changes made)
+
+. replace   shortnam = "GEMFIBROZIL" if substr(prodname,1,11)=="GEMFIBROZIL"
+(10 real changes made)
+
+. 
+. replace   shortnam = "DYNACIN" if substr(prodname,1,7)=="DYNACIN"
+(5 real changes made)
+
+. replace   shortnam = "ESTRACE" if substr(prodname,1,7)=="ESTRACE"
+(5 real changes made)
+
+. replace   shortnam = "GLYCOLAX" if substr(prodname,1,8)=="GLYCOLAX"
+(0 real changes made)
+
+. replace   shortnam = "VANCOCIN" if substr(prodname,1,8)=="VANCOCIN"
+(3 real changes made)
+
+. replace   shortnam = "VFEND" if substr(prodname,1,5)=="VFEND"
+(3 real changes made)
+
+. replace   shortnam = "ANZEMET" if substr(prodname,1,7)=="ANZEMET"
+(5 real changes made)
+
+. replace   shortnam = "NICOTINE" if substr(prodname,1,8)=="NICOTINE"
+(17 real changes made)
+
+. replace   shortnam = "BENEFIX" if substr(prodname,1,7)=="BENEFIX"
+(3 real changes made)
+
+. replace   shortnam = "AMPHETAMINE" if substr(prodname,1,11)=="AMPHETAMINE"
+(15 real changes made)
+
+. replace   shortnam = "AVIANE" if substr(prodname,1,6)=="AVIANE"
+(1 real change made)
+
+. 
+. 
+. replace   shortnam = "CLARITIN" if substr(prodname,1,8)=="CLARITIN"
+(5 real changes made)
+
+. replace   shortnam = "ETODOLAC" if substr(prodname,1,8)=="ETODOLAC"
+(29 real changes made)
+
+. replace   shortnam = "DYNACIRC" if substr(prodname,1,8)=="DYNACIRC"
+(4 real changes made)
+
+. replace   shortnam = "LORAZEPAM" if substr(prodname,1,9)=="LORAZEPAM"
+(46 real changes made)
+
+. replace   shortnam = "CELEXA" if substr(prodname,1,6)=="CELEXA"
+(4 real changes made)
+
+. replace   shortnam = "ENALAPRIL" if substr(prodname,1,9)=="ENALAPRIL"
+(80 real changes made)
+
+. replace   shortnam = "FOCALIN" if substr(prodname,1,7)=="FOCALIN"
+(3 real changes made)
+
+. replace   shortnam = "ACCUPRIL" if substr(prodname,1,8)=="ACCUPRIL"
+(4 real changes made)
+
+. replace   shortnam = "FEMHRT" if substr(prodname,1,6)=="FEMHRT"
+(1 real change made)
+
+. replace   shortnam = "BAYER" if substr(prodname,1,5)=="BAYER"
+(0 real changes made)
+
+. replace   shortnam = "NYSTATIN" if substr(prodname,1,8)=="NYSTATIN"
+(31 real changes made)
+
+. replace   shortnam = "AMERGE" if substr(prodname,1,6)=="AMERGE"
+(2 real changes made)
+
+. replace   shortnam = "SYMBYAX" if substr(prodname,1,7)=="SYMBYAX"
+(0 real changes made)
+
+. replace   shortnam = "ITRACONAZOLE" if substr(prodname,1,12)=="ITRACONAZOLE"
+(1 real change made)
+
+. replace   shortnam = "SULAR" if substr(prodname,1,5)=="SULAR"
+(4 real changes made)
+
+. replace   shortnam = "BONIVA" if substr(prodname,1,6)=="BONIVA"
+(0 real changes made)
+
+. replace   shortnam = "PROPOXYPHENE" if substr(prodname,1,12)=="PROPOXYPHENE"
+(28 real changes made)
+
+. replace   shortnam = "EMEND" if substr(prodname,1,5)=="EMEND"
+(3 real changes made)
+
+. replace   shortnam = "ENGERIX" if substr(prodname,1,7)=="ENGERIX"
+(0 real changes made)
+
+. replace   shortnam = "KARIVA" if substr(prodname,1,6)=="KARIVA"
+(1 real change made)
+
+. replace   shortnam = "RAPTIVA" if substr(prodname,1,7)=="RAPTIVA"
+(1 real change made)
+
+. replace   shortnam = "LOPROX" if substr(prodname,1,6)=="LOPROX"
+(4 real changes made)
+
+. replace   shortnam = "UROXATRAL" if substr(prodname,1,9)=="UROXATRAL"
+(1 real change made)
+
+. replace   shortnam = "PNEUMOVAX" if substr(prodname,1,9)=="PNEUMOVAX"
+(0 real changes made)
+
+. replace   shortnam = "FASLODEX" if substr(prodname,1,8)=="FASLODEX"
+(1 real change made)
+
+. replace   shortnam = "BYETTA" if substr(prodname,1,6)=="BYETTA"
+(0 real changes made)
+
+. replace   shortnam = "MEDROXYPROGESTERONE" if substr(prodname,1,19)=="MEDROXY
+> PROGESTERONE"
+(11 real changes made)
+
+. replace   shortnam = "AXERT" if substr(prodname,1,5)=="AXERT"
+(3 real changes made)
+
+. replace   shortnam = "STALEVO" if substr(prodname,1,7)=="STALEVO"
+(3 real changes made)
+
+. replace   shortnam = "ACCOLATE" if substr(prodname,1,8)=="ACCOLATE"
+(2 real changes made)
+
+. replace   shortnam = "VAGIFEM" if substr(prodname,1,7)=="VAGIFEM"
+(2 real changes made)
+
+. replace   shortnam = "IMODIUM" if substr(prodname,1,7)=="IMODIUM"
+(7 real changes made)
+
+. replace   shortnam = "NORDITROPIN" if substr(prodname,1,11)=="NORDITROPIN"
+(3 real changes made)
+
+. replace   shortnam = "IRESSA" if substr(prodname,1,6)=="IRESSA"
+(1 real change made)
+
+. replace   shortnam = "DICLOFENAC" if substr(prodname,1,10)=="DICLOFENAC"
+(28 real changes made)
+
+. replace   shortnam = "TAZTIA" if substr(prodname,1,6)=="TAZTIA"
+(5 real changes made)
+
+. replace   shortnam = "RIBAVIRIN" if substr(prodname,1,9)=="RIBAVIRIN"
+(0 real changes made)
+
+. replace   shortnam = "LOW-OGESTREL" if substr(prodname,1,12)=="LOW-OGESTREL"
+(1 real change made)
+
+. replace   shortnam = "PREDNISOLONE" if substr(prodname,1,12)=="PREDNISOLONE"
+(20 real changes made)
+
+. replace   shortnam = "VALIUM" if substr(prodname,1,6)=="VALIUM"
+(0 real changes made)
+
+. replace   shortnam = "HYCD/IBUPROFEN" if substr(prodname,1,14)=="HYCD/IBUPROF
+> EN"
+(0 real changes made)
+
+. replace   shortnam = "SARAFEM" if substr(prodname,1,7)=="SARAFEM"
+(1 real change made)
+
+. replace   shortnam = "TRETINOIN" if substr(prodname,1,9)=="TRETINOIN"
+(7 real changes made)
+
+. replace   shortnam = "RYTHMOL" if substr(prodname,1,7)=="RYTHMOL"
+(6 real changes made)
+
+. replace   shortnam = "NEOSPORIN" if substr(prodname,1,9)=="NEOSPORIN"
+(5 real changes made)
+
+. replace   shortnam = "MONISTAT" if substr(prodname,1,8)=="MONISTAT"
+(10 real changes made)
+
+. replace   shortnam = "URSO" if substr(prodname,1,4)=="URSO"
+(5 real changes made)
+
+. replace   shortnam = "LORATADINE" if substr(prodname,1,10)=="LORATADINE"
+(5 real changes made)
+
+. replace   shortnam = "CLARAVIS" if substr(prodname,1,8)=="CLARAVIS"
+(3 real changes made)
+
+. replace   shortnam = "CLARITHROMYCIN" if substr(prodname,1,14)=="CLARITHROMYC
+> IN"
+(0 real changes made)
+
+. replace   shortnam = "CLOZARIL" if substr(prodname,1,8)=="CLOZARIL"
+(2 real changes made)
+
+. replace   shortnam = "TRIAMTERENE" if substr(prodname,1,11)=="TRIAMTERENE"
+(22 real changes made)
+
+. replace   shortnam = "MACUGEN" if substr(prodname,1,7)=="MACUGEN"
+(0 real changes made)
+
+. replace   shortnam = "KETOCONAZOLE" if substr(prodname,1,12)=="KETOCONAZOLE"
+(12 real changes made)
+
+. replace   shortnam = "KENALOG" if substr(prodname,1,7)=="KENALOG"
+(8 real changes made)
+
+. replace   shortnam = "OPTI-FREE" if substr(prodname,1,9)=="OPTI-FREE"
+(0 real changes made)
+
+. replace   shortnam = "TUMS" if substr(prodname,1,4)=="TUMS"
+(16 real changes made)
+
+. replace   shortnam = "MAVIK" if substr(prodname,1,5)=="MAVIK"
+(6 real changes made)
+
+. replace   shortnam = "ENTOCORT" if substr(prodname,1,8)=="ENTOCORT"
+(1 real change made)
+
+. replace   shortnam = "ELLENCE" if substr(prodname,1,7)=="ELLENCE"
+(2 real changes made)
+
+. replace   shortnam = "NEOMYCIN" if substr(prodname,1,8)=="NEOMYCIN"
+(10 real changes made)
+
+. replace   shortnam = "ACTIVELLA" if substr(prodname,1,9)=="ACTIVELLA"
+(2 real changes made)
+
+. replace   shortnam = "CYCLOBENZAPRINE" if substr(prodname,1,15)=="CYCLOBENZAP
+> RINE"
+(17 real changes made)
+
+. replace   shortnam = "CYCLOSPORINE" if substr(prodname,1,12)=="CYCLOSPORINE"
+(8 real changes made)
+
+. replace   shortnam = "CLOZAPINE" if substr(prodname,1,9)=="CLOZAPINE"
+(9 real changes made)
+
+. replace   shortnam = "ADOXA" if substr(prodname,1,5)=="ADOXA"
+(3 real changes made)
+
+. replace   shortnam = "MEGESTROL" if substr(prodname,1,9)=="MEGESTROL"
+(21 real changes made)
+
+. replace   shortnam = "TRIVORA" if substr(prodname,1,7)=="TRIVORA"
+(2 real changes made)
+
+. replace   shortnam = "ELIGARD" if substr(prodname,1,7)=="ELIGARD"
+(2 real changes made)
+
+. replace   shortnam = "EFUDEX" if substr(prodname,1,6)=="EFUDEX"
+(3 real changes made)
+
+. replace   shortnam = "PACLITAXEL" if substr(prodname,1,10)=="PACLITAXEL"
+(9 real changes made)
+
+. replace   shortnam = "ALTOPREV" if substr(prodname,1,8)=="ALTOPREV"
+(0 real changes made)
+
+. replace   shortnam = "DOXYCYCLINE" if substr(prodname,1,11)=="DOXYCYCLINE"
+(40 real changes made)
+
+. replace   shortnam = "MERIDIA" if substr(prodname,1,7)=="MERIDIA"
+(6 real changes made)
+
+. replace   shortnam = "CREON" if substr(prodname,1,5)=="CREON"
+(3 real changes made)
+
+. replace   shortnam = "METOPROLOL" if substr(prodname,1,10)=="METOPROLOL"
+(30 real changes made)
+
+. replace   shortnam = "MEPRON" if substr(prodname,1,6)=="MEPRON"
+(2 real changes made)
+
+. replace   shortnam = "LEUKINE" if substr(prodname,1,7)=="LEUKINE"
+(2 real changes made)
+
+. replace   shortnam = "ULTANE" if substr(prodname,1,6)=="ULTANE"
+(1 real change made)
+
+. replace   shortnam = "COMTAN" if substr(prodname,1,6)=="COMTAN"
+(1 real change made)
+
+. replace   shortnam = "FLUCONAZOLE" if substr(prodname,1,11)=="FLUCONAZOLE"
+(0 real changes made)
+
+. replace   shortnam = "SOTRET" if substr(prodname,1,6)=="SOTRET"
+(4 real changes made)
+
+. replace   shortnam = "ANDRODERM" if substr(prodname,1,9)=="ANDRODERM"
+(2 real changes made)
+
+. replace   shortnam = "FUROSEMIDE" if substr(prodname,1,10)=="FUROSEMIDE"
+(49 real changes made)
+
+. replace   shortnam = "DIASTAT" if substr(prodname,1,7)=="DIASTAT"
+(5 real changes made)
+
+. replace   shortnam = "OXANDRIN" if substr(prodname,1,8)=="OXANDRIN"
+(0 real changes made)
+
+. replace   shortnam = "AGRYLIN" if substr(prodname,1,7)=="AGRYLIN"
+(2 real changes made)
+
+. replace   shortnam = "SEROSTIM" if substr(prodname,1,8)=="SEROSTIM"
+(3 real changes made)
+
+. replace   shortnam = "SPORANOX" if substr(prodname,1,8)=="SPORANOX"
+(3 real changes made)
+
+. replace   shortnam = "GLUCOVANCE" if substr(prodname,1,10)=="GLUCOVANCE"
+(3 real changes made)
+
+. replace   shortnam = "CENESTIN" if substr(prodname,1,8)=="CENESTIN"
+(0 real changes made)
+
+. replace   shortnam = "TIZANIDINE" if substr(prodname,1,10)=="TIZANIDINE"
+(14 real changes made)
+
+. replace   shortnam = "MERCAPTOPURINE" if substr(prodname,1,14)=="MERCAPTOPURI
+> NE"
+(0 real changes made)
+
+. replace   shortnam = "BENAZEPRIL" if substr(prodname,1,10)=="BENAZEPRIL"
+(0 real changes made)
+
+. replace   shortnam = "VICODIN" if substr(prodname,1,7)=="VICODIN"
+(4 real changes made)
+
+. replace   shortnam = "VESICARE" if substr(prodname,1,8)=="VESICARE"
+(0 real changes made)
+
+. replace   shortnam = "ERYTHROMYCIN" if substr(prodname,1,12)=="ERYTHROMYCIN"
+(30 real changes made)
+
+. replace   shortnam = "ETHYOL" if substr(prodname,1,6)=="ETHYOL"
+(1 real change made)
+
+. replace   shortnam = "RENU" if substr(prodname,1,4)=="RENU"
+(0 real changes made)
+
+. replace   shortnam = "BACLOFEN" if substr(prodname,1,8)=="BACLOFEN"
+(23 real changes made)
+
+. 
+. 
+. 
+. * otc
+. * replace   shortnam = "PREPARATION" if substr(prodname,1,11)=="PREPARATION"
+. replace   shortnam = "CILOSTAZOL" if substr(prodname,1,10)=="CILOSTAZOL"
+(0 real changes made)
+
+. replace   shortnam = "MAXAIR" if substr(prodname,1,6)=="MAXAIR"
+(1 real change made)
+
+. replace   shortnam = "KLONOPIN" if substr(prodname,1,8)=="KLONOPIN"
+(8 real changes made)
+
+. replace   shortnam = "CARBOPLATIN" if substr(prodname,1,11)=="CARBOPLATIN"
+(0 real changes made)
+
+. replace   shortnam = "CLOBEX" if substr(prodname,1,6)=="CLOBEX"
+(1 real change made)
+
+. replace   shortnam = "PROPOFOL" if substr(prodname,1,8)=="PROPOFOL"
+(1 real change made)
+
+. replace   shortnam = "NORTREL" if substr(prodname,1,7)=="NORTREL"
+(4 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "REFRESH" if substr(prodname,1,7)=="REFRESH"
+(7 real changes made)
+
+. replace   shortnam = "SAIZEN" if substr(prodname,1,6)=="SAIZEN"
+(2 real changes made)
+
+. replace   shortnam = "RECOMBIVAX" if substr(prodname,1,10)=="RECOMBIVAX"
+(0 real changes made)
+
+. replace   shortnam = "NEUTROGENA" if substr(prodname,1,10)=="NEUTROGENA"
+(0 real changes made)
+
+. replace   shortnam = "TRAZODONE" if substr(prodname,1,9)=="TRAZODONE"
+(37 real changes made)
+
+. replace   shortnam = "TESTIM" if substr(prodname,1,6)=="TESTIM"
+(1 real change made)
+
+. 
+. * otc
+. replace   shortnam = "HYDROCORTISONE" if substr(prodname,1,14)=="HYDROCORTISO
+> NE"
+(85 real changes made)
+
+. replace   shortnam = "PLENDIL" if substr(prodname,1,7)=="PLENDIL"
+(3 real changes made)
+
+. replace   shortnam = "ZICAM" if substr(prodname,1,5)=="ZICAM"
+(0 real changes made)
+
+. replace   shortnam = "MOMETASONE" if substr(prodname,1,10)=="MOMETASONE"
+(1 real change made)
+
+. 
+. * tough to match this one
+. replace   shortnam = "APAP/CD" if substr(prodname,1,7)=="APAP/CD"
+(0 real changes made)
+
+. replace   shortnam = "CATHFLO" if substr(prodname,1,7)=="CATHFLO"
+(1 real change made)
+
+. replace   shortnam = "MUPIROCIN" if substr(prodname,1,9)=="MUPIROCIN"
+(2 real changes made)
+
+. replace   shortnam = "TIMOLOL" if substr(prodname,1,7)=="TIMOLOL"
+(20 real changes made)
+
+. replace   shortnam = "CALCITRIOL" if substr(prodname,1,10)=="CALCITRIOL"
+(4 real changes made)
+
+. replace   shortnam = "QVAR" if substr(prodname,1,4)=="QVAR"
+(2 real changes made)
+
+. replace   shortnam = "TORSEMIDE" if substr(prodname,1,9)=="TORSEMIDE"
+(10 real changes made)
+
+. replace   shortnam = "FROVA" if substr(prodname,1,5)=="FROVA"
+(1 real change made)
+
+. 
+. * otc
+. replace   shortnam = "VISINE" if substr(prodname,1,6)=="VISINE"
+(0 real changes made)
+
+. replace   shortnam = "BENZONATATE" if substr(prodname,1,11)=="BENZONATATE"
+(9 real changes made)
+
+. replace   shortnam = "BUSPIRONE" if substr(prodname,1,9)=="BUSPIRONE"
+(36 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "METAMUCIL" if substr(prodname,1,9)=="METAMUCIL"
+(5 real changes made)
+
+. replace   shortnam = "CANASA" if substr(prodname,1,6)=="CANASA"
+(1 real change made)
+
+. replace   shortnam = "HAVRIX" if substr(prodname,1,6)=="HAVRIX"
+(0 real changes made)
+
+. replace   shortnam = "BETOPTIC" if substr(prodname,1,8)=="BETOPTIC"
+(1 real change made)
+
+. replace   shortnam = "MIRCETTE" if substr(prodname,1,8)=="MIRCETTE"
+(1 real change made)
+
+. replace   shortnam = "CLONIDINE" if substr(prodname,1,9)=="CLONIDINE"
+(21 real changes made)
+
+. replace   shortnam = "LIDOCAINE" if substr(prodname,1,9)=="LIDOCAINE"
+(49 real changes made)
+
+. replace   shortnam = "IPRATROPIUM" if substr(prodname,1,11)=="IPRATROPIUM"
+(15 real changes made)
+
+. replace   shortnam = "ISOSORBIDE" if substr(prodname,1,10)=="ISOSORBIDE"
+(59 real changes made)
+
+. replace   shortnam = "ULTRASE" if substr(prodname,1,7)=="ULTRASE"
+(4 real changes made)
+
+. replace   shortnam = "NICODERM" if substr(prodname,1,8)=="NICODERM"
+(9 real changes made)
+
+. replace   shortnam = "TAMOXIFEN" if substr(prodname,1,9)=="TAMOXIFEN"
+(13 real changes made)
+
+. replace   shortnam = "PLEXION" if substr(prodname,1,7)=="PLEXION"
+(3 real changes made)
+
+. replace   shortnam = "DIDANOSINE" if substr(prodname,1,10)=="DIDANOSINE"
+(0 real changes made)
+
+. replace   shortnam = "PREDNISONE" if substr(prodname,1,10)=="PREDNISONE"
+(56 real changes made)
+
+. replace   shortnam = "UNIVASC" if substr(prodname,1,7)=="UNIVASC"
+(2 real changes made)
+
+. replace   shortnam = "LITHIUM" if substr(prodname,1,7)=="LITHIUM"
+(19 real changes made)
+
+. replace   shortnam = "NITROGLYCERIN" if substr(prodname,1,13)=="NITROGLYCERIN
+> "
+(39 real changes made)
+
+. replace   shortnam = "LEVORA" if substr(prodname,1,6)=="LEVORA"
+(2 real changes made)
+
+. replace   shortnam = "CARISOPRODOL" if substr(prodname,1,12)=="CARISOPRODOL"
+(18 real changes made)
+
+. replace   shortnam = "CRIXIVAN" if substr(prodname,1,8)=="CRIXIVAN"
+(4 real changes made)
+
+. replace   shortnam = "PENICILLIN" if substr(prodname,1,10)=="PENICILLIN"
+(24 real changes made)
+
+. replace   shortnam = "METHOTREXATE" if substr(prodname,1,12)=="METHOTREXATE"
+(17 real changes made)
+
+. replace   shortnam = "CARIMUNE" if substr(prodname,1,8)=="CARIMUNE"
+(3 real changes made)
+
+. replace   shortnam = "GLUCOTROL" if substr(prodname,1,9)=="GLUCOTROL"
+(5 real changes made)
+
+. replace   shortnam = "SPRINTEC" if substr(prodname,1,8)=="SPRINTEC"
+(1 real change made)
+
+. replace   shortnam = "NOVANTRONE" if substr(prodname,1,10)=="NOVANTRONE"
+(4 real changes made)
+
+. replace   shortnam = "PHENTERMINE" if substr(prodname,1,11)=="PHENTERMINE"
+(12 real changes made)
+
+. replace   shortnam = "VIDEX" if substr(prodname,1,5)=="VIDEX"
+(11 real changes made)
+
+. replace   shortnam = "ENABLEX" if substr(prodname,1,7)=="ENABLEX"
+(0 real changes made)
+
+. replace   shortnam = "AEROBID" if substr(prodname,1,7)=="AEROBID"
+(2 real changes made)
+
+. replace   shortnam = "ZOVIA" if substr(prodname,1,5)=="ZOVIA"
+(4 real changes made)
+
+. replace   shortnam = "GENGRAF" if substr(prodname,1,7)=="GENGRAF"
+(3 real changes made)
+
+. replace   shortnam = "LORTAB" if substr(prodname,1,6)=="LORTAB"
+(5 real changes made)
+
+. replace   shortnam = "TRIAZ" if substr(prodname,1,5)=="TRIAZ"
+(19 real changes made)
+
+. replace   shortnam = "TIAZAC" if substr(prodname,1,6)=="TIAZAC"
+(6 real changes made)
+
+. replace   shortnam = "CLONAZEPAM" if substr(prodname,1,10)=="CLONAZEPAM"
+(35 real changes made)
+
+. replace   shortnam = "DIP/TET" if substr(prodname,1,7)=="DIP/TET"
+(0 real changes made)
+
+. replace   shortnam = "CIPROFLOXACIN" if substr(prodname,1,13)=="CIPROFLOXACIN
+> "
+(14 real changes made)
+
+. replace   shortnam = "VAQTA" if substr(prodname,1,5)=="VAQTA"
+(0 real changes made)
+
+. replace   shortnam = "INVIRASE" if substr(prodname,1,8)=="INVIRASE"
+(1 real change made)
+
+. replace   shortnam = "INFERGEN" if substr(prodname,1,8)=="INFERGEN"
+(2 real changes made)
+
+. replace   shortnam = "OXYTROL" if substr(prodname,1,7)=="OXYTROL"
+(1 real change made)
+
+. 
+. * otc
+. replace   shortnam = "ALKA-SELTZER" if substr(prodname,1,12)=="ALKA-SELTZER"
+(0 real changes made)
+
+. replace   shortnam = "PARAGARD" if substr(prodname,1,8)=="PARAGARD"
+(0 real changes made)
+
+. replace   shortnam = "HEPARIN" if substr(prodname,1,7)=="HEPARIN"
+(34 real changes made)
+
+. replace   shortnam = "BISOPROLOL" if substr(prodname,1,10)=="BISOPROLOL"
+(18 real changes made)
+
+. replace   shortnam = "ALESSE" if substr(prodname,1,6)=="ALESSE"
+(1 real change made)
+
+. replace   shortnam = "CEFUROXIME" if substr(prodname,1,10)=="CEFUROXIME"
+(22 real changes made)
+
+. replace   shortnam = "CHOLESTYRAMINE" if substr(prodname,1,14)=="CHOLESTYRAMI
+> NE"
+(6 real changes made)
+
+. replace   shortnam = "LOESTRIN" if substr(prodname,1,8)=="LOESTRIN"
+(0 real changes made)
+
+. replace   shortnam = "PRENATE" if substr(prodname,1,7)=="PRENATE"
+(3 real changes made)
+
+. replace   shortnam = "SYNTEST" if substr(prodname,1,7)=="SYNTEST"
+(2 real changes made)
+
+. replace   shortnam = "HYDRALAZINE" if substr(prodname,1,11)=="HYDRALAZINE"
+(23 real changes made)
+
+. replace   shortnam = "URSODIOL" if substr(prodname,1,8)=="URSODIOL"
+(4 real changes made)
+
+. replace   shortnam = "REGRANEX" if substr(prodname,1,8)=="REGRANEX"
+(1 real change made)
+
+. replace   shortnam = "ZMAX" if substr(prodname,1,4)=="ZMAX"
+(0 real changes made)
+
+. replace   shortnam = "LABETALOL" if substr(prodname,1,9)=="LABETALOL"
+(20 real changes made)
+
+. replace   shortnam = "INSPRA" if substr(prodname,1,6)=="INSPRA"
+(2 real changes made)
+
+. replace   shortnam = "TRUSOPT" if substr(prodname,1,7)=="TRUSOPT"
+(1 real change made)
+
+. replace   shortnam = "MALARONE" if substr(prodname,1,8)=="MALARONE"
+(2 real changes made)
+
+. replace   shortnam = "ULTRAM" if substr(prodname,1,6)=="ULTRAM"
+(1 real change made)
+
+. replace   shortnam = "HYDROXYCHLOROQUINE" if substr(prodname,1,18)=="HYDROXYC
+> HLOROQUINE"
+(5 real changes made)
+
+. replace   shortnam = "KINERET" if substr(prodname,1,7)=="KINERET"
+(1 real change made)
+
+. replace   shortnam = "CLEOCIN" if substr(prodname,1,7)=="CLEOCIN"
+(18 real changes made)
+
+. replace   shortnam = "INDOMETHACIN" if substr(prodname,1,12)=="INDOMETHACIN"
+(14 real changes made)
+
+. replace   shortnam = "HALFLYTELY" if substr(prodname,1,10)=="HALFLYTELY"
+(0 real changes made)
+
+. replace   shortnam = "CARAFATE" if substr(prodname,1,8)=="CARAFATE"
+(2 real changes made)
+
+. replace   shortnam = "CICLOPIROX" if substr(prodname,1,10)=="CICLOPIROX"
+(0 real changes made)
+
+. replace   shortnam = "CYTOMEL" if substr(prodname,1,7)=="CYTOMEL"
+(4 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "PEPTO" if substr(prodname,1,5)=="PEPTO"
+(3 real changes made)
+
+. replace   shortnam = "PROVENTIL" if substr(prodname,1,9)=="PROVENTIL"
+(8 real changes made)
+
+. replace   shortnam = "METAGLIP" if substr(prodname,1,8)=="METAGLIP"
+(3 real changes made)
+
+. replace   shortnam = "METOLAZONE" if substr(prodname,1,10)=="METOLAZONE"
+(3 real changes made)
+
+. replace   shortnam = "BECONASE" if substr(prodname,1,8)=="BECONASE"
+(1 real change made)
+
+. replace   shortnam = "QUININE" if substr(prodname,1,7)=="QUININE"
+(22 real changes made)
+
+. replace   shortnam = "FINACEA" if substr(prodname,1,7)=="FINACEA"
+(1 real change made)
+
+. replace   shortnam = "ABREVA" if substr(prodname,1,6)=="ABREVA"
+(1 real change made)
+
+. replace   shortnam = "FLUDARABINE" if substr(prodname,1,11)=="FLUDARABINE"
+(0 real changes made)
+
+. replace   shortnam = "LINDANE" if substr(prodname,1,7)=="LINDANE"
+(5 real changes made)
+
+. replace   shortnam = "PAMIDRONATE" if substr(prodname,1,11)=="PAMIDRONATE"
+(10 real changes made)
+
+. replace   shortnam = "ACETAMINOPHEN" if substr(prodname,1,13)=="ACETAMINOPHEN
+> "
+(113 real changes made)
+
+. replace   shortnam = "POLYETHYLENE" if substr(prodname,1,12)=="POLYETHYLENE"
+(1 real change made)
+
+. replace   shortnam = "RILUTEK" if substr(prodname,1,7)=="RILUTEK"
+(1 real change made)
+
+. replace   shortnam = "COMVAX" if substr(prodname,1,6)=="COMVAX"
+(0 real changes made)
+
+. replace   shortnam = "CAMPATH" if substr(prodname,1,7)=="CAMPATH"
+(0 real changes made)
+
+. replace   shortnam = "ELESTAT" if substr(prodname,1,7)=="ELESTAT"
+(0 real changes made)
+
+. replace   shortnam = "AZOPT" if substr(prodname,1,5)=="AZOPT"
+(1 real change made)
+
+. replace   shortnam = "TERAZOSIN" if substr(prodname,1,9)=="TERAZOSIN"
+(33 real changes made)
+
+. replace   shortnam = "MIDODRINE" if substr(prodname,1,9)=="MIDODRINE"
+(5 real changes made)
+
+. replace   shortnam = "ATIVAN" if substr(prodname,1,6)=="ATIVAN"
+(5 real changes made)
+
+. replace   shortnam = "FOSRENOL" if substr(prodname,1,8)=="FOSRENOL"
+(0 real changes made)
+
+. replace   shortnam = "PROCARDIA" if substr(prodname,1,9)=="PROCARDIA"
+(4 real changes made)
+
+. replace   shortnam = "AMIODARONE" if substr(prodname,1,10)=="AMIODARONE"
+(8 real changes made)
+
+. replace   shortnam = "ACYCLOVIR" if substr(prodname,1,9)=="ACYCLOVIR"
+(44 real changes made)
+
+. replace   shortnam = "ALLOPURINOL" if substr(prodname,1,11)=="ALLOPURINOL"
+(25 real changes made)
+
+. replace   shortnam = "GRIFULVIN" if substr(prodname,1,9)=="GRIFULVIN"
+(2 real changes made)
+
+. replace   shortnam = "HYTRIN" if substr(prodname,1,6)=="HYTRIN"
+(4 real changes made)
+
+. replace   shortnam = "DIGITEK" if substr(prodname,1,7)=="DIGITEK"
+(4 real changes made)
+
+. replace   shortnam = "MESALAMINE" if substr(prodname,1,10)=="MESALAMINE"
+(0 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "NICORETTE" if substr(prodname,1,9)=="NICORETTE"
+(4 real changes made)
+
+. replace   shortnam = "PANCREASE" if substr(prodname,1,9)=="PANCREASE"
+(5 real changes made)
+
+. replace   shortnam = "ACEON" if substr(prodname,1,5)=="ACEON"
+(3 real changes made)
+
+. replace   shortnam = "RESTORIL" if substr(prodname,1,8)=="RESTORIL"
+(3 real changes made)
+
+. replace   shortnam = "CAMILA" if substr(prodname,1,6)=="CAMILA"
+(1 real change made)
+
+. replace   shortnam = "FRAGMIN" if substr(prodname,1,7)=="FRAGMIN"
+(5 real changes made)
+
+. replace   shortnam = "GLUCAGON" if substr(prodname,1,8)=="GLUCAGON"
+(1 real change made)
+
+. replace   shortnam = "NICOTROL" if substr(prodname,1,8)=="NICOTROL"
+(5 real changes made)
+
+. replace   shortnam = "OPTIVAR" if substr(prodname,1,7)=="OPTIVAR"
+(0 real changes made)
+
+. replace   shortnam = "TEVETEN" if substr(prodname,1,7)=="TEVETEN"
+(4 real changes made)
+
+. replace   shortnam = "TRIAMCINOLONE" if substr(prodname,1,13)=="TRIAMCINOLONE
+> "
+(58 real changes made)
+
+. replace   shortnam = "SOMA" if substr(prodname,1,4)=="SOMA" & substr(prodname
+> ,1,8)!="SOMAVERT"
+(3 real changes made)
+
+. replace   shortnam = "LEVOTHROID" if substr(prodname,1,10)=="LEVOTHROID"
+(13 real changes made)
+
+. replace   shortnam = "AEROCHAMBER" if substr(prodname,1,11)=="AEROCHAMBER"
+(0 real changes made)
+
+. replace   shortnam = "FORTAMET" if substr(prodname,1,8)=="FORTAMET"
+(0 real changes made)
+
+. replace   shortnam = "METRONIDAZOLE" if substr(prodname,1,13)=="METRONIDAZOLE
+> "
+(24 real changes made)
+
+. replace   shortnam = "PRIMIDONE" if substr(prodname,1,9)=="PRIMIDONE"
+(8 real changes made)
+
+. replace   shortnam = "PRECOSE" if substr(prodname,1,7)=="PRECOSE"
+(3 real changes made)
+
+. replace   shortnam = "GYNAZOLE" if substr(prodname,1,8)=="GYNAZOLE"
+(1 real change made)
+
+. replace   shortnam = "SANDIMMUNE" if substr(prodname,1,10)=="SANDIMMUNE"
+(4 real changes made)
+
+. replace   shortnam = "SMX/TMP" if substr(prodname,1,7)=="SMX/TMP"
+(0 real changes made)
+
+. replace   shortnam = "LUXIQ" if substr(prodname,1,5)=="LUXIQ"
+(1 real change made)
+
+. replace   shortnam = "ZADITOR" if substr(prodname,1,7)=="ZADITOR"
+(1 real change made)
+
+. replace   shortnam = "CEFTIN" if substr(prodname,1,6)=="CEFTIN"
+(4 real changes made)
+
+. replace   shortnam = "UNIRETIC" if substr(prodname,1,8)=="UNIRETIC"
+(3 real changes made)
+
+. replace   shortnam = "PHOSLO" if substr(prodname,1,6)=="PHOSLO"
+(3 real changes made)
+
+. replace   shortnam = "AFRIN" if substr(prodname,1,5)=="AFRIN"
+(6 real changes made)
+
+. replace   shortnam = "DARVOCET" if substr(prodname,1,8)=="DARVOCET"
+(1 real change made)
+
+. replace   shortnam = "QUINARETIC" if substr(prodname,1,10)=="QUINARETIC"
+(0 real changes made)
+
+. replace   shortnam = "THEOPHYLLINE" if substr(prodname,1,12)=="THEOPHYLLINE"
+(31 real changes made)
+
+. replace   shortnam = "MS-CONTIN" if substr(prodname,1,9)=="MS-CONTIN"
+(0 real changes made)
+
+. replace   shortnam = "LO/OVRAL" if substr(prodname,1,8)=="LO/OVRAL"
+(2 real changes made)
+
+. replace   shortnam = "LOCOID" if substr(prodname,1,6)=="LOCOID"
+(4 real changes made)
+
+. replace   shortnam = "FIORICET" if substr(prodname,1,8)=="FIORICET"
+(2 real changes made)
+
+. replace   shortnam = "TERCONAZOLE" if substr(prodname,1,11)=="TERCONAZOLE"
+(0 real changes made)
+
+. replace   shortnam = "LOTENSIN" if substr(prodname,1,8)=="LOTENSIN"
+(8 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "ASPIRIN" if substr(prodname,1,7)=="ASPIRIN"
+(93 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "DAYQUIL" if substr(prodname,1,7)=="DAYQUIL"
+(1 real change made)
+
+. replace   shortnam = "PEDIALYTE" if substr(prodname,1,9)=="PEDIALYTE"
+(0 real changes made)
+
+. replace   shortnam = "ZESTRIL" if substr(prodname,1,7)=="ZESTRIL"
+(6 real changes made)
+
+. replace   shortnam = "FLUARIX" if substr(prodname,1,7)=="FLUARIX"
+(0 real changes made)
+
+. replace   shortnam = "DULCOLAX" if substr(prodname,1,8)=="DULCOLAX"
+(3 real changes made)
+
+. replace   shortnam = "BICILLIN" if substr(prodname,1,8)=="BICILLIN"
+(9 real changes made)
+
+. replace   shortnam = "BREVOXYL" if substr(prodname,1,8)=="BREVOXYL"
+(6 real changes made)
+
+. replace   shortnam = "METHYLPHENIDATE" if substr(prodname,1,15)=="METHYLPHENI
+> DATE"
+(27 real changes made)
+
+. replace   shortnam = "PLETAL" if substr(prodname,1,6)=="PLETAL"
+(2 real changes made)
+
+. replace   shortnam = "DEXTROAMPHETAMINE" if substr(prodname,1,17)=="DEXTROAMP
+> HETAMINE"
+(12 real changes made)
+
+. replace   shortnam = "ESTRADERM" if substr(prodname,1,9)=="ESTRADERM"
+(2 real changes made)
+
+. replace   shortnam = "AMITRIPTYLINE" if substr(prodname,1,13)=="AMITRIPTYLINE
+> "
+(51 real changes made)
+
+. replace   shortnam = "DIPRIVAN" if substr(prodname,1,8)=="DIPRIVAN"
+(1 real change made)
+
+. replace   shortnam = "CLOBETASOL" if substr(prodname,1,10)=="CLOBETASOL"
+(18 real changes made)
+
+. replace   shortnam = "AZATHIOPRINE" if substr(prodname,1,12)=="AZATHIOPRINE"
+(5 real changes made)
+
+. replace   shortnam = "REMERON" if substr(prodname,1,7)=="REMERON"
+(3 real changes made)
+
+. replace   shortnam = "LANOXIN" if substr(prodname,1,7)=="LANOXIN"
+(5 real changes made)
+
+. replace   shortnam = "DESOXIMETASONE" if substr(prodname,1,14)=="DESOXIMETASO
+> NE"
+(8 real changes made)
+
+. replace   shortnam = "LOPRESSOR" if substr(prodname,1,9)=="LOPRESSOR"
+(5 real changes made)
+
+. replace   shortnam = "BETAMETHASONE" if substr(prodname,1,13)=="BETAMETHASONE
+> "
+(28 real changes made)
+
+. replace   shortnam = "RIBASPHERE" if substr(prodname,1,10)=="RIBASPHERE"
+(0 real changes made)
+
+. replace   shortnam = "FOLIC" if substr(prodname,1,5)=="FOLIC"
+(22 real changes made)
+
+. replace   shortnam = "CALTRATE" if substr(prodname,1,8)=="CALTRATE"
+(0 real changes made)
+
+. replace   shortnam = "LOTEMAX" if substr(prodname,1,7)=="LOTEMAX"
+(1 real change made)
+
+. replace   shortnam = "AFEDITAB" if substr(prodname,1,8)=="AFEDITAB"
+(2 real changes made)
+
+. replace   shortnam = "DIMETAPP" if substr(prodname,1,8)=="DIMETAPP"
+(12 real changes made)
+
+. replace   shortnam = "PEDVAX" if substr(prodname,1,6)=="PEDVAX"
+(0 real changes made)
+
+. replace   shortnam = "TRIAMINIC" if substr(prodname,1,9)=="TRIAMINIC"
+(14 real changes made)
+
+. replace   shortnam = "RETROVIR" if substr(prodname,1,8)=="RETROVIR"
+(4 real changes made)
+
+. replace   shortnam = "FLECAINIDE" if substr(prodname,1,10)=="FLECAINIDE"
+(13 real changes made)
+
+. replace   shortnam = "SOTALOL" if substr(prodname,1,7)=="SOTALOL"
+(30 real changes made)
+
+. replace   shortnam = "TRELSTAR" if substr(prodname,1,8)=="TRELSTAR"
+(0 real changes made)
+
+. replace   shortnam = "LUTERA" if substr(prodname,1,6)=="LUTERA"
+(0 real changes made)
+
+. replace   shortnam = "OCTAGAM" if substr(prodname,1,7)=="OCTAGAM"
+(0 real changes made)
+
+. replace   shortnam = "PRIMACARE" if substr(prodname,1,9)=="PRIMACARE"
+(1 real change made)
+
+. replace   shortnam = "FLUMIST" if substr(prodname,1,7)=="FLUMIST"
+(0 real changes made)
+
+. replace   shortnam = "CEREZYME" if substr(prodname,1,8)=="CEREZYME"
+(2 real changes made)
+
+. replace   shortnam = "THERAFLU" if substr(prodname,1,8)=="THERAFLU"
+(4 real changes made)
+
+. replace   shortnam = "MAALOX" if substr(prodname,1,6)=="MAALOX"
+(21 real changes made)
+
+. replace   shortnam = "SANCTURA" if substr(prodname,1,8)=="SANCTURA"
+(0 real changes made)
+
+. replace   shortnam = "FLUVOXAMINE" if substr(prodname,1,11)=="FLUVOXAMINE"
+(20 real changes made)
+
+. replace   shortnam = "TRANSDERM" if substr(prodname,1,9)=="TRANSDERM"
+(2 real changes made)
+
+. replace   shortnam = "ADALAT" if substr(prodname,1,6)=="ADALAT"
+(0 real changes made)
+
+. replace   shortnam = "PROPAFENONE" if substr(prodname,1,11)=="PROPAFENONE"
+(14 real changes made)
+
+. replace   shortnam = "OVIDE" if substr(prodname,1,5)=="OVIDE"
+(1 real change made)
+
+. replace   shortnam = "DEXAMETHASONE" if substr(prodname,1,13)=="DEXAMETHASONE
+> "
+(27 real changes made)
+
+. replace   shortnam = "DELSYM" if substr(prodname,1,6)=="DELSYM"
+(1 real change made)
+
+. replace   shortnam = "ESTRING" if substr(prodname,1,7)=="ESTRING"
+(1 real change made)
+
+. replace   shortnam = "METHYLPREDNISOLONE" if substr(prodname,1,18)=="METHYLPR
+> EDNISOLONE"
+(15 real changes made)
+
+. replace   shortnam = "TENORMIN" if substr(prodname,1,8)=="TENORMIN"
+(4 real changes made)
+
+. replace   shortnam = "IMIPRAMINE" if substr(prodname,1,10)=="IMIPRAMINE"
+(16 real changes made)
+
+. replace   shortnam = "METHADOSE" if substr(prodname,1,9)=="METHADOSE"
+(5 real changes made)
+
+. replace   shortnam = "FOLTX" if substr(prodname,1,5)=="FOLTX"
+(1 real change made)
+
+. replace   shortnam = "HALOPERIDOL" if substr(prodname,1,11)=="HALOPERIDOL"
+(55 real changes made)
+
+. replace   shortnam = "ESTRADIOL" if substr(prodname,1,9)=="ESTRADIOL"
+(21 real changes made)
+
+. replace   shortnam = "VASOTEC" if substr(prodname,1,7)=="VASOTEC"
+(5 real changes made)
+
+. replace   shortnam = "KLARON" if substr(prodname,1,6)=="KLARON"
+(1 real change made)
+
+. replace   shortnam = "JUNEL" if substr(prodname,1,5)=="JUNEL"
+(4 real changes made)
+
+. replace   shortnam = "MONOPRIL" if substr(prodname,1,8)=="MONOPRIL"
+(5 real changes made)
+
+. replace   shortnam = "VISICOL" if substr(prodname,1,7)=="VISICOL"
+(1 real change made)
+
+. replace   shortnam = "PHILLIPS" if substr(prodname,1,8)=="PHILLIPS"
+(0 real changes made)
+
+. replace   shortnam = "REBETOL" if substr(prodname,1,7)=="REBETOL"
+(4 real changes made)
+
+. replace   shortnam = "NITRO-DUR" if substr(prodname,1,9)=="NITRO-DUR"
+(6 real changes made)
+
+. replace   shortnam = "CRYSELLE" if substr(prodname,1,8)=="CRYSELLE"
+(1 real change made)
+
+. 
+. * otc
+. replace   shortnam = "MYLANTA" if substr(prodname,1,7)=="MYLANTA"
+(14 real changes made)
+
+. replace   shortnam = "ERRIN" if substr(prodname,1,5)=="ERRIN"
+(1 real change made)
+
+. replace   shortnam = "SINEMET" if substr(prodname,1,7)=="SINEMET"
+(5 real changes made)
+
+. replace   shortnam = "PRIMATENE" if substr(prodname,1,9)=="PRIMATENE"
+(2 real changes made)
+
+. replace   shortnam = "THYROID" if substr(prodname,1,7)=="THYROID"
+(20 real changes made)
+
+. replace   shortnam = "CAPOTEN" if substr(prodname,1,7)=="CAPOTEN"
+(8 real changes made)
+
+. replace   shortnam = "ANTARA" if substr(prodname,1,6)=="ANTARA"
+(0 real changes made)
+
+. replace   shortnam = "EVOXAC" if substr(prodname,1,6)=="EVOXAC"
+(1 real change made)
+
+. replace   shortnam = "DOXAZOSIN" if substr(prodname,1,9)=="DOXAZOSIN"
+(49 real changes made)
+
+. replace   shortnam = "HYDROMORPHONE" if substr(prodname,1,13)=="HYDROMORPHONE
+> "
+(18 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "BEN-GAY" if substr(prodname,1,7)=="BEN-GAY"
+(0 real changes made)
+
+. replace   shortnam = "VINORELBINE" if substr(prodname,1,11)=="VINORELBINE"
+(4 real changes made)
+
+. replace   shortnam = "TEMAZEPAM" if substr(prodname,1,9)=="TEMAZEPAM"
+(10 real changes made)
+
+. replace   shortnam = "GLYCOPYRROLATE" if substr(prodname,1,14)=="GLYCOPYRROLA
+> TE"
+(6 real changes made)
+
+. replace   shortnam = "INFED" if substr(prodname,1,5)=="INFED"
+(2 real changes made)
+
+. replace   shortnam = "RENOVA" if substr(prodname,1,6)=="RENOVA"
+(2 real changes made)
+
+. replace   shortnam = "REPRONEX" if substr(prodname,1,8)=="REPRONEX"
+(0 real changes made)
+
+. replace   shortnam = "CLINDESSE" if substr(prodname,1,9)=="CLINDESSE"
+(0 real changes made)
+
+. replace   shortnam = "COLESTID" if substr(prodname,1,8)=="COLESTID"
+(2 real changes made)
+
+. replace   shortnam = "CITRACAL" if substr(prodname,1,8)=="CITRACAL"
+(2 real changes made)
+
+. replace   shortnam = "EVOCLIN" if substr(prodname,1,7)=="EVOCLIN"
+(0 real changes made)
+
+. replace   shortnam = "DIPHENHYDRAMINE" if substr(prodname,1,15)=="DIPHENHYDRA
+> MINE"
+(42 real changes made)
+
+. replace   shortnam = "TRIPHASIL" if substr(prodname,1,9)=="TRIPHASIL"
+(2 real changes made)
+
+. replace   shortnam = "FACTIVE" if substr(prodname,1,7)=="FACTIVE"
+(0 real changes made)
+
+. replace   shortnam = "UREA" if substr(prodname,1,4)=="UREA"
+(9 real changes made)
+
+. replace   shortnam = "METOCLOPRAMIDE" if substr(prodname,1,14)=="METOCLOPRAMI
+> DE"
+(32 real changes made)
+
+. replace   shortnam = "BROMOCRIPTINE" if substr(prodname,1,13)=="BROMOCRIPTINE
+> "
+(2 real changes made)
+
+. replace   shortnam = "CEFADROXIL" if substr(prodname,1,10)=="CEFADROXIL"
+(6 real changes made)
+
+. replace   shortnam = "HALOBETASOL" if substr(prodname,1,11)=="HALOBETASOL"
+(0 real changes made)
+
+. replace   shortnam = "TOFRANIL" if substr(prodname,1,8)=="TOFRANIL"
+(6 real changes made)
+
+. replace   shortnam = "METHOCARBAMOL" if substr(prodname,1,13)=="METHOCARBAMOL
+> "
+(24 real changes made)
+
+. replace   shortnam = "VOLTAREN" if substr(prodname,1,8)=="VOLTAREN"
+(5 real changes made)
+
+. replace   shortnam = "METROLOTION" if substr(prodname,1,11)=="METROLOTION"
+(1 real change made)
+
+. replace   shortnam = "ELOCON" if substr(prodname,1,6)=="ELOCON"
+(3 real changes made)
+
+. replace   shortnam = "INFANRIX" if substr(prodname,1,8)=="INFANRIX"
+(0 real changes made)
+
+. replace   shortnam = "SENOKOT" if substr(prodname,1,7)=="SENOKOT"
+(6 real changes made)
+
+. replace   shortnam = "FELBATOL" if substr(prodname,1,8)=="FELBATOL"
+(3 real changes made)
+
+. replace   shortnam = "KERALAC" if substr(prodname,1,7)=="KERALAC"
+(0 real changes made)
+
+. replace   shortnam = "BETAPACE" if substr(prodname,1,8)=="BETAPACE"
+(7 real changes made)
+
+. replace   shortnam = "DIPYRIDAMOLE" if substr(prodname,1,12)=="DIPYRIDAMOLE"
+(20 real changes made)
+
+. replace   shortnam = "BOSTON" if substr(prodname,1,6)=="BOSTON"
+(0 real changes made)
+
+. replace   shortnam = "PRECARE" if substr(prodname,1,7)=="PRECARE"
+(2 real changes made)
+
+. replace   shortnam = "BUTALB/ASA/CAF/CD" if substr(prodname,1,17)=="BUTALB/AS
+> A/CAF/CD"
+(0 real changes made)
+
+. replace   shortnam = "ADIPEX" if substr(prodname,1,6)=="ADIPEX"
+(1 real change made)
+
+. replace   shortnam = "DESOGEN" if substr(prodname,1,7)=="DESOGEN"
+(1 real change made)
+
+. replace   shortnam = "ALAVERT" if substr(prodname,1,7)=="ALAVERT"
+(3 real changes made)
+
+. replace   shortnam = "DIAZEPAM" if substr(prodname,1,8)=="DIAZEPAM"
+(31 real changes made)
+
+. replace   shortnam = "UROCIT" if substr(prodname,1,6)=="UROCIT"
+(2 real changes made)
+
+. replace   shortnam = "PSEUDOVENT" if substr(prodname,1,10)=="PSEUDOVENT"
+(4 real changes made)
+
+. replace   shortnam = "CARBAMAZEPINE" if substr(prodname,1,13)=="CARBAMAZEPINE
+> "
+(21 real changes made)
+
+. replace   shortnam = "CEFTRIAXONE" if substr(prodname,1,11)=="CEFTRIAXONE"
+(0 real changes made)
+
+. replace   shortnam = "EMTRIVA" if substr(prodname,1,7)=="EMTRIVA"
+(1 real change made)
+
+. replace   shortnam = "GRISEOFULVIN" if substr(prodname,1,12)=="GRISEOFULVIN"
+(0 real changes made)
+
+. replace   shortnam = "CAVERJECT" if substr(prodname,1,9)=="CAVERJECT"
+(5 real changes made)
+
+. replace   shortnam = "METHADONE" if substr(prodname,1,9)=="METHADONE"
+(13 real changes made)
+
+. replace   shortnam = "NAFTIN" if substr(prodname,1,6)=="NAFTIN"
+(4 real changes made)
+
+. replace   shortnam = "FAMOTIDINE" if substr(prodname,1,10)=="FAMOTIDINE"
+(34 real changes made)
+
+. replace   shortnam = "CETAPHIL" if substr(prodname,1,8)=="CETAPHIL"
+(0 real changes made)
+
+. replace   shortnam = "PROCTOFOAM" if substr(prodname,1,10)=="PROCTOFOAM"
+(2 real changes made)
+
+. * replace   shortnam = "ST" if substr(prodname,1,2)=="ST"
+. replace   shortnam = "DIFLUCAN" if substr(prodname,1,8)=="DIFLUCAN"
+(12 real changes made)
+
+. replace   shortnam = "CHROMAGEN" if substr(prodname,1,9)=="CHROMAGEN"
+(6 real changes made)
+
+. replace   shortnam = "BUTORPHANOL" if substr(prodname,1,11)=="BUTORPHANOL"
+(12 real changes made)
+
+. replace   shortnam = "NIZATIDINE" if substr(prodname,1,10)=="NIZATIDINE"
+(15 real changes made)
+
+. replace   shortnam = "DEPO-TESTOSTERONE" if substr(prodname,1,17)=="DEPO-TEST
+> OSTERONE"
+(0 real changes made)
+
+. replace   shortnam = "CARAC" if substr(prodname,1,5)=="CARAC"
+(1 real change made)
+
+. replace   shortnam = "NORETHINDRONE" if substr(prodname,1,13)=="NORETHINDRONE
+> "
+(1 real change made)
+
+. replace   shortnam = "CITRUCEL" if substr(prodname,1,8)=="CITRUCEL"
+(5 real changes made)
+
+. replace   shortnam = "VOSPIRE" if substr(prodname,1,7)=="VOSPIRE"
+(2 real changes made)
+
+. replace   shortnam = "XIFAXAN" if substr(prodname,1,7)=="XIFAXAN"
+(0 real changes made)
+
+. replace   shortnam = "BUTALB/APAP/CAF" if substr(prodname,1,15)=="BUTALB/APAP
+> /CAF"
+(0 real changes made)
+
+. replace   shortnam = "TERAZOL" if substr(prodname,1,7)=="TERAZOL"
+(3 real changes made)
+
+. replace   shortnam = "PALLADONE" if substr(prodname,1,9)=="PALLADONE"
+(0 real changes made)
+
+. replace   shortnam = "METHIMAZOLE" if substr(prodname,1,11)=="METHIMAZOLE"
+(5 real changes made)
+
+. replace   shortnam = "BETHANECHOL" if substr(prodname,1,11)=="BETHANECHOL"
+(12 real changes made)
+
+. replace   shortnam = "ORPHENADRINE" if substr(prodname,1,12)=="ORPHENADRINE"
+(9 real changes made)
+
+. replace   shortnam = "BUTALB/ASA/CAF" if substr(prodname,1,14)=="BUTALB/ASA/C
+> AF"
+(0 real changes made)
+
+. replace   shortnam = "PROLEUKIN" if substr(prodname,1,9)=="PROLEUKIN"
+(1 real change made)
+
+. replace   shortnam = "MYFORTIC" if substr(prodname,1,8)=="MYFORTIC"
+(0 real changes made)
+
+. replace   shortnam = "ADENOSCAN" if substr(prodname,1,9)=="ADENOSCAN"
+(1 real change made)
+
+. 
+. * otc
+. replace   shortnam = "CORICIDIN" if substr(prodname,1,9)=="CORICIDIN"
+(1 real change made)
+
+. replace   shortnam = "PEDIACARE" if substr(prodname,1,9)=="PEDIACARE"
+(9 real changes made)
+
+. replace   shortnam = "ALREX" if substr(prodname,1,5)=="ALREX"
+(1 real change made)
+
+. replace   shortnam = "TESTOSTERONE" if substr(prodname,1,12)=="TESTOSTERONE"
+(9 real changes made)
+
+. replace   shortnam = "LOTRIMIN" if substr(prodname,1,8)=="LOTRIMIN"
+(6 real changes made)
+
+. replace   shortnam = "LIBRAX" if substr(prodname,1,6)=="LIBRAX"
+(0 real changes made)
+
+. replace   shortnam = "ENPRESSE" if substr(prodname,1,8)=="ENPRESSE"
+(1 real change made)
+
+. replace   shortnam = "TARGRETIN" if substr(prodname,1,9)=="TARGRETIN"
+(2 real changes made)
+
+. replace   shortnam = "WINRHO" if substr(prodname,1,6)=="WINRHO"
+(0 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "CALCIUM" if substr(prodname,1,7)=="CALCIUM"
+(66 real changes made)
+
+. replace   shortnam = "MIRALAX" if substr(prodname,1,7)=="MIRALAX"
+(1 real change made)
+
+. replace   shortnam = "PROPRANOLOL" if substr(prodname,1,11)=="PROPRANOLOL"
+(56 real changes made)
+
+. replace   shortnam = "NORITATE" if substr(prodname,1,8)=="NORITATE"
+(1 real change made)
+
+. replace   shortnam = "DURICEF" if substr(prodname,1,7)=="DURICEF"
+(4 real changes made)
+
+. replace   shortnam = "ORA-JEL" if substr(prodname,1,7)=="ORA-JEL"
+(0 real changes made)
+
+. replace   shortnam = "ARIXTRA" if substr(prodname,1,7)=="ARIXTRA"
+(1 real change made)
+
+. replace   shortnam = "OS-CAL" if substr(prodname,1,6)=="OS-CAL"
+(0 real changes made)
+
+. replace   shortnam = "MEPROBAMATE" if substr(prodname,1,11)=="MEPROBAMATE"
+(8 real changes made)
+
+. replace   shortnam = "EUCERIN" if substr(prodname,1,7)=="EUCERIN"
+(0 real changes made)
+
+. replace   shortnam = "DENAVIR" if substr(prodname,1,7)=="DENAVIR"
+(0 real changes made)
+
+. replace   shortnam = "METHYLIN" if substr(prodname,1,8)=="METHYLIN"
+(2 real changes made)
+
+. replace   shortnam = "NEUMEGA" if substr(prodname,1,7)=="NEUMEGA"
+(1 real change made)
+
+. replace   shortnam = "NITROLINGUAL" if substr(prodname,1,12)=="NITROLINGUAL"
+(1 real change made)
+
+. replace   shortnam = "CORTIZONE" if substr(prodname,1,9)=="CORTIZONE"
+(0 real changes made)
+
+. replace   shortnam = "DECAVAC" if substr(prodname,1,7)=="DECAVAC"
+(0 real changes made)
+
+. replace   shortnam = "TICE" if substr(prodname,1,4)=="TICE"
+(2 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "BACITRACIN" if substr(prodname,1,10)=="BACITRACIN"
+(25 real changes made)
+
+. replace   shortnam = "NEFAZODONE" if substr(prodname,1,10)=="NEFAZODONE"
+(23 real changes made)
+
+. replace   shortnam = "INTAL" if substr(prodname,1,5)=="INTAL"
+(2 real changes made)
+
+. replace   shortnam = "CARNITOR" if substr(prodname,1,8)=="CARNITOR"
+(2 real changes made)
+
+. replace   shortnam = "PREVIDENT" if substr(prodname,1,9)=="PREVIDENT"
+(7 real changes made)
+
+. replace   shortnam = "ROWASA" if substr(prodname,1,6)=="ROWASA"
+(1 real change made)
+
+. replace   shortnam = "AMEVIVE" if substr(prodname,1,7)=="AMEVIVE"
+(1 real change made)
+
+. replace   shortnam = "DOXORUBICIN" if substr(prodname,1,11)=="DOXORUBICIN"
+(17 real changes made)
+
+. replace   shortnam = "OFLOXACIN" if substr(prodname,1,9)=="OFLOXACIN"
+(4 real changes made)
+
+. replace   shortnam = "SOLARAZE" if substr(prodname,1,8)=="SOLARAZE"
+(1 real change made)
+
+. replace   shortnam = "LESSINA" if substr(prodname,1,7)=="LESSINA"
+(1 real change made)
+
+. replace   shortnam = "CAMPRAL" if substr(prodname,1,7)=="CAMPRAL"
+(0 real changes made)
+
+. replace   shortnam = "SULINDAC" if substr(prodname,1,8)=="SULINDAC"
+(18 real changes made)
+
+. replace   shortnam = "FLOLAN" if substr(prodname,1,6)=="FLOLAN"
+(3 real changes made)
+
+. replace   shortnam = "ECONAZOLE" if substr(prodname,1,9)=="ECONAZOLE"
+(2 real changes made)
+
+. replace   shortnam = "REFACTO" if substr(prodname,1,7)=="REFACTO"
+(4 real changes made)
+
+. replace   shortnam = "ETOPOSIDE" if substr(prodname,1,9)=="ETOPOSIDE"
+(14 real changes made)
+
+. replace   shortnam = "DILAUDID" if substr(prodname,1,8)=="DILAUDID"
+(13 real changes made)
+
+. replace   shortnam = "OXAZEPAM" if substr(prodname,1,8)=="OXAZEPAM"
+(15 real changes made)
+
+. replace   shortnam = "SUPRANE" if substr(prodname,1,7)=="SUPRANE"
+(0 real changes made)
+
+. replace   shortnam = "UNISOM" if substr(prodname,1,6)=="UNISOM"
+(0 real changes made)
+
+. replace   shortnam = "DIPROLENE" if substr(prodname,1,9)=="DIPROLENE"
+(3 real changes made)
+
+. replace   shortnam = "ROXICODONE" if substr(prodname,1,10)=="ROXICODONE"
+(7 real changes made)
+
+. replace   shortnam = "RECOMBINATE" if substr(prodname,1,11)=="RECOMBINATE"
+(1 real change made)
+
+. replace   shortnam = "DEMECLOCYCLINE" if substr(prodname,1,14)=="DEMECLOCYCLI
+> NE"
+(0 real changes made)
+
+. replace   shortnam = "POLYGAM" if substr(prodname,1,7)=="POLYGAM"
+(0 real changes made)
+
+. replace   shortnam = "LAMOTRIGINE" if substr(prodname,1,11)=="LAMOTRIGINE"
+(0 real changes made)
+
+. replace   shortnam = "BENEFIBER" if substr(prodname,1,9)=="BENEFIBER"
+(2 real changes made)
+
+. replace   shortnam = "FLUOCINONIDE" if substr(prodname,1,12)=="FLUOCINONIDE"
+(27 real changes made)
+
+. replace   shortnam = "CLORAZEPATE" if substr(prodname,1,11)=="CLORAZEPATE"
+(16 real changes made)
+
+. replace   shortnam = "ZEGERID" if substr(prodname,1,7)=="ZEGERID"
+(0 real changes made)
+
+. replace   shortnam = "MYRAC" if substr(prodname,1,5)=="MYRAC"
+(0 real changes made)
+
+. replace   shortnam = "FLUDROCORTISONE" if substr(prodname,1,15)=="FLUDROCORTI
+> SONE"
+(2 real changes made)
+
+. replace   shortnam = "CLINDAGEL" if substr(prodname,1,9)=="CLINDAGEL"
+(1 real change made)
+
+. replace   shortnam = "ONTAK" if substr(prodname,1,5)=="ONTAK"
+(1 real change made)
+
+. * replace   shortnam = "PLAN" if substr(prodname,1,4)=="PLAN"
+. replace   shortnam = "NORCO" if substr(prodname,1,5)=="NORCO"
+(2 real changes made)
+
+. replace   shortnam = "PERIOSTAT" if substr(prodname,1,9)=="PERIOSTAT"
+(1 real change made)
+
+. replace   shortnam = "FIORINAL" if substr(prodname,1,8)=="FIORINAL"
+(2 real changes made)
+
+. replace   shortnam = "LORCET" if substr(prodname,1,6)=="LORCET"
+(3 real changes made)
+
+. replace   shortnam = "CALAN" if substr(prodname,1,5)=="CALAN"
+(6 real changes made)
+
+. replace   shortnam = "MEDERMA" if substr(prodname,1,7)=="MEDERMA"
+(0 real changes made)
+
+. replace   shortnam = "TRILYTE" if substr(prodname,1,7)=="TRILYTE"
+(0 real changes made)
+
+. replace   shortnam = "OXAPROZIN" if substr(prodname,1,9)=="OXAPROZIN"
+(8 real changes made)
+
+. replace   shortnam = "SALEX" if substr(prodname,1,5)=="SALEX"
+(0 real changes made)
+
+. replace   shortnam = "MENTAX" if substr(prodname,1,6)=="MENTAX"
+(1 real change made)
+
+. replace   shortnam = "TWINRIX" if substr(prodname,1,7)=="TWINRIX"
+(0 real changes made)
+
+. replace   shortnam = "RHOGAM" if substr(prodname,1,6)=="RHOGAM"
+(0 real changes made)
+
+. replace   shortnam = "NASAREL" if substr(prodname,1,7)=="NASAREL"
+(1 real change made)
+
+. replace   shortnam = "PAMELOR" if substr(prodname,1,7)=="PAMELOR"
+(9 real changes made)
+
+. replace   shortnam = "LIPRAM" if substr(prodname,1,6)=="LIPRAM"
+(10 real changes made)
+
+. replace   shortnam = "LUBRIDERM" if substr(prodname,1,9)=="LUBRIDERM"
+(1 real change made)
+
+. replace   shortnam = "DEXEDRINE" if substr(prodname,1,9)=="DEXEDRINE"
+(4 real changes made)
+
+. replace   shortnam = "COLACE" if substr(prodname,1,6)=="COLACE"
+(1 real change made)
+
+. replace   shortnam = "ASCOMP" if substr(prodname,1,6)=="ASCOMP"
+(1 real change made)
+
+. replace   shortnam = "RIFAMPIN" if substr(prodname,1,8)=="RIFAMPIN"
+(6 real changes made)
+
+. replace   shortnam = "DESONIDE" if substr(prodname,1,8)=="DESONIDE"
+(10 real changes made)
+
+. replace   shortnam = "CONDYLOX" if substr(prodname,1,8)=="CONDYLOX"
+(2 real changes made)
+
+. replace   shortnam = "MINITRAN" if substr(prodname,1,8)=="MINITRAN"
+(4 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "EX-LAX" if substr(prodname,1,6)=="EX-LAX"
+(3 real changes made)
+
+. replace   shortnam = "NATRECOR" if substr(prodname,1,8)=="NATRECOR"
+(1 real change made)
+
+. replace   shortnam = "TRI-LUMA" if substr(prodname,1,8)=="TRI-LUMA"
+(1 real change made)
+
+. replace   shortnam = "MINOXIDIL" if substr(prodname,1,9)=="MINOXIDIL"
+(15 real changes made)
+
+. replace   shortnam = "PROAIR" if substr(prodname,1,6)=="PROAIR"
+(0 real changes made)
+
+. replace   shortnam = "BETIMOL" if substr(prodname,1,7)=="BETIMOL"
+(2 real changes made)
+
+. replace   shortnam = "SUBUTEX" if substr(prodname,1,7)=="SUBUTEX"
+(2 real changes made)
+
+. replace   shortnam = "BLEPHAMIDE" if substr(prodname,1,10)=="BLEPHAMIDE"
+(2 real changes made)
+
+. replace   shortnam = "ACCUNEB" if substr(prodname,1,7)=="ACCUNEB"
+(2 real changes made)
+
+. replace   shortnam = "VANOS" if substr(prodname,1,5)=="VANOS"
+(0 real changes made)
+
+. replace   shortnam = "PILOCARPINE" if substr(prodname,1,11)=="PILOCARPINE"
+(27 real changes made)
+
+. replace   shortnam = "DIFLUNISAL" if substr(prodname,1,10)=="DIFLUNISAL"
+(6 real changes made)
+
+. replace   shortnam = "LITHOBID" if substr(prodname,1,8)=="LITHOBID"
+(1 real change made)
+
+. replace   shortnam = "THEO-24" if substr(prodname,1,7)=="THEO-24"
+(4 real changes made)
+
+. replace   shortnam = "DIAMOX" if substr(prodname,1,6)=="DIAMOX"
+(2 real changes made)
+
+. replace   shortnam = "MEFLOQUINE" if substr(prodname,1,10)=="MEFLOQUINE"
+(1 real change made)
+
+. replace   shortnam = "SYSTANE" if substr(prodname,1,7)=="SYSTANE"
+(1 real change made)
+
+. replace   shortnam = "ASMANEX" if substr(prodname,1,7)=="ASMANEX"
+(0 real changes made)
+
+. replace   shortnam = "PARAPLATIN" if substr(prodname,1,10)=="PARAPLATIN"
+(3 real changes made)
+
+. replace   shortnam = "VESANOID" if substr(prodname,1,8)=="VESANOID"
+(1 real change made)
+
+. replace   shortnam = "ROBINUL" if substr(prodname,1,7)=="ROBINUL"
+(3 real changes made)
+
+. replace   shortnam = "DIGOXIN" if substr(prodname,1,7)=="DIGOXIN"
+(10 real changes made)
+
+. replace   shortnam = "MIDOL" if substr(prodname,1,5)=="MIDOL"
+(0 real changes made)
+
+. replace   shortnam = "CYCLOPHOSPHAMIDE" if substr(prodname,1,16)=="CYCLOPHOSP
+> HAMIDE"
+(0 real changes made)
+
+. replace   shortnam = "DOCUSATE" if substr(prodname,1,8)=="DOCUSATE"
+(32 real changes made)
+
+. replace   shortnam = "ECOTRIN" if substr(prodname,1,7)=="ECOTRIN"
+(7 real changes made)
+
+. replace   shortnam = "PREMPHASE" if substr(prodname,1,9)=="PREMPHASE"
+(1 real change made)
+
+. replace   shortnam = "DIDREX" if substr(prodname,1,6)=="DIDREX"
+(1 real change made)
+
+. replace   shortnam = "XYLOCAINE" if substr(prodname,1,9)=="XYLOCAINE"
+(27 real changes made)
+
+. replace   shortnam = "LACTAID" if substr(prodname,1,7)=="LACTAID"
+(0 real changes made)
+
+. replace   shortnam = "AMANTADINE" if substr(prodname,1,10)=="AMANTADINE"
+(15 real changes made)
+
+. replace   shortnam = "OMACOR" if substr(prodname,1,6)=="OMACOR"
+(0 real changes made)
+
+. replace   shortnam = "KETOROLAC" if substr(prodname,1,9)=="KETOROLAC"
+(15 real changes made)
+
+. replace   shortnam = "SUPRAX" if substr(prodname,1,6)=="SUPRAX"
+(0 real changes made)
+
+. replace   shortnam = "PURINETHOL" if substr(prodname,1,10)=="PURINETHOL"
+(2 real changes made)
+
+. replace   shortnam = "SULFASALAZINE" if substr(prodname,1,13)=="SULFASALAZINE
+> "
+(7 real changes made)
+
+. replace   shortnam = "COMBIPATCH" if substr(prodname,1,10)=="COMBIPATCH"
+(2 real changes made)
+
+. replace   shortnam = "PRINIVIL" if substr(prodname,1,8)=="PRINIVIL"
+(5 real changes made)
+
+. replace   shortnam = "OXISTAT" if substr(prodname,1,7)=="OXISTAT"
+(2 real changes made)
+
+. replace   shortnam = "PENTOXIFYLLINE" if substr(prodname,1,14)=="PENTOXIFYLLI
+> NE"
+(10 real changes made)
+
+. replace   shortnam = "BENZOYL" if substr(prodname,1,7)=="BENZOYL"
+(19 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "ROGAINE" if substr(prodname,1,7)=="ROGAINE"
+(1 real change made)
+
+. replace   shortnam = "ULTRAVATE" if substr(prodname,1,9)=="ULTRAVATE"
+(2 real changes made)
+
+. replace   shortnam = "ZIAC" if substr(prodname,1,4)=="ZIAC"
+(6 real changes made)
+
+. replace   shortnam = "TRANXENE" if substr(prodname,1,8)=="TRANXENE"
+(0 real changes made)
+
+. replace   shortnam = "MUSE" if substr(prodname,1,4)=="MUSE"
+(4 real changes made)
+
+. replace   shortnam = "DYAZIDE" if substr(prodname,1,7)=="DYAZIDE"
+(1 real change made)
+
+. replace   shortnam = "PROBENECID" if substr(prodname,1,10)=="PROBENECID"
+(7 real changes made)
+
+. replace   shortnam = "VIACTIV" if substr(prodname,1,7)=="VIACTIV"
+(0 real changes made)
+
+. replace   shortnam = "BUPROBAN" if substr(prodname,1,8)=="BUPROBAN"
+(0 real changes made)
+
+. replace   shortnam = "MEGACE" if substr(prodname,1,6)=="MEGACE"
+(1 real change made)
+
+. replace   shortnam = "ZANAFLEX" if substr(prodname,1,8)=="ZANAFLEX"
+(1 real change made)
+
+. replace   shortnam = "LEUCOVORIN" if substr(prodname,1,10)=="LEUCOVORIN"
+(23 real changes made)
+
+. replace   shortnam = "GENTEAL" if substr(prodname,1,7)=="GENTEAL"
+(4 real changes made)
+
+. replace   shortnam = "SOMAVERT" if substr(prodname,1,8)=="SOMAVERT"
+(0 real changes made)
+
+. replace   shortnam = "UNIPHYL" if substr(prodname,1,7)=="UNIPHYL"
+(1 real change made)
+
+. 
+. * otc
+. replace   shortnam = "AOSEPT" if substr(prodname,1,6)=="AOSEPT"
+(0 real changes made)
+
+. replace   shortnam = "GAMMAR" if substr(prodname,1,6)=="GAMMAR"
+(1 real change made)
+
+. replace   shortnam = "FEMRING" if substr(prodname,1,7)=="FEMRING"
+(2 real changes made)
+
+. replace   shortnam = "CEFACLOR" if substr(prodname,1,8)=="CEFACLOR"
+(28 real changes made)
+
+. replace   shortnam = "MIGRANAL" if substr(prodname,1,8)=="MIGRANAL"
+(1 real change made)
+
+. replace   shortnam = "NADOLOL" if substr(prodname,1,7)=="NADOLOL"
+(21 real changes made)
+
+. replace   shortnam = "MONONESSA" if substr(prodname,1,9)=="MONONESSA"
+(1 real change made)
+
+. replace   shortnam = "PARLODEL" if substr(prodname,1,8)=="PARLODEL"
+(2 real changes made)
+
+. replace   shortnam = "PACERONE" if substr(prodname,1,8)=="PACERONE"
+(3 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "CLEARASIL" if substr(prodname,1,9)=="CLEARASIL"
+(0 real changes made)
+
+. replace   shortnam = "PONSTEL" if substr(prodname,1,7)=="PONSTEL"
+(1 real change made)
+
+. replace   shortnam = "TRI-LEVLEN" if substr(prodname,1,10)=="TRI-LEVLEN"
+(1 real change made)
+
+. replace   shortnam = "BUMETANIDE" if substr(prodname,1,10)=="BUMETANIDE"
+(20 real changes made)
+
+. replace   shortnam = "ROZEREM" if substr(prodname,1,7)=="ROZEREM"
+(0 real changes made)
+
+. replace   shortnam = "BUSPAR" if substr(prodname,1,6)=="BUSPAR"
+(4 real changes made)
+
+. replace   shortnam = "CARMOL" if substr(prodname,1,6)=="CARMOL"
+(9 real changes made)
+
+. replace   shortnam = "DIPENTUM" if substr(prodname,1,8)=="DIPENTUM"
+(1 real change made)
+
+. replace   shortnam = "TYSABRI" if substr(prodname,1,7)=="TYSABRI"
+(0 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "NIVEA" if substr(prodname,1,5)=="NIVEA"
+(0 real changes made)
+
+. * replace   shortnam = "CLEAR" if substr(prodname,1,5)=="CLEAR"
+. replace   shortnam = "MIDAZOLAM" if substr(prodname,1,9)=="MIDAZOLAM"
+(23 real changes made)
+
+. 
+. * otc
+. replace   shortnam = "ROLAIDS" if substr(prodname,1,7)=="ROLAIDS"
+(0 real changes made)
+
+. replace   shortnam = "FLUNISOLIDE" if substr(prodname,1,11)=="FLUNISOLIDE"
+(1 real change made)
+
+. replace   shortnam = "INNOPRAN" if substr(prodname,1,8)=="INNOPRAN"
+(2 real changes made)
+
+. replace   shortnam = "BOTOX" if substr(prodname,1,5)=="BOTOX"
+(1 real change made)
+
+. replace   shortnam = "MICRONASE" if substr(prodname,1,9)=="MICRONASE"
+(3 real changes made)
+
+. replace   shortnam = "AZELEX" if substr(prodname,1,6)=="AZELEX"
+(1 real change made)
+
+. replace   shortnam = "TAMBOCOR" if substr(prodname,1,8)=="TAMBOCOR"
+(3 real changes made)
+
+. replace   shortnam = "PLAQUENIL" if substr(prodname,1,9)=="PLAQUENIL"
+(1 real change made)
+
+. * replace   shortnam = "SIMPLY" if substr(prodname,1,6)=="SIMPLY"
+. * replace   shortnam = "PRENATAL" if substr(prodname,1,8)=="PRENATAL"
+. replace   shortnam = "PREFEST" if substr(prodname,1,7)=="PREFEST"
+(0 real changes made)
+
+. replace   shortnam = "PORTIA" if substr(prodname,1,6)=="PORTIA"
+(1 real change made)
+
+. replace   shortnam = "MISOPROSTOL" if substr(prodname,1,11)=="MISOPROSTOL"
+(4 real changes made)
+
+. replace   shortnam = "ORAPRED" if substr(prodname,1,7)=="ORAPRED"
+(1 real change made)
+
+. replace   shortnam = "LOTRONEX" if substr(prodname,1,8)=="LOTRONEX"
+(1 real change made)
+
+. replace   shortnam = "TANNATE" if substr(prodname,1,7)=="TANNATE"
+(2 real changes made)
+
+. replace   shortnam = "GAMMAGARD" if substr(prodname,1,9)=="GAMMAGARD"
+(1 real change made)
+
+. replace   shortnam = "TUSSIN" if substr(prodname,1,6)=="TUSSIN"
+(39 real changes made)
+
+. replace   shortnam = "VANTIN" if substr(prodname,1,6)=="VANTIN"
+(4 real changes made)
+
+. replace   shortnam = "SUCRALFATE" if substr(prodname,1,10)=="SUCRALFATE"
+(14 real changes made)
+
+. * replace   shortnam = "AMMONIUM" if substr(prodname,1,8)=="AMMONIUM"
+. replace   shortnam = "HYOSCYAMINE" if substr(prodname,1,11)=="HYOSCYAMINE"
+(42 real changes made)
+
+. replace   shortnam = "MYSOLINE" if substr(prodname,1,8)=="MYSOLINE"
+(5 real changes made)
+
+. * replace   shortnam = "AIRBORNE" if substr(prodname,1,8)=="AIRBORNE"
+. replace   shortnam = "SIMILASAN" if substr(prodname,1,9)=="SIMILASAN"
+(0 real changes made)
+
+. replace   shortnam = "PANGESTYME" if substr(prodname,1,10)=="PANGESTYME"
+(7 real changes made)
+
+. 
+. 
+. 
+. * do a few first that are not in top 500 ims based on 2005 but high 
+. * in 2003 meps
+. 
+. replace   shortnam ="VIOXX"       if substr(prodname,1,5)=="VIOXX"
+(1 real change made)
+
+. replace   shortnam ="COVERA" if substr(prodname,1,6)=="COVERA"
+(2 real changes made)
+
+. replace   shortnam ="PLAN B" if substr(prodname,1,6)=="PLAN B"
+(0 real changes made)
+
+. 
+. * some others that are high in 2003 ims sales but not in top 1000 by 2005
+. 
+. replace   shortnam = "SERZONE" if substr(prodname,1,7)=="SERZONE"
+(2 real changes made)
+
+. replace   shortnam = "MACROBID" if substr(prodname,1,8)=="MACROBID"
+(1 real change made)
+
+. replace   shortnam = "CILOXAN" if substr(prodname,1,7)=="CILOXAN"
+(2 real changes made)
+
+. replace   shortnam = "LISTERINE" if substr(prodname,1,9)=="LISTERINE"
+(1 real change made)
+
+. replace   shortnam = "COVERA" if substr(prodname,1,6)=="COVERA"
+(0 real changes made)
+
+. replace   shortnam = "OCUFLOX" if substr(prodname,1,7)=="OCUFLOX"
+(1 real change made)
+
+. replace   shortnam = "CENTRUM" if substr(prodname,1,7)=="CENTRUM"
+(0 real changes made)
+
+. replace   shortnam = "ZAROXOLYN" if substr(prodname,1,9)=="ZAROXOLYN"
+(3 real changes made)
+
+. replace   shortnam = "IPOL" if substr(prodname,1,4)=="IPOL"
+(0 real changes made)
+
+. replace   shortnam = "ZYBAN" if substr(prodname,1,5)=="ZYBAN"
+(1 real change made)
+
+. replace   shortnam = "TAXOL" if substr(prodname,1,5)=="TAXOL"
+(3 real changes made)
+
+. replace   shortnam = "PROAMATINE" if substr(prodname,1,10)=="PROAMATINE"
+(2 real changes made)
+
+. replace   shortnam = "GAMIMUNE" if substr(prodname,1,8)=="GAMIMUNE"
+(1 real change made)
+
+. replace   shortnam = "FLUDARA" if substr(prodname,1,7)=="FLUDARA" & substr(pr
+> odname,1,11)!="FLUDARABINE"
+(1 real change made)
+
+. replace   shortnam = "ACCURETIC" if substr(prodname,1,9)=="ACCURETIC"
+(3 real changes made)
+
+. replace   shortnam = "AMOXIL" if substr(prodname,1,6)=="AMOXIL"
+(12 real changes made)
+
+. replace   shortnam = "URECHOLINE" if substr(prodname,1,10)=="URECHOLINE"
+(9 real changes made)
+
+. replace   shortnam = "NIZORAL" if substr(prodname,1,7)=="NIZORAL"
+(3 real changes made)
+
+. replace   shortnam = "PROMETHEGAN" if substr(prodname,1,11)=="PROMETHEGAN"
+(1 real change made)
+
+. replace   shortnam = "BENZAMYCIN" if substr(prodname,1,10)=="BENZAMYCIN"
+(2 real changes made)
+
+. replace   shortnam = "LOTRISONE" if substr(prodname,1,9)=="LOTRISONE"
+(2 real changes made)
+
+. 
+. gen numndcs = 1
+
+. 
+. collapse (sum) otcpaid paidamt numndcs, by(shortnam)
+
+. gen otcfrac = otcpaid / paidamt
+
+. gsort - otcfrac - paidamt
+
+. list shortnam otcfrac paidamt otcpaid numndcs
+
+     +-----------------------------------------------------------------+
+     |            shortnam    otcfrac     paidamt    otcpaid   numndcs |
+     |-----------------------------------------------------------------|
+  1. |            NICODERM          1   6813025.2    6813025         9 |
+  2. |            CLARITIN          1   2088631.7    2088632         5 |
+  3. |             ALAVERT          1   1264055.4    1264055         3 |
+  4. |           NICORETTE          1   900178.65   900178.6         4 |
+  5. |             SENOKOT          1   823928.38   823928.4         6 |
+     |-----------------------------------------------------------------|
+  6. |             MUCINEX          1   721997.42   721997.4         1 |
+  7. |              TUSSIN          1   684490.17   684490.2        39 |
+  8. |           PEDIACARE          1   641682.51   641682.5         9 |
+  9. |          ROBITUSSIN          1   587521.78   587521.8        23 |
+ 10. |             GENTEAL          1   427938.49   427938.5         4 |
+     |-----------------------------------------------------------------|
+ 11. |           METAMUCIL          1   387671.39   387671.4         5 |
+ 12. |            DIMETAPP          1   372803.48   372803.5        12 |
+ 13. |              MAALOX          1   372637.33   372637.3        21 |
+ 14. |             ECOTRIN          1   358594.52   358594.5         7 |
+ 15. |             IMODIUM          1   287593.89   287593.9         7 |
+     |-----------------------------------------------------------------|
+ 16. |              DELSYM          1   209114.34   209114.3         1 |
+ 17. |               ADVIL          1   173620.56   173620.6        11 |
+ 18. |             MYLANTA          1   134710.52   134710.5        14 |
+ 19. |                TUMS          1    118302.1   118302.1        16 |
+ 20. |             SUDAFED          1    52142.17   52142.17         5 |
+     |-----------------------------------------------------------------|
+ 21. |               PEPTO          1    43173.09   43173.09         3 |
+ 22. |               AFRIN          1    37313.15   37313.15         6 |
+ 23. |            CITRUCEL          1     36269.8    36269.8         5 |
+ 24. |           BENEFIBER          1    27691.62   27691.62         2 |
+ 25. |           TRIAMINIC          1    13830.07   13830.07        14 |
+     |-----------------------------------------------------------------|
+ 26. |             SYSTANE          1     7708.52    7708.52         1 |
+ 27. |              ABREVA          1     6315.43    6315.43         1 |
+ 28. |              EX-LAX          1     3756.89    3756.89         3 |
+ 29. |              COLACE          1     1556.25    1556.25         1 |
+ 30. |           CORICIDIN          1      450.18     450.18         1 |
+     |-----------------------------------------------------------------|
+ 31. |           PRIMATENE          1      394.92     394.92         2 |
+ 32. |               VICKS          1      339.11     339.11         5 |
+ 33. |           LUBRIDERM          1      254.16     254.16         1 |
+ 34. |            EXCEDRIN          1      219.39     219.39         3 |
+ 35. |             ROGAINE          1      191.86     191.86         1 |
+     |-----------------------------------------------------------------|
+ 36. |           LISTERINE          1       50.93      50.93         1 |
+ 37. |            THERAFLU          1       44.95      44.95         4 |
+ 38. |        POLYETHYLENE          1       16.51      16.51         1 |
+ 39. |             DAYQUIL          1        8.18       8.18         1 |
+ 40. |            DULCOLAX   .9989692    27406.29   27378.04         3 |
+     |-----------------------------------------------------------------|
+ 41. |             HUMULIN    .993526   1.332e+08   1.32e+08         9 |
+ 42. |            DOCUSATE   .9935113   6433073.7    6391332        32 |
+ 43. |             ASPIRIN   .9892572   9047128.2    8949937        93 |
+ 44. |          BACITRACIN   .9610894   1053646.7    1012649        25 |
+ 45. |             CALCIUM   .9327864   2304624.9    2149723        66 |
+     |-----------------------------------------------------------------|
+ 46. |             TANNATE   .9096385   349818.76   318208.6         2 |
+ 47. |             NOVOLIN   .8288302    65493104   5.43e+07        12 |
+ 48. |             REFRESH   .8088217   1056223.9   854296.8         7 |
+ 49. |                UREA   .7967442    74878.36    59658.9         9 |
+ 50. |             TYLENOL    .431315   569564.64   245661.8        21 |
+     |-----------------------------------------------------------------|
+ 51. |            BENADRYL   .4267557   120556.72   51448.27        14 |
+ 52. |            LOTRIMIN   .3297302   169879.96   56014.55         6 |
+ 53. |     DIPHENHYDRAMINE    .301305     6565315    1978162        42 |
+ 54. |             BENZOYL   .2917104   735937.08   214680.5        19 |
+ 55. |            MONISTAT   .2838241     1038970   294884.7        10 |
+     |-----------------------------------------------------------------|
+ 56. |             AGRYLIN   .2397181   8582163.9    2057300         2 |
+ 57. |            NICOTINE   .1438515   5354734.2   770286.4        17 |
+ 58. |            NICOTROL   .1245327   3051017.9   379951.4         5 |
+ 59. |       ACETAMINOPHEN   .1183155    36003215    4259737       113 |
+ 60. |      HYDROCORTISONE   .1101204    13508178    1487526        85 |
+     |-----------------------------------------------------------------|
+ 61. |            CITRACAL    .107922   849934.91   91726.64         2 |
+ 62. |        KETOCONAZOLE   .0871467    16339989    1423976        12 |
+ 63. |        AZATHIOPRINE   .0656015   6758258.4   443351.9         5 |
+ 64. |             PAMELOR   .0585789   847530.56   49647.45         9 |
+ 65. |            RESTORIL   .0585318   2961641.6   173350.2         3 |
+     |-----------------------------------------------------------------|
+ 66. |           ENALAPRIL   .0537204    65839942    3536949        80 |
+ 67. |                       .0519783   2.619e+09   1.36e+08      9474 |
+ 68. |           GLUCOTROL   .0517686    51722295    2677592         5 |
+ 69. |              PEPCID   .0405265   6867936.3   278333.6        12 |
+ 70. |               FOLIC   .0393656    13176990   518720.3        22 |
+     |-----------------------------------------------------------------|
+ 71. |      METOCLOPRAMIDE   .0291473    23463971   683911.6        32 |
+ 72. |        CLOTRIMAZOLE   .0227522    49558450    1127565        28 |
+ 73. |        PROMETHAZINE    .019714    45217591   891421.6        35 |
+ 74. |           IBUPROFEN   .0142636    52539425   749398.8       114 |
+ 75. |           NEOSPORIN   .0131359   614440.89    8071.24         5 |
+     |-----------------------------------------------------------------|
+ 76. |         HYOSCYAMINE    .012443   6813181.7   84776.08        42 |
+ 77. |             LAMISIL   .0110166    59241982   652644.2         7 |
+ 78. |          PROCTOFOAM   .0101154   1423697.3   14401.27         2 |
+ 79. |            PRILOSEC   .0075048   1.308e+08   981764.2         4 |
+ 80. |             NIZORAL   .0024456   9191766.1   22479.49         3 |
+     |-----------------------------------------------------------------|
+ 81. |              CARMOL   .0018698   7918441.1   14805.74         9 |
+ 82. |          FAMOTIDINE   .0017324    44603761   77270.54        34 |
+ 83. |              ZANTAC   .0016003    34381823   55020.66         8 |
+ 84. |            NAPROXEN   .0014201    31875482   45266.75        86 |
+ 85. |              MOTRIN   .0013034   4208181.3    5484.89        12 |
+     |-----------------------------------------------------------------|
+ 86. |           POTASSIUM   .0011085    65311603   72400.94        74 |
+ 87. |          RANITIDINE     .00089    93170466   82924.48        44 |
+ 88. |           ALBUTEROL   .0007987   1.765e+08   141005.1        49 |
+ 89. |          LORATADINE   .0007678    16653093   12785.64         5 |
+ 90. |          TIZANIDINE   .0004404    49040354   21598.63        14 |
+     |-----------------------------------------------------------------|
+ 91. |            NEOMYCIN   .0002203   1951669.5     429.87        10 |
+ 92. |          FLUOXETINE   .0002123   1.179e+08   25031.28        42 |
+ 93. |          PREDNISONE   .0000879    17621590    1549.41        56 |
+ 94. |           MINOXIDIL   .0000698     3985134     278.28        15 |
+ 95. |        DIPYRIDAMOLE   .0000166   3252253.8      53.94        20 |
+     |-----------------------------------------------------------------|
+ 96. |           LIDOCAINE    .000014   2673981.4      37.49        49 |
+ 97. |          SUCRALFATE   7.55e-06   8704965.5      65.73        14 |
+ 98. |             QUININE   9.02e-07    16102653      14.52        22 |
+ 99. |             ZYPREXA          0   1.811e+09          0        10 |
+100. |           RISPERDAL          0   1.128e+09          0        13 |
+     |-----------------------------------------------------------------|
+101. |            PREVACID          0   8.000e+08          0         4 |
+102. |            SEROQUEL          0   7.406e+08          0         4 |
+103. |             LIPITOR          0   6.437e+08          0         4 |
+104. |           NEURONTIN          0   5.875e+08          0         6 |
+105. |            DEPAKOTE          0   5.361e+08          0         6 |
+     |-----------------------------------------------------------------|
+106. |              ZOLOFT          0   4.820e+08          0         4 |
+107. |            CELEBREX          0   4.715e+08          0         3 |
+108. |               ZOCOR          0   4.686e+08          0         6 |
+109. |               PAXIL          0   4.147e+08          0         8 |
+110. |              PLAVIX          0   3.975e+08          0         1 |
+     |-----------------------------------------------------------------|
+111. |           OXYCONTIN          0   3.819e+08          0         5 |
+112. |            PROTONIX          0   3.745e+08          0         3 |
+113. |              ADVAIR          0   3.331e+08          0         3 |
+114. |             NORVASC          0   3.231e+08          0         3 |
+115. |           SINGULAIR          0   3.196e+08          0         4 |
+     |-----------------------------------------------------------------|
+116. |             EFFEXOR          0   3.175e+08          0         8 |
+117. |               ACTOS          0   2.940e+08          0         3 |
+118. |           DURAGESIC          0   2.916e+08          0         4 |
+119. |              NEXIUM          0   2.774e+08          0         4 |
+120. |             TOPAMAX          0   2.773e+08          0         5 |
+     |-----------------------------------------------------------------|
+121. |          WELLBUTRIN          0   2.461e+08          0         7 |
+122. |             PROCRIT          0   2.413e+08          0         7 |
+123. |           ZITHROMAX          0   2.387e+08          0         9 |
+124. |              CELEXA          0   2.292e+08          0         4 |
+125. |             AVANDIA          0   2.275e+08          0         3 |
+     |-----------------------------------------------------------------|
+126. |              AMBIEN          0   2.217e+08          0         2 |
+127. |             ARICEPT          0   2.133e+08          0         2 |
+128. |              ZYRTEC          0   1.963e+08          0         4 |
+129. |             ABILIFY          0   1.955e+08          0         5 |
+130. |           PRAVACHOL          0   1.901e+08          0         4 |
+     |-----------------------------------------------------------------|
+131. |            LAMICTAL          0   1.800e+08          0         6 |
+132. |            LEVAQUIN          0   1.749e+08          0         8 |
+133. |         RECOMBINATE          0   1.744e+08          0         1 |
+134. |             FOSAMAX          0   1.704e+08          0         5 |
+135. |            COMBIVIR          0   1.643e+08          0         1 |
+     |-----------------------------------------------------------------|
+136. |          OMEPRAZOLE          0   1.612e+08          0        10 |
+137. |              GEODON          0   1.574e+08          0         5 |
+138. |            CONCERTA          0   1.526e+08          0         4 |
+139. |             ALLEGRA          0   1.502e+08          0         5 |
+140. |           PULMICORT          0   1.478e+08          0         3 |
+     |-----------------------------------------------------------------|
+141. |              DIOVAN          0   1.467e+08          0         7 |
+142. |             KALETRA          0   1.460e+08          0         2 |
+143. |               ORTHO          0   1.380e+08          0        10 |
+144. |            TRIZIVIR          0   1.359e+08          0         1 |
+145. |            ADDERALL          0   1.352e+08          0        13 |
+     |-----------------------------------------------------------------|
+146. |             LEXAPRO          0   1.348e+08          0         3 |
+147. |           TRILEPTAL          0   1.292e+08          0         4 |
+148. |           METFORMIN          0   1.280e+08          0        49 |
+149. |         AMOXICILLIN          0   1.279e+08          0        56 |
+150. |              DETROL          0   1.243e+08          0         4 |
+     |-----------------------------------------------------------------|
+151. |          LISINOPRIL          0   1.215e+08          0        97 |
+152. |             FLOVENT          0   1.207e+08          0         6 |
+153. |       CIPROFLOXACIN          0   1.206e+08          0        14 |
+154. |             ACIPHEX          0   1.205e+08          0         1 |
+155. |              BEXTRA          0   1.188e+08          0         2 |
+     |-----------------------------------------------------------------|
+156. |           AUGMENTIN          0   1.179e+08          0        13 |
+157. |           CLOZAPINE          0   1.167e+08          0         9 |
+158. |             FLONASE          0   1.139e+08          0         1 |
+159. |              VIREAD          0   1.114e+08          0         1 |
+160. |             REBETOL          0   1.093e+08          0         4 |
+     |-----------------------------------------------------------------|
+161. |           COMBIVENT          0   1.061e+08          0         1 |
+162. |            CLARINEX          0   1.055e+08          0         2 |
+163. |              ZOFRAN          0   1.036e+08          0         8 |
+164. |              LOTREL          0   1.030e+08          0         4 |
+165. |             RENAGEL          0   1.025e+08          0         3 |
+     |-----------------------------------------------------------------|
+166. |          GLUCOPHAGE          0   1.013e+08          0         5 |
+167. |             HUMALOG          0   1.007e+08          0         5 |
+168. |               COREG          0   1.006e+08          0         4 |
+169. |              ENBREL          0   1.002e+08          0         1 |
+170. |            VIRACEPT          0    99185886          0         2 |
+     |-----------------------------------------------------------------|
+171. |             SUSTIVA          0    98881778          0         4 |
+172. |          PEG-INTRON          0    97379755          0         4 |
+173. |            DITROPAN          0    94893962          0         5 |
+174. |              TOPROL          0    94482848          0         4 |
+175. |              EPIVIR          0    93886619          0         5 |
+     |-----------------------------------------------------------------|
+176. |             LOVENOX          0    92358110          0         8 |
+177. |            DIFLUCAN          0    91144349          0        12 |
+178. |           LORAZEPAM          0    91080693          0        46 |
+179. |            PREMARIN          0    89732997          0         8 |
+180. |             XOPENEX          0    89270207          0         3 |
+     |-----------------------------------------------------------------|
+181. |            CLOZARIL          0    88651603          0         2 |
+182. |             IMITREX          0    86202144          0         8 |
+183. |           STRATTERA          0    82929749          0         5 |
+184. |               ZERIT          0    82343841          0         5 |
+185. |              COZAAR          0    82315355          0         3 |
+     |-----------------------------------------------------------------|
+186. |              EPOGEN          0    81959869          0         7 |
+187. |              ALTACE          0    79797326          0         4 |
+188. |             NASONEX          0    77904832          0         1 |
+189. |           MEGESTROL          0    76556890          0        21 |
+190. |          NIFEDIPINE          0    74994134          0        27 |
+     |-----------------------------------------------------------------|
+191. |          GLUCOVANCE          0    74767258          0         3 |
+192. |            NEUPOGEN          0    74547120          0         4 |
+193. |              FLOMAX          0    72523187          0         1 |
+194. |              BIAXIN          0    72058209          0         5 |
+195. |             PROGRAF          0    71688720          0         4 |
+     |-----------------------------------------------------------------|
+196. |             ACTONEL          0    71480343          0         3 |
+197. |              LANTUS          0    69696441          0         1 |
+198. |           DILTIAZEM          0    68440275          0        76 |
+199. |          ISOSORBIDE          0    67968334          0        59 |
+200. |              EXELON          0    67817643          0         5 |
+     |-----------------------------------------------------------------|
+201. |             OMNICEF          0    65902047          0         2 |
+202. |             XALATAN          0    65755657          0         1 |
+203. |              CEFZIL          0    64146615          0         4 |
+204. |            LOTENSIN          0    61755733          0         8 |
+205. |          FUROSEMIDE          0    61202836          0        49 |
+     |-----------------------------------------------------------------|
+206. |            CELLCEPT          0    60701399          0         4 |
+207. |            ACCUPRIL          0    60391873          0         4 |
+208. |              EVISTA          0    59983506          0         1 |
+209. |             REMERON          0    58656752          0         3 |
+210. |          CLONAZEPAM          0    57726581          0        35 |
+     |-----------------------------------------------------------------|
+211. |            SEREVENT          0    57597325          0         3 |
+212. |            MORPHINE          0    57145539          0        68 |
+213. |              ELIDEL          0    57054672          0         1 |
+214. |         MIRTAZAPINE          0    55986206          0        34 |
+215. |            CATAPRES          0    55821342          0         6 |
+     |-----------------------------------------------------------------|
+216. |               DDAVP          0    54623199          0         5 |
+217. |              TRICOR          0    54101281          0         2 |
+218. |            COPAXONE          0    54007571          0         1 |
+219. |            LIDODERM          0    53792377          0         1 |
+220. |            TRAMADOL          0    53769536          0        15 |
+     |-----------------------------------------------------------------|
+221. |            WARFARIN          0    53504262          0        25 |
+222. |           BACTROBAN          0    52727772          0         3 |
+223. |              ZIAGEN          0    52508695          0         2 |
+224. |           BUSPIRONE          0    52451670          0        36 |
+225. |             PATANOL          0    52184421          0         1 |
+     |-----------------------------------------------------------------|
+226. |           MIACALCIN          0    51902373          0         2 |
+227. |         HYDROXYZINE          0    51485235          0        57 |
+228. |            VIRAMUNE          0    51177714          0         2 |
+229. |             MARINOL          0    51084267          0         3 |
+230. |          CEPHALEXIN          0    50058418          0        36 |
+     |-----------------------------------------------------------------|
+231. |           GLYBURIDE          0    49924756          0        37 |
+232. |                AMOX          0    49549772          0        25 |
+233. |            NUTROPIN          0    49057677          0         6 |
+234. |              HYZAAR          0    48339381          0         2 |
+235. |            ROCEPHIN          0    47665462          0         7 |
+     |-----------------------------------------------------------------|
+236. |           CARBIDOPA          0    47301894          0        28 |
+237. |             PEGASYS          0    47285943          0         1 |
+238. |            ULTRACET          0    45859435          0         1 |
+239. |            DILANTIN          0    45632004          0         4 |
+240. |            ALPHAGAN          0    44256217          0         2 |
+     |-----------------------------------------------------------------|
+241. |        PROPOXYPHENE          0    43356519          0        28 |
+242. |         HALOPERIDOL          0    43272545          0        55 |
+243. |               MOBIC          0    42971949          0         2 |
+244. |          PAROXETINE          0    42760231          0        12 |
+245. |            SEROSTIM          0    42729428          0         3 |
+     |-----------------------------------------------------------------|
+246. |            BACLOFEN          0    42534742          0        23 |
+247. |              LUPRON          0    42003338          0         9 |
+248. |        DEPO-PROVERA          0    41246608          0         2 |
+249. |           PULMOZYME          0    41141988          0         1 |
+250. |         IPRATROPIUM          0    40865105          0        15 |
+     |-----------------------------------------------------------------|
+251. |            TEGRETOL          0    40786447          0         6 |
+252. |            ATROVENT          0    40631080          0         2 |
+253. |              AMARYL          0    40330913          0         3 |
+254. |            MONOPRIL          0    39176238          0         5 |
+255. |              PLETAL          0    38698573          0         2 |
+     |-----------------------------------------------------------------|
+256. |            KLOR-CON          0    38524301          0         8 |
+257. |             VALTREX          0    38350702          0         2 |
+258. |           BETASERON          0    37635230          0         1 |
+259. |            ATENOLOL          0    37052068          0        49 |
+260. |          ALPRAZOLAM          0    37019429          0        35 |
+     |-----------------------------------------------------------------|
+261. |           RHINOCORT          0    36202855          0         1 |
+262. |           SYNTHROID          0    35757799          0        13 |
+263. |             BENEFIX          0    35602624          0         3 |
+264. |                TOBI          0    35411934          0         1 |
+265. |               VIDEX          0    35326762          0        11 |
+     |-----------------------------------------------------------------|
+266. |            ZONEGRAN          0    33904702          0         1 |
+267. |              VIAGRA          0    33851888          0         3 |
+268. |            NASACORT          0    33579398          0         2 |
+269. |             ARANESP          0    32920690          0        11 |
+270. |             LEVOXYL          0    32501714          0        12 |
+     |-----------------------------------------------------------------|
+271. |            COUMADIN          0    32211225          0        10 |
+272. |         FLUVOXAMINE          0    32186411          0        20 |
+273. |       NITROGLYCERIN          0    32118407          0        39 |
+274. |              DUONEB          0    32096306          0         1 |
+275. |               ACTIQ          0    31998219          0        12 |
+     |-----------------------------------------------------------------|
+276. |              COSOPT          0    30865125          0         1 |
+277. |             MIRALAX          0    30106957          0         1 |
+278. |            PROVIGIL          0    30056758          0         2 |
+279. |               VIOXX          0    29850219          0         1 |
+280. |            MACROBID          0    29418637          0         1 |
+     |-----------------------------------------------------------------|
+281. |         AMPHETAMINE          0    29327615          0        15 |
+282. |              CARTIA          0    29062750          0         4 |
+283. |              PROZAC          0    29057193          0         5 |
+284. |      SPIRONOLACTONE          0    29014422          0        26 |
+285. |            PERCOCET          0    28339414          0         6 |
+     |-----------------------------------------------------------------|
+286. |             PLENDIL          0    27746336          0         3 |
+287. |           ARTHROTEC          0    27360547          0         2 |
+288. |           HUMATROPE          0    27356796          0         4 |
+289. |             ATACAND          0    27166292          0         6 |
+290. |            AZMACORT          0    27061586          0         1 |
+     |-----------------------------------------------------------------|
+291. |            CRIXIVAN          0    26752869          0         4 |
+292. |           TRAZODONE          0    26748936          0        37 |
+293. |             VALCYTE          0    26700028          0         1 |
+294. |          LOVASTATIN          0    26349534          0        28 |
+295. |               ZETIA          0    26241175          0         1 |
+     |-----------------------------------------------------------------|
+296. | HYDROCHLOROTHIAZIDE          0    25810206          0        19 |
+297. |           VERAPAMIL          0    25243842          0        50 |
+298. |           NOVOSEVEN          0    25050285          0         2 |
+299. |       CARBAMAZEPINE          0    24917246          0        21 |
+300. |             CASODEX          0    24801324          0         1 |
+     |-----------------------------------------------------------------|
+301. |               CIPRO          0    24422171          0         4 |
+302. |           CLONIDINE          0    24417237          0        21 |
+303. |              HUMIRA          0    24319242          0         1 |
+304. |          CEFUROXIME          0    24283340          0        22 |
+305. |               ZYVOX          0    24270005          0         4 |
+     |-----------------------------------------------------------------|
+306. |            AGGRENOX          0    23867959          0         1 |
+307. |          NABUMETONE          0    23715247          0         5 |
+308. |          METOPROLOL          0    23684291          0        30 |
+309. |           TAMOXIFEN          0    23314589          0        13 |
+310. |              AVELOX          0    23202581          0         2 |
+     |-----------------------------------------------------------------|
+311. |            NYSTATIN          0    23161520          0        31 |
+312. |        CARISOPRODOL          0    22707106          0        18 |
+313. |          NIZATIDINE          0    22685857          0        15 |
+314. |         CLINDAMYCIN          0    22627850          0        29 |
+315. |             ENDOCET          0    22570066          0         5 |
+     |-----------------------------------------------------------------|
+316. |            CEREZYME          0    22541506          0         2 |
+317. |             NOVOLOG          0    22464741          0         6 |
+318. |           TERAZOSIN          0    22137551          0        33 |
+319. |          AMIODARONE          0    22080322          0         8 |
+320. |             ZELNORM          0    22037216          0         2 |
+     |-----------------------------------------------------------------|
+321. |              NEORAL          0    21968847          0         3 |
+322. |          GENOTROPIN          0    21941723          0         5 |
+323. |             LUMIGAN          0    21228372          0         1 |
+324. |              KEPPRA          0    20980730          0         3 |
+325. |            GABITRIL          0    20968778          0         4 |
+     |-----------------------------------------------------------------|
+326. |              AVONEX          0    20809327          0         1 |
+327. |            METROGEL          0    20627052          0         2 |
+328. |              TEQUIN          0    20417685          0         5 |
+329. |            TOBRADEX          0    20404347          0         2 |
+330. |               REBIF          0    20287828          0         2 |
+     |-----------------------------------------------------------------|
+331. |             PROSCAR          0    20254559          0         1 |
+332. |               ARAVA          0    20134392          0         2 |
+333. |            TAXOTERE          0    20134362          0         1 |
+334. |              ASACOL          0    19969585          0         1 |
+335. |     CYCLOBENZAPRINE          0    19858835          0        17 |
+     |-----------------------------------------------------------------|
+336. |              MEPRON          0    19808471          0         2 |
+337. |           GRIFULVIN          0    19668824          0         2 |
+338. |              MAXALT          0    19619364          0         4 |
+339. |              FLOXIN          0    19355397          0         4 |
+340. |             REYATAZ          0    19223615          0         3 |
+     |-----------------------------------------------------------------|
+341. |              NORVIR          0    19135468          0         2 |
+342. |           CARBATROL          0    18954521          0         4 |
+343. |              SONATA          0    18887292          0         2 |
+344. |             MIRAPEX          0    18774308          0         5 |
+345. |              LESCOL          0    18548946          0         2 |
+     |-----------------------------------------------------------------|
+346. |             PRANDIN          0    18533731          0         3 |
+347. |            ARIMIDEX          0    18522759          0         1 |
+348. |     METHYLPHENIDATE          0    18513372          0        27 |
+349. |             STARLIX          0    18274298          0         2 |
+350. |           NIFEDICAL          0    18232641          0         2 |
+     |-----------------------------------------------------------------|
+351. |           TORSEMIDE          0    18199718          0        10 |
+352. |              PENLAC          0    18135630          0         1 |
+353. |              AMOXIL          0    17978568          0        12 |
+354. |              TIAZAC          0    17959590          0         6 |
+355. |             PREMPRO          0    17704216          0         4 |
+     |-----------------------------------------------------------------|
+356. |            THALOMID          0    17573467          0         4 |
+357. |            ACCOLATE          0    17491557          0         2 |
+358. |       AMITRIPTYLINE          0    17296194          0        51 |
+359. |             INDERAL          0    17294061          0        10 |
+360. |              ALDARA          0    17239564          0         1 |
+     |-----------------------------------------------------------------|
+361. |             CILOXAN          0    17219451          0         2 |
+362. |           ZAROXOLYN          0    17159064          0         3 |
+363. |           AVANDAMET          0    17102369          0         3 |
+364. |            DIAZEPAM          0    16988270          0        31 |
+365. |          NEFAZODONE          0    16886165          0        23 |
+     |-----------------------------------------------------------------|
+366. |             TERAZOL          0    16864122          0         3 |
+367. |             DOVONEX          0    16595991          0         3 |
+368. |            SPORANOX          0    16571634          0         3 |
+369. |         SANDOSTATIN          0    16516548          0         8 |
+370. |             COPEGUS          0    16360358          0         1 |
+     |-----------------------------------------------------------------|
+371. |            MICARDIS          0    16099818          0         5 |
+372. |           DOXAZOSIN          0    16058556          0        49 |
+373. |           OXYCODONE          0    16052457          0        23 |
+374. |             RITALIN          0    16033915          0         7 |
+375. |            REMICADE          0    15988516          0         1 |
+     |-----------------------------------------------------------------|
+376. |             ORAPRED          0    15899967          0         1 |
+377. |           GAMMAGARD          0    15339949          0         1 |
+378. |            REGRANEX          0    15335871          0         1 |
+379. |         GEMFIBROZIL          0    15333983          0        10 |
+380. |               ZOMIG          0    15148907          0         5 |
+     |-----------------------------------------------------------------|
+381. |             ZOVIRAX          0    14993917          0         8 |
+382. |             REFACTO          0    14757314          0         4 |
+383. |              XELODA          0    14737998          0         2 |
+384. |             AVALIDE          0    14529327          0         2 |
+385. |            PROTOPIC          0    14443797          0         2 |
+     |-----------------------------------------------------------------|
+386. |            NEULASTA          0    14422756          0         1 |
+387. |            METADATE          0    13998714          0         4 |
+388. |            RAPAMUNE          0    13863470          0         2 |
+389. |        THEOPHYLLINE          0    13709592          0        31 |
+390. |             TEMODAR          0    13638987          0         4 |
+     |-----------------------------------------------------------------|
+391. |           ACTIMMUNE          0    13562499          0         1 |
+392. |              ELOCON          0    13509443          0         3 |
+393. |        ERYTHROMYCIN          0    12965658          0        30 |
+394. |        PREDNISOLONE          0    12891726          0        20 |
+395. |      NITROFURANTOIN          0    12868714          0        11 |
+     |-----------------------------------------------------------------|
+396. |            GAMIMUNE          0    12743425          0         1 |
+397. |              FAMVIR          0    12742243          0         3 |
+398. |          DICLOFENAC          0    12688593          0        28 |
+399. |             RITUXAN          0    12512537          0         2 |
+400. |            TRAVATAN          0    12400897          0         1 |
+     |-----------------------------------------------------------------|
+401. |        DESMOPRESSIN          0    12284785          0         7 |
+402. |      PENTOXIFYLLINE          0    12196941          0        10 |
+403. |             DIASTAT          0    12106023          0         5 |
+404. |             LANOXIN          0    11942657          0         5 |
+405. |              FUZEON          0    11926734          0         1 |
+     |-----------------------------------------------------------------|
+406. |          URECHOLINE          0    11891436          0         9 |
+407. |              GEMZAR          0    11838649          0         2 |
+408. |              FLOLAN          0    11655747          0         3 |
+409. |           PROVENTIL          0    11590850          0         8 |
+410. |           CAMPTOSAR          0    11517087          0         1 |
+     |-----------------------------------------------------------------|
+411. |            NIFEDIAC          0    11361197          0         1 |
+412. |             NIASPAN          0    11276699          0         3 |
+413. |             TAMIFLU          0    11234798          0         2 |
+414. |            RETROVIR          0    11215601          0         4 |
+415. |       TRIAMCINOLONE          0    11210641          0        58 |
+     |-----------------------------------------------------------------|
+416. |            INVIRASE          0    11166682          0         1 |
+417. |             ASTELIN          0    11148544          0         1 |
+418. |              REQUIP          0    11111099          0         7 |
+419. |              CEFTIN          0    11016311          0         4 |
+420. |            CARDIZEM          0    10944032          0        15 |
+     |-----------------------------------------------------------------|
+421. |           PHENYTOIN          0    10849132          0        14 |
+422. |             SOTALOL          0    10805302          0        30 |
+423. |             ULTRASE          0    10696000          0         4 |
+424. |           GLIPIZIDE          0    10589650          0        28 |
+425. |              AVAPRO          0    10572209          0         2 |
+     |-----------------------------------------------------------------|
+426. |              KADIAN          0    10551892          0         7 |
+427. |             LINDANE          0    10488098          0         5 |
+428. |              COMTAN          0    10457775          0         1 |
+429. |       METHOCARBAMOL          0    10434363          0        24 |
+430. |             TIMOLOL          0    10333418          0        20 |
+     |-----------------------------------------------------------------|
+431. |          PENICILLIN          0    10332173          0        24 |
+432. |             WELCHOL          0    10306760          0         1 |
+433. |               CREON          0    10285607          0         3 |
+434. |             OCUFLOX          0    10284955          0         1 |
+435. |               BOTOX          0    10281771          0         1 |
+     |-----------------------------------------------------------------|
+436. |            URSODIOL          0    10243965          0         4 |
+437. |              COVERA          0    10176263          0         2 |
+438. |           ACYCLOVIR          0    10167748          0        44 |
+439. |              LOPROX          0    10097250          0         4 |
+440. |              ACULAR          0    10053642          0         3 |
+     |-----------------------------------------------------------------|
+441. |         MINOCYCLINE          0   9967502.8          0        15 |
+442. |           BENZACLIN          0   9901987.7          0         1 |
+443. |            ANDROGEL          0   9700510.9          0         2 |
+444. |            FELBATOL          0   9634618.1          0         3 |
+445. |          CLOBETASOL          0   9443815.7          0        18 |
+     |-----------------------------------------------------------------|
+446. |             LITHIUM          0   9402413.1          0        19 |
+447. |             ANZEMET          0   9400836.3          0         5 |
+448. |           LABETALOL          0   9394401.2          0        20 |
+449. |             AEROBID          0   9382502.6          0         2 |
+450. |           TUSSIONEX          0   9148129.7          0         1 |
+     |-----------------------------------------------------------------|
+451. |           PRIMIDONE          0   9112418.5          0         8 |
+452. |               XANAX          0   9059453.6          0         8 |
+453. |         TRIAMTERENE          0     9052428          0        22 |
+454. |          IMIPRAMINE          0   9047142.8          0        16 |
+455. |          PROAMATINE          0   8945815.1          0         2 |
+     |-----------------------------------------------------------------|
+456. |             BENICAR          0   8829197.1          0         6 |
+457. |             SERZONE          0   8760154.8          0         2 |
+458. |        METHOTREXATE          0     8663163          0        17 |
+459. |            BETOPTIC          0   8597023.9          0         1 |
+460. |         BENZONATATE          0   8572657.1          0         9 |
+     |-----------------------------------------------------------------|
+461. |           PANCREASE          0   8426300.4          0         5 |
+462. |           LOTRISONE          0   8356491.8          0         2 |
+463. |              MAXAIR          0   8271292.4          0         1 |
+464. |            CARAFATE          0   8262268.8          0         2 |
+465. |           HERCEPTIN          0   8245823.8          0         1 |
+     |-----------------------------------------------------------------|
+466. |              AVIANE          0   8236528.9          0         1 |
+467. |              EPIPEN          0   8151203.7          0         2 |
+468. |          BISOPROLOL          0   8121682.3          0        18 |
+469. |           BUPROPION          0   8113462.9          0         8 |
+470. |             KINERET          0     8096551          0         1 |
+     |-----------------------------------------------------------------|
+471. |           TEMAZEPAM          0   8081075.4          0        10 |
+472. |            ETODOLAC          0   8019900.3          0        29 |
+473. |             CLEOCIN          0   7895312.2          0        18 |
+474. |              FEMARA          0     7838662          0         1 |
+475. |           NITRO-DUR          0   7817588.8          0         6 |
+     |-----------------------------------------------------------------|
+476. |          CALCITRIOL          0   7798158.3          0         4 |
+477. |              IRESSA          0   7777693.1          0         1 |
+478. |               MAVIK          0   7757889.6          0         6 |
+479. |          BENZAMYCIN          0   7676551.8          0         2 |
+480. |        CYCLOSPORINE          0   7619674.8          0         8 |
+     |-----------------------------------------------------------------|
+481. |              KYTRIL          0   7568346.6          0         4 |
+482. |              LIPRAM          0     7566522          0        10 |
+483. |              VANTIN          0   7558720.5          0         4 |
+484. |             ZEMPLAR          0   7540566.5          0         1 |
+485. |        FLUOCINONIDE          0   7525369.6          0        27 |
+     |-----------------------------------------------------------------|
+486. |         ALLOPURINOL          0     7499949          0        25 |
+487. |              YASMIN          0   7450185.8          0         1 |
+488. |           ECONAZOLE          0   7411019.6          0         2 |
+489. |               NECON          0   7410386.9          0         9 |
+490. |            CEFACLOR          0   7403360.9          0        28 |
+     |-----------------------------------------------------------------|
+491. |             FRAGMIN          0   7334983.5          0         5 |
+492. |             XENICAL          0   7215557.4          0         1 |
+493. |          BUMETANIDE          0   7078672.4          0        20 |
+494. |              FORTEO          0   7034849.6          0         1 |
+495. |            LITHOBID          0   7021780.6          0         1 |
+     |-----------------------------------------------------------------|
+496. |          ROXICODONE          0   6950027.7          0         7 |
+497. |               VFEND          0   6936776.9          0         3 |
+498. |             GENGRAF          0   6914169.4          0         3 |
+499. |              INTRON          0   6880904.1          0        12 |
+500. |          SANDIMMUNE          0   6860691.8          0         4 |
+     |-----------------------------------------------------------------|
+501. |             ZESTRIL          0   6822928.8          0         6 |
+502. |  HYDROXYCHLOROQUINE          0     6747052          0         5 |
+503. |         CLORAZEPATE          0   6584851.4          0        16 |
+504. |        ORPHENADRINE          0   6513921.9          0         9 |
+505. |            PACERONE          0   6496988.3          0         3 |
+     |-----------------------------------------------------------------|
+506. |               AXERT          0   6494283.2          0         3 |
+507. |       METRONIDAZOLE          0   6483897.2          0        24 |
+508. |            VANCOCIN          0   6469312.5          0         3 |
+509. |            MINITRAN          0   6455285.1          0         4 |
+510. |         DOXYCYCLINE          0   6445969.9          0        40 |
+     |-----------------------------------------------------------------|
+511. |            DIFFERIN          0   6388377.2          0         3 |
+512. |           DIPROLENE          0   6377215.8          0         3 |
+513. |             PENTASA          0   6287084.5          0         1 |
+514. |             VERELAN          0   6223532.3          0         7 |
+515. |              PHOSLO          0   6214513.5          0         3 |
+     |-----------------------------------------------------------------|
+516. |             ZADITOR          0   6192302.8          0         1 |
+517. |         PROPRANOLOL          0   6162989.6          0        56 |
+518. |          PURINETHOL          0   6151002.6          0         2 |
+519. |         BUTORPHANOL          0   6145939.3          0        12 |
+520. |             TAZORAC          0   6139225.8          0         4 |
+     |-----------------------------------------------------------------|
+521. |              AVINZA          0   6137536.2          0         4 |
+522. |           SORIATANE          0   6129822.8          0         4 |
+523. |            GLUCAGON          0   6030224.4          0         1 |
+524. |         PROPAFENONE          0     5926754          0        14 |
+525. |             TRUSOPT          0   5894167.8          0         1 |
+     |-----------------------------------------------------------------|
+526. |              SAIZEN          0   5843448.3          0         2 |
+527. |               SULAR          0   5804314.5          0         4 |
+528. |        LOW-OGESTREL          0   5800251.2          0         1 |
+529. |             ROBINUL          0   5726881.9          0         3 |
+530. |          AMANTADINE          0   5708339.6          0        15 |
+     |-----------------------------------------------------------------|
+531. |   DEXTROAMPHETAMINE          0   5698993.7          0        12 |
+532. |            DYNACIRC          0   5572935.6          0         4 |
+533. |              MENTAX          0   5432436.6          0         1 |
+534. |            BECONASE          0   5393057.1          0         1 |
+535. |            PARLODEL          0     5320156          0         2 |
+     |-----------------------------------------------------------------|
+536. |            CARNITOR          0   5220595.4          0         2 |
+537. |  METHYLPREDNISOLONE          0     5191394          0        15 |
+538. |               TAXOL          0   5132639.6          0         3 |
+539. |             PRECOSE          0   5121934.5          0         3 |
+540. |             ELMIRON          0   5092543.8          0         2 |
+     |-----------------------------------------------------------------|
+541. |          CEFADROXIL          0   5027622.7          0         6 |
+542. |           METHADONE          0   5017034.9          0        13 |
+543. |              ZOMETA          0   5001004.9          0         2 |
+544. |      CHOLESTYRAMINE          0   4910564.1          0         6 |
+545. |           ULTRAVATE          0   4761810.3          0         2 |
+     |-----------------------------------------------------------------|
+546. |              LOCOID          0   4743526.9          0         4 |
+547. |         MICROGESTIN          0   4649848.8          0         4 |
+548. |            OXAZEPAM          0   4616989.2          0        15 |
+549. |            DOSTINEX          0   4589441.9          0         1 |
+550. |              AMERGE          0   4564837.5          0         2 |
+     |-----------------------------------------------------------------|
+551. |        INDOMETHACIN          0   4560200.9          0        14 |
+552. |             ACCUNEB          0   4484414.2          0         2 |
+553. |           ESTRADIOL          0   4471124.1          0        21 |
+554. |             UNIVASC          0   4430658.2          0         2 |
+555. |            KLONOPIN          0   4295329.9          0         8 |
+     |-----------------------------------------------------------------|
+556. |               TARKA          0   4270295.7          0         4 |
+557. |            DESONIDE          0   4215206.1          0        10 |
+558. |            ACCUTANE          0   4150601.4          0         3 |
+559. |      DESOXIMETASONE          0   4110973.6          0         8 |
+560. |       BROMOCRIPTINE          0   4070636.4          0         2 |
+     |-----------------------------------------------------------------|
+561. |       HYDROMORPHONE          0   4047143.1          0        18 |
+562. |           PROCARDIA          0   4040034.9          0         4 |
+563. |             PRECARE          0   4028443.5          0         2 |
+564. |           AMNESTEEM          0   4026473.2          0         3 |
+565. |             TRIVORA          0   4024167.8          0         2 |
+     |-----------------------------------------------------------------|
+566. |              ULTRAM          0   3985110.8          0         1 |
+567. |              RELPAX          0   3956244.9          0         2 |
+568. |             VIGAMOX          0   3912335.1          0         1 |
+569. |               ZYBAN          0   3801938.7          0         1 |
+570. |             RILUTEK          0   3794327.4          0         1 |
+     |-----------------------------------------------------------------|
+571. |             UNIPHYL          0     3756353          0         1 |
+572. |         NORDITROPIN          0   3745483.8          0         3 |
+573. |             FOCALIN          0   3685492.3          0         3 |
+574. |          PACLITAXEL          0   3657856.1          0         9 |
+575. |              TAZTIA          0   3652084.4          0         5 |
+     |-----------------------------------------------------------------|
+576. |            VOLTAREN          0   3621706.8          0         5 |
+577. |             THEO-24          0   3596697.3          0         4 |
+578. |                QVAR          0   3586733.8          0         2 |
+579. |            NUVARING          0   3559075.1          0         1 |
+580. |               AZOPT          0   3554445.5          0         1 |
+     |-----------------------------------------------------------------|
+581. |          MOMETASONE          0   3545897.3          0         1 |
+582. |            GYNAZOLE          0   3537693.1          0         1 |
+583. |              KARIVA          0   3437394.9          0         1 |
+584. |           METHADOSE          0   3436859.6          0         5 |
+585. |              ALESSE          0   3399504.5          0         1 |
+     |-----------------------------------------------------------------|
+586. |               TRIAZ          0   3398887.2          0        19 |
+587. |           OXAPROZIN          0   3353193.5          0         8 |
+588. |             NADOLOL          0   3330367.1          0        21 |
+589. |              MEGACE          0   3323258.6          0         1 |
+590. |               RETIN          0   3280735.6          0         8 |
+     |-----------------------------------------------------------------|
+591. | MEDROXYPROGESTERONE          0   3198889.1          0        11 |
+592. |            MYSOLINE          0     3146728          0         5 |
+593. |               ACEON          0   3121692.5          0         3 |
+594. |            SULINDAC          0   3118031.1          0        18 |
+595. |              ATIVAN          0   3108238.3          0         5 |
+     |-----------------------------------------------------------------|
+596. |            SPRINTEC          0     3102806          0         1 |
+597. |                OLUX          0   3065662.3          0         1 |
+598. |            BETAPACE          0   3057303.3          0         7 |
+599. |             ESTRACE          0   3038628.8          0         5 |
+600. |           TRANSDERM          0   2985477.9          0         2 |
+     |-----------------------------------------------------------------|
+601. |            CIPRODEX          0   2982763.8          0         1 |
+602. |            METAGLIP          0   2956098.9          0         3 |
+603. |             ADVICOR          0     2953648          0         3 |
+604. |             HEPARIN          0   2937341.7          0        34 |
+605. |               FROVA          0   2918988.6          0         1 |
+     |-----------------------------------------------------------------|
+606. |           DEXEDRINE          0   2860646.3          0         4 |
+607. |       BETAMETHASONE          0   2859461.9          0        28 |
+608. |                URSO          0   2821751.5          0         1 |
+609. |         MISOPROSTOL          0   2805291.5          0         4 |
+610. |           ANDRODERM          0   2780345.6          0         2 |
+     |-----------------------------------------------------------------|
+611. |                APRI          0   2765658.9          0         1 |
+612. |           TRETINOIN          0   2765218.2          0         7 |
+613. |             NORTREL          0   2743668.6          0         4 |
+614. |         METHIMAZOLE          0   2657158.3          0         5 |
+615. |     FLUDROCORTISONE          0   2654489.8          0         2 |
+     |-----------------------------------------------------------------|
+616. |          LEUCOVORIN          0   2645920.3          0        23 |
+617. |             LOTEMAX          0   2638643.9          0         1 |
+618. |            FLEXERIL          0   2620034.1          0         3 |
+619. |             HEPSERA          0   2581878.3          0         1 |
+620. |          FLECAINIDE          0   2580796.6          0        13 |
+     |-----------------------------------------------------------------|
+621. |            HYCAMTIN          0     2571949          0         1 |
+622. |             CRESTOR          0   2570935.5          0         4 |
+623. |              BUSPAR          0   2536227.1          0         4 |
+624. |            RESTASIS          0   2518886.7          0         1 |
+625. |         MEPROBAMATE          0   2499250.3          0         8 |
+     |-----------------------------------------------------------------|
+626. |            RIFAMPIN          0   2466087.1          0         6 |
+627. |               ALREX          0   2437319.1          0         1 |
+628. |         HYDRALAZINE          0   2416411.2          0        23 |
+629. |             OXISTAT          0   2406565.5          0         2 |
+630. |          PANGESTYME          0   2395595.5          0         7 |
+     |-----------------------------------------------------------------|
+631. |             GLEEVEC          0   2376497.1          0         2 |
+632. |            UNIRETIC          0   2375256.1          0         3 |
+633. |             VOSPIRE          0   2363615.2          0         2 |
+634. |        NITROLINGUAL          0   2362400.3          0         1 |
+635. |             SINEMET          0   2336210.2          0         5 |
+     |-----------------------------------------------------------------|
+636. |             PRENATE          0   2316228.8          0         3 |
+637. |               ERRIN          0   2282987.5          0         1 |
+638. |              LEVORA          0   2279288.5          0         2 |
+639. |              CAMILA          0   2272682.3          0         1 |
+640. |             FORADIL          0   2269135.5          0         2 |
+     |-----------------------------------------------------------------|
+641. |            MIRCETTE          0   2267484.3          0         1 |
+642. |          PARAPLATIN          0     2250039          0         3 |
+643. |             CLIMARA          0   2221508.7          0         6 |
+644. |          BLEPHAMIDE          0   2169585.2          0         2 |
+645. |           ACCURETIC          0   2130638.3          0         3 |
+     |-----------------------------------------------------------------|
+646. |              MIRENA          0   2100590.6          0         1 |
+647. |           CHROMAGEN          0   2097157.3          0         6 |
+648. |          LEVOTHROID          0   2093547.5          0        13 |
+649. |              GAMMAR          0   2089830.6          0         1 |
+650. |            DILAUDID          0   2068477.5          0        13 |
+     |-----------------------------------------------------------------|
+651. |            ELOXATIN          0   2059165.5          0         2 |
+652. |       DEXAMETHASONE          0   2033553.7          0        27 |
+653. |             COLAZAL          0   2025298.2          0         1 |
+654. |            ZANAFLEX          0   2007979.8          0         1 |
+655. |             ELLENCE          0   1974463.5          0         2 |
+     |-----------------------------------------------------------------|
+656. |           KETOROLAC          0   1969625.7          0        15 |
+657. |            METHYLIN          0   1947476.5          0         2 |
+658. |           PERIOSTAT          0   1932112.6          0         1 |
+659. |              ROWASA          0   1926524.1          0         1 |
+660. |            HECTOROL          0   1904096.8          0         2 |
+     |-----------------------------------------------------------------|
+661. |               ZYMAR          0   1897907.8          0         1 |
+662. |            LO/OVRAL          0   1890009.5          0         2 |
+663. |            AROMASIN          0   1888887.5          0         1 |
+664. |             ZOLADEX          0     1843587          0         3 |
+665. |          PROMETRIUM          0   1831851.3          0         2 |
+     |-----------------------------------------------------------------|
+666. |         PROMETHEGAN          0   1822135.2          0         1 |
+667. |              NAFTIN          0   1796092.1          0         4 |
+668. |             RYTHMOL          0   1786624.8          0         6 |
+669. |               DOXIL          0   1785460.6          0         1 |
+670. |           LOPRESSOR          0   1776291.7          0         5 |
+     |-----------------------------------------------------------------|
+671. |             VIVELLE          0     1748561          0        10 |
+672. |             NEUMEGA          0   1724138.1          0         1 |
+673. |               LUXIQ          0   1710858.9          0         1 |
+674. |              XOLAIR          0   1709791.8          0         1 |
+675. |            ENTOCORT          0   1700209.7          0         1 |
+     |-----------------------------------------------------------------|
+676. |           ACTIVELLA          0   1650215.3          0         2 |
+677. |            VESANOID          0   1636167.8          0         1 |
+678. |            PRINIVIL          0   1625833.8          0         5 |
+679. |            TAMBOCOR          0   1622778.9          0         3 |
+680. |          DIFLUNISAL          0   1620960.2          0         6 |
+     |-----------------------------------------------------------------|
+681. |            AFEDITAB          0   1596016.6          0         2 |
+682. |          PROBENECID          0   1579257.3          0         7 |
+683. |             VENOFER          0   1554598.3          0         1 |
+684. |                SOMA          0   1505055.2          0         3 |
+685. |                DUAC          0   1494849.6          0         1 |
+     |-----------------------------------------------------------------|
+686. |              EFUDEX          0   1489091.3          0         3 |
+687. |            COLESTID          0   1487373.6          0         2 |
+688. |           ETOPOSIDE          0     1482633          0        14 |
+689. |             EMTRIVA          0   1470542.3          0         1 |
+690. |               ZOVIA          0   1463680.7          0         4 |
+     |-----------------------------------------------------------------|
+691. |       LEVOTHYROXINE          0   1442976.9          0        28 |
+692. |             TEVETEN          0   1441308.1          0         4 |
+693. |           TARGRETIN          0   1441015.8          0         2 |
+694. |           ESTRADERM          0     1424311          0         2 |
+695. |             DIGOXIN          0   1416834.3          0        10 |
+     |-----------------------------------------------------------------|
+696. |             BETIMOL          0   1414730.1          0         2 |
+697. |          NOVANTRONE          0   1407244.5          0         4 |
+698. |               FOLTX          0   1381545.1          0         1 |
+699. |                MUSE          0   1378667.1          0         4 |
+700. |            FIORICET          0   1376106.5          0         2 |
+     |-----------------------------------------------------------------|
+701. |         PAMIDRONATE          0   1352180.6          0        10 |
+702. |              CANASA          0   1345677.6          0         1 |
+703. |              LORTAB          0   1297973.1          0         5 |
+704. |           PREMPHASE          0   1290090.4          0         1 |
+705. |            INFERGEN          0   1288086.2          0         2 |
+     |-----------------------------------------------------------------|
+706. |            TOFRANIL          0   1278961.1          0         6 |
+707. |           TRIPHASIL          0   1278144.8          0         2 |
+708. |              DIAMOX          0   1270499.6          0         2 |
+709. |            CONDYLOX          0   1263781.8          0         2 |
+710. |             CYTOMEL          0   1232480.9          0         4 |
+     |-----------------------------------------------------------------|
+711. |              ASCOMP          0   1228122.4          0         1 |
+712. |       SULFASALAZINE          0   1207288.2          0         7 |
+713. |          METOLAZONE          0   1203679.8          0         3 |
+714. |             MERIDIA          0   1188770.7          0         6 |
+715. |             AVODART          0   1178511.7          0         1 |
+     |-----------------------------------------------------------------|
+716. |           PROLEUKIN          0   1171828.9          0         1 |
+717. |          TRI-LEVLEN          0     1125011          0         1 |
+718. |             OXYTROL          0     1101524          0         1 |
+719. |             VAGIFEM          0   1053526.4          0         2 |
+720. |             LESSINA          0   1051971.8          0         1 |
+     |-----------------------------------------------------------------|
+721. |              EVOXAC          0     1023564          0         1 |
+722. |       NORETHINDRONE          0   968121.01          0         1 |
+723. |            SUBOXONE          0   958424.83          0         2 |
+724. |             NASAREL          0   955981.62          0         1 |
+725. |             VICODIN          0   953808.43          0         4 |
+     |-----------------------------------------------------------------|
+726. |               NORCO          0   940939.84          0         2 |
+727. |           CAVERJECT          0   929002.47          0         5 |
+728. |             DIGITEK          0   916117.47          0         4 |
+729. |              UROCIT          0   904211.11          0         2 |
+730. |              ETHYOL          0   880613.56          0         1 |
+     |-----------------------------------------------------------------|
+731. |             DESOGEN          0   876757.84          0         1 |
+732. |               OVIDE          0   866507.44          0         1 |
+733. |             FLUDARA          0   855095.33          0         1 |
+734. |            BICILLIN          0   852397.64          0         9 |
+735. |           PRIMACARE          0   848805.76          0         1 |
+     |-----------------------------------------------------------------|
+736. |            CRYSELLE          0   828631.11          0         1 |
+737. |           MIDODRINE          0   774550.85          0         5 |
+738. |              LORCET          0   770202.42          0         3 |
+739. |               INFED          0   757320.34          0         2 |
+740. |           ADENOSCAN          0   752790.57          0         1 |
+     |-----------------------------------------------------------------|
+741. |            CARIMUNE          0   743089.38          0         3 |
+742. |           MONONESSA          0   738629.74          0         1 |
+743. |             KENALOG          0   736442.73          0         8 |
+744. |            BREVOXYL          0   713659.19          0         6 |
+745. |           FERRLECIT          0   691806.86          0         1 |
+     |-----------------------------------------------------------------|
+746. |         METROLOTION          0   676020.81          0         1 |
+747. |              HYTRIN          0   674685.65          0         4 |
+748. |             VASOTEC          0   672832.63          0         5 |
+749. |              LEXIVA          0   667624.11          0         1 |
+750. |             ESTRING          0      653919          0         1 |
+     |-----------------------------------------------------------------|
+751. |         PILOCARPINE          0   646112.44          0        27 |
+752. |           PREVIDENT          0   636383.77          0         7 |
+753. |            ENPRESSE          0   634094.25          0         1 |
+754. |               CALAN          0   633416.81          0         6 |
+755. |            NORITATE          0   624090.86          0         1 |
+     |-----------------------------------------------------------------|
+756. |               EMEND          0   608750.82          0         3 |
+757. |          COMBIPATCH          0   588020.52          0         2 |
+758. |         FLUNISOLIDE          0   586374.93          0         1 |
+759. |           MUPIROCIN          0   585434.45          0         2 |
+760. |             PONSTEL          0   575044.45          0         1 |
+     |-----------------------------------------------------------------|
+761. |            FIORINAL          0   538697.62          0         2 |
+762. |             STALEVO          0   538427.52          0         3 |
+763. |              KLARON          0    523320.4          0         1 |
+764. |      GLYCOPYRROLATE          0    515839.4          0         6 |
+765. |               OVCON          0    499201.9          0         1 |
+     |-----------------------------------------------------------------|
+766. |         DEPO-MEDROL          0   497575.62          0         5 |
+767. |         DOXORUBICIN          0   496107.42          0        17 |
+768. |            FASLODEX          0   482701.62          0         1 |
+769. |            CLARAVIS          0   480039.47          0         3 |
+770. |            MIGRANAL          0   467439.26          0         1 |
+     |-----------------------------------------------------------------|
+771. |             ARIXTRA          0    466758.8          0         1 |
+772. |             PLEXION          0   462775.41          0         3 |
+773. |              PORTIA          0   461152.18          0         1 |
+774. |           CLINDAGEL          0   428910.27          0         1 |
+775. |            FENTANYL          0   417013.98          0        17 |
+     |-----------------------------------------------------------------|
+776. |              AZELEX          0   409673.84          0         1 |
+777. |              TESTIM          0   405061.47          0         1 |
+778. |         PHENTERMINE          0   404449.78          0        12 |
+779. |            TENORMIN          0    378663.9          0         4 |
+780. |            NATRECOR          0   372331.41          0         1 |
+     |-----------------------------------------------------------------|
+781. |          MEFLOQUINE          0   365081.65          0         1 |
+782. |           PLAQUENIL          0   357860.35          0         1 |
+783. |               CARAC          0   354587.07          0         1 |
+784. |            SOLARAZE          0   352602.97          0         1 |
+785. |            VISUDYNE          0   343804.72          0         1 |
+     |-----------------------------------------------------------------|
+786. |           XYLOCAINE          0   337762.15          0        27 |
+787. |            LOTRONEX          0   332736.38          0         1 |
+788. |           MICRONASE          0   323667.96          0         3 |
+789. |             CATHFLO          0      321831          0         1 |
+790. |             LEVITRA          0    317459.6          0         4 |
+     |-----------------------------------------------------------------|
+791. |             CAPOTEN          0   304155.76          0         8 |
+792. |             DURICEF          0   302372.24          0         4 |
+793. |          PSEUDOVENT          0   299996.66          0         4 |
+794. |             DYNACIN          0   290675.57          0         5 |
+795. |              SOTRET          0   276872.94          0         4 |
+     |-----------------------------------------------------------------|
+796. |            TRI-LUMA          0   273176.57          0         1 |
+797. |               ADOXA          0   243371.01          0         3 |
+798. |               ONTAK          0   230964.54          0         1 |
+799. |             VISICOL          0   218750.55          0         1 |
+800. |                ZIAC          0   212021.69          0         6 |
+     |-----------------------------------------------------------------|
+801. |             SARAFEM          0   208723.21          0         1 |
+802. |         VINORELBINE          0   208013.27          0         4 |
+803. |             AMEVIVE          0   194919.38          0         1 |
+804. |            DIPENTUM          0   187335.62          0         1 |
+805. |             THYROID          0   185219.06          0        20 |
+     |-----------------------------------------------------------------|
+806. |             DYAZIDE          0   176865.84          0         1 |
+807. |          FOSINOPRIL          0   174743.51          0         6 |
+808. |           OFLOXACIN          0   149410.66          0         4 |
+809. |             VELCADE          0   137230.16          0         1 |
+810. |             FINACEA          0    124720.5          0         1 |
+     |-----------------------------------------------------------------|
+811. |         BETHANECHOL          0   122569.96          0        12 |
+812. |            MALARONE          0   102395.01          0         2 |
+813. |              CLOBEX          0   101761.21          0         1 |
+814. |             SUBUTEX          0    98879.93          0         2 |
+815. |             LEUKINE          0    87360.16          0         2 |
+     |-----------------------------------------------------------------|
+816. |              RENOVA          0    77510.98          0         2 |
+817. |           SEASONALE          0    76993.25          0         1 |
+818. |             GAMUNEX          0    62153.39          0         1 |
+819. |           MIDAZOLAM          0     57691.3          0        23 |
+820. |            INNOPRAN          0    57559.36          0         2 |
+     |-----------------------------------------------------------------|
+821. |            DARVOCET          0    50768.01          0         1 |
+822. |               INTAL          0     44728.7          0         2 |
+823. |                TICE          0    44143.51          0         2 |
+824. |        TESTOSTERONE          0    37444.26          0         9 |
+825. |           UROXATRAL          0    27526.58          0         1 |
+     |-----------------------------------------------------------------|
+826. |             FEMRING          0    26957.33          0         2 |
+827. |              FEMHRT          0    26761.91          0         1 |
+828. |               JUNEL          0    23325.78          0         4 |
+829. |             ELIGARD          0    21771.53          0         2 |
+830. |            PROPECIA          0    14552.56          0         1 |
+     |-----------------------------------------------------------------|
+831. |              ADIPEX          0    14261.91          0         1 |
+832. |             RAPTIVA          0    13219.87          0         1 |
+833. |              DIDREX          0    11788.96          0         1 |
+834. |          GABAPENTIN          0      9882.6          0         2 |
+835. |              CIALIS          0     5810.17          0         2 |
+     |-----------------------------------------------------------------|
+836. |               ALOXI          0     4001.65          0         1 |
+837. |            DIPRIVAN          0     2346.08          0         1 |
+838. |              INSPRA          0     2223.27          0         2 |
+839. |           FOLLISTIM          0     2170.33          0         1 |
+840. |            PROPOFOL          0     1668.23          0         1 |
+     |-----------------------------------------------------------------|
+841. |            SKELAXIN          0     1424.14          0         1 |
+842. |             SYNTEST          0      1032.8          0         2 |
+843. |        ITRACONAZOLE          0         180          0         1 |
+844. |             NAMENDA          0       99.62          0         1 |
+845. |              ULTANE          0        9.63          0         1 |
+     +-----------------------------------------------------------------+
+
+. 
+. rename otcfrac mcd03otcfrac
+
+. rename paidamt mcd03paidamt
+
+. drop otcpaid
+
+. rename numndcs mcd03numndcs
+
+. 
+. sum if shortnam==""
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcd03paidamt |         1    2.62e+09           .   2.62e+09   2.62e+09
+mcd03numndcs |         1        9474           .       9474       9474
+mcd03otcfrac |         1    .0519783           .   .0519783   .0519783
+
+. sum if shortnam!=""
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcd03paidamt |       844    3.64e+07    1.06e+08       8.18   1.81e+09
+mcd03numndcs |       844    8.433649    13.73419          1        114
+mcd03otcfrac |       844    .0612946    .2317396          0          1
+
+. drop if shortnam==""
+(1 observation deleted)
+
+. 
+. sort shortnam
+
+. save otc0305, replace
+file otc0305.dta saved
+
+. d, fullname
+
+Contains data from otc0305.dta
+  obs:           844                          
+ vars:             4                          3 Mar 2009 22:57
+ size:        36,292 (99.9% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+shortnam        str19  %19s                   
+mcd03paidamt    double %10.0g                 (sum) paidamt
+mcd03numndcs    double %9.0g                  (sum) numndcs
+mcd03otcfrac    float  %9.0g                  
+-------------------------------------------------------------------------------
+Sorted by:  shortnam
+
+. sum
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    shortnam |         0
+mcd03paidamt |       844    3.64e+07    1.06e+08       8.18   1.81e+09
+mcd03numndcs |       844    8.433649    13.73419          1        114
+mcd03otcfrac |       844    .0612946    .2317396          0          1
+
+. quietly by shortnam: gen temp = _n
+
+. tab temp
+
+       temp |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        844      100.00      100.00
+------------+-----------------------------------
+      Total |        844      100.00
+
+. 
+. clear
+
+. 
+. log close
+       log:  /disk/bulkn/mgduggan/partd/meps/aerdata/otc0305.log
+  log type:  text
+ closed on:   3 Mar 2009, 22:57:00
+-------------------------------------------------------------------------------

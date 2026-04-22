@@ -1,0 +1,70 @@
+-------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\figure2.log
+  log type:  text
+ opened on:  18 Nov 2010, 10:37:50
+
+. 
+. 
+. ******* 1. Ready Metro Area (Central District + Suburban) Data *********
+. 
+. use ../data/dis70panx.dta
+
+. 
+. *** Only keep MSAs for which we have 4 decades of data
+. egen minyr = min(year), by(msa)
+
+. drop if minyr==1970
+(18 observations deleted)
+
+. egen obs60 = max((year==1960 & white~=.)), by(msa)
+
+. drop if obs60==0
+(4 observations deleted)
+
+. 
+. keep if major==1
+(288 observations deleted)
+
+. 
+. ********* Figure 2 ******************
+. tab imp south if year==1960
+
+Desegregat |
+ ion order |
+implementa |
+ tion year |
+   (Sep or |
+ beginning |
+of sch yr) |     (mean) south
+  from W&L |         0          1 |     Total
+-----------+----------------------+----------
+        61 |         1          1 |         2 
+        66 |         2          0 |         2 
+        68 |         2          0 |         2 
+        69 |         0         10 |        10 
+        70 |         1         11 |        12 
+        71 |         3          9 |        12 
+        72 |         2          4 |         6 
+        73 |         3          5 |         8 
+        74 |         5          1 |         6 
+        75 |         2          1 |         3 
+        76 |         6          0 |         6 
+        77 |         3          0 |         3 
+        78 |         6          3 |         9 
+        79 |         2          0 |         2 
+        80 |         3          2 |         5 
+        81 |         1          0 |         1 
+        82 |         1          1 |         2 
+        86 |         1          0 |         1 
+-----------+----------------------+----------
+     Total |        44         48 |        92 
+
+
+. *********************************************************
+. 
+. 
+. log close
+       log:  c:\research\segregation\AER-DATA\tables\figure2.log
+  log type:  text
+ closed on:  18 Nov 2010, 10:37:51
+-------------------------------------------------------------------------------------------------------------------------

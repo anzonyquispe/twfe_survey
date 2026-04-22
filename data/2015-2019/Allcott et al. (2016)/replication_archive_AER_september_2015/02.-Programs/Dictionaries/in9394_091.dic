@@ -1,0 +1,30 @@
+dictionary using 93-94/ASI1993_94_DATA/ASID9394.TXT {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+
+_column(16)	linkcode	%3.0f	"Link Code"
+
+_column(19)	fuelcode1	%4.0f	"Fuel Item Code - 1"
+_column(23)	qfuelcons1	%11.0f	"Fuel Quantity - 1"
+_column(34)	vfuelcons1	%11.0f	"Fuel Value - 1"
+
+_column(45)	fuelcode2	%4.0f	"Fuel Item Code - 2"
+_column(49)	qfuelcons2	%11.0f	"Fuel Quantity - 2"
+_column(60)	vfuelcons2	%11.0f	"Fuel Value - 2"
+
+
+_column(71)	fuelcode3	%4.0f	"Fuel Item Code - 3"
+_column(75)	qfuelcons3	%11.0f	"Fuel Quantity - 3"
+_column(86)	vfuelcons3	%11.0f	"Fuel Value - 3"
+
+
+_column(97)	fuelcode4	%4.0f	"Fuel Item Code - 4"
+_column(101)	qfuelcons4	%11.0f	"Fuel Quantity - 4"
+_column(112)	vfuelcons4	%11.0f	"Fuel Value - 4"
+
+
+};

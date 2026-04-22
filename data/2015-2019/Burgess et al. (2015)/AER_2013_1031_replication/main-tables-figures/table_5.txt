@@ -1,0 +1,24 @@
+Effect												
+)												
+	(1)	(2)	(3)	(4)	(5)	(6)	(7)	(8)	(9)	(10)	(11)	(12)
+VARIABLES	exp_dens_share	exp_dens_share	exp_dens_share	exp_dens_share	cabinet_index	cabinet_index	cabinet_index	cabinet_index	exp_dens_share	exp_dens_share	exp_dens_share	exp_dens_share
+												
+president	1.00***	1.72***	1.40**	2.60***	0.65***	0.64***	0.92***	1.08***	1.40**	1.70***	1.40**	1.72***
+	[0.350]	[0.489]	[0.578]	[0.717]	[0.173]	[0.130]	[0.083]	[0.313]	[0.578]	[0.500]	[0.578]	[0.494]
+												
+presidentMP		-1.32**		-1.63**		0.02		0.03		-1.28*		-1.32**
+		[0.623]		[0.683]		[0.278]		[0.291]		[0.662]		[0.587]
+vp			0.54	1.46**			0.45***	0.94**	0.54		0.54	
+			[0.497]	[0.566]			[0.127]	[0.335]	[0.497]		[0.497]	
+vpMP				-1.44**				-0.64				
+				[0.607]				[0.379]				
+kllMP										0.20		
+										[0.435]		
+swingMP												0.02
+												[0.668]
+												
+Observations	2,009	2,009	2,009	2,009	169	169	169	169	2,009	2,009	2,009	2,009
+Adjusted R-squared	0.112	0.119	0.114	0.126					0.114	0.119	0.114	0.119
+R-squared					0.656	0.656	0.671	0.679				
+Robust standard errors clustered at the district level in parentheses												
+* significant at 10%; ** significant at 5%; *** significant at 1%												

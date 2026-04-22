@@ -1,0 +1,34 @@
+\begin{table}[htbp]
+\centering
+\caption{Table 2---Effects of Dust Bowl Erosion on Land Values (Simplified TWFE)}
+\label{tab:table2}
+\begin{tabular}{lcccc}
+\toprule
+ & Weighted & Unweighted & State$\times$Year FE & High only \\
+ & (1) & (2) & (3) & (4) \\
+\midrule
+\multicolumn{5}{l}{\textit{Dep.\ var.: ln(value farmland + buildings / acre)}} \\
+\addlinespace
+High erosion $\times$ post-1930 & -0.161*** & -0.205*** & -0.074 & -0.262*** \\
+ & (0.058) & (0.054) & (0.108) & (0.053) \\
+\addlinespace
+Medium erosion $\times$ post-1930 & 0.264*** & 0.223*** & 0.094 & \\
+ & (0.052) & (0.046) & (0.080) & \\
+\addlinespace
+County FE & Y & Y & & Y \\
+Year FE & Y & Y & & Y \\
+State $\times$ Year FE & & & Y & \\
+Weighted (farmland) & Y & & Y & Y \\
+\addlinespace
+Observations & 11,775 & 11,775 & 11,775 & 11,775 \\
+Counties & 785 & 785 & 785 & 785 \\
+\bottomrule
+\multicolumn{5}{p{0.95\linewidth}}{\footnotesize
+ \textit{Notes:} Simplified two-way FE regressions for weight decomposition.
+ Full paper uses state$\times$year FE and 1930 baseline controls.
+ High/Medium erosion = share of county land in high/medium erosion areas
+ (from 1930s Soil Conservation Service maps).
+ Robust standard errors clustered by county in parentheses.
+ *** Significant at 1\%, ** 5\%, * 10\%.}
+\end{tabular}
+\end{table}

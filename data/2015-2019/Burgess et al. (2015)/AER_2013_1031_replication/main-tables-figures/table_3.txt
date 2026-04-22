@@ -1,0 +1,15 @@
+Effect						
+)						
+	(1)	(2)	(3)	(4)	(5)	(6)
+VARIABLES	change_paved_sh_pop	change_paved_sh_pop	change_paved_sh_dist	change_paved_sh_dist	change_paved_sh_mp	change_paved_sh_mp
+						
+president	0.22	0.20	-0.56	-0.57	0.67	0.34
+	[0.439]	[0.521]	[1.214]	[1.139]	[1.031]	[1.077]
+						
+presidentMP		0.08		0.05		1.38
+		[1.390]		[1.342]		[2.244]
+						
+Observations	410	410	410	410	410	410
+Adjusted R-squared	0.023	0.020	0.022	0.019	0.060	0.057
+Robust standard errors clustered at the district level in parentheses						
+* significant at 10%; ** significant at 5%; *** significant at 1%						

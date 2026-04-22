@@ -1,0 +1,152 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/coxHazardRobust.log
+  log type:  text
+ opened on:   9 Jun 2010, 20:42:41
+
+. *******************************************
+. *      Robustness : Cox Hazard
+. *******************************************
+. replace stbafl1yr = stbafl1yr/100
+(2287 real changes made)
+
+. replace st_stbafl1yr = st_stbafl1yr/100
+(1813 real changes made)
+
+. 
+. stset ttlDur, failure(rfctype)
+
+     failure event:  rfctype != 0 & rfctype < .
+obs. time interval:  (0, ttlDur]
+ exit on or before:  failure
+
+------------------------------------------------------------------------------
+     2601  total obs.
+        0  exclusions
+------------------------------------------------------------------------------
+     2601  obs. remaining, representing
+     1606  failures in single record/single failure data
+  1716008  total analysis time at risk, at risk from t =         0
+                             earliest observed entry t =         0
+                                  last observed exit t =      4006
+
+. qui xi: stcox st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum  `st_controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc)), cluster(wg) nohr
+
+. tab rfctype if e(sample)
+
+ RFC Publication type |
+                 code |      Freq.     Percent        Cum.
+----------------------+-----------------------------------
+         EXPERIMENTAL |         88        6.25        6.25
+        INFORMATIONAL |        386       27.40       33.64
+    PROPOSED STANDARD |        935       66.36      100.00
+----------------------+-----------------------------------
+                Total |      1,409      100.00
+
+. est store col1
+
+. 
+. stset ttlDur, failure(rfctype)
+
+     failure event:  rfctype != 0 & rfctype < .
+obs. time interval:  (0, ttlDur]
+ exit on or before:  failure
+
+------------------------------------------------------------------------------
+     2601  total obs.
+        0  exclusions
+------------------------------------------------------------------------------
+     2601  obs. remaining, representing
+     1606  failures in single record/single failure data
+  1716008  total analysis time at risk, at risk from t =         0
+                             earliest observed entry t =         0
+                                  last observed exit t =      4006
+
+. qui xi: stcox st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.techarea i.pubCohort strfc, cluster(wg) nohr
+
+. tab rfctype if e(sample)
+
+ RFC Publication type |
+                 code |      Freq.     Percent        Cum.
+----------------------+-----------------------------------
+                    0 |        878       38.39       38.39
+         EXPERIMENTAL |         88        3.85       42.24
+        INFORMATIONAL |        386       16.88       59.12
+    PROPOSED STANDARD |        935       40.88      100.00
+----------------------+-----------------------------------
+                Total |      2,287      100.00
+
+. est store col2
+
+. 
+. qui xi: stcox st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.pubCohort strfc if ((strfc|nsrfc)), strata(wg) robust nohr
+
+. tab rfctype if e(sample)
+
+ RFC Publication type |
+                 code |      Freq.     Percent        Cum.
+----------------------+-----------------------------------
+         EXPERIMENTAL |         88        6.25        6.25
+        INFORMATIONAL |        386       27.40       33.64
+    PROPOSED STANDARD |        935       66.36      100.00
+----------------------+-----------------------------------
+                Total |      1,409      100.00
+
+. est store col3
+
+. 
+. qui xi: stcox st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.pubCohort strfc, strata(wg) robust nohr
+
+. tab rfctype if e(sample)
+
+ RFC Publication type |
+                 code |      Freq.     Percent        Cum.
+----------------------+-----------------------------------
+                    0 |        878       38.39       38.39
+         EXPERIMENTAL |         88        3.85       42.24
+        INFORMATIONAL |        386       16.88       59.12
+    PROPOSED STANDARD |        935       40.88      100.00
+----------------------+-----------------------------------
+                Total |      2,287      100.00
+
+. est store col4
+
+. 
+. replace stbafl1yr = stbafl1yr*100
+(2287 real changes made)
+
+. replace st_stbafl1yr = st_stbafl1yr*100
+(1813 real changes made)
+
+. 
+. estout  _all, cells(b(fmt(2)) se(par fmt(2) star)) stats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) drop(`st_controls' `controls' _I*) style(tex) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001)
+
+            &        col1   &        col2   &        col3   &        col4   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   \\
+st_stbafl1yr&       -1.38   &       -1.79   &       -1.57   &       -2.10   \\
+            &      (0.44)** &      (0.47)***&      (0.45)***&      (0.45)***\\
+st_lwgipr   &        0.02   &        0.03   &        0.00   &       -0.00   \\
+            &      (0.02)   &      (0.02)   &      (0.03)   &      (0.03)   \\
+st_othDum   &       -0.25   &       -0.33   &       -0.04   &       -0.13   \\
+            &      (0.16)   &      (0.16)*  &      (0.17)   &      (0.17)   \\
+stbafl1yr   &        0.73   &        0.98   &       -0.11   &        0.17   \\
+            &      (0.37)*  &      (0.38)*  &      (0.53)   &      (0.54)   \\
+lwgipr      &       -0.03   &       -0.04   &       -0.04   &       -0.03   \\
+            &      (0.02)   &      (0.02)*  &      (0.03)   &      (0.03)   \\
+othDum      &        0.14   &        0.19   &       -0.00   &        0.06   \\
+            &      (0.14)   &      (0.14)   &      (0.15)   &      (0.15)   \\
+strfc       &        1.48   &        4.82   &        0.67   &        4.82   \\
+            &      (0.75)*  &      (0.19)***&      (0.87)   &      (0.19)***\\
+N           &        1409   &        2287   &        1409   &        2287   \\
+r2          &               &               &               &               \\
+df_m        &          32   &          32   &          27   &          27   \\
+N_g         &               &               &               &               \\
+
+. est clear
+
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/coxHazardRobust.log
+  log type:  text
+ closed on:   9 Jun 2010, 20:42:45
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

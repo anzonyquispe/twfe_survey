@@ -1,0 +1,30 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Table 2---Effects of Compulsory Licensing on Domestic Invention}
+\label{tab:table2}
+\begin{tabular}{lcccccc}
+\toprule
+ & (1) & (2) & (3) & (4) & (5) & (6) \\
+\midrule
+\multicolumn{7}{l}{\textit{Dep.\ var.: Number of US patents (count\_usa)}} \\
+\addlinespace
+Treat (licensed class) & 0.1732*** & 0.1505*** & 0.2553*** & & & \\
+ & (0.0358) & (0.0356) & (0.0376) & & & \\
+\addlinespace
+No.\ licensed patents & & & & 0.0715*** & 0.1095*** & 0.1146*** \\
+ & & & & (0.0172) & (0.0246) & (0.0222) \\
+\addlinespace
+Foreign patents (quad.) & Y & & & & & \\
+Foreign patents (linear) & & Y & & Y & Y & \\
+Class FE & Y & Y & Y & Y & Y & Y \\
+Year FE & Y & Y & Y & Y & Y & Y \\
+\addlinespace
+Observations & 456,624 & 456,624 & 456,624 & 456,624 & 456,624 & 456,624 \\
+\bottomrule
+\multicolumn{7}{p{0.95\linewidth}}{\footnotesize
+ \textit{Notes:} All regressions include patent class and year fixed effects.
+ Robust standard errors clustered by patent class in parentheses.
+ *** Significant at 1\%, ** 5\%, * 10\%.}
+\end{tabular}
+\end{table}

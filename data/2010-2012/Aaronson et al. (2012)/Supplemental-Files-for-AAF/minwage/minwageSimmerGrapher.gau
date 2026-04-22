@@ -1,0 +1,53 @@
+
+/********************************* BEGIN setting paramaters ********************************/
+
+//Standard settings for new results
+graphDir = "\\graphs";
+simsFilename = "\\sims";
+
+
+
+/* Run 4 times:  e.g. for baseline
+1. basepath=Results_671_nohike,  innovationPath=Results_671_nohike
+2. basepath=Results_671_nohike,  innovationPath=Results_671_hike
+3. basepath=Results_671_nohike,  innovationPath=Results_672_hike
+4. basepath=Results_671_nohike,  innovationPath=Results_673_hike
+*/
+
+basepath = "C:\\research\\minwage\\results\\Results_671_nohike";         //always put the nohike case here.   
+innovationPath = "C:\\research\\minwage\\results\\Results_671_hike";     //run this file 4 times, once for each of the
+                                                                         //hike ages (3 total), and once with nohike
+
+
+//basepath = "D:\\RESULTS_minwage\\Results_671_nohike";            
+//innovationPath = "D:\\RESULTS_minwage\\Results_671_hike";    
+
+
+load path = ^innovationPath;
+
+load hikeStart;
+print hikeStart;
+
+randomnessSwitch = 0; //1 sets randomness on; 0 turns randomness off, i.e. fix rndseed
+numsims = 5000; 
+innovationTime = hikeStart - 3;   //hear of the minimum wage hike ahead of time
+
+/********************************* END setting paramaters ********************************/
+
+
+
+
+
+/********************************* BEGIN SIM and (standard) GRAPH code ********************************/
+
+//arguments are: loadpath, innovationpath, simOutputDirectory
+sim_graph(basepath, innovationPath, innovationPath $+ simsFilename, graphDir, randomnessSwitch, numsims, innovationTime);      //defn in minwage_Sim_Graph.gau
+
+/********************************* END SIM and GRAPH code ********************************/
+
+
+
+
+
+/******************************** BEGIN FUNCTIONS ***********************************/
+#include "C:\Research\minwage\minwage_Sim_Graph_f.gau"; // note the "\\" before the parts with spaces.  hundreds of hours ...

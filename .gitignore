@@ -1,0 +1,55 @@
+# =============================================================================
+# Archivos excluidos por superar el límite de 2 GB de GitHub LFS
+# =============================================================================
+
+# Diamond et al. (2019) — usa_00012.dta (3.3 GB)
+# Fuente: IPUMS USA (requiere registro)
+data/2015-2019/Diamond et al. (2019)/data/AER-2018-1289.R2_replication/data/census/usa_00012.dta
+
+# =============================================================================
+# Archivos del sistema / temporales
+# =============================================================================
+.DS_Store
+._*
+Thumbs.db
+*.tmp
+~$*
+
+# =============================================================================
+# EXCLUSIONES TEMPORALES (pendiente resolver cuota LFS con Anzony)
+# Todo el contenido binario pesado de data/ se subirá en una
+# segunda etapa cuando se confirme cuota LFS pagada.
+# =============================================================================
+data/**/*.dta
+data/**/*.csv
+data/**/*.rds
+data/**/*.sas7bdat
+data/**/*.mat
+data/**/*.zip
+data/**/*.gz
+data/**/*.raw
+data/**/*.xlsx
+data/**/*.xls
+data/**/*.png
+data/**/*.eps
+data/**/*.dll
+data/**/*.mexw64
+data/**/*.mexw32
+data/**/*.mexmaci64
+data/**/*.DTA
+data/**/*.doc
+data/**/*.docx
+data/**/*.xlsm
+data/**/*.odt
+data/**/*.gph
+data/**/*.mexmaci
+data/**/*.mexmac
+data/**/*.mexglx
+data/**/*.mexa64
+data/**/*.pdf
+
+# Archivos .txt que en realidad son datos (>100 MB)
+data/2010-2012/Baum-SnowandLutz(2011)/MS20080918_data_programs/data/district80/03518-0001-Data.txt
+
+# Literatura (PDFs pesados) - subir en 2da etapa
+literatura/**/*.pdf

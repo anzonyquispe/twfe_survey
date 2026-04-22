@@ -1,0 +1,359 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   13.0   Copyright 1985-2013 StataCorp LP
+  Statistics/Data Analysis            StataCorp
+                                      4905 Lakeway Drive
+     Special Edition                  College Station, Texas 77845 USA
+                                      800-STATA-PC        http://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+50-user Stata network license expires 23 Jul 2015:
+       Serial number:  401306273844
+         Licensed to:  ecsteam
+                       Duke University
+
+Notes:
+      1.  (-v# option or -set maxvar-) 5000 maximum variables
+      2.  Command line editing disabled
+      3.  Stata running in batch mode
+
+. do voluntary_power_cut2.do 
+
+. /* 
+> 
+> Code for looking at analysis of ASI
+> Voluntary Reduction Contracts
+> 
+> Allan Collard-Wexler
+> First Version: March 21 2014
+> Current Version: 
+> 
+> 
+> */
+. 
+. 
+. clear
+
+. set more off
+
+. set mem 500m
+set memory ignored.
+    Memory no longer needs to be set in modern Statas; memory adjustments are
+    performed on the fly automatically.
+
+. set linesize 200
+
+. 
+. //cap cd ~/Dropbox/India_Power_Shortages/matlab/
+. //cap cd "C:\Users\Hunt\Dropbox\India Power Shortages\matlab"
+. 
+. quietly do asi_predictions_analysis5.do
+
+. 
+. 
+. // Cost of a Generator (in per year rental per KW in Rupees)
+. // 
+. // Numbers for Generator Costs
+.         // From Prices Data (gen_returns_to_scale1.do) Note: 0.80 Power
+.         // Conversion factor from KVA to KW Note: Rupee to US Dollar
+.         // Exchange Rate: 50 to 1. Note: Discount Rate leads to 10 to 1
+.         // relationship between rental cost and purchase price of generator.
+.         global sigma_0_a=5.357671+ln(50/(10*0.8)) 
+
+.         global sigma_1_a=1
+
+. 
+.         global sigma_0_b=6.499042+ln(50/(10*0.8)) 
+
+.         global sigma_1_b=0.7919834
+
+. 
+.         // From Estimation on Generator Use (estimate_cost_generators2)
+.         /*
+>         /
+> Bootstrap results                               Number of obs      =     33871
+>                                                 Replications       =        50
+> 
+> ------------------------------------------------------------------------------
+>              |   Observed   Bootstrap                         Normal-based
+>              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+> -------------+----------------------------------------------------------------
+>     sigma_0, |   10.67198   .1862945    57.29   0.000     10.30684    11.03711
+>      sigma_1 |   .8286772   .0065594   126.33   0.000      .815821    .8415334
+> ------------------------------------------------------------------------------
+> Bootstrap results                               Number of obs      =    
+> 33829 Replications       =        50
+> 
+> Bootstrap results                               Number of obs      =     33871
+>                                                 Replications       =        50
+> 
+> ------------------------------------------------------------------------------
+>              |   Observed   Bootstrap                         Normal-based
+>              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+> -------------+----------------------------------------------------------------
+>      sigma_0 |   9.918365   .0230766   429.80   0.000     9.873136    9.963595
+> ------------------------------------------------------------------------------
+> 
+>         */
+. 
+.         global sigma_0_c=9.918365 
+
+.         global sigma_1_c=1
+
+. 
+.         global sigma_0_d=10.67198 
+
+.         global sigma_1_d=0.8286772
+
+. 
+. 
+. // (assuming a ten year life)
+. global gen_lifespan=10
+
+. 
+. // Price of Self-Generated Power
+. // Source: World Bank Survey
+. global p_e_s=7
+
+. // Price of Grid Power
+. global p_e_g=4.5
+
+. 
+. // Hours of production: 6 hours a day
+. global hours_prod=6*365
+
+. 
+. global graphit=1
+
+. 
+. // 0) Full Base 
+. 
+. // Generator 
+. 
+. global sigma_0=$sigma_0_d
+
+. global sigma_1=$sigma_1_d
+
+. // Reduction in Total Power Consumption
+. global reduction=0.071
+
+. 
+. // Curtailment level: 14 % or one day a week 
+. global curtailement=0.14
+
+. 
+. cd simulation_asi_inputs_dec2014
+/Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014
+
+. 
+. // 0) Full Base 
+. 
+. // Generator 
+. 
+. global graphit=1
+
+. // Shortages 14%
+. global filename="ASI_Prediction14pct.csv"
+
+. // Hunt look into this function. 
+. asi_predictions_analysis5
+
+  Messed Up |
+   Compute? |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     15,239       44.99       44.99
+          1 |     18,632       55.01      100.00
+------------+-----------------------------------
+      Total |     33,871      100.00
+ASI_Prediction14pct.csv
+
+bigmat[1,40]
+            year      p_e_grid      p_e_self      shortage   output_loss  output_los~d  output_los~n  output_los~n      diff_tfp  diff_tfp_n~n  diff_tfp_gen  profit_dif~e  profit_lo~ns  profit_lo~ns
+r1          2005           4.5             7           .14     9.3827764      2.283696     19.805677     .85794932      2.218119     .01721453     4.9092366     9.3169889     .73741876     19.805382
+
+    profit_per~r  profit_dif~n  break_even~t  buy_genera~r  gen_elasti~y  observations    production    grid_power     diff_endo  dendo_no_gen     dendo_gen      tfp_endo  tfp_endo_gen  tfp_endo_n~n
+r1     18.053268     19.513044     113776.85     .96592956    -.05284757         33871     1.769e+30     6.194e+31      1.447803     21.173031     .75562629     .15987789     4.0471539     .02276518
+
+    profit_endo,  profit_end~,  profit_end~n  input_cost~o  input_cost~o  r_gen_cost~,  r_gen_cost~o      mat_loss  self_gen_s~e  diff_input~c  r_gen_cost~n  r_gen_cost~n
+r1     1.3389651     .64299521     21.172895     .70029383     .72642158     2.4469311     3.7702356     9.3824887     6.0645438     .03967503     6.4477172     3.9032241
+
+. matrix bigmatprice=e(b)
+
+. matrix base=e(b)
+
+. 
+. // Drop a plant with 100 times more power than anyone else
+. drop if panelgroup==121040
+(4 observations deleted)
+
+. 
+. 
+. // Figure out at what price per MW I would be indifferent.
+. gen profitloss_per_mw=profit_diff_shortage/e_grid_no_shortage
+(7 missing values generated)
+
+. drop if profitloss_per_mw==.
+(7 observations deleted)
+
+. 
+. 
+. // Target to reach 7.1 percent drop
+. egen POWER_SUM=total(qeleccons)
+
+. gen reduced_POWER_SUM=POWER_SUM*(1-$reduction)
+
+. 
+. // Reduction per plant if curtailed
+. gen curtailed_power_percent=1+(e_grid_shortage-e_grid_no_shortage)/e_grid_no_shortage
+
+. gen curtailed_qeleccons= curtailed_power_percent*qeleccons
+
+. 
+. // Sort Plants by their loss
+. gsort + profitloss_per_mw
+
+. 
+. // Running Sum
+. gen not_curtailed_power_sum=sum(qeleccons)
+
+. 
+. 
+. // Sort Plants by their loss
+. gsort - profitloss_per_mw
+
+. 
+. // Running Sum
+. gen curtailed_power_sum=sum(curtailed_qeleccons)
+
+. 
+. gen test=sum(qeleccons)
+
+. 
+. gen economy_power= curtailed_power_sum+ not_curtailed_power_sum
+
+. 
+. gen obsnums=_n
+
+. 
+. line economy_power obsnums
+
+. 
+. gen curtailed=(economy_power <reduced_POWER_SUM)
+
+. 
+. tab curtailed
+
+  curtailed |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     31,043       91.68       91.68
+          1 |      2,817        8.32      100.00
+------------+-----------------------------------
+      Total |     33,860      100.00
+
+. sum obsnum if curtailed
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+     obsnums |      2817    32451.37    814.0871      31035      33860
+
+. scalar pivotal=r(min)
+
+. 
+. // Results
+. gen curt_pctshortage=pctshortage*curtailed
+
+. gen curt_diff_tfp = diff_tfp*curtailed
+
+. gen curt_profit_diff_shortage = profit_diff_shortage*curtailed
+
+. 
+. 
+. log using Results_Curtailment.log, replace
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014/Results_Curtailment.log
+  log type:  text
+ opened on:  16 Dec 2014, 18:15:23
+
+. sum curtailed
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   curtailed |     33860    .0831955    .2761816          0          1
+
+. sum obsnum if curtailed
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+     obsnums |      2817    32451.37    814.0871      31035      33860
+
+. 
+. sum curtailed if zero==1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   curtailed |     18627    .1294358    .3356906          0          1
+
+. sum curtailed if zero==0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   curtailed |     15233    .0266527    .1610714          0          1
+
+. 
+. // Sum up profits from curtailment
+. sum pctshortage diff_tfp  profit_diff_shortage if curtailed
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+ pctshortage |      2817    4.829457    9.282775     .14485     39.657
+    diff_tfp |      2817    .3290834    4.016364          0        200
+profit_dif~e |      2817    4.696044    9.329482   .1168017    39.6907
+
+. 
+. sum curt_pctshortage curt_diff_tfp curt_profit_diff_shortage 
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+curt_pctsh~e |     33860    .4017892    2.990929          0     39.657
+curt_diff_~p |     33860    .0273783    1.161837          0        200
+curt_profi~e |     33860    .3906898    2.986808          0    39.6907
+
+. sum curt_pctshortage curt_diff_tfp curt_profit_diff_shortage  if zero==1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+curt_pctsh~e |     18627    .1417472    .4747931          0     4.4903
+curt_diff_~p |     18627    .0004623     .022766          0     1.5625
+curt_profi~e |     18627    .1215644    .4115964          0   4.059575
+
+. sum curt_pctshortage curt_diff_tfp curt_profit_diff_shortage  if zero==0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+curt_pctsh~e |     15233      .71977     4.40746          0     39.657
+curt_diff_~p |     15233    .0602913    1.731472          0        200
+curt_profi~e |     15233    .7197778    4.407537          0    39.6907
+
+. 
+. 
+. /*contract to clear the market. Under this counterfactual policy, revenue,
+> TFPR, and variable profit losses average only tk, tk, and tk percent,
+> respectively. These losses are much smaller than the 4.6, 1.6, and 6.8
+> percent reported in Column 1 of Table [table.model.vs.iv].*/
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014/Results_Curtailment.log
+  log type:  text
+ closed on:  16 Dec 2014, 18:15:23
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. 
+. 
+end of do-file

@@ -1,0 +1,343 @@
+@ This programme is based on James Hamilton's work available under 
+http://dss.ucsd.edu/~jhamilto/software.htm
+I have modified his programme only to automate the process of reading in 
+11 different regions in Ireland but calculating the present values of killings
+seperately. What this programme does, alas, is to first run Hamilton's
+program to calculate what we call the thetas in our paper and then to
+feed this into a subroutine to calculate the present values and other
+variables used in the paper - Estimating the Peace Dividend: The Impact of
+Violence on House Prices in Northern Ireland.@
+
+output file=junk reset;
+
+nv = 1;                     @ nv is the number of variables analyzed 
+                            - it's not used here @
+n = 105;                    @ n is the number of observations on each region
+                            MOD if you use your own dataset@
+regions = 11;               @ number of geographic units - MOD if you use your own dataset@
+load data[regions*n,1] = C:\Gauss\NI\totaldeathsall.txt;   
+@ this loads all 11 regions, MOD accordingly if you use your own data@
+@if you change dataset, also change below in line 167@
+
+region = 1;
+thetasest = zeros(regions, 6);  @ this matrix will take on the theta values 
+                                - each theta vector has six elements @
+do until (region > regions);   
+
+regiondata = data[(region-1)*n+1:region*n,1]; @ this grabs the data from the 
+                                                respective region @
+SAMPLESZ = n;
+
+y = regiondata;                 
+
+
+    @  Hamilton: The next three paramaters (a,b, and c) determine the strength
+       of the Bayesian prior imposed.  One is essentially proceeding as if
+       one had c observations from each regime with mean zero
+       and a observations from each regime with variance b/a.
+       See my paper "A quasi- Bayesian approach to estimating paramters for
+       mixtures of normal distributions" , Journal of Business and Econoomic
+       Statistics, January 1991 @
+
+
+   a = .2;
+   b = 1.0;
+   c = .1;
+
+   @  Hamilton: Next set initial guesses for parameters in the vector th, whose
+      dimension should be 2*(nv+nv^2+1) by 1.  Parameters are listed in the
+      following order:
+          Mean (or mean vector) for state 1
+          Mean (or mean vector) for state 2
+          The Markov probability for going from state 1 to state 1
+          The Markov probability for going from state 2 to state 2
+          The (nv by nv) variance-covariance matrix for state 1
+          The (nv by nv) variance-covariance matrix for state 2  @
+
+      let th[6,1] =  3 0 .5 .5 3 1;  @starting values, MOD in case you get an 
+                                        error when you run with different data@
+
+   nvmu2 = nv + 1;             @ nvmu2 is the index at which mu2 paramters
+                                 begin @
+   nvp = (2*nv) + 1;           @ nvp is the index for p @
+   nvq  = (2*nv)+2;            @ nvq is the index for q @
+   nvsig1 = (2*nv) + 3;        @ nvsig1 is the index at which sig1 parameters
+                                 begin @
+   nvsig2 = (2*nv) + 3 + (nv^2);  @ nvsig2 is the index at which sig2
+                                    parameters begin @
+   nvend = 2*(nv+nv^2+1);      @ nvend is the index for the last element @
+
+   "Parameters for Bayesian prior (a, b, c)";
+    a;b;c;"";
+
+
+kb = 4;
+kc = 1;
+it = 1;
+ierr = 0;             @ a value of 1 indicates an 80287 exception encountered @
+
+   dh = 1.e-8;         @ definition of small step for gradient and hessian @
+   deltalik = 10;      @ change in likelihood function @
+   deltach = zeros(6,1); @ change in parameter vector over previous iteration @
+   deltath  = 10;      @ biggest element of deltach @
+   thtol  = 1.e-8;     @ when change in parameters is less than this,
+                        convergence is declared to be obtained @
+   mxit = 400;         @ maximum number of iterations allowed @
+
+
+  vof = 0;
+
+#include C:\Gauss\NI\SMOOTHSIMPLE;              @MODIFY@
+
+
+     "";"";
+          "starting parameter values";
+          "   Means for state 1";
+              th[1:(nvmu2-1),1]';
+           "   Means for state 2";
+               th[nvmu2:(nvp-1),1]';
+           "   Prob from state 1 to state 1 (p)";
+               th[nvp,1];
+            "   Prob from state 2 to state 2 (q)";
+                th[nvq,1];
+            "   Variance-covariance matrix for state 1";;
+                reshape(th[nvsig1:(nvsig2-1),1],nv,nv);
+            "   Variance-covariance matrix for state 2";;
+                reshape(th[nvsig2:nvend,1],nv,nv);
+            "   Data";;
+                y;"";
+
+     kb =1; vof = ofn(th); kb = 4;
+
+  @ iterate on normal equations @
+
+     it = 1;
+
+     do until (it > mxit) or (deltath < thtol) or (ierr == 1);
+           th = ofn(th);            
+            @this calls the routine in SMOOTHSIMPLE with kb=4@
+            @which means both filter and smoother are called for@
+     it = it+1;
+     endo;
+
+     "";"      Number of iterations required:";;it;
+        "      Change in theta vector";;deltath;
+
+
+     @ print out final results @
+
+     kb=1;"";
+     "";"             FINAL RESULTS";"";
+
+"Estimated theta vector:";th';"";
+
+"Estimated parameters:";
+   "   Means for state 1";
+        th[1:(nvmu2-1),1]';
+   "   Means for state 2";
+        th[nvmu2:(nvp-1),1]';
+   "   Prob from state 1 to state 1 (p)";
+        th[nvp,1];
+   "   Prob from state 2 to state 2 (q)";
+        th[nvq,1];
+   "   Variance-covariance matrix for state 1";;
+        reshape(th[nvsig1:(nvsig2-1),1],nv,nv);
+   "   Variance-covariance matrix for state 2";;
+        reshape(th[nvsig2:nvend,1],nv,nv);"";
+     "Value of log likelihood function:";;vof=ofn(th);vof;
+
+@the following condition simply writes the theta vectors
+into a single matrix called thetas@
+if region == 1;
+         thetas = th[1:6,1]';
+     else;
+         thetas = thetas|th[1:6,1]';
+     endif;
+
+region = region+1;
+endo;
+
+output file = C:\Gauss\NI\thetas.txt RESET;    @MODIFY@ 
+        @ the text file contains the theta vectors produced, partly, in table 2@
+print thetas;
+
+
+@Now load the orignial data again and use the thetas on it@
+kb=1;
+load data[regions*n,1] = C:\Gauss\NI\totaldeathsall.txt;
+        @ this loads the raw violence data again - MODIFY accordingly@
+region = 1;
+
+matrixofall = zeros(1,3);
+pvmatrix = zeros(1,2);
+pvind=seqa(92,1,n);
+pvs = pvind;
+wpvs = pvind;
+confl = pvind;
+wconfl = pvind;
+pvforstat = 0;
+conflpv = 0;
+resultsmatrix = 0;
+
+do until (region > regions);
+    y = data[(region-1)*n+1:region*n,1];
+    SAMPLESZ = n;
+    boi = 1;
+    ind = seqa(1983.00,.25,n); @MOD if you use different data@
+    results = ind;
+
+    
+    
+            
+        th=thetas[region,.]';
+        
+        mu1 = th[1,1];             @ mean for state 1 - the conflict state@
+        
+        mu2 = th[2,1];             @ mean for state 2 - the peace state@
+        
+        p = minc(abs(th[3,1])|.999);         @ prob from 1 to 1 - name as in paper@
+        
+        q = minc(abs(th[4,1])|.999);         @ prob from 2 to 2 - name as in paper@
+        
+        sig1 = reshape(th[5,1],nv,nv);  @ variance for state 1 @
+                                          
+        sig2 = reshape(th[6,1],nv,nv);  @ variance for state 2 @
+                                          
+        rho = (1-q)/(2-p-q);                   @ prob. that s0 = 1, called pi in paper @
+
+        pa = zeros(2,1);
+        pa[1,1] = rho;  @pa[1,1] will take the probability of conflict state
+                        it is initiated with the posterior probability@
+        pa[2,1] = 1 - rho; @pa[2,1] will take the probability of peace state
+                        it is initiated with the posterior probability@
+        p1 = zeros(4,1);
+        pfx = zeros(n,1);
+        
+        pax = zeros(n,4);  /* pax denotes probabilities from filter
+                          col. 1: st = 1, st-1 = 1
+                          col. 2: st = 2, st-1 = 1
+                          col. 3: st = 1, st-1 = 2
+                          col. 4: st = 2, st-1 = 2
+                          col. 5: st = 1  [added later]
+                          col. 6: st-1 = 1  */
+        
+        @ Calculate probability weighted likelihoods for each obs @
+        xsig1 = invpd(sig1);
+        detsig1 = detl;
+        xsig2 = invpd(sig2);
+        detsig2 = detl;
+        
+        yxx = zeros(n,2);
+        itt = 1;
+
+        @The following two loops contain the simple filter as programmed by Hamilton
+        all mistakes in the description are mine.@
+        @The first loop simply calculates normal densities using the violence data.
+        The second loop runs the filter. This is a bit harder to understand as it
+        does not follow Hamilton's article line by line.@
+
+        @Note that the part 1/sqrt(2pi) is excluded in the first loop as it would
+        drop out later. The sqrt of the variance is used a step later.@
+        do until itt > n;
+            yxx[itt,.] =
+                exp(-(1/2)*(((y[itt,.]-mu1')*xsig1)*(y[itt,.]-mu1')')) ~
+                exp(-(1/2)*(((y[itt,.]-mu2')*xsig2)*(y[itt,.]-mu2')'));
+            itt = itt+1;
+        endo;
+       
+        yxx = ((p/(detsig1^.5))*yxx[.,1])~(((1-p)/(detsig2^.5))*yxx[.,2])~
+         (((1-q)/(detsig1^.5))*yxx[.,1])~((q/(detsig2^.5))*yxx[.,2]);
+        @yxx now contains four terms P(st given st-1)* f(yt, st)@
+
+        its = 1;
+        do until its > n;
+            
+            @calculate joint densities f(yt,st,st-1)@
+            p1[1,1] = pa[1,1]*yxx[its,1];
+            @this is P(st = 1 given st-1 = 1)* f(yt given st = 1)* P(st-1 = 1 given yt-1)@
+            p1[2,1] = pa[1,1]*yxx[its,2];
+            @this is P(st = 2 given st-1 = 1)* f(yt given st = 2)* P(st-1 = 1 given yt-1)@
+            p1[3,1] = pa[2,1]*yxx[its,3];
+            @this is P(st = 1 given st-1 = 2)* f(yt given st = 1)* P(st-1 = 2 given yt-1)@
+            p1[4,1] = pa[2,1]*yxx[its,4];
+            @this is P(st = 2 given st-1 = 2)* f(yt given st = 2)* P(st-1 = 2 given yt-1)@
+            
+            pfx[its,1] = sumc(p1); @sum of densities - f(yt)@
+      
+
+            p1 = p1/pfx[its,1]; @create joint probabilities@
+            pax[its,.] = p1';
+            pa[1,1] = p1[1,1] + p1[3,1]; @probability of conflict state, P(st = 1 given yt)@
+            pa[2,1] = p1[2,1] + p1[4,1]; @probability of peace state, P(st = 2 given yt)@
+            @note how these last two probabilities are carried over into the next iteration@
+            its = its+1;
+        endo;
+        
+        confprob = pax[.,1] + pax[.,3];
+        
+
+        yhat=confprob*th[1:(nvmu2-1),1]+(1-confprob)*th[nvmu2:(nvp-1),1];
+        @this is the direct equivalent to the equation in the article@
+       
+        
+        PV5 = (rho*mu1 + (1-rho)*mu2)/(1-0.952381)+(mu1-mu2)*(confprob-rho)/(1-(p+q-1)*0.952381);
+        @present value calculation - note the use of (1/1.05)=0.952381@
+
+        wPV5 = PV5/23.9628;     @MOD@
+        @weighting by standard deviation - note that this number deviates slightly from
+        number used within the STATA data set. This is due to rounding errors and does 
+        not affect results at all.@
+
+        pvs = pvs~PV5;
+        wpvs = wpvs~wPV5;
+        
+        conflictpv5 = confprob/(1-(p+q-1)*0.952381);
+        wconflictpv5 = conflictpv5/2.586237;    @MOD@
+        confl = confl~conflictpv5;
+        wconfl = wconfl~wconflictpv5;
+        
+        if pvforstat == 0;
+         pvforstat = wPV5;
+        else;
+         pvforstat = pvforstat|wPV5;
+        endif;
+
+        if conflpv == 0;
+         conflpv = wconflictpv5 ;
+        else;
+         conflpv = conflpv|wconflictpv5;
+        endif;
+       
+             
+        
+        results = results~confprob~yhat~PV5~conflictpv5;
+
+        if resultsmatrix == 0;
+         resultsmatrix = results ;
+        else;
+         resultsmatrix = resultsmatrix|results;
+        endif;
+               
+    
+region = region +1;
+
+endo;
+
+"allover results";
+
+output file = C:\Gauss\NI\PV5s.txt RESET; @MODIFY@
+OUTWIDTH 256;
+print pvforstat;
+output off;
+
+output file = C:\Gauss\NI\conflpv5s.txt RESET; @MODIFY@
+OUTWIDTH 256;
+print conflpv;
+output off;
+
+output file = C:\Gauss\NI\otherresults.txt RESET; @MODIFY@
+OUTWIDTH 256;
+print resultsmatrix;
+output off;
+
+

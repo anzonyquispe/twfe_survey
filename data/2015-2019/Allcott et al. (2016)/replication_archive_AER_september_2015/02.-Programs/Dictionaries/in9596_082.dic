@@ -1,0 +1,15 @@
+dictionary using 95-96/P9596082.C {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+_column(16)	linkcode	%3.0f	"Link Code"
+
+_column(41)     total_addl_labcost        %11.0f        "Total Contbn. To PF etc."
+_column(52)     total_addl_labcost2        %11.0f        "Total welfare expenses"
+
+
+
+};

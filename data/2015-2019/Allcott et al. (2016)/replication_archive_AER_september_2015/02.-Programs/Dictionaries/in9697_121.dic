@@ -1,0 +1,19 @@
+dictionary using 96-97/P9697121.C {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+_column(16)	linkcode	%3.0f	"Link Code"
+_column(19)   	qelecpur    	%12.0f  "Quantity of Electricity Purchased  "
+_column(31)   	qelecprod   	%12.0f  "Quantity of Electricity Generated "
+_column(43)   	qelecsold   	%12.0f  "Quantity of Electricity Sold"
+_column(55)   	qeleccons   	%12.0f  "Quantity of Electricity Consumed"
+_column(67)	filler		%16.0f	"Filler"
+_column(83)	filler2		%16.0f	"Filler2"
+_column(99)	filler3		%16.0f	"Filler3"
+_column(115)	filler4		%16.0f	"Filler4"
+_column(131)	unused		%5.0f	"Unused"
+
+};

@@ -1,0 +1,1 @@
+replace specificdrug=1 if (class ==28) & asthma==1

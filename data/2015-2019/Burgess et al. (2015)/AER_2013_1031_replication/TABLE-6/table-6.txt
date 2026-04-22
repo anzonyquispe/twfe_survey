@@ -1,0 +1,17 @@
+Effect				
+)				
+	(1)	(2)	(3)	(4)
+VARIABLES	gyp	gyp	gyp	gyp
+				
+ELF60	-0.017***	-0.006	-0.015*	-0.023*
+	[0.006]	[0.005]	[0.008]	[0.011]
+				
+democ			-0.002	-0.018
+			[0.005]	[0.012]
+_IdemXELF60_1			0.013	0.036**
+			[0.009]	[0.015]
+				
+Observations	312	528	500	182
+Adjusted R-squared	0.344	0.259	0.253	0.129
+Robust standard errors clustered at the district level in parentheses				
+* significant at 10%; ** significant at 5%; *** significant at 1%				

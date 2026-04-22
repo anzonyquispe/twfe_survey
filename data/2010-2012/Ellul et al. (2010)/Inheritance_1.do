@@ -1,0 +1,377 @@
+*This do-file produces the estimates for Tables 3-6, and 8-9
+
+*Last Modified 11/30/2009
+
+*This step merges the file containing average Capex for each firm and the country 
+*of incorporation with the file containing the first observation of Total Assets 
+*and Market-to-Book Ratio for each firm 
+
+cd D:\Research_Inheritance
+set mem 500M
+
+use assets_mbratios
+sort firmid
+save assets_mbratios,replace
+use firm_capex
+sort firmid
+merge firmid using assets_mbratios
+keep if _merge==3
+rename _merge merge1
+save firm_capex,replace
+clear
+
+*This step merges the file containing average Capex, first observation of Total 
+*Assets and Market-to-Book Ratio with the file containing, for each firm, the sic 
+*codes and isic codes to which the firm belongs and the respective data on financial 
+*dependence for each isic code. The latter file also contains data on the financial 
+*dependence for each isic code size class (large firm, medium-sized firm, small firm)
+*and that will be used to get estimates in Table 9 Panel F 
+
+
+use firm_sic_isic_findep
+sort firmid
+save firm_sic_isic_findep,replace
+use firm_capex
+sort firmid
+merge firmid using firm_sic_isic_findep
+keep if _merge==3
+rename _merge merge2
+save firm_capex,replace
+clear
+
+
+*This step merges the file from the previous step with the file containing country-
+*level data on investor protection indices, inheritance law, legal origin, transfer 
+*taxation, family values, etc
+
+
+use indices_inheritance
+sort country
+save indices_inheritance,replace
+use firm_capex
+sort country
+merge country using indices_inheritance
+keep if _merge==3
+rename _merge merge3
+save firm_capex, replace
+clear
+
+*This step merges the file from the previous step with the file containing ownership
+*data (ultimate owner being a family blockholder or not, cash flow rights, etc.) and
+*succession data (whether succession occurred or not, year of succession, type of 
+*succession, etc.) for each firm
+
+
+use ownership_succession
+sort firmid
+save ownership_succession,replace
+use firm_capex
+sort firmid
+merge firmid using ownership_succession
+keep if _merge==3
+rename _merge merge4
+save inheritance_family
+
+
+*This step winsorizes Capex to remove outliers
+
+
+egen capex_p95=pctile(capex), p(95)
+egen capex_p5=pctile(capex), p(5)
+drop if capex<capex_p5 
+drop if capex>capex_p95
+drop capex_p5
+drop capex_p95
+save inheritance_family,replace
+clear
+
+
+
+*This step generates the descriptive statsitics in Table 3
+
+use inheritance_family
+sum capex sales_growth assets mb_ratio ownership_stake,detail
+
+sort family_owned
+by family_owned: sum capex sales_growth assets mb_ratio ownership_stake,detail
+
+keep if family_owned==1
+sort inheritance_strictness
+by inheritance_strictness: sum capex sales_growth assets mb_ratio ownership_stake,detail
+
+sort investor_protection
+by investor_protection: sum capex sales_growth assets mb_ratio ownership_stake,detail
+
+clear
+
+
+
+*This step generates results in Table 4
+
+use inheritance_family
+egen country_industry=group(country isic)
+gen family_inheritance=family_owned*inheritance_law
+gen family_investor1=family_owned*revised_adr_index
+gen family_inheritance_investor1=family_owned*inheritance_law*revised_adr_index
+gen family_investor2=family_owned*anti_selfdealing_index
+gen family_inheritance_investor2=family_owned*inheritance_law*anti_selfdealing_index
+gen family_investor3=family_owned*spamann_index
+gen family_inheritance_investor3=family_owned*inheritance_law*spamann_index
+gen family_investor4=family_owned*creditor_rights_index
+gen family_inheritance_investor4=family_owned*inheritance_law*creditor_rights_index
+gen log_assets=log(assets)
+gen log_mb_ratio=log(mb_ratio)
+gen family_assets=family_owned*log_assets
+gen family_mb_ratio=family_owned*log_mb_ratio
+
+sort isic
+egen group_isic=group(isic)
+su  group_isic, meanonly
+forvalues i=1/`r(max)'{
+qui by isic: gen isic_dummy_`i' = 1 if group_isic ==`i'
+qui by isic: replace isic_dummy_`i' =0 if group_isic!=`i'
+}
+drop group_isic
+
+save inheritance_family,replace
+
+areg capex family_owned family_investor1 family_inheritance family_inheritance_investor1 family_mb_ratio family_assets log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_investor2 family_inheritance family_inheritance_investor2 family_mb_ratio family_assets log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_investor3 family_inheritance family_inheritance_investor3 family_mb_ratio family_assets log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_investor4 family_inheritance family_inheritance_investor4 family_mb_ratio family_assets log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+
+
+
+*This step generates results in Table 5
+
+gen family_findep_inheritance=family_owned*financial_dependence*inheritance_law
+gen family_findep_investor1=family_owned*financial_dependence*revised_adr_index
+gen family_findep_inherit_inv1=family_owned*financial_dependence*inheritance_law*revised_adr_index
+gen family_findep_investor2=family_owned*financial_dependence*anti_selfdealing_index
+gen family_findep_inherit_inv2=family_owned*financial_dependence*inheritance_law*anti_selfdealing_index
+gen family_findep_investor3=family_owned*financial_dependence*spamann_index
+gen family_findep_inherit_inv3=family_owned*financial_dependence*inheritance_law*spamann_index
+gen family_findep_investor4=family_owned*financial_dependence*creditor_rights_index
+gen family_findep_inherit_inv4=family_owned*financial_dependence*inheritance_law*creditor_rights_index
+gen findep_inheritance= financial_dependence*inheritance_law
+gen findep_investor1=financial_dependence*revised_adr_index
+gen findep_investor2=financial_dependence*anti_selfdealing_index
+gen findep_investor3=financial_dependence*spamann_index
+gen findep_investor4=financial_dependence*creditor_rights_index
+gen findep_inheritance_investor1= financial_dependence*inheritance_law*revised_adr_index
+gen findep_inheritance_investor2= financial_dependence*inheritance_law*anti_selfdealing_index
+gen findep_inheritance_investor3= financial_dependence*inheritance_law*spamann_index
+gen findep_inheritance_investor4= financial_dependence*inheritance_law*creditor_rights_index
+save inheritance_family,replace
+
+
+*This step will keep all observations except those from the United States (as also 
+*done by Rajan and Zingales 1998) since our identifying assumption is that U.S. 
+*listed firms are financially unconstrained
+
+
+drop if country=="US"
+save inheritance_family_nousa
+
+areg capex family_owned family_findep_investor1 family_findep_inheritance family_findep_inherit_inv1 findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor2 family_findep_inheritance family_findep_inherit_inv2 findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor3 family_findep_inheritance family_findep_inherit_inv3 findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor4 family_findep_inheritance family_findep_inherit_inv4 findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+
+
+
+*This step generates results in Table 6
+
+
+keep if family_owned==1
+keep if known_succession==1
+drop if succession_type2==1
+
+gen succession_findep_inheritance=family_succession*financial_dependence*inheritance_law
+gen succession_findep_investor1=family_succession*financial_dependence*revised_adr_index
+gen succession_findep_investor2=family_succession*financial_dependence*anti_selfdealing_index
+gen succession_findep_investor3=family_succession*financial_dependence*spamann_index
+gen succession_findep_investor4=family_succession*financial_dependence*creditor_rights_index
+gen succession_findep_inh_invest1=family_succession*financial_dependence*revised_adr_index*inheritance_law
+gen succession_findep_inh_invest2=family_succession*financial_dependence*anti_selfdealing_index*inheritance_law
+gen succession_findep_inh_invest3=family_succession*financial_dependence*spamann_index*inheritance_law
+gen succession_findep_inh_invest4=family_succession*financial_dependence*creditor_rights_index*inheritance_law
+
+areg capex family_succession succession_findep_investor1 succession_findep_inheritance succession_findep_inh_invest1 findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_succession succession_findep_investor2 succession_findep_inheritance succession_findep_inh_invest2 findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_succession succession_findep_investor3 succession_findep_inheritance succession_findep_inh_invest3 findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_succession succession_findep_investor4 succession_findep_inheritance succession_findep_inh_invest4 findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+clear
+
+
+
+
+*This step generates results in Table 8
+
+
+use inheritance_family_nousa
+
+areg sales_growth family_owned family_findep_investor1 family_findep_inheritance family_findep_inherit_inv1 findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg sales_growth family_owned family_findep_investor2 family_findep_inheritance family_findep_inherit_inv2 findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg sales_growth family_owned family_findep_investor3 family_findep_inheritance family_findep_inherit_inv3 findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg sales_growth family_owned family_findep_investor4 family_findep_inheritance family_findep_inherit_inv4 findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+
+
+
+*This step generates results in Table 9 Panel A
+
+
+gen family_findep_tax=family_owned*financial_dependence*transfer_tax
+gen findep_tax=financial_dependence*transfer_tax
+
+save inheritance_family,replace
+
+areg capex family_owned family_findep_investor1 family_findep_inheritance family_findep_inherit_inv1 family_findep_tax findep_tax findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor2 family_findep_inheritance family_findep_inherit_inv2 family_findep_tax findep_tax findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor3 family_findep_inheritance family_findep_inherit_inv3 family_findep_tax findep_tax findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor4 family_findep_inheritance family_findep_inherit_inv4 family_findep_tax findep_tax findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+
+
+
+*This step generates results in Table 9 Panel B
+
+
+keep if civil_law==1
+
+areg capex family_owned family_findep_investor1 family_findep_inheritance family_findep_inherit_inv1 findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor2 family_findep_inheritance family_findep_inherit_inv2 findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor3 family_findep_inheritance family_findep_inherit_inv3 findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor4 family_findep_inheritance family_findep_inherit_inv4 findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+clear
+
+
+
+*This step generates results in Table 9 Panel C
+
+
+use inheritance_family_nousa
+
+gen family_findep_values=family_owned*financial_dependence*family_values
+gen findep_values=financial_dependence*family_values
+
+save inheritance_family,replace
+
+areg capex family_owned family_findep_investor1 family_findep_inheritance family_findep_inherit_inv1 family_findep_values findep_values findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor2 family_findep_inheritance family_findep_inherit_inv2 family_findep_values findep_values findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor3 family_findep_inheritance family_findep_inherit_inv3 family_findep_values findep_values findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findep_investor4 family_findep_inheritance family_findep_inherit_inv4 family_findep_values findep_values findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+
+
+
+*This step generates results in Table 9 Panel D
+
+gen family_owned_management=1 if family_manage==1 & family_cashrights>=0.20
+replace family_owned_management=0 if family_owned_management==.
+
+save inheritance_family_nousa,replace
+
+gen family_man_findep_inheritance=family_owned_management*financial_dependence*inheritance_law
+gen family_man_findep_investor1=family_owned_management*financial_dependence*revised_adr_index
+gen family_man_findep_inherit_inv1=family_owned_management*financial_dependence*inheritance_law* revised_adr_index
+gen family_man_findep_investor2=family_owned_management*financial_dependence*anti_selfdealing_index
+gen family_man_findep_inherit_inv2=family_owned_management*financial_dependence*inheritance_law*anti_selfdealing_index
+gen family_man_findep_investor3=family_owned_management*financial_dependence*spamann_index
+gen family_man_findep_inherit_inv3=family_owned_management*financial_dependence*inheritance_law*spamann_index
+gen family_man_findep_investor4=family_owned_management*financial_dependence*creditor_rights_index
+gen family_man_findep_inherit_inv4=family_owned_management*financial_dependence*inheritance_law* creditor_rights_index
+
+areg capex family_owned_management family_man_findep_investor1 family_man_findep_inheritance family_man_findep_inherit_inv1 findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned_management family_man_findep_investor2 family_man_findep_inheritance family_man_findep_inherit_inv2 findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned_management family_man_findep_investor3 family_man_findep_inheritance family_man_findep_inherit_inv3 findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned_management family_man_findep_investor4 family_man_findep_inheritance family_man_findep_inherit_inv4 findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+
+
+*This step generates results in Table 9 Panel E
+
+gen family_stake=family_owned*family_cashrights
+gen family_stake_findep_inheritance=family_stake*financial_dependence*inheritance_law
+gen family_stake_findep_investor1=family_stake*financial_dependence*revised_adr_index
+gen family_stake_findep_inherit_inv1=family_stake*financial_dependence*inheritance_law* revised_adr_index
+gen family_stake_findep_investor2=family_stake*financial_dependence*anti_selfdealing_index
+gen family_stake_findep_inherit_inv2=family_stake*financial_dependence*inheritance_law*anti_selfdealing_index
+gen family_stake_findep_investor3=family_stake*financial_dependence*spamann_index
+gen family_stake_findep_inherit_inv3=family_stake*financial_dependence*inheritance_law*spamann_index
+gen family_stake_findep_investor4=family_stake*financial_dependence*creditor_rights_index
+gen family_stake_findep_inherit_inv4=family_stake*financial_dependence*inheritance_law* creditor_rights_index
+
+save inheritance_family_nousa,replace
+
+areg capex family_stake family_stake_findep_investor1 family_stake_findep_inheritance family_stake_findep_inherit_inv1 findep_investor1 findep_inheritance findep_inheritance_investor1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_stake family_stake_findep_investor2 family_stake_findep_inheritance family_stake_findep_inherit_inv2 findep_investor2 findep_inheritance findep_inheritance_investor2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_stake family_stake_findep_investor3 family_stake_findep_inheritance family_stake_findep_inherit_inv3 findep_investor3 findep_inheritance findep_inheritance_investor3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_stake family_stake_findep_investor4 family_stake_findep_inheritance family_stake_findep_inherit_inv4 findep_investor4 findep_inheritance findep_inheritance_investor4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+
+
+*This step generates results in Table 9 Panel F
+
+gen family_findepclass_inheritance=family_owned*financial_dependence_class*inheritance_law
+gen family_findepclass_investor1=family_owned* financial_dependence_class*revised_adr_index
+gen family_findepclass_inherit_inv1=family_owned*financial_dependence_class*inheritance_law* revised_adr_index
+gen family_findepclass_investor2=family_owned*financial_dependence_class*anti_selfdealing_index
+gen family_findepclass_inherit_inv2=family_owned*financial_dependence_class*inheritance_law*anti_selfdealing_index
+gen family_findepclass_investor3=family_owned*financial_dependence_class*spamann_index
+gen family_findepclass_inherit_inv3=family_owned*financial_dependence_class*inheritance_law*spamann_index
+gen family_findepclass_investor4=family_owned*financial_dependence_class*creditor_rights_index
+gen family_findepclass_inherit_inv4=family_owned*financial_dependence_class*inheritance_law* creditor_rights_index
+gen findepclass_inheritance= financial_dependence_class*inheritance_law
+gen findepclass_investor1=financial_dependence_class*revised_adr_index
+gen findepclass_investor2=financial_dependence_class*anti_selfdealing_index
+gen findepclass_investor3=financial_dependence_class*spamann_index
+gen findepclass_investor4=financial_dependence_class*creditor_rights_index
+gen findepclass_inherit_invest1= financial_dependence_class*inheritance_law*revised_adr_index
+gen findepclass_inherit_invest2= financial_dependence_class*inheritance_law*anti_selfdealing_index
+gen findepclass_inherit_invest3= financial_dependence_class*inheritance_law*spamann_index
+gen findepclass_inherit_invest4= financial_dependence_class*inheritance_law*creditor_rights_index
+
+save inheritance_family_nousa,replace
+
+areg capex family_owned family_findepclass_investor1 family_findepclass_inheritance family_findepclass_inherit_inv1 findepclass_investor1 findepclass_inheritance findepclass_inherit_invest1 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findepclass_investor2 family_findepclass_inheritance family_findepclass_inherit_inv2 findepclass_investor2 findepclass_inheritance findepclass_inherit_invest2 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findepclass_investor3 family_findepclass_inheritance family_findepclass_inherit_inv3 findepclass_investor3 findepclass_inheritance findepclass_inherit_invest3 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+areg capex family_owned family_findepclass_investor4 family_findepclass_inheritance family_findepclass_inherit_inv4 findepclass_investor4 findepclass_inheritance findepclass_inherit_invest4 log_mb_ratio log_assets family_mb_ratio family_assets isic_dummy_1-isic_dummy_36,absorb(country) cluster(country_industry)
+
+clear

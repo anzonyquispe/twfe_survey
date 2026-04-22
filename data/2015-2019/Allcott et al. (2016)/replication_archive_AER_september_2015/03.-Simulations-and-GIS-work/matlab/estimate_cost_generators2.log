@@ -1,0 +1,1030 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   13.0   Copyright 1985-2013 StataCorp LP
+  Statistics/Data Analysis            StataCorp
+                                      4905 Lakeway Drive
+     Special Edition                  College Station, Texas 77845 USA
+                                      800-STATA-PC        http://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+50-user Stata network license expires 23 Jul 2015:
+       Serial number:  401306273844
+         Licensed to:  ecsteam
+                       Duke University
+
+Notes:
+      1.  (-v# option or -set maxvar-) 5000 maximum variables
+      2.  Command line editing disabled
+      3.  Stata running in batch mode
+
+. do estimate_cost_generators2.do 
+
+. /*
+> 
+> Program to Estimate Cost of Generators
+> 
+> Allan Collard-Wexler
+> 
+> October 1 2014
+> 
+> */
+. 
+. cd ~/Dropbox/India_Power_Shortages/matlab/
+/Users/ac418/Dropbox/India_Power_Shortages/matlab
+
+. clear all
+
+. set more off
+
+. set mem 500m
+set memory ignored.
+    Memory no longer needs to be set in modern Statas; memory adjustments are
+    performed on the fly automatically.
+
+. set linesize 200
+
+. 
+. 
+. // (assuming a ten year life)
+. global gen_lifespan=10
+
+. 
+. // Price of Self-Generated Power
+. // Source: World Bank Survey
+. global p_e_s=7
+
+. // Price of Grid Power
+. global p_e_g=4.5
+
+. 
+. // Hours of production: 6 hours a day
+. global hours_prod=6*365
+
+. 
+. 
+. global graphit=1
+
+. 
+. cd simulation_asi_inputs_dec2014
+/Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014
+
+. 
+. // Generator 
+. 
+. global graphit=1
+
+. global p_e_s=7
+
+. global elasticity=-10
+
+. global filename="ASI_Prediction2005_7.csv"
+
+. 
+. 
+. clear
+
+. insheet using $filename
+(45 vars, 33871 obs)
+
+. 
+. // Keep plants that are not in exogenous generation industries
+. keep if exog_gen_industry==0
+(4614 observations deleted)
+
+. 
+. g kshare_Y=fcapclose/grsale_defl
+
+.                * trim outliers
+.                replace kshare_Y = . if kshare_Y>20 //
+(59 real changes made, 59 to missing)
+
+. 
+. cap drop if $droplist
+
+. //noisily des
+. foreach x of varlist year-y_no_generator {
+  2. destring `x', replace force
+  3. } 
+year already numeric; no replace
+delta_psp already numeric; no replace
+delta_pdpm already numeric; no replace
+k already numeric; no replace
+alpha_m already numeric; no replace
+alpha_l already numeric; no replace
+alpha_k already numeric; no replace
+alpha_e already numeric; no replace
+omega already numeric; no replace
+zero_generation_flag already numeric; no replace
+p already numeric; no replace
+p_m already numeric; no replace
+p_l already numeric; no replace
+y_shortage already numeric; no replace
+y_no_shortage already numeric; no replace
+m_shortage already numeric; no replace
+m_no_shortage already numeric; no replace
+l_shortage already numeric; no replace
+l_no_shortage already numeric; no replace
+e_self_shortage already numeric; no replace
+e_self_no_shortage already numeric; no replace
+e_grid_shortage already numeric; no replace
+e_grid_no_shortage already numeric; no replace
+pctshortage already numeric; no replace
+messedupcompute already numeric; no replace
+y_shortage_prime already numeric; no replace
+y_no_shortage_prime already numeric; no replace
+profit_generator already numeric; no replace
+profit_no_generator already numeric; no replace
+profit_no_shortages already numeric; no replace
+snic_hc already numeric; no replace
+exog_gen_industry already numeric; no replace
+panelgroup already numeric; no replace
+scheme_dummy already numeric; no replace
+grsale_defl already numeric; no replace
+totpersons already numeric; no replace
+qeleccons already numeric; no replace
+fcapclose already numeric; no replace
+matls_defl already numeric; no replace
+y_no_generator already numeric; no replace
+
+. 
+. //---------------------------------------------------------------------------------------
+. // 0) Prep Work
+. //---------------------------------------------------------------------------------------
+. 
+. cap destring e_grid_no_generator, replace force
+
+. cap destring e_grid_generator, replace force
+
+. 
+. 
+. sum delta_psp, meanonly
+
+. scalar shortage=r(mean)
+
+. 
+. drop if messedupcompute==-2
+(0 observations deleted)
+
+. 
+. //---------------------------------------------------------------------------------------
+. // 1) Dollar Per Megawatt to make indifference between generator and no-generator
+. //---------------------------------------------------------------------------------------
+. replace e_self_shortage=e_self_shortage/$p_e_s
+(15758 real changes made)
+
+. replace e_self_no_shortage=e_self_no_shortage/$p_e_s
+(0 real changes made)
+
+. 
+. replace e_grid_shortage=e_grid_shortage/$p_e_g
+(29256 real changes made)
+
+. replace e_grid_no_shortage=e_grid_no_shortage/$p_e_g
+(29256 real changes made)
+
+. 
+. gen total_power=e_self_shortage + e_grid_shortage
+
+. 
+. // Size of Required Generator
+. gen gen_size= total_power/($hours_prod)
+(6 missing values generated)
+
+. 
+. 
+. //---------------------------------------------------------------------------------------
+. // 1.5) Profits of a Generator, Cost of These
+. //---------------------------------------------------------------------------------------
+. gen profit_no_shortage=y_no_shortage-p_m * m_no_shortage -p_l *  l_no_shortage-$p_e_g* e_grid_no_shortage-$p_e_s* e_self_no_shortage
+
+. gen profit_shortage=y_shortage-p_m* m_shortage-p_l* l_shortage-$p_e_g* e_grid_shortage-$p_e_s* e_self_shortage
+
+. 
+. gen has_gen=(zero_generation_flag==1)
+
+. 
+. 
+. gen log_gen_size=log(gen_size)
+(7 missing values generated)
+
+. reg zero_generation_flag log_gen_size 
+
+      Source |       SS       df       MS              Number of obs =   29250
+-------------+------------------------------           F(  1, 29248) = 2194.85
+       Model |  506.601762     1  506.601762           Prob > F      =  0.0000
+    Residual |  6750.84316 29248  .230813839           R-squared     =  0.0698
+-------------+------------------------------           Adj R-squared =  0.0698
+       Total |  7257.44492 29249  .248126258           Root MSE      =  .48043
+
+------------------------------------------------------------------------------
+zero_gener~g |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+log_gen_size |   .0267223   .0005704    46.85   0.000     .0256043    .0278403
+       _cons |   .4595126   .0033311   137.95   0.000     .4529836    .4660417
+------------------------------------------------------------------------------
+
+. 
+. gen log_k=log(k)
+
+. mata: LOG_K=st_data(.,("log_k"))
+
+. mata: LOG_G=st_data(.,("log_gen_size"))
+
+. 
+. 
+. // Show these
+. mata: GENERATOR=st_data(.,("has_gen"))
+
+. mata: cov_data_k=variance((GENERATOR,LOG_K))
+
+. mata: cov_data_k[2,1]
+  .5279861237
+
+. mata: cov_data_g=variance((GENERATOR,LOG_G))
+
+. mata: cov_data_g[2,1]
+  .6481585294
+
+. mata: mean(GENERATOR)
+  .543425505
+
+. 
+. 
+. //---------------------------------------------------------------------------------------
+. // 2.0) Code to run GMM estimator
+. //---------------------------------------------------------------------------------------
+. 
+. *-------------------------------------BEGIN MATA PROGRAM--------------------------------------------*
+. mata:
+------------------------------------------------- mata (type end to exit) ------------------------------------------------------------------------------------------------------------------------------
+: 
+: void GMM_CRIT1(todo,betas,GENERATOR,PROFIT_GEN,PROFIT_NO_GEN,GEN_SIZE,LOG_K,LOG_G,crit,g,H)
+> {
+> GEN_COSTS=exp(betas[1,1]):*(GEN_SIZE)
+> PREDICTED_GEN=PROFIT_GEN:>(PROFIT_NO_GEN+GEN_COSTS)
+> cov_hat_k=variance((PREDICTED_GEN,LOG_K))
+> cov_data_k=variance((GENERATOR,LOG_K))
+> 
+> cov_hat_g=variance((PREDICTED_GEN,LOG_G))
+> cov_data_g=variance((GENERATOR,LOG_G))
+> 
+> 
+> // SCORE
+> //xi=(mean(PREDICTED_GEN)-mean(GENERATOR)),(cov_hat_k[2,1]-cov_data_k[2,1]),(cov_hat_g[2,1]-cov_data_g[2,1])
+> xi=(mean(PREDICTED_GEN)-mean(GENERATOR))
+> 
+> crit=10000:*(xi*xi')
+> }
+note: argument todo unused
+note: argument g unused
+note: argument H unused
+note: variable cov_hat_k set but not used
+note: variable cov_data_k set but not used
+note: variable cov_hat_g set but not used
+note: variable cov_data_g set but not used
+
+: 
+: 
+: void GMM_CRIT2(todo,betas,GENERATOR,PROFIT_GEN,PROFIT_NO_GEN,GEN_SIZE,LOG_K,LOG_G,crit,g,H)
+> {
+> GEN_COSTS=exp(betas[1,1]):*(GEN_SIZE):^betas[1,2]
+> PREDICTED_GEN=PROFIT_GEN:>(PROFIT_NO_GEN+GEN_COSTS)
+> cov_hat_k=variance((PREDICTED_GEN,LOG_K))
+> cov_data_k=variance((GENERATOR,LOG_K))
+> 
+> cov_hat_g=variance((PREDICTED_GEN,LOG_G))
+> cov_data_g=variance((GENERATOR,LOG_G))
+> 
+> 
+> // SCORE
+> //xi=(mean(PREDICTED_GEN)-mean(GENERATOR)),(cov_hat_k[2,1]-cov_data_k[2,1]),(cov_hat_g[2,1]-cov_data_g[2,1])
+> xi=(mean(PREDICTED_GEN)-mean(GENERATOR)),(cov_hat_g[2,1]-cov_data_g[2,1])
+> 
+> crit=10000:*(xi*xi')
+> 
+> }
+note: argument todo unused
+note: argument g unused
+note: argument H unused
+note: variable cov_hat_k set but not used
+note: variable cov_data_k set but not used
+
+: 
+: 
+: end
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+. 
+. *-----------------------------------------END MATA PROGRAM---------------------------------------*
+. 
+. 
+. // Program 
+. cap program drop gen_cost_estimator
+
+. program gen_cost_estimator, eclass
+  1. 
+. capture drop if $dropglobal
+  2. 
+. * Load Data
+. mata: LOG_K=st_data(.,("log_k"))
+  3. mata: LOG_G=st_data(.,("log_gen_size"))
+  4. mata: GENERATOR=st_data(.,("has_gen"))
+  5. mata: PROFIT_GEN=st_data(.,("profit_generator"))
+  6. mata: PROFIT_NO_GEN=st_data(.,("profit_no_generator"))
+  7. mata: GEN_SIZE=st_data(.,("gen_size"))
+  8. 
+. * Setup Optimizer
+. mata: S3=optimize_init()
+  9. mata: optimize_init_evaluator(S3, &GMM_CRIT2())
+ 10. mata: optimize_init_evaluatortype(S3,"d0")
+ 11. mata: optimize_init_technique(S3, "nm")
+ 12. mata: optimize_init_nmsimplexdeltas(S3, 1)
+ 13. mata: optimize_init_which(S3,"min")
+ 14. 
+. * These starting values come from Regressions on Generators Costs
+. mata: optimize_init_params(S3,(12,0.8))
+ 15. mata: optimize_init_argument(S3, 1, GENERATOR)
+ 16. mata: optimize_init_argument(S3, 2, PROFIT_GEN)
+ 17. mata: optimize_init_argument(S3, 3, PROFIT_NO_GEN)
+ 18. mata: optimize_init_argument(S3, 4, GEN_SIZE)
+ 19. mata: optimize_init_argument(S3, 5, LOG_K)
+ 20. mata: optimize_init_argument(S3, 6, LOG_G)
+ 21. 
+. * Minimize Criterion
+. 
+. mata: p3=optimize(S3)
+ 22. mata: p3
+ 23. 
+. forval i=1/4 {
+ 24. mata: optimize_init_params(S3,p3)
+ 25. mata: p3=optimize(S3)
+ 26. mata: p3
+ 27. 
+. mata: GEN_COSTS=exp(p3[1,1]):*(GEN_SIZE):^p3[1,2]
+ 28. mata: PREDICTED_GEN=PROFIT_GEN:>(PROFIT_NO_GEN+GEN_COSTS)
+ 29. mata: cov_hat_k=variance((PREDICTED_GEN,LOG_K))
+ 30. mata: cov_data_k=variance((GENERATOR,LOG_K))
+ 31. 
+. mata: cov_hat_g=variance((PREDICTED_GEN,LOG_G))
+ 32. mata: cov_data_g=variance((GENERATOR,LOG_G))
+ 33. 
+. mata: genpredvec=(mean(PREDICTED_GEN),mean(GENERATOR))
+ 34. 
+. mata: genpredvec
+ 35. mata: cov_hat_g[2,1],cov_data_g[2,1]
+ 36. mata: cov_hat_k[2,1],cov_data_k[2,1]
+ 37. }
+ 38. 
+. 
+. mata: st_matrix("sigmas2",p3)
+ 39. 
+. 
+. 
+. mat colnames sigmas2 = sigma_0, sigma_1
+ 40. ereturn post sigmas2
+ 41. end
+
+. 
+. 
+. gen_cost_estimator
+Iteration 0:   f(p) =  174.75007  
+Iteration 1:   f(p) =  174.75007  
+Iteration 2:   f(p) =  174.75007  
+Iteration 3:   f(p) =  174.75007  
+Iteration 4:   f(p) =  170.49576  
+Iteration 5:   f(p) =  151.17883  
+Iteration 6:   f(p) =  68.665621  
+Iteration 7:   f(p) =  60.439011  
+Iteration 8:   f(p) =  60.439011  
+Iteration 9:   f(p) =  60.439011  
+Iteration 10:  f(p) =  60.270268  
+Iteration 11:  f(p) =   59.37294  
+Iteration 12:  f(p) =   59.37294  
+Iteration 13:  f(p) =  58.895678  
+Iteration 14:  f(p) =  58.041525  
+Iteration 15:  f(p) =  56.818913  
+Iteration 16:  f(p) =  53.461532  
+Iteration 17:  f(p) =  53.461532  
+Iteration 18:  f(p) =  46.919558  
+Iteration 19:  f(p) =  46.919558  
+Iteration 20:  f(p) =  34.062439  
+Iteration 21:  f(p) =  34.062439  
+Iteration 22:  f(p) =  16.826248  
+Iteration 23:  f(p) =  16.826248  
+Iteration 24:  f(p) =   12.21248  
+Iteration 25:  f(p) =  4.3111955  
+Iteration 26:  f(p) =  4.3111955  
+Iteration 27:  f(p) =  3.2401937  
+Iteration 28:  f(p) =  1.3648818  
+Iteration 29:  f(p) =  .03658623  
+Iteration 30:  f(p) =  .03658623  
+Iteration 31:  f(p) =  .00470709  
+Iteration 32:  f(p) =  .00470709  
+Iteration 33:  f(p) =  .00470709  
+Iteration 34:  f(p) =  .00019014  
+Iteration 35:  f(p) =  .00019014  
+Iteration 36:  f(p) =  .00019014  
+Iteration 37:  f(p) =  .00019014  
+Iteration 38:  f(p) =  .00019014  
+Iteration 39:  f(p) =  .00019014  
+Iteration 40:  f(p) =  .00019014  
+Iteration 41:  f(p) =  .00010576  
+Iteration 42:  f(p) =  .00010576  
+Iteration 43:  f(p) =  .00010576  
+                 1             2
+    +-----------------------------+
+  1 |  11.44316614   .8374419391  |
+    +-----------------------------+
+Iteration 0:   f(p) =  .00010576  
+Iteration 1:   f(p) =  .00010576  
+Iteration 2:   f(p) =  .00010576  
+Iteration 3:   f(p) =  .00010576  
+Iteration 4:   f(p) =  .00010576  
+Iteration 5:   f(p) =  .00010576  
+Iteration 6:   f(p) =  .00010576  
+Iteration 7:   f(p) =  .00010576  
+Iteration 8:   f(p) =  .00010576  
+Iteration 9:   f(p) =  .00010576  
+Iteration 10:  f(p) =  .00010576  
+Iteration 11:  f(p) =  .00010576  
+Iteration 12:  f(p) =  .00006373  
+Iteration 13:  f(p) =  .00006373  
+Iteration 14:  f(p) =  .00006373  
+Iteration 15:  f(p) =  .00006373  
+Iteration 16:  f(p) =  .00004679  
+Iteration 17:  f(p) =  .00004679  
+Iteration 18:  f(p) =  .00002594  
+Iteration 19:  f(p) =  .00002594  
+Iteration 20:  f(p) =  .00002594  
+Iteration 21:  f(p) =  .00002594  
+                 1             2
+    +-----------------------------+
+  1 |   11.4433912   .8374571979  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .5433913252    .543425505  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .6481962948   .6481585294  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .1007395932   .5279861237  |
+    +-----------------------------+
+Iteration 0:   f(p) =  .00002594  
+Iteration 1:   f(p) =  .00002594  
+Iteration 2:   f(p) =  .00002594  
+Iteration 3:   f(p) =  .00002594  
+Iteration 4:   f(p) =  .00002594  
+Iteration 5:   f(p) =  .00002594  
+Iteration 6:   f(p) =  .00002594  
+Iteration 7:   f(p) =  .00002594  
+Iteration 8:   f(p) =  .00002594  
+Iteration 9:   f(p) =  .00002594  
+Iteration 10:  f(p) =  .00002594  
+Iteration 11:  f(p) =  .00002594  
+Iteration 12:  f(p) =  .00002594  
+Iteration 13:  f(p) =  .00002594  
+Iteration 14:  f(p) =  .00002594  
+Iteration 15:  f(p) =  .00002594  
+Iteration 16:  f(p) =  .00002594  
+Iteration 17:  f(p) =  .00002594  
+Iteration 18:  f(p) =  .00002594  
+Iteration 19:  f(p) =  .00002594  
+                 1             2
+    +-----------------------------+
+  1 |  11.44339883   .8374571979  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .5433913252    .543425505  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .6481962948   .6481585294  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .1007395932   .5279861237  |
+    +-----------------------------+
+Iteration 0:   f(p) =  .00002594  
+Iteration 1:   f(p) =  .00002594  
+Iteration 2:   f(p) =  .00002594  
+Iteration 3:   f(p) =  .00002594  
+Iteration 4:   f(p) =  .00002594  
+Iteration 5:   f(p) =  .00002594  
+Iteration 6:   f(p) =  .00002594  
+Iteration 7:   f(p) =  .00002594  
+Iteration 8:   f(p) =  .00002594  
+Iteration 9:   f(p) =  .00002594  
+Iteration 10:  f(p) =  .00002594  
+Iteration 11:  f(p) =  .00002594  
+Iteration 12:  f(p) =  .00002594  
+Iteration 13:  f(p) =  .00002594  
+Iteration 14:  f(p) =  .00002594  
+Iteration 15:  f(p) =  .00002594  
+Iteration 16:  f(p) =  .00002594  
+Iteration 17:  f(p) =  .00002594  
+Iteration 18:  f(p) =  .00002594  
+                 1             2
+    +-----------------------------+
+  1 |  11.44339883   .8374571979  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .5433913252    .543425505  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .6481962948   .6481585294  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .1007395932   .5279861237  |
+    +-----------------------------+
+Iteration 0:   f(p) =  .00002594  
+Iteration 1:   f(p) =  .00002594  
+Iteration 2:   f(p) =  .00002594  
+Iteration 3:   f(p) =  .00002594  
+Iteration 4:   f(p) =  .00002594  
+Iteration 5:   f(p) =  .00002594  
+Iteration 6:   f(p) =  .00002594  
+Iteration 7:   f(p) =  .00002594  
+Iteration 8:   f(p) =  .00002594  
+Iteration 9:   f(p) =  .00002594  
+Iteration 10:  f(p) =  .00002594  
+Iteration 11:  f(p) =  .00002594  
+Iteration 12:  f(p) =  .00002594  
+Iteration 13:  f(p) =  .00002594  
+Iteration 14:  f(p) =  .00002594  
+Iteration 15:  f(p) =  .00002594  
+Iteration 16:  f(p) =  .00002594  
+Iteration 17:  f(p) =  .00002594  
+Iteration 18:  f(p) =  .00002594  
+                 1             2
+    +-----------------------------+
+  1 |  11.44339883   .8374571979  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .5433913252    .543425505  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .6481962948   .6481585294  |
+    +-----------------------------+
+                 1             2
+    +-----------------------------+
+  1 |  .1007395932   .5279861237  |
+    +-----------------------------+
+
+. 
+. 
+. log using estimate_cost_gens_results.log, replace
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014/estimate_cost_gens_results.log
+  log type:  text
+ opened on:  30 Dec 2014, 15:47:42
+
+. 
+. bootstrap , reps(50) seed(12345): gen_cost_estimator
+(running gen_cost_estimator on estimation sample)
+
+Warning:  Because gen_cost_estimator is not an estimation command or does not set e(sample), bootstrap has no way to determine which observations are used in calculating the statistics and so
+          assumes that all observations are used.  This means that no observations will be excluded from the resampling because of missing values or other reasons.
+
+          If the assumption is not true, press Break, save the data, and drop the observations that are to be excluded.  Be sure that the dataset in memory contains only the relevant data.
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+Bootstrap results                               Number of obs      =     29257
+                                                Replications       =        50
+
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    sigma_0, |   11.44318   .1258079    90.96   0.000      11.1966    11.68976
+     sigma_1 |   .8374278   .0059943   139.70   0.000     .8256792    .8491764
+------------------------------------------------------------------------------
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014/estimate_cost_gens_results.log
+  log type:  text
+ closed on:  30 Dec 2014, 15:49:31
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+. 
+. matrix cost_not_linear=e(b)
+
+. 
+. 
+. // Program 
+. cap program drop gen_cost_estimator_linear
+
+. program gen_cost_estimator_linear, eclass
+  1. 
+. capture drop if $dropglobal
+  2. 
+. // Load Data
+. mata: LOG_K=st_data(.,("log_k"))
+  3. mata: LOG_G=st_data(.,("log_gen_size"))
+  4. mata: GENERATOR=st_data(.,("has_gen"))
+  5. mata: PROFIT_GEN=st_data(.,("profit_generator"))
+  6. mata: PROFIT_NO_GEN=st_data(.,("profit_no_generator"))
+  7. mata: GEN_SIZE=st_data(.,("gen_size"))
+  8. 
+. // Setup Optimizer
+. mata: S3=optimize_init()
+  9. mata: optimize_init_evaluator(S3, &GMM_CRIT1())
+ 10. mata: optimize_init_evaluatortype(S3,"d0")
+ 11. mata: optimize_init_technique(S3, "nm")
+ 12. mata: optimize_init_nmsimplexdeltas(S3, 1)
+ 13. mata: optimize_init_which(S3,"min")
+ 14. 
+. // These starting values come from Regressions on Generators Costs
+. mata: optimize_init_params(S3,10)
+ 15. mata: optimize_init_argument(S3, 1, GENERATOR)
+ 16. mata: optimize_init_argument(S3, 2, PROFIT_GEN)
+ 17. mata: optimize_init_argument(S3, 3, PROFIT_NO_GEN)
+ 18. mata: optimize_init_argument(S3, 4, GEN_SIZE)
+ 19. mata: optimize_init_argument(S3, 5, LOG_K)
+ 20. mata: optimize_init_argument(S3, 6, LOG_G)
+ 21. 
+. // Minimize Criterion
+. 
+. mata: p3=optimize(S3)
+ 22. mata: p3
+ 23. 
+. forval i=1/4 {
+ 24. 
+. mata: GEN_COSTS=exp(p3[1,1]):*(GEN_SIZE)
+ 25. mata: PREDICTED_GEN=PROFIT_GEN:>(PROFIT_NO_GEN+GEN_COSTS)
+ 26. mata: genpredvec=(mean(PREDICTED_GEN),mean(GENERATOR))
+ 27. mata: genpredvec
+ 28. mata: optimize_init_params(S3,p3)
+ 29. mata: p3=optimize(S3)
+ 30. mata: p3
+ 31. }
+ 32. 
+. 
+. mata: st_matrix("sigmas2",p3)
+ 33. 
+. 
+. 
+. mat colnames sigmas2 = sigma_0
+ 34. ereturn post sigmas2
+ 35. end
+
+. 
+. 
+. log using estimate_cost_gens_results.log, append
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014/estimate_cost_gens_results.log
+  log type:  text
+ opened on:  30 Dec 2014, 15:49:31
+
+. 
+. bootstrap , reps(50) seed(12345): gen_cost_estimator_linear
+(running gen_cost_estimator_linear on estimation sample)
+
+Warning:  Because gen_cost_estimator_linear is not an estimation command or does not set e(sample), bootstrap has no way to determine which observations are used in calculating the statistics and so
+          assumes that all observations are used.  This means that no observations will be excluded from the resampling because of missing values or other reasons.
+
+          If the assumption is not true, press Break, save the data, and drop the observations that are to be excluded.  Be sure that the dataset in memory contains only the relevant data.
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+Bootstrap results                               Number of obs      =     29257
+                                                Replications       =        50
+
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     sigma_0 |   10.94061   .0340232   321.56   0.000     10.87393     11.0073
+------------------------------------------------------------------------------
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_dec2014/estimate_cost_gens_results.log
+  log type:  text
+ closed on:  30 Dec 2014, 15:50:16
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. // Compare to Leontieff Version
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. //------------------------------------------------------------------------------------------------------------
+. 
+. cd ..
+/Users/ac418/Dropbox/India_Power_Shortages/matlab
+
+. cd simulation_asi_inputs_oct2014_leontieff
+/Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_oct2014_leontieff
+
+. // Generator 
+. 
+. global graphit=1
+
+. global p_e_s=7
+
+. global filename="ASI_Prediction2005_7.csv"
+
+. clear
+
+. insheet using $filename
+(45 vars, 33830 obs)
+
+. 
+. 
+. g kshare_Y=fcapclose/grsale_defl
+
+.                * trim outliers
+.                replace kshare_Y = . if kshare_Y>20 //
+(68 real changes made, 68 to missing)
+
+. 
+. cap drop if $droplist
+
+. //noisily des
+. foreach x of varlist year-y_no_generator {
+  2. destring `x', replace force
+  3. } 
+year already numeric; no replace
+delta_psp already numeric; no replace
+delta_pdpm already numeric; no replace
+k already numeric; no replace
+alpha_m already numeric; no replace
+alpha_l already numeric; no replace
+alpha_k already numeric; no replace
+omega already numeric; no replace
+gamma_g_med already numeric; no replace
+gamma_s_med already numeric; no replace
+zero_generation_flag already numeric; no replace
+p already numeric; no replace
+p_m already numeric; no replace
+p_l already numeric; no replace
+y_shortage already numeric; no replace
+y_no_shortage already numeric; no replace
+m_shortage already numeric; no replace
+m_no_shortage already numeric; no replace
+l_shortage already numeric; no replace
+l_no_shortage already numeric; no replace
+e_self_shortage already numeric; no replace
+e_self_no_shortage already numeric; no replace
+e_grid_shortage already numeric; no replace
+e_grid_no_shortage already numeric; no replace
+pctshortage already numeric; no replace
+messedupcompute already numeric; no replace
+y_shortage_prime already numeric; no replace
+y_no_shortage_prime already numeric; no replace
+profit_generator already numeric; no replace
+profit_no_generator already numeric; no replace
+profit_no_shortages already numeric; no replace
+snic already numeric; no replace
+panelgroup already numeric; no replace
+scheme_dummy already numeric; no replace
+grsale_defl already numeric; no replace
+totpersons already numeric; no replace
+qeleccons already numeric; no replace
+fcapclose already numeric; no replace
+matls_defl already numeric; no replace
+y_no_generator already numeric; no replace
+
+. 
+. //---------------------------------------------------------------------------------------
+. // 0) Prep Work
+. //---------------------------------------------------------------------------------------
+. 
+. cap destring e_grid_no_generator, replace force
+
+. cap destring e_grid_generator, replace force
+
+. 
+. 
+. sum delta_psp, meanonly
+
+. scalar shortage=r(mean)
+
+. 
+. drop if messedupcompute==-2
+(0 observations deleted)
+
+. 
+. //---------------------------------------------------------------------------------------
+. // 1) Dollar Per Megawatt to make indifference between generator and no-generator
+. //---------------------------------------------------------------------------------------
+. replace e_self_shortage=e_self_shortage/$p_e_s
+(18415 real changes made)
+
+. replace e_self_no_shortage=e_self_no_shortage/$p_e_s
+(0 real changes made)
+
+. 
+. replace e_grid_shortage=e_grid_shortage/$p_e_g
+(33829 real changes made)
+
+. replace e_grid_no_shortage=e_grid_no_shortage/$p_e_g
+(33829 real changes made)
+
+. 
+. gen total_power=e_self_shortage + e_grid_shortage
+
+. 
+. // Size of Required Generator
+. gen gen_size= total_power/($hours_prod)
+(87 missing values generated)
+
+. 
+. 
+. //---------------------------------------------------------------------------------------
+. // 1.5) Profits of a Generator, Cost of These
+. //---------------------------------------------------------------------------------------
+. gen profit_no_shortage=y_no_shortage-p_m * m_no_shortage -p_l *  l_no_shortage-$p_e_g* e_grid_no_shortage-$p_e_s* e_self_no_shortage
+
+. gen profit_shortage=y_shortage-p_m* m_shortage-p_l* l_shortage-$p_e_g* e_grid_shortage-$p_e_s* e_self_shortage
+
+. 
+. gen has_gen=(zero_generation_flag==1)
+
+. 
+. 
+. gen log_gen_size=log(gen_size)
+(88 missing values generated)
+
+. reg zero_generation_flag log_gen_size 
+
+      Source |       SS       df       MS              Number of obs =   33742
+-------------+------------------------------           F(  1, 33740) = 2242.60
+       Model |  520.649219     1  520.649219           Prob > F      =  0.0000
+    Residual |  7833.18402 33740   .23216313           R-squared     =  0.0623
+-------------+------------------------------           Adj R-squared =  0.0623
+       Total |  8353.83323 33741  .247587008           Root MSE      =  .48183
+
+------------------------------------------------------------------------------
+zero_gener~g |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+log_gen_size |    .028533   .0006025    47.36   0.000      .027352     .029714
+       _cons |     .38448   .0043565    88.25   0.000     .3759412    .3930189
+------------------------------------------------------------------------------
+
+. 
+. gen log_k=log(k)
+
+. mata: LOG_K=st_data(.,("log_k"))
+
+. mata: LOG_G=st_data(.,("log_gen_size"))
+
+. 
+. 
+. // Show these
+. mata: GENERATOR=st_data(.,("has_gen"))
+
+. mata: cov_data_k=variance((GENERATOR,LOG_K))
+
+. mata: cov_data_k[2,1]
+  .5353222581
+
+. mata: cov_data_g=variance((GENERATOR,LOG_G))
+
+. mata: cov_data_g[2,1]
+  .5408038937
+
+. mata: mean(GENERATOR)
+  .5496896246
+
+. 
+. 
+. 
+. log using estimate_cost_gens_results.log, append
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_oct2014_leontieff/estimate_cost_gens_results.log
+  log type:  text
+ opened on:  30 Dec 2014, 15:50:17
+
+. 
+. disp("Leontieff Version")
+Leontieff Version
+
+. 
+. bootstrap , reps(50) seed(12345): gen_cost_estimator
+(running gen_cost_estimator on estimation sample)
+
+Warning:  Because gen_cost_estimator is not an estimation command or does not set e(sample), bootstrap has no way to determine which observations are used in calculating the statistics and so
+          assumes that all observations are used.  This means that no observations will be excluded from the resampling because of missing values or other reasons.
+
+          If the assumption is not true, press Break, save the data, and drop the observations that are to be excluded.  Be sure that the dataset in memory contains only the relevant data.
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+Bootstrap results                               Number of obs      =     33830
+                                                Replications       =        50
+
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    sigma_0, |   9.276887   1.318154     7.04   0.000     6.693352    11.86042
+     sigma_1 |   .8053059   .0475102    16.95   0.000     .7121877    .8984242
+------------------------------------------------------------------------------
+
+. 
+. bootstrap , reps(50) seed(12345): gen_cost_estimator_linear
+(running gen_cost_estimator_linear on estimation sample)
+
+Warning:  Because gen_cost_estimator_linear is not an estimation command or does not set e(sample), bootstrap has no way to determine which observations are used in calculating the statistics and so
+          assumes that all observations are used.  This means that no observations will be excluded from the resampling because of missing values or other reasons.
+
+          If the assumption is not true, press Break, save the data, and drop the observations that are to be excluded.  Be sure that the dataset in memory contains only the relevant data.
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+Bootstrap results                               Number of obs      =     33830
+                                                Replications       =        50
+
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     sigma_0 |   8.104721   .0279043   290.45   0.000      8.05003    8.159412
+------------------------------------------------------------------------------
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/ac418/Dropbox/India_Power_Shortages/matlab/simulation_asi_inputs_oct2014_leontieff/estimate_cost_gens_results.log
+  log type:  text
+ closed on:  30 Dec 2014, 15:53:14
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+. 
+. 
+. matrix cost_linear=e(b),1
+
+. 
+. // Generator versus other components
+. gen generator_cost1=exp(cost_not_linear[1,1])*gen_size^cost_not_linear[1,2]
+(87 missing values generated)
+
+. 
+. // New way to do it
+. gen buy_generator1=(profit_generator-profit_no_generator)>generator_cost1
+
+. 
+. sum buy_generator1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+buy_genera~1 |     33830    .1348507    .3415691          0          1
+
+. 
+. // Generator versus other components
+. gen generator_cost2=exp(cost_linear[1,1])*gen_size
+(87 missing values generated)
+
+. 
+. // New way to do it
+. gen buy_generator2=(profit_generator-profit_no_generator)>generator_cost2
+
+. 
+. 
+. lpoly buy_generator2 log_gen_size if log_gen_size>0 & log_gen_size<20
+
+. 
+. lpoly buy_generator1 log_gen_size if log_gen_size>0 & log_gen_size<20
+
+. 
+. lpoly has_gen log_gen_size if log_gen_size>0 & log_gen_size<20
+
+. 
+. 
+end of do-file

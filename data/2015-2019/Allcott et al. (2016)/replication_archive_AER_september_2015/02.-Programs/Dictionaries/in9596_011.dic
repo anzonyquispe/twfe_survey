@@ -1,0 +1,26 @@
+dictionary using 95-96/P9596011.C {
+
+_column(1)	nic87		%4.0f	"Industry - NIC-87 Industry Code"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+
+_column(13)	recordcat	%3.0f	"Record Category"
+_column(16)	linkcode	%3.0f	"Link Code"
+
+_column(24)	permid		%5.0f	"Permanent Serial No.
+
+_column(29)	numfact  	%3.0f  "No. of Units"
+_column(32)     statedistblk        %6.0f        "State/Dist/Block"
+_column(43)     ruralurbancode        %1.0f        "R/U/M Code"
+
+_column(45)  	inityr    	%4.0f 	"Year of Initial Production "
+_column(49)     orgcode        %1.0f        "Type of Organisation"
+_column(50)     owncode        %1.0f        "Type of Ownership"
+
+_column(63)	opclcode	%1.0f  "Open-Close Code"
+
+_column(133)	mult		%3.0f	"Multiplier"
+
+};
+

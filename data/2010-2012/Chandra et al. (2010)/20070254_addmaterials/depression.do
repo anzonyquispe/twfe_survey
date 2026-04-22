@@ -1,0 +1,1 @@
+replace specificdrug=1 if (class ==25| class ==32| class ==33| class ==51) & depression==1

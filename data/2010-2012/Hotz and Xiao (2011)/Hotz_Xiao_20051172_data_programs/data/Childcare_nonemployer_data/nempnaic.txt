@@ -1,0 +1,467 @@
+00      All nonemployer sectors 
+11      Forestry, fishing, hunting, and agricultural support services (NAICS 113-115)
+113     Forestry and logging
+114     Fishing, hunting and trapping
+1141    Fishing
+11411   Fishing
+1142    Hunting and trapping
+11421   Hunting and trapping
+115     Support activities for agriculture and forestry
+1151    Support activities for crop production
+11511   Support activities for crop production
+1152    Support activities for animal production
+11521   Support activities for animal production
+1153    Support activities for forestry
+11531   Support activities for forestry
+21      Mining
+211     Oil and gas extraction
+2111    Oil and gas extraction
+21111   Oil and gas extraction
+212     Mining (except oil and gas)
+2121    Coal mining
+21211   Coal mining
+2122    Metal ore mining
+2123    Nonmetallic mineral mining and quarrying
+213     Support activities for mining
+2131    Support activities for mining
+21311   Support activities for mining
+22      Utilities
+221     Utilities
+23      Construction
+233     Building, developing, and general contracting
+2331    Land subdivision and land development
+23311   Land subdivision and land development
+2332    Residential building construction
+2333    Nonresidential building construction
+234     Heavy construction
+2341    Highway, street, bridge, and tunnel construction
+2349    Other heavy construction
+235     Special trade contractors
+2351    Plumbing, heating, and air-conditioning contractors
+23511   Plumbing, heating, and air-conditioning contractors
+2352    Painting and wall covering contractors
+23521   Painting and wall covering contractors
+2353    Electrical contractors
+23531   Electrical contractors
+2354    Masonry, drywall, insulation, and tile contractors
+2355    Carpentry and floor contractors
+2356    Roofing, siding, and sheet metal contractors
+23561   Roofing, siding, and sheet metal contractors
+2357    Concrete contractors
+23571   Concrete contractors
+2358    Water well drilling contractors
+23581   Water well drilling contractors
+2359    Other special trade contractors
+311     Food manufacturing
+3111    Animal food manufacturing
+31111   Animal food manufacturing
+3112    Grain and oilseed milling
+3113    Sugar and confectionery product manufacturing
+3114    Fruit and vegetable preserving and specialty food manufacturing
+3115    Dairy product manufacturing
+3116    Meat product manufacturing
+31161   Animal slaughtering and processing
+3117    Seafood product preparation and packaging
+31171   Seafood product preparation and packaging
+3118    Bakeries and tortilla manufacturing
+3119    Other food manufacturing
+312     Beverage and tobacco product manufacturing
+313     Textile mills
+31-33   Manufacturing
+314     Textile product mills
+315     Apparel manufacturing
+316     Leather and allied product manufacturing
+3161    Leather and hide tanning and finishing
+31611   Leather and hide tanning and finishing
+3162    Footwear manufacturing
+31621   Footwear manufacturing
+3169    Other leather and allied product manufacturing
+31699   Other leather and allied product manufacturing
+321     Wood product manufacturing
+322     Paper manufacturing
+323     Printing and related support activities
+3231    Printing and related support activities
+324     Petroleum and coal products manufacturing
+3241    Petroleum and coal products manufacturing
+325     Chemical manufacturing
+3251    Basic chemical manufacturing
+3252    Resin, synthetic rubber, and artificial and synthetic fibers and filaments manufacturing
+3253    Pesticide, fertilizer, and other agricultural chemical manufacturing
+3254    Pharmaceutical and medicine manufacturing
+32541   Pharmaceutical and medicine manufacturing
+3255    Paint, coating, and adhesive manufacturing
+3256    Soap, cleaning compound, and toilet preparation manufacturing
+3259    Other chemical product manufacturing
+326     Plastics and rubber products manufacturing
+327     Nonmetallic mineral product manufacturing
+3271    Clay product and refractory manufacturing
+3272    Glass and glass product manufacturing
+32721   Glass and glass product manufacturing
+3273    Cement and concrete product manufacturing
+3274    Lime and gypsum product manufacturing
+3279    Other nonmetallic mineral product manufacturing
+331     Primary metal manufacturing
+332     Fabricated metal product manufacturing
+333     Machinery manufacturing
+334     Computer and electronic product manufacturing
+335     Electrical equipment, appliance, and component manufacturing
+336     Transportation equipment manufacturing
+337     Furniture and related product manufacturing
+339     Miscellaneous manufacturing
+3391    Medical equipment and supplies manufacturing
+33911   Medical equipment and supplies manufacturing
+3399    Other miscellaneous manufacturing
+42      Wholesale trade
+421     Wholesale trade, durable goods
+4211    Motor vehicle and motor vehicle parts and supplies wholesalers
+4212    Furniture and home furnishings wholesalers
+4213    Lumber and other construction materials wholesalers
+4214    Professional and commercial equipment and supplies wholesalers
+4215    Metal and mineral (except petroleum) wholesalers
+4216    Electrical goods wholesalers
+4217    Hardware, and plumbing and heating equipment and supplies wholesalers
+4218    Machinery, equipment, and supplies wholesalers
+4219    Miscellaneous durable goods wholesalers
+42191   Sporting and recreational goods and supplies wholesalers
+42192   Toy and hobby goods and supplies wholesalers
+42193   Recyclable material wholesalers
+42194   Jewelry, watch, precious stone, and precious metal wholesalers
+42199   Other miscellaneous durable goods wholesalers
+422     Wholesale trade, nondurable goods
+4221    Paper and paper product wholesalers
+4222    Drugs and druggists' sundries wholesalers
+42221   Drugs and druggists' sundries wholesalers
+4223    Apparel, piece goods, and notions wholesalers
+4224    Grocery and related product wholesalers
+4225    Farm product raw material wholesalers
+4226    Chemical and allied products wholesalers
+4227    Petroleum and petroleum products wholesalers
+4228    Beer, wine, and distilled alcoholic beverage wholesalers
+4229    Miscellaneous nondurable goods wholesalers
+42291   Farm supplies wholesalers
+42292   Book, periodical and newspaper wholesalers
+42293   Flowers, nursery stock, and florists' supplies wholesalers
+42294   Tobacco and tobacco product wholesalers
+42295   Paint, varnish, and supplies wholesalers
+42299   Other miscellaneous nondurable goods wholesalers
+441     Motor vehicle and parts dealers
+4411    Automobile dealers
+44112   Used car dealers
+4412    Other motor vehicle dealers
+44121   Recreational vehicle dealers
+44122   Motorcycle, boat, and other motor vehicle dealers
+441221  Motorcycle dealers
+441222  Boat dealers
+441229  All other motor vehicle dealers
+4413    Automotive parts, accessories, and tire stores
+442     Furniture and home furnishings stores
+4421    Furniture stores
+44211   Furniture stores
+4422    Home furnishings stores
+443     Electronics and appliance stores
+4431    Electronics and appliance stores
+44311   Appliance, television, and other electronics stores
+443111  Household appliance stores
+443112  Radio, television, and other electronics stores
+44312   Computer and software stores
+44313   Camera and photographic supplies stores
+444     Building material and garden equipment and supplies dealers
+4441    Building material and supplies dealers
+44411   Home centers
+44412   Paint and wallpaper stores
+44413   Hardware stores
+44419   Other building material dealers
+4442    Lawn and garden equipment and supplies stores
+44-45   Retail trade
+445     Food and beverage stores
+4451    Grocery stores
+4452    Specialty food stores
+44521   Meat markets
+44522   Fish and seafood markets
+44523   Fruit and vegetable markets
+44529   Other specialty food stores
+4453    Beer, wine, and liquor stores
+44531   Beer, wine, and liquor stores
+446     Health and personal care stores
+4461    Health and personal care stores
+44611   Pharmacies and drug stores
+44612   Cosmetics, beauty supplies, and perfume stores
+44613   Optical goods stores
+44619   Other health and personal care stores
+447     Gasoline stations
+4471    Gasoline stations
+448     Clothing and clothing accessories stores
+4481    Clothing stores
+44811   Men's clothing stores
+44812   Women's clothing stores
+44813   Children's and infants' clothing stores
+44814   Family clothing stores
+44815   Clothing accessories stores
+44819   Other clothing stores
+4482    Shoe stores
+44821   Shoe stores
+4483    Jewelry, luggage, and leather goods stores
+44831   Jewelry stores
+44832   Luggage and leather goods stores
+451     Sporting goods, hobby, book, and music stores
+4511    Sporting goods, hobby, and musical instrument stores
+45111   Sporting goods stores
+45112   Hobby, toy, and game stores
+45113   Sewing, needlework, and piece goods stores
+45114   Musical instrument and supplies stores
+4512    Book, periodical, and music stores
+45121   Book stores and news dealers
+451211  Book stores
+451212  News dealers and newsstands
+45122   Prerecorded tape, compact disc, and record stores
+452     General merchandise stores
+453     Miscellaneous store retailers
+4531    Florists
+45311   Florists
+4532    Office supplies, stationery, and gift stores
+45321   Office supplies and stationery stores
+45322   Gift, novelty, and souvenir stores
+4533    Used merchandise stores
+45331   Used merchandise stores
+4539    Other miscellaneous store retailers
+45391   Pet and pet supplies stores
+45392   Art dealers
+45393   Manufactured (mobile) home dealers
+45399   All other miscellaneous store retailers
+454     Nonstore retailers
+4541    Electronic shopping and mail-order houses
+45411   Electronic shopping and mail-order houses
+4542    Vending machine operators
+45421   Vending machine operators
+4543    Direct selling establishments
+45431   Fuel dealers
+45439   Other direct selling establishments
+481     Air transportation
+483     Water transportation
+484     Truck transportation
+4841    General freight trucking
+48411   General freight trucking, local
+48412   General freight trucking, long-distance
+4842    Specialized freight trucking
+48-49   Transportation and warehousing 
+485     Transit and ground passenger transportation
+4851    Urban transit systems
+48511   Urban transit systems
+4852    Interurban and rural bus transportation
+48521   Interurban and rural bus transportation
+4853    Taxi and limousine service
+4854    School and employee bus transportation
+48541   School and employee bus transportation
+4855    Charter bus industry
+48551   Charter bus industry
+4859    Other transit and ground passenger transportation
+48599   Other transit and ground passenger transportation
+486     Pipeline transportation
+487     Scenic and sightseeing transportation
+488     Support activities for transportation
+492     Couriers and messengers
+493     Warehousing and storage
+4931    Warehousing and storage
+51      Information
+511     Publishing industries
+512     Motion picture and sound recording industries
+5121    Motion picture and video industries
+5122    Sound recording industries
+513     Broadcasting and telecommunications
+514     Information services and data processing services
+5141    Information services
+5142    Data processing services
+51421   Data processing services
+52      Finance and insurance
+522     Credit intermediation and related activities
+5221    Depository credit intermediation
+5222    Nondepository credit intermediation
+5223    Activities related to credit intermediation
+523     Securities, commodity contracts, other financial investments, and related activities
+5231    Securities and commodity contracts intermediation and brokerage
+52311   Investment banking and securities dealing
+52312   Securities brokerage
+52313   Commodity contracts dealing
+52314   Commodity contracts brokerage
+5232    Securities and commodity exchanges
+52321   Securities and commodity exchanges
+5239    Other financial investment activities
+524     Insurance carriers and related activities
+5241    Insurance carriers
+5242    Agencies, brokerages, and other insurance related activities
+52421   Insurance agencies and brokerages
+52429   Other insurance related activities
+53      Real estate and rental and leasing
+531     Real estate
+5311    Lessors of real estate
+5312    Offices of real estate agents and brokers
+53121   Offices of real estate agents and brokers
+5313    Activities related to real estate
+53131   Real estate property managers
+53132   Offices of real estate appraisers
+53139   Other activities related to real estate
+532     Rental and leasing services
+5321    Automotive equipment rental and leasing
+5322    Consumer goods rental
+53221   Consumer electronics and appliances rental
+53222   Formal wear and costume rental
+53223   Video tape and disk rental
+53229   Other consumer goods rental
+5323    General rental centers
+53231   General rental centers
+5324    Commercial and industrial machinery and equipment rental and leasing
+533     Lessors of intangible assets, except copyrighted works
+5331    Lessors of intangible assets, except copyrighted works
+53311   Lessors of intangible assets, except copyrighted works
+54      Professional, scientific, and technical services
+541     Professional, scientific, and technical services
+5411    Legal services
+5412    Accounting, tax return preparation , bookkeeping, & payroll services
+54121   Accounting, tax return preparation, bookkeeping, and payroll services
+541211  Offices of certified public accountants
+541213  Tax return preparation services
+541214  Payroll services
+541219  Other accounting services
+5413-a  Architectural, engineering, and related services
+54131   Architectural services
+54132   Landscape architectural services
+54133   Engineering services
+54134   Drafting services
+54135   Building inspection services
+54136   Geophysical surveying and mapping services
+54137   Surveying and mapping (except geophysical) services
+54138   Testing laboratories
+5414    Specialized design services
+5415    Computer systems design and related services
+54151   Computer systems design and related services
+5416    Management, scientific, and technical consulting services
+5417    Scientific research and development services
+5418    Advertising and related services
+5419    Other professional, scientific, and technical services
+54191   Marketing research and public opinion polling
+54192   Photographic services
+54193   Translation and interpretation services
+54194   Veterinary services
+54199   All other professional, scientific, and technical services
+56      Administrative and support and waste management and remediation services
+561     Administrative and support services
+5611    Office administrative services
+56111   Office administrative services
+5612    Facilities support services
+56121   Facilities support services
+5613    Employment services
+5614    Business support services
+56141   Document preparation services
+56142   Telephone call centers
+56143   Business service centers
+56144   Collection agencies
+56145   Credit bureaus
+56149   Other business support services
+5615    Travel arrangement and reservation services
+5616    Investigation and security services
+5617-a  Services to building and dwellings (including landscaping services)
+56171   Exterminating and pest control services
+56172   Janitorial services
+56173   Landscaping services
+56174   Carpet and upholstery cleaning services
+56179   Other services to buildings and dwellings
+5619    Other support services
+562     Waste management and remediation services
+61      Educational services
+611     Educational services
+62      Health care and social assistance
+621     Ambulatory health care services
+6211    Offices of physicians
+62111   Offices of physicians
+621111  Offices of physicians (except mental health specialists)
+621112  Offices of physicians, mental health specialists
+6212    Offices of dentists
+62121   Offices of dentists
+6213    Offices of other health practitioners
+62131   Offices of chiropractors
+62132   Offices of optometrists
+62133   Offices of mental health practitioners (except physicians)
+62134   Offices of physical, occupational, and speech therapists and audiologists
+62139   Offices of all other health practitioners
+621391  Offices of podiatrists
+621399  Offices of all other miscellaneous health practitioners
+6214    Outpatient care centers
+6215    Medical and diagnostic laboratories
+62151   Medical and diagnostic laboratories
+6216    Home health care services
+62161   Home health care services
+6219    Other ambulatory health care services
+623     Nursing and residential care facilities
+624     Social assistance
+6241    Individual and family services
+6242    Community food and housing and emergency and other relief services
+6243    Vocational rehabilitation services
+62431   Vocational rehabilitation services
+6244    Child day care services
+62441   Child day care services
+71      Arts, entertainment, and recreation
+711     Performing arts, spectator sports, and related industries
+7111    Performing arts companies
+7112    Spectator sports
+71121   Spectator sports
+7113    Promoters of performing arts, sports, and similar events
+7114    Agents and managers for artists, athletes, entertainers and other public figures
+71141   Agents and managers for artists, athletes, entertainers and other public figures
+7115    Independent artists, writers, and performers
+71151   Independent artists, writers, and performers
+712     Museums, historical sites, and similar institutions
+7121    Museums, historical sites, and similar institutions
+713     Amusement, gambling, and recreation industries
+7131    Amusement parks and arcades
+7132    Gambling industries
+7139    Other amusement and recreation services
+72      Accommodation and foodservices
+721     Accommodation
+7211    Traveler accommodation
+7212    RV (recreational vehicle) parks and recreational camps
+72121   RV (recreational vehicle) parks and recreational camps
+7213    Rooming and boarding houses
+72131   Rooming and boarding houses
+722     Foodservices and drinking places
+7221    Full-service restaurants
+72211   Full-service restaurants
+7222    Limited-service eating places
+72221   Limited-service eating places
+7223    Special foodservices
+7224    Drinking places (alcoholic beverages)
+72241   Drinking places (alcoholic beverages)
+81      Other services (except public administration)
+811     Repair and maintenance
+8111    Automotive repair and maintenance
+81111   Automotive mechanical and electrical repair and maintenance
+81112   Automotive body, paint, interior, and glass repair
+81119   Other automotive repair and maintenance
+8112    Electronic and precision equipment repair and maintenance
+81121   Electronic and precision equipment repair and maintenance
+8113    Commercial and industrial machinery and equipment (except automotive and electronic) repair and maintenance
+81131   Commercial and industrial machinery and equipment (except automotive and electronic) repair and maintenance
+8114    Personal and household goods repair and maintenance
+81141   Home and garden equipment and appliance repair and maintenance
+81142   Reupholstery and furniture repair
+81143   Footwear and leather goods repair
+81149   Other personal and household goods repair and maintenance
+812     Personal and laundry services
+8121    Personal care services
+81211   Hair, nail, and skin care services
+812111  Barber shops
+812112  Beauty shops
+812113  Nail salons
+81219   Other personal care services
+8122    Death care services
+81221   Funeral homes and funeral services
+81222   Cemeteries and crematories
+8123    Drycleaning and laundry services
+81231   Coin-operated laundries and drycleaners
+81232   Drycleaning and laundry services (except coin-operated)
+81233   Linen and uniform supply
+8129    Other personal services
+81291   Pet care (except veterinary) services
+81292   Photofinishing
+81293   Parking lots and garages
+81299   All other personal services
+813     Religious, grantmaking, civic, and professional and similar organizations

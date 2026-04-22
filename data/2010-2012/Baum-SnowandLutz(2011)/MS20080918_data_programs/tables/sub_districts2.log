@@ -1,0 +1,565 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\sub_districts2.log
+  log type:  text
+ opened on:  17 Nov 2010, 16:11:39
+
+. 
+. ************ 1.  Establish Sample  **********************
+. 
+. use ../data/dis70panx.dta
+
+. keep if major==1
+(310 observations deleted)
+
+. drop if imp==.
+(0 observations deleted)
+
+. replace imp = imp+1900
+(368 real changes made)
+
+. keep msa year imp south area marea
+
+. compress
+year was float now int
+msa was float now int
+imp was float now int
+south was float now byte
+
+. sort msa year
+
+. save temp3.dta, replace
+file temp3.dta saved
+
+. 
+. use ../data/tractpanx.dta
+
+. 
+. ** Drop tract area
+. drop area
+
+. 
+. ** Drop tracts for which we don't know location
+. drop if cbd_dis==999999
+(196 observations deleted)
+
+. 
+. ** Put cbd-dis in KM
+. replace cbd_dis = cbd_dis/1000
+(126773 real changes made)
+
+. sort msa year
+
+. merge msa year using temp3.dta
+variables msa year do not uniquely identify observations in the master data
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     38,819       30.62       30.62
+          2 |         17        0.01       30.63
+          3 |     87,954       69.37      100.00
+------------+-----------------------------------
+      Total |    126,790      100.00
+
+. ** Merge=1 is MSAs without major plans, Merge=2 is untracted MSA/years
+. keep if _merge==3
+(38836 observations deleted)
+
+. drop _merge
+
+. 
+. *** Fix data a bit and set sample
+. drop if black+white+other==0
+(537 observations deleted)
+
+. 
+. keep if ccdis70==0
+(38666 observations deleted)
+
+. 
+. *** Define pop variable 
+. gen pop = white+black
+
+. 
+. keep if year==1970
+(37423 observations deleted)
+
+. 
+. ********** 3. Create Additional Variables ******************
+. 
+. replace publicelemhsw = publicelemw+publichsw if year~=1990
+(11321 real changes made)
+
+. replace publicelemhsb = publicelemb+publichsb if year~=1990
+(7082 real changes made)
+
+. replace privatelemhsw = privatelemw+privatehsw if year~=1990
+(11321 real changes made)
+
+. replace privatelemhsb = privatelemb+privatehsb if year~=1990
+(7077 real changes made)
+
+. 
+. replace publicelemhsb = 0 if publicelemhsb==. & pop59b+pop1014b+pop1519b==0
+(0 real changes made)
+
+. replace publicelemhsb = 0 if publicelemhsb==. & black==0
+(0 real changes made)
+
+. replace privatelemhsb = 0 if privatelemhsb==. & pop59b+pop1014b+pop1519b==0
+(0 real changes made)
+
+. replace privatelemhsb = 0 if privatelemhsb==. & black==0
+(0 real changes made)
+
+. replace publicelemhsw = 0 if publicelemhsw==. & pop59w+pop1014w+pop1519w==0
+(0 real changes made)
+
+. replace publicelemhsw = 0 if publicelemhsw==. & white==0
+(0 real changes made)
+
+. replace privatelemhsw = 0 if privatelemhsw==. & pop59w+pop1014w+pop1519w==0
+(0 real changes made)
+
+. replace privatelemhsw = 0 if privatelemhsw==. & white==0
+(0 real changes made)
+
+. 
+. *** Restrict sample to tracts with data for both whites and blacks
+. drop if publicelemhsw==.|publicelemhsb==.
+(0 observations deleted)
+
+. 
+. sort msa sdu70 sds70
+
+. collapse (sum) publicelemhsw publicelemhsb, by(msa year south sdu70 sds70)
+
+. 
+. *** Drop districts so small we don't observe their codes (usually multiple districts)
+. drop if sdu70==. & sds70==.
+(30 observations deleted)
+
+. 
+. *** Fraction of District that is white
+. gen exposw2b = publicelemhsb/(publicelemhsw+publicelemhsb)
+
+. sum exposw2b, detail
+
+                          exposw2b
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs                1787
+25%            0              0       Sum of Wgt.        1787
+
+50%     .0042609                      Mean           .0533744
+                        Largest       Std. Dev.      .1228773
+75%     .0409789       .8661298
+90%     .1695735       .8706129       Variance       .0150988
+95%     .2812332       .9376906       Skewness       3.734548
+99%     .6699065       .9864078       Kurtosis        19.2551
+
+. 
+. gen exposb2w = 1-exposw2b
+
+. 
+. *** Dummy for Exposure < .1
+. gen D = (exposw2b<.1)
+
+. 
+. gen N = 1
+
+. 
+. *** Drop districts with 0 students as not an option
+. drop if publicelemhsw==0 & publicelemhsb==0
+(0 observations deleted)
+
+. 
+. save temp.dta, replace
+(note: file temp.dta not found)
+file temp.dta saved
+
+. 
+. collapse (rawsum) sumD=D N publicelemhsw publicelemhsb (mean) mnD=D exposw2b [aw=publicelemhsw], by(msa year south)
+
+. 
+. gen frdis = sumD/N
+
+. 
+. *** Fraction of suburban districts >90% White
+. sum frdis, detail
+
+                            frdis
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs                  77
+25%           .5              0       Sum of Wgt.          77
+
+50%     .8823529                      Mean           .7119426
+                        Largest       Std. Dev.      .3766538
+75%            1              1
+90%            1              1       Variance       .1418681
+95%            1              1       Skewness      -1.114593
+99%            1              1       Kurtosis       2.574193
+
+. sum frdis if south==0, detail
+
+                            frdis
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .7118644       .7118644
+ 5%     .7777778       .7777778
+10%     .8333333       .7777778       Obs                  43
+25%     .8648649       .8275862       Sum of Wgt.          43
+
+50%      .952381                      Mean           .9312866
+                        Largest       Std. Dev.      .0779152
+75%            1              1
+90%            1              1       Variance       .0060708
+95%            1              1       Skewness       -.911341
+99%            1              1       Kurtosis       2.876707
+
+. sum frdis if south==1, detail
+
+                            frdis
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs                  34
+25%            0              0       Sum of Wgt.          34
+
+50%     .3690476                      Mean            .434537
+                        Largest       Std. Dev.      .4207412
+75%     .8823529              1
+90%            1              1       Variance       .1770232
+95%            1              1       Skewness       .2010392
+99%            1              1       Kurtosis       1.361105
+
+. *** Expected Probability a White Public Student in a >90% White District
+. sum mnD, detail
+
+                          (mean) D
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs                  77
+25%        .6107              0       Sum of Wgt.          77
+
+50%     .9114529                      Mean           .7191003
+                        Largest       Std. Dev.      .3863389
+75%            1              1
+90%            1              1       Variance       .1492577
+95%            1              1       Skewness      -1.155041
+99%            1              1       Kurtosis       2.565684
+
+. sum mnD if south==0, detail
+
+                          (mean) D
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .7773099       .7773099
+ 5%     .7977214        .777643
+10%     .8252011       .7977214       Obs                  43
+25%     .8611052       .7992239       Sum of Wgt.          43
+
+50%     .9616607                      Mean           .9310523
+                        Largest       Std. Dev.      .0764929
+75%            1              1
+90%            1              1       Variance       .0058512
+95%            1              1       Skewness      -.6369364
+99%            1              1       Kurtosis       1.919749
+
+. sum mnD if south==1, detail
+
+                          (mean) D
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs                  34
+25%            0              0       Sum of Wgt.          34
+
+50%     .3476685                      Mean           .4510434
+                        Largest       Std. Dev.      .4513639
+75%     .9695178              1
+90%            1              1       Variance       .2037294
+95%            1              1       Skewness       .1600756
+99%            1              1       Kurtosis       1.189251
+
+. *** Average Fraction White across White Public Students
+. sum exposw2b, detail
+
+                       (mean) exposw2b
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     .0021588        .000657
+10%     .0043588       .0017956       Obs                  77
+25%     .0146997       .0021588       Sum of Wgt.          77
+
+50%     .0386103                      Mean           .0862093
+                        Largest       Std. Dev.      .1257686
+75%     .1029935        .378378
+90%     .2480175        .408718       Variance       .0158177
+95%      .378378       .4455945       Skewness       2.622214
+99%     .7210342       .7210342       Kurtosis       11.12105
+
+. sum exposw2b if south==0, detail
+
+                       (mean) exposw2b
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%      .000657        .000657
+ 5%     .0021588       .0017956
+10%     .0024409       .0021588       Obs                  43
+25%     .0094148       .0024259       Sum of Wgt.          43
+
+50%     .0219308                      Mean           .0249787
+                        Largest       Std. Dev.      .0190822
+75%     .0387668       .0568042
+90%     .0536645       .0583366       Variance       .0003641
+95%     .0583366       .0665789       Skewness       .6565882
+99%     .0724066       .0724066       Kurtosis       2.592545
+
+. sum exposw2b if south==1, detail
+
+                       (mean) exposw2b
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     .0050569       .0050569
+10%     .0163931       .0113001       Obs                  34
+25%     .0404527       .0163931       Sum of Wgt.          34
+
+50%     .1108818                      Mean            .163648
+                        Largest       Std. Dev.      .1578021
+75%     .2163942        .378378
+90%      .378378        .408718       Variance       .0249015
+95%     .4455945       .4455945       Skewness       1.562963
+99%     .7210342       .7210342       Kurtosis       5.798707
+
+. 
+. drop public*
+
+. 
+. sort msa year
+
+. save sub70.dta, replace
+(note: file sub70.dta not found)
+file sub70.dta saved
+
+. 
+. use temp.dta, clear
+
+. 
+. collapse (mean) exposb2w [aw=publicelemhsb], by(msa year south)
+
+. 
+. sort msa year
+
+. merge msa year using sub70.dta
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          2 |          1        1.30        1.30
+          3 |         76       98.70      100.00
+------------+-----------------------------------
+      Total |         77      100.00
+
+. replace exposb2w = 0 if _merge==2
+(1 real change made)
+
+. drop _merge
+
+. 
+. sort msa year
+
+. merge msa year using ../data/dis70panx.dta
+year was int now float
+msa was int now float
+south was byte now float
+
+. tab _merge
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          2 |        601       88.64       88.64
+          3 |         77       11.36      100.00
+------------+-----------------------------------
+      Total |        678      100.00
+
+. keep if _merge==3
+(601 observations deleted)
+
+. 
+. gen CCexposw2b = (publicelemb+publichsb)/(publicelemw+publichsw+publicelemb+publichsb)
+
+. 
+. *** City - Suburban Exposure of whites to blacks
+. gen Dexposw2b = CCexposw2b-exposw2b
+
+. sum Dexposw2b, detail
+
+                          Dexposw2b
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.3768374      -.3768374
+ 5%    -.0442674      -.1372543
+10%     .0062881      -.1174127       Obs                  77
+25%     .0977136      -.0442674       Sum of Wgt.          77
+
+50%     .1835543                      Mean           .2119928
+                        Largest       Std. Dev.      .1928915
+75%     .3133144       .5819921
+90%     .5269278       .6046048       Variance       .0372071
+95%     .5819921       .6456729       Skewness       .2617852
+99%     .6969402       .6969402       Kurtosis       3.536872
+
+. sum Dexposw2b if south==0, detail
+
+                          Dexposw2b
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.0046444      -.0046444
+ 5%     .0657037       .0418228
+10%     .0693512       .0657037       Obs                  43
+25%      .117968        .066657       Sum of Wgt.          43
+
+50%     .2405438                      Mean           .2643067
+                        Largest       Std. Dev.      .1740857
+75%     .3815536       .5450004
+90%     .5334685       .5819921       Variance       .0303058
+95%     .5819921       .6046048       Skewness        .578216
+99%     .6456729       .6456729       Kurtosis       2.271534
+
+. sum Dexposw2b if south==1, detail
+
+                          Dexposw2b
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.3768374      -.3768374
+ 5%    -.1372543      -.1372543
+10%    -.0442674      -.1174127       Obs                  34
+25%     .0334688      -.0442674       Sum of Wgt.          34
+
+50%     .1276164                      Mean           .1458311
+                        Largest       Std. Dev.      .1975906
+75%     .2453956       .4116731
+90%     .4116731       .4649128       Variance        .039042
+95%     .5269278       .5269278       Skewness       .2985978
+99%     .6969402       .6969402       Kurtosis       4.492111
+
+. l mname exposw2b CCexposw2b if Dexposw2b<0
+
+     +--------------------------------------+
+     |          mname   exposw2b   CCexp~2b |
+     |--------------------------------------|
+  5. |    Baton Rouge   .7210342   .3441968 |
+ 15. |   Columbus, GA   .4455945   .3083402 |
+ 26. |     Greenville   .2142135   .2073386 |
+ 47. |         Odessa   .1033929   .0591255 |
+ 50. |        Orlando   .2163942   .1758105 |
+     |--------------------------------------|
+ 63. |       San Jose   .0203013   .0156568 |
+ 77. | Wilmington, NC    .408718   .2913053 |
+     +--------------------------------------+
+
+. 
+. *** City - Suburban exposure of blacks to whites
+. gen Dexposb2w = (1-CCexposw2b)-exposb2w
+
+. sum Dexposb2w, detail
+
+                          Dexposb2w
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.4864642      -.4864642
+ 5%    -.4047452      -.4506496
+10%    -.3244596      -.4384556       Obs                  77
+25%    -.2282282      -.4047452       Sum of Wgt.          77
+
+50%    -.1357854                      Mean          -.1064904
+                        Largest       Std. Dev.      .2062817
+75%    -.0293851         .25106
+90%     .1174127       .2739496       Variance       .0425521
+95%       .25106       .3768374       Skewness       1.837698
+99%     .9402695       .9402695       Kurtosis       10.38611
+
+. sum Dexposb2w if south==0, detail
+
+                          Dexposb2w
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.3952544      -.3952544
+ 5%    -.3349907      -.3878821
+10%    -.2818625      -.3349907       Obs                  43
+25%    -.2486753      -.3244596       Sum of Wgt.          43
+
+50%    -.1589006                      Mean          -.1499932
+                        Largest       Std. Dev.       .136488
+75%    -.0614898      -.0198854
+90%    -.0242774        .032022       Variance        .018629
+95%      .032022        .247967       Skewness       .8930143
+99%       .25106         .25106       Kurtosis        4.48865
+
+. sum Dexposb2w if south==1, detail
+
+                          Dexposb2w
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.4864642      -.4864642
+ 5%    -.4506496      -.4506496
+10%    -.4047452      -.4384556       Obs                  34
+25%    -.1798106      -.4047452       Sum of Wgt.          34
+
+50%    -.0503637                      Mean          -.0514723
+                        Largest       Std. Dev.      .2621156
+75%     .0442674        .241243
+90%      .241243       .2739496       Variance       .0687046
+95%     .3768374       .3768374       Skewness       1.450911
+99%     .9402695       .9402695       Kurtosis       7.445748
+
+. gen CCexposb2w = 1-CCexposw2b
+
+. l mname exposb2w CCexposb2w if Dexposb2w>0
+
+     +--------------------------------------+
+     |          mname   exposb2w   CCexp~2w |
+     |--------------------------------------|
+  2. |       Amarillo          0   .9402695 |
+  5. |    Baton Rouge   .2789658   .6558032 |
+ 15. |   Columbus, GA   .4504168   .6916598 |
+ 25. |   Grand Rapids    .539567    .790627 |
+ 26. |     Greenville   .7280793   .7926614 |
+     |--------------------------------------|
+ 35. |    Los Angeles   .5072153   .7551823 |
+ 47. |         Odessa    .896607   .9408745 |
+ 48. |  Oklahoma City   .6693147   .7876166 |
+ 50. |        Orlando   .7750661   .8241895 |
+ 63. |       San Jose   .9523211   .9843432 |
+     |--------------------------------------|
+ 74. |           Waco   .5127952   .7867448 |
+ 77. | Wilmington, NC    .591282   .7086947 |
+     +--------------------------------------+
+
+. 
+. 
+. erase temp.dta
+
+. erase temp3.dta
+
+. erase sub70.dta
+
+. 
+. 
+end of do-file
+
+. exit, clear

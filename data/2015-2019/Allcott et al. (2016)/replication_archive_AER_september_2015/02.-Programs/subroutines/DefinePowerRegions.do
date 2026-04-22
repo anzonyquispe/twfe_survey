@@ -1,0 +1,6 @@
+gen Region = ""
+replace Region = "Northern" if state=="HARYANA"|state=="HIMACHAL PRADESH"|state=="JAMMU AND KASHMIR"|state=="PUNJAB"|state=="RAJASTHAN"|state=="UTTAR PRADESH"|state=="UTTARANCHAL"|state=="CHANDIGARH"|state=="DELHI"
+replace Region = "Western" if state=="GUJARAT"|state=="MADHYA PRADESH"|state=="CHHATTISGARH"|state=="MAHARASHTRA"|state=="GOA DAMAN AND DIU"|state=="DADRA AND NAGAR HAVELI"|state=="DAMAN AND DIU"
+replace Region = "Southern" if state=="ANDHRA PRADESH"|state=="KARNATAKA"|state=="KERALA"|state=="TAMIL NADU"|state=="LAKSHADWEEP"|state=="PUDUCHERRY"|state=="PONDICHERRY"
+replace Region = "Eastern" if state=="BIHAR"|state=="JHARKHAND"|state=="ORISSA"|state=="WEST BENGAL"|state=="DVC"|state=="ANDAMAN AND NICOBAR ISLANDS"|state=="SIKKIM"|state=="WEST BENGAL AND SIKKIM"
+replace Region = "North Eastern" if state=="ASSAM"|state=="MANIPUR"|state=="MEGHALAYA"|state=="NAGALAND"|state=="TRIPURA"|state=="ARUNACHAL PRADESH"|state=="MIZORAM"

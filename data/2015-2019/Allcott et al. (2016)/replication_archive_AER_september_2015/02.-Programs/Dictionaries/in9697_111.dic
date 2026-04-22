@@ -1,0 +1,21 @@
+dictionary using 96-97/P9697111.C {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+_column(16)	linkcode	%3.0f	"Link Code"
+_column(30)	ownconst	%11.0f	"own Construction-Total"
+_column(41)	workforothers	%11.0f	"Value of work done for others"
+_column(52)	servinc		%11.0f	"Receipt for non-industrial services"
+_column(63)	incrstsfg   	%11.0f	"Variation in Stock of Semi-Finished Goods"
+_column(74)	velecsold   	%11.0f	"Value of electricity sold"
+_column(85)	ownconstr	%11.0f	"Value of Own Construction"
+_column(96)	otherop		%11.0f	"Total of Other Output/Receipts"
+_column(107)	vsamecond	%11.0f	"Sale Value of goods sold in the same condition as purchased"
+
+};
+
+
+

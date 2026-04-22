@@ -1,0 +1,20 @@
+	(1)	(2)	(3)	(4)
+VARIABLES	lnwte	lnwte	lnbte	lnbte
+				
+imp_post_south		-0.12**		
+		(0.057)		
+imp_post_nonsouth		-0.02		
+		(0.045)		
+imp_post	-0.09**			
+	(0.040)			
+impost_4			0.12***	
+			(0.031)	
+impost_4_south				-0.01
+				(0.035)
+impost_4_nonsouth				0.18***
+				(0.035)
+				
+Observations	368	368	368	368
+Number of leaid	92	92	92	92
+Robust standard errors in parentheses				
+*** p<0.01, ** p<0.05, * p<0.1				

@@ -1,0 +1,375 @@
+-------------------------------------------------------------------------------------------------------------------------
+       log:  C:\research\segregation\AER-DATA\tables\figure1.log
+  log type:  text
+ opened on:  18 Nov 2010, 10:26:01
+
+. 
+. 
+. ******* 1. Ready Metro Area (Central District + Suburban) Data *********
+. 
+. use ../data/dis70panx.dta
+
+. 
+. *** Only keep MSAs for which we have 4 decades of data
+. egen minyr = min(year), by(msa)
+
+. drop if minyr==1970
+(18 observations deleted)
+
+. egen obs60 = max((year==1960 & white~=.)), by(msa)
+
+. drop if obs60==0
+(4 observations deleted)
+
+. 
+. gen pop = (white+black+other)/1000000
+
+. replace mpop = (mwhite+mblack+mother)/1000000
+(656 real changes made)
+
+. replace black = black/1000000
+(656 real changes made)
+
+. replace white = white/1000000
+(656 real changes made)
+
+. replace mblack = mblack/1000000
+mblack was long now double
+(656 real changes made)
+
+. replace mwhite = mwhite/1000000
+mwhite was long now double
+(656 real changes made)
+
+. 
+. gen rwhite = mwhite-white
+
+. gen rblack = mblack-black
+
+. gen rpop = mpop-pop
+
+. 
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1960 |        164       25.00       25.00
+       1970 |        164       25.00       50.00
+       1980 |        164       25.00       75.00
+       1990 |        164       25.00      100.00
+------------+-----------------------------------
+      Total |        656      100.00
+
+. 
+. *Enrolled Children Counts
+. gen ewhite = (publicelemw+publichsw+privatelemw+privatehsw)/1000000
+(164 missing values generated)
+
+. replace ewhite = (publicelemhsw+privatelemhsw)/1000000 if year==1990
+(164 real changes made)
+
+. gen eblack = (publicelemb+publichsb+privatelemb+privatehsb)/1000000
+(164 missing values generated)
+
+. replace eblack = (publicelemhsb+privatelemhsb)/1000000 if year==1990
+(164 real changes made)
+
+. gen epop = (publicelemt+publichst+privatelemt+privatehst)/1000000
+(164 missing values generated)
+
+. replace epop = (publicelemhst+privatelemhst)/1000000 if year==1990
+(164 real changes made)
+
+. 
+. gen emwhite = (mpublicelemw+mpublichsw+mprivatelemw+mprivatehsw)/1000000
+(164 missing values generated)
+
+. replace emwhite = (mpublicelemhsw+mprivatelemhsw)/1000000 if year==1990
+(164 real changes made)
+
+. gen emblack = (mpublicelemb+mpublichsb+mprivatelemb+mprivatehsb)/1000000
+(164 missing values generated)
+
+. replace emblack = (mpublicelemhsb+mprivatelemhsb)/1000000 if year==1990
+(164 real changes made)
+
+. gen empop = (mpublicelemt+mpublichst+mprivatelemt+mprivatehst)/1000000
+(164 missing values generated)
+
+. replace empop = (mpublicelemhst+mprivatelemhst)/1000000 if year==1990
+(164 real changes made)
+
+. 
+. gen erwhite = emwhite-ewhite 
+
+. gen erblack = emblack-eblack 
+
+. gen erpop = empop-epop 
+
+. 
+. *Private Enrolled Children Counts
+. gen pwhite = (privatelemw+privatehsw)/1000000
+(164 missing values generated)
+
+. replace pwhite = (privatelemhsw)/1000000 if year==1990
+(164 real changes made)
+
+. gen pblack = (privatelemb+privatehsb)/1000000
+(164 missing values generated)
+
+. replace pblack = (privatelemhsb)/1000000 if year==1990
+(164 real changes made)
+
+. gen ppop = (privatelemt+privatehst)/1000000
+(164 missing values generated)
+
+. replace ppop = (privatelemhst)/1000000 if year==1990
+(164 real changes made)
+
+. 
+. gen pmwhite = (mprivatelemw+mprivatehsw)/1000000
+(164 missing values generated)
+
+. replace pmwhite = (mprivatelemhsw)/1000000 if year==1990
+(164 real changes made)
+
+. gen pmblack = (mprivatelemb+mprivatehsb)/1000000
+(164 missing values generated)
+
+. replace pmblack = (mprivatelemhsb)/1000000 if year==1990
+(164 real changes made)
+
+. gen pmpop = (mprivatelemt+mprivatehst)/1000000
+(164 missing values generated)
+
+. replace pmpop = (mprivatelemhst)/1000000 if year==1990
+(164 real changes made)
+
+. 
+. gen prwhite = pmwhite-pwhite 
+
+. gen prblack = pmblack-pblack 
+
+. gen prpop = pmpop-ppop 
+
+. 
+. 
+. 
+. ************ 2. Report Metro Area Data **********************
+. 
+. ***************    Output for Figure 1  *****************************
+. *********** Data for 92 Sample Metro Areas *************************
+. keep if major==1
+(288 observations deleted)
+
+. *Sample Sizes, Pop
+. table year, contents(n pop n epop n ppop)
+
+----------------------------------------------
+     year |     N(pop)     N(epop)     N(ppop)
+----------+-----------------------------------
+     1960 |         92          92          92
+     1970 |         92          92          92
+     1980 |         92          92          92
+     1990 |         92          92          92
+----------------------------------------------
+
+. table year, contents(n rwhite n erwhite n prwhite)
+
+----------------------------------------------
+     year |  N(rwhite)  N(erwhite)  N(prwhite)
+----------+-----------------------------------
+     1960 |         92          92          92
+     1970 |         92          92          92
+     1980 |         92          92          92
+     1990 |         92          92          92
+----------------------------------------------
+
+. *Total Populations (Panel A)
+. table year, contents(sum white sum black sum pop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |      sum(white)       sum(black)         sum(pop)
+----------+--------------------------------------------------
+     1960 |         31.0171           7.2730          38.6333
+     1970 |         29.4409           9.0637          39.1116
+     1980 |         26.9897          10.5662          40.5111
+     1990 |         26.8608          11.1709          42.9023
+-------------------------------------------------------------
+
+. table year, contents(sum rwhite sum rblack sum rpop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |     sum(rwhite)      sum(rblack)        sum(rpop)
+----------+--------------------------------------------------
+     1960 |         41.0116           2.2834          43.4805
+     1970 |         51.7050           2.8183          54.9655
+     1980 |         59.2150           4.2905          66.2472
+     1990 |         65.8407           5.8168          77.4308
+-------------------------------------------------------------
+
+. *Sample Sizes, Enrolled Pop
+. table year, contents(n pop n epop n ppop)
+
+----------------------------------------------
+     year |     N(pop)     N(epop)     N(ppop)
+----------+-----------------------------------
+     1960 |         92          92          92
+     1970 |         92          92          92
+     1980 |         92          92          92
+     1990 |         92          92          92
+----------------------------------------------
+
+. table year, contents(n rwhite n erwhite n prwhite)
+
+----------------------------------------------
+     year |  N(rwhite)  N(erwhite)  N(prwhite)
+----------+-----------------------------------
+     1960 |         92          92          92
+     1970 |         92          92          92
+     1980 |         92          92          92
+     1990 |         92          92          92
+----------------------------------------------
+
+. *Enrolled Pop Counts (Panel B)
+. table year, contents(sum ewhite sum eblack sum epop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |     sum(ewhite)      sum(eblack)        sum(epop)
+----------+--------------------------------------------------
+     1960 |          5.8312           1.6469           7.5493
+     1970 |          6.0041           2.6344           8.7673
+     1980 |          3.8251           2.4858           7.2185
+     1990 |          3.4464           2.4581           7.0315
+-------------------------------------------------------------
+
+. table year, contents(sum erwhite sum erblack sum erpop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |    sum(erwhite)     sum(erblack)       sum(erpop)
+----------+--------------------------------------------------
+     1960 |          9.0106           0.5540           9.6099
+     1970 |         12.9906           0.8449          13.9396
+     1980 |         11.7940           1.2018          13.3638
+     1990 |         10.5823           1.2825          13.2018
+-------------------------------------------------------------
+
+. ****************************************************************
+. 
+. 
+. ********** 3. United States Metro Area Data & Output  *******************
+. 
+. use ../data/cntypan.dta,clear
+
+. 
+. *Population
+. replace pop = (white+black+other)/1000000
+pop was long now double
+(12551 real changes made)
+
+. replace black = black/1000000
+black was long now double
+(10558 real changes made)
+
+. replace white = white/1000000
+white was long now double
+(12547 real changes made)
+
+. 
+. *Enrolled Children Counts
+. gen ewhite = (publicelemw+publichsw+privatelemw+privatehsw)/1000000
+(5881 missing values generated)
+
+. replace ewhite = (publicelemhsw+privatelemhsw)/1000000 if year==1990
+(3141 real changes made)
+
+. gen eblack = (publicelemb+publichsb+privatelemb+privatehsb)/1000000
+(5881 missing values generated)
+
+. replace eblack = (publicelemhsb+privatelemhsb)/1000000 if year==1990
+(2825 real changes made)
+
+. gen epop = (publicelemt+publichst+privatelemt+privatehst)/1000000
+(5881 missing values generated)
+
+. replace epop = (publicelemhst+privatelemhst)/1000000 if year==1990
+(3141 real changes made)
+
+. 
+. replace privatelemhsw = privatelemhsw/1000000
+(3009 real changes made)
+
+. replace privatelemhsb = privatelemhsb/1000000
+privatelemhsb was int now float
+(1335 real changes made)
+
+. 
+. *************** Figure 1, For whole US *****************
+. *Total Pop Counts
+. table year, contents(sum white sum black sum pop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |      sum(white)       sum(black)         sum(pop)
+----------+--------------------------------------------------
+     1960 |        158.8313          18.8718         179.3228
+     1970 |        173.0562          21.6699         197.2042
+     1980 |        189.0286          26.4762         226.2276
+     1990 |        199.8271          29.9305         248.7099
+-------------------------------------------------------------
+
+. *Enrolled Pop Counts
+. *1960 enrollment data is incomplete
+. table year if year>1960, contents(sum ewhite sum eblack sum epop) format(%15.4f)
+
+-------------------------------------------------------------
+     year |     sum(ewhite)      sum(eblack)        sum(epop)
+----------+--------------------------------------------------
+     1970 |         40.6851           6.3797          47.6909
+     1980 |         34.8582           6.5467          44.0355
+     1990 |         31.5374           6.6425          42.5668
+-------------------------------------------------------------
+
+. ***************************************************************
+. 
+. clear
+
+. 
+. 
+. ******* 4. Report 1960 Enrolled pop counts from Census Microdata ******
+. 
+. use school raceg perwt using ../data/ipums/cenext60.dta
+
+. 
+. keep if school == 2
+(1360104 observations deleted)
+
+. collapse (sum) perwt, by(raceg)
+
+. 
+. replace perwt = perwt/1000000
+(7 real changes made)
+
+. ********* Table 1 Panel B, Columns 7-9 ******************
+. list
+
+     +------------------+
+     | raceg      perwt |
+     |------------------|
+  1. |     1   38.33079 |
+  2. |     2   5.001557 |
+  3. |     3    .158155 |
+  4. |     4    .071329 |
+  5. |     5    .123877 |
+     |------------------|
+  6. |     6    .053003 |
+  7. |     7    .071314 |
+     +------------------+
+
+. *********************************************************
+. 
+. 
+. log close
+       log:  C:\research\segregation\AER-DATA\tables\figure1.log
+  log type:  text
+ closed on:  18 Nov 2010, 10:26:04
+-------------------------------------------------------------------------------------------------------------------------

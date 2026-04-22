@@ -1,0 +1,20 @@
+ Volume in drive C is Windows7_OS
+ Volume Serial Number is D23F-E96F
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\World Bank Enterprise Survey
+
+01/14/2014  12:51 PM    <DIR>          .
+01/14/2014  12:51 PM    <DIR>          ..
+05/01/2013  06:20 AM             1,128 CityandState2005.csv
+06/19/2012  10:25 AM         8,936,244 India-2005--full data-999.dta
+06/19/2012  10:25 AM           578,595 India-2006-IT-full data-999.dta
+06/19/2012  10:25 AM           646,390 India-2006-Micro-full data-999.dta
+06/19/2012  10:25 AM           797,138 India-2006-Retail-full data-999.dta
+06/19/2012  10:25 AM           365,464 India-2009-MOI-full data-999.dta
+06/19/2012  10:25 AM           220,353 India2010_clean999.dta
+01/14/2014  12:51 PM               228 manifest.txt
+               8 File(s)     11,545,540 bytes
+
+     Total Files Listed:
+               8 File(s)     11,545,540 bytes
+               2 Dir(s)  193,610,670,080 bytes free

@@ -1,0 +1,42 @@
+dictionary using 95-96/P9596131.C {
+
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+
+_column(16)	linkcode	%3.0f	"Link Code"
+_column(19)	filler		%1.0f	"Filler"
+
+
+_column(20)	itemcode1	%5.0f	"Item Code - 1"
+_column(25)	qcons1		%11.0f	"Quantity - 1"
+_column(36)	vcons1		%11.0f	"Value - 1"
+_column(47)	filler1		%1.0f	"Filler1"
+	
+
+_column(48)	itemcode2	%5.0f	"Item Code - 2"
+_column(53)	qcons2		%11.0f	"Quantity - 2"
+_column(64)	vcons2		%11.0f	"Value - 2"
+_column(75)	filler2		%1.0f	"Filler2"
+
+
+_column(76)	itemcode3	%5.0f	"Item Code - 3"
+_column(81)	qcons3		%11.0f	"Quantity - 3"
+_column(92)	vcons3		%11.0f	"Value - 3"
+_column(103)	filler3		%1.0f	"Filler3"
+
+
+_column(104)	itemcode4	%5.0f	"Item Code - 4"
+_column(109)	qcons4		%11.0f	"Quantity - 4"
+_column(120)	vcons4		%11.0f	"Value - 4"
+
+_column(131)	unused		%5.0f	"Unused"
+
+};
+
+
+};
+

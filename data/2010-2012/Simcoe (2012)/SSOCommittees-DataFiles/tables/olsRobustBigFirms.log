@@ -1,0 +1,92 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/olsRobustBigFirms.log
+  log type:  text
+ opened on:   9 Jun 2010, 20:42:35
+
+. *******************************************
+. *      Robustness : Large Firm FEs
+. *******************************************
+. merge 1:1 series using data/bigFirmDummies
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                         9,776
+        from master                         0  (_merge==1)
+        from using                      9,776  (_merge==2)
+
+    matched                             2,601  (_merge==3)
+    -----------------------------------------
+
+. drop if _merge ==2
+(9776 observations deleted)
+
+. 
+. qui xi: reg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum aflDum* `st_controls' `controls' i.techarea i.pubCohort strfc  if ((strfc|nsrfc) & cSample & match_samp2), cluster(wg)
+
+. est store col1
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        290       30.46       30.46
+          1 |        662       69.54      100.00
+------------+-----------------------------------
+      Total |        952      100.00
+
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum aflDum* `st_controls' `controls' i.pubCohort strfc if ((strfc|nsrfc) & cSample & match_samp2), fe i(wg) robust
+
+. est store col2
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        290       30.46       30.46
+          1 |        662       69.54      100.00
+------------+-----------------------------------
+      Total |        952      100.00
+
+. 
+. estout  _all, cells(b(fmt(2)) se(par fmt(2) star)) stats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) drop(`st_controls' aflDum* `controls' _I*) style(tex) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001)
+
+            &        col1   &        col2   \\
+            &        b/se   &        b/se   \\
+st_stbafl1yr&        7.34   &        6.09   \\
+            &      (2.00)***&      (2.18)** \\
+st_lwgipr   &        4.42   &       -1.59   \\
+            &     (10.50)   &     (11.65)   \\
+st_othDum   &      171.43   &       76.16   \\
+            &     (75.87)*  &     (84.10)   \\
+stbafl1yr   &       -1.46   &        0.13   \\
+            &      (1.69)   &      (2.77)   \\
+lwgipr      &        3.55   &       11.71   \\
+            &      (8.46)   &     (12.53)   \\
+othDum      &      -45.58   &      -48.14   \\
+            &     (80.12)   &     (95.19)   \\
+strfc       &     -981.60   &     -908.59   \\
+            &    (387.96)*  &    (437.17)*  \\
+_cons       &      200.68   &      104.90   \\
+            &    (302.29)   &    (342.42)   \\
+N           &         952   &         952   \\
+r2          &        0.24   &        0.12   \\
+df_m        &          55   &          49   \\
+N_g         &               &         151   \\
+
+. drop aflDum*
+
+. est clear
+
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/olsRobustBigFirms.log
+  log type:  text
+ closed on:   9 Jun 2010, 20:42:36
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,25 @@
+dictionary using 97-98/P979811C.RAW {
+
+
+_column(1)      nic87           %4.0f   "Industry - NIC-87 Industry Code"
+_column(5)      runslno         %6.0f   "Running Serial No. "
+_column(11)     stcode          %2.0f   "State Code (ST)"
+_column(13)     permid          %5.0f   "Permanent Serial No.
+_column(18)     schcode         %1.0f   "Scheme Code"
+
+_column(21)     linkcode        %3.0f   "Link Code"
+_column(24)     fodrsl          %5.0f   "FOD RSL"
+_column(29)     nicframe 	%4.0f   "Frame Industry Code"
+_column(33)	distcode	%3.0f	"District code"
+_column(36)	ruralurbancode	%1.0f	"Rural-Urban Code"
+_column(37)     numfact         %3.0f  "No. of Units"
+_column(40)     opclcode        %1.0f  "Open-Close Code"
+_column(52)	orgcode		%2.0f	"organization code"
+_column(54)	owncode		%1.0f	"ownership code"
+_column(56)     inityr          %4.0f   "Year of Initial Production "
+_column(64)	monthsops	%2.0f	"months of operations"
+_column(127)	mult		%4.0f	"Multiplier"
+
+
+};
+

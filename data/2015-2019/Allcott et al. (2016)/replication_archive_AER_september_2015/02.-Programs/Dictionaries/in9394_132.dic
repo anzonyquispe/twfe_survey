@@ -1,0 +1,30 @@
+dictionary using 93-94/ASI1993_94_DATA/ASID9394.TXT {
+
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+
+_column(16)	linkcode	%3.0f	"Link Code"
+
+_column(19)	itemcode1	%4.0f	"Item Code - 1"
+_column(23)	qcons1		%11.0f	"Quantity - 1"
+_column(34)	vcons1		%11.0f	"Value - 1"
+
+	
+_column(45)	qcons1a		%11.0f	"Quantity - 2"
+_column(56)	vcons1b		%11.0f	"Value - 2"
+
+
+_column(67)	itemcode2	%4.0f	"Item Code - 3"
+_column(71)	qcons2		%11.0f	"Quantity - 3"
+_column(82)	vcons2		%11.0f	"Value - 3"
+
+_column(93)	qcons2a		%11.0f	"Quantity - 4"
+_column(104)	vcons2b		%11.0f	"Value - 4"
+
+
+};
+

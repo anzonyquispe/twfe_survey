@@ -1,0 +1,244 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/matching.log
+  log type:  text
+ opened on:   9 Jun 2010, 21:33:50
+
+. 
+. ** Variable Creation and Lists 
+. replace stbLagUsr = 100 *stbLagUsr
+(2287 real changes made)
+
+. g pubC2 = (pubCohort - 1993)^2
+
+. g wgC2 = (wgCohort - 1993)^2
+
+. g cumId2 = lwgidttl^2 
+
+. g cumMsg2 = lcmsgs^2 
+(314 missing values generated)
+
+. g Id2 = lwgidnow^2
+
+. g Msg2 = lmsgs^2
+(314 missing values generated)
+
+. 
+. local wgvars stbafl1yr stbLagUsr lwgipr lwgidnow lwgidttl lwgorgs lmsgs lcmsgs cumId2 cumMsg2 Id2
+
+. local idvars n_affil priorwgc lsize orgDum eduDum govDum 
+
+. local rfcvars logPages logBackCites logEmails stbEmail obsDum updDum lwgipr lwgidnow lwgidttl lwgorgs 
+
+. 
+. ************************************
+. *** Matched Sample for WG Models ***
+. ************************************
+. qui xi: probit strfc `wgvars' `idvars' i.techarea pubCohort pubC2 wgCohort wgC2 if ((strfc|nsrfc) & cSample == 1), robust
+
+. mfx
+
+Marginal effects after probit
+      y  = Pr(strfc) (predict)
+         =  .67135526
+------------------------------------------------------------------------------
+variable |      dy/dx    Std. Err.     z    P>|z|  [    95% C.I.   ]      X
+---------+--------------------------------------------------------------------
+stbafl~r |   .0041532      .00136    3.04   0.002   .001479  .006828   72.9818
+stbLag~r |  -.0035478      .00133   -2.66   0.008  -.006161 -.000934    71.407
+  lwgipr |  -.0159383       .0069   -2.31   0.021  -.029453 -.002423   7.47105
+lwgidnow |   -.324563      .16333   -1.99   0.047  -.644679 -.004447   1.88664
+lwgidttl |    .234453      .10315    2.27   0.023   .032273  .436633   2.55659
+ lwgorgs |    .040807      .02737    1.49   0.136  -.012846   .09446   2.18981
+   lmsgs |  -.0018589      .01769   -0.11   0.916  -.036532  .032814   5.71263
+  lcmsgs |   .0221966       .0435    0.51   0.610   -.06306  .107453   6.65738
+  cumId2 |  -.0372139      .01847   -2.02   0.044  -.073406 -.001022   7.54995
+ cumMsg2 |  -.0004967      .00381   -0.13   0.896  -.007971  .006978   47.9968
+     Id2 |   .0843123      .04064    2.07   0.038   .004669  .163956   4.02433
+ n_affil |  -.0226424      .01219   -1.86   0.063  -.046526  .001241   2.04117
+priorwgc*|    .067638      .03065    2.21   0.027   .007558  .127718     .4494
+   lsize |   .0505234      .01739    2.91   0.004   .016446  .084601   10.2744
+  orgDum*|   .0594371      .05336    1.11   0.265   -.04515  .164024   .078045
+  eduDum*|   -.064631      .03942   -1.64   0.101  -.141894  .012632   .190395
+  govDum*|  -.0324861      .06351   -0.51   0.609   -.15697  .091998   .059177
+_Itech~3*|   .0893649      .04709    1.90   0.058  -.002924  .181654   .232419
+_Itech~4*|  -.0508629      .05784   -0.88   0.379  -.164225  .062499    .14494
+_Itech~5*|  -.1340903      .06464   -2.07   0.038  -.260776 -.007405   .099485
+_Itech~6*|   .0560904        .054    1.04   0.299  -.049742  .161923   .119211
+_Itech~8*|  -.0081957      .04783   -0.17   0.864  -.101948  .085557   .229846
+pubCoh~t |  -.0380474      .02889   -1.32   0.188  -.094678  .018583    1998.8
+   pubC2 |   .0028573      .00262    1.09   0.275  -.002273  .007987   40.1244
+wgCohort |   .0094714       .0215    0.44   0.660  -.032662  .051605   1996.21
+    wgC2 |  -.0030694      .00261   -1.18   0.240  -.008188   .00205   17.0858
+------------------------------------------------------------------------------
+(*) dy/dx is for discrete change of dummy variable from 0 to 1
+
+. testparm _Itech*
+
+ ( 1)  [strfc]_Itecharea_3 = 0
+ ( 2)  [strfc]_Itecharea_4 = 0
+ ( 3)  [strfc]_Itecharea_5 = 0
+ ( 4)  [strfc]_Itecharea_6 = 0
+ ( 5)  [strfc]_Itecharea_8 = 0
+
+           chi2(  5) =   16.98
+         Prob > chi2 =    0.0045
+
+. test pubCohort pubC2 
+
+ ( 1)  [strfc]pubCohort = 0
+ ( 2)  [strfc]pubC2 = 0
+
+           chi2(  2) =    1.85
+         Prob > chi2 =    0.3972
+
+. test wgCohort wgC2
+
+ ( 1)  [strfc]wgCohort = 0
+ ( 2)  [strfc]wgC2 = 0
+
+           chi2(  2) =    2.96
+         Prob > chi2 =    0.2282
+
+. 
+. est store match1
+
+. predict yhat
+(option pr assumed; Pr(strfc))
+(314 missing values generated)
+
+. g psw = yhat
+(314 missing values generated)
+
+. replace psw = 1-psw if nsrfc
+(474 real changes made)
+
+. 
+. quietly summ yhat if (strfc & ttlDur<=2007 & e(sample)), d
+
+. gen lbar = r(p1)
+
+. gen lbar2 = r(p5)
+
+. quietly summ yhat if (nsrfc & ttlDur<=2007 & e(sample)), d
+
+. gen ubar = r(p99)
+
+. gen ubar2 = r(p95)
+
+. gen match_samp1 = ((yhat > lbar) & (yhat < ubar))
+
+. gen match_samp2 = ((yhat > lbar2) & (yhat < ubar2))
+
+. 
+. * Uncomment this code for Picture ***
+. tab match_samp1 strfc if ((strfc|nsrfc) & ttlDur <=2007 & e(sample))
+
+           |   1/0: Published as
+match_samp |   Proposed Standard
+         1 |         0          1 |     Total
+-----------+----------------------+----------
+         0 |        30         34 |        64 
+         1 |       362        738 |     1,100 
+-----------+----------------------+----------
+     Total |       392        772 |     1,164 
+
+
+. tab match_samp2 strfc if ((strfc|nsrfc) & ttlDur <=2007 & e(sample))
+
+           |   1/0: Published as
+match_samp |   Proposed Standard
+         2 |         0          1 |     Total
+-----------+----------------------+----------
+         0 |       103        111 |       214 
+         1 |       289        661 |       950 
+-----------+----------------------+----------
+     Total |       392        772 |     1,164 
+
+
+. estout match1, cells(b(fmt(2)) se(par fmt(2) star)) stats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) margin style(tex) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.001)
+
+            &      match1   \\
+            &        b/se   \\
+strfc       &               \\
+stbafl1yr   &        0.00   \\
+            &      (0.00)** \\
+stbLagUsr   &       -0.00   \\
+            &      (0.00)** \\
+lwgipr      &       -0.02   \\
+            &      (0.01)*  \\
+lwgidnow    &       -0.32   \\
+            &      (0.16)*  \\
+lwgidttl    &        0.23   \\
+            &      (0.10)*  \\
+lwgorgs     &        0.04   \\
+            &      (0.03)   \\
+lmsgs       &       -0.00   \\
+            &      (0.02)   \\
+lcmsgs      &        0.02   \\
+            &      (0.04)   \\
+cumId2      &       -0.04   \\
+            &      (0.02)*  \\
+cumMsg2     &       -0.00   \\
+            &      (0.00)   \\
+Id2         &        0.08   \\
+            &      (0.04)*  \\
+n_affil     &       -0.02   \\
+            &      (0.01)+  \\
+priorwgc (d)&        0.07   \\
+            &      (0.03)*  \\
+lsize       &        0.05   \\
+            &      (0.02)** \\
+orgDum (d)  &        0.06   \\
+            &      (0.05)   \\
+eduDum (d)  &       -0.06   \\
+            &      (0.04)   \\
+govDum (d)  &       -0.03   \\
+            &      (0.06)   \\
+_Itecharea_3 (d)&        0.09   \\
+            &      (0.05)+  \\
+_Itecharea_4 (d)&       -0.05   \\
+            &      (0.06)   \\
+_Itecharea_5 (d)&       -0.13   \\
+            &      (0.06)*  \\
+_Itecharea_6 (d)&        0.06   \\
+            &      (0.05)   \\
+_Itecharea_8 (d)&       -0.01   \\
+            &      (0.05)   \\
+pubCohort   &       -0.04   \\
+            &      (0.03)   \\
+pubC2       &        0.00   \\
+            &      (0.00)   \\
+wgCohort    &        0.01   \\
+            &      (0.02)   \\
+wgC2        &       -0.00   \\
+            &      (0.00)   \\
+_cons       &               \\
+            &               \\
+N           &        1166   \\
+r2          &               \\
+df_m        &          26   \\
+N_g         &               \\
+
+. 
+. ** Propensity Score Picture
+. set scheme s2mono
+
+. twoway kdensity yhat if (strfc & ttlDur <=2007 & e(sample)) || kdensity yhat if (nsrfc & ttlDur <=2007 & e(sample)), xtitle(" " "Pr[Standards-track | X]") xline(.4940186 .8299517) xline(.3816603  .8
+> 70804, lp(dot)) ytitle("Kernel Density") legend(lab(1 "Standards") lab(2 "Nonstandards"))
+
+. graph export figures/propensity_match.pdf, replace
+(file /Users/timsimcoe/research/active/SSOCommittees/analysis/figures/propensity_match.pdf written in PDF format)
+
+. *End of Comments **/
+. 
+. drop ubar* lbar* yhat
+
+. est drop _all
+
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/matching.log
+  log type:  text
+ closed on:   9 Jun 2010, 21:34:01
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

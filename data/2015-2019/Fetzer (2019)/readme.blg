@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2018)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: readme.aux
+The style file: mychicago.bst
+Database file #1: /Users/thiemo/Dropbox/Research/Paper/Bibtex/library.bib
+Warning--empty institution in Beatty2013
+Warning--no journal in Essex2018
+Warning--no number and no volume in Essex2018
+You've used 5 entries,
+            2857 wiz_defined-function locations,
+            648 strings with 5676 characters,
+and the built_in function-call counts, 3344 in all, are:
+= -- 296
+> -- 217
+< -- 1
++ -- 62
+- -- 78
+* -- 280
+:= -- 611
+add.period$ -- 15
+call.type$ -- 5
+change.case$ -- 35
+chr.to.int$ -- 5
+cite$ -- 8
+duplicate$ -- 90
+empty$ -- 208
+format.name$ -- 90
+if$ -- 617
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 4
+newline$ -- 28
+num.names$ -- 50
+pop$ -- 22
+preamble$ -- 1
+purify$ -- 64
+quote$ -- 0
+skip$ -- 103
+stack$ -- 0
+substring$ -- 197
+swap$ -- 30
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 100
+warning$ -- 3
+while$ -- 55
+width$ -- 0
+write$ -- 67
+(There were 3 warnings)

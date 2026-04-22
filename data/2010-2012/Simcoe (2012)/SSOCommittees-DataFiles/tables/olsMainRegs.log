@@ -1,0 +1,564 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/olsMainRegs.log
+  log type:  text
+ opened on:  10 Jun 2010, 15:13:41
+
+. **************************************
+. *  Main Table (WG-Level Analysis)
+. **************************************
+. ** Col 1: Straight OLS Diff-in-diffs
+. qui xi: reg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc) & cSample==1), cluster(wg)
+
+. est store col1
+
+. qui testparm `st_controls' `controls' 
+
+. display  "Controls Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) 
+Controls Effects       3.38    0.00   10.00
+
+. qui testparm _Ipub*                                                 
+
+. display  "PubCohort Effect   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) 
+PubCohort Effect       4.49    0.00    9.00
+
+. qui testparm _Itech*                                                
+
+. display  "TechArea Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) 
+TechArea Effects       4.82    0.00    5.00
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        393       33.70       33.70
+          1 |        773       66.30      100.00
+------------+-----------------------------------
+      Total |      1,166      100.00
+
+. display "Model dof           " %8.0f e(df_m)  
+Model dof                 31
+
+. display "R-square            " %8.2f e(r2)
+R-square                0.18
+
+. 
+. 
+. ** Col 2: P-score Matched Diff-in-diffs 
+. qui xi: reg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc)  & match_samp2  & cSample==1), cluster(wg)
+
+. est store col2
+
+. qui testparm `st_controls' `controls' 
+
+. display  "Controls Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) 
+Controls Effects       3.13    0.00   10.00
+
+. qui testparm _Ipub*                                                 
+
+. display  "PubCohort Effect   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) 
+PubCohort Effect       5.97    0.00    9.00
+
+. qui testparm _Itech*                                                
+
+. display  "TechArea Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) 
+TechArea Effects       3.23    0.01    5.00
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        290       30.46       30.46
+          1 |        662       69.54      100.00
+------------+-----------------------------------
+      Total |        952      100.00
+
+. display "Model dof           " %8.0f e(df_m)  
+Model dof                 31
+
+. display "R-square            " %8.2f e(r2)
+R-square                0.20
+
+. 
+. 
+. ** Col 3: Matched Diff-in-diffs with WG FEs
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.pubCohort strfc if ((strfc|nsrfc) & match_samp2 & cSample==1), fe i(wg) robust
+
+. est store col3
+
+. qui testparm `st_controls' `controls' 
+
+. display  "Controls Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) %8.2f r(df_r)
+Controls Effects       1.66    0.10   10.00  150.00
+
+. qui testparm _Ipub*
+
+. display  "PubCohort Effect   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) %8.2f r(df_r)
+PubCohort Effect       4.05    0.00    9.00  150.00
+
+. display  "WG Fixed Effects   " %8.2f e(N_g)  %8.2f Ftail(e(df_a),e(df_r),e(F_f))
+WG Fixed Effects     151.00       .
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        290       30.46       30.46
+          1 |        662       69.54      100.00
+------------+-----------------------------------
+      Total |        952      100.00
+
+. display "Model dof           " %8.0f e(df_m)
+Model dof                 25
+
+. display "R-square            " %8.2f e(r2)
+R-square                0.09
+
+. 
+. 
+. ** Col 4: IV Selection Model
+. qui xi: probit strfc anyKeys lKeys stbafl1yr lwgipr othDum `controls' i.techarea i.pubCohort if ((strfc|nsrfc) & cSample)
+
+. predict stHat
+(option pr assumed; Pr(strfc))
+(314 missing values generated)
+
+. 
+. foreach X in st_stbafl1yr st_lwgipr st_othDum {
+  2.         g `X'_save = `X'
+  3. }
+(314 missing values generated)
+
+. foreach X in `controls' {
+  2.         g stHat_`X' = stHat * `X'
+  3. }
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+
+. 
+. replace st_stbafl1yr = (stbafl1yr-72.98) * strfc
+(1813 real changes made)
+
+. replace st_lwgipr = (lwgipr-7.313) * strfc
+(1987 real changes made)
+
+. replace st_othDum = (othDum-0.2487) * strfc
+(1299 real changes made)
+
+. 
+. g stHat_stbafl1yr = stHat * (stbafl1yr-72.98)
+(314 missing values generated)
+
+. g stHat_lwgipr = stHat * (lwgipr-7.313)
+(314 missing values generated)
+
+. g stHat_othDum = stHat * (othDum-0.2487)
+(314 missing values generated)
+
+. 
+. xi: ivreg2 ttlDur (st_stbafl1yr st_othDum strfc = stHat stHat_stbafl1yr stHat_othDum) stbafl1yr lwgipr othDum `controls' i.techarea i.pubCohort if ((strfc|nsrfc) & cSample==1), cluster(wg) gmm2s ffi
+> rst endog(strfc st_stbafl1yr st_othDum)
+i.techarea        _Itecharea_1-8      (naturally coded; _Itecharea_1 omitted)
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+Warning - collinearities detected
+Vars dropped:       _IpubCohort_2003
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  3,   174)  P-val | AP Chi-sq(  1) P-val | AP F(  1,   174)
+st_stbafl1yr |      18.72    0.0000 |       44.66   0.0000 |       43.46
+st_othDum    |      16.85    0.0000 |       51.63   0.0000 |       50.23
+strfc        |       5.60    0.0011 |       11.85   0.0006 |       11.53
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                    5% maximal IV relative bias    13.91
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(1)=7.99     P-val=0.0047
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                       6.41
+Kleibergen-Paap Wald rk F statistic                                 3.14
+
+Stock-Yogo weak ID test critical values for K1=3 and L1=3:
+                                                               <not available>
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(3,174)=       2.19     P-val=0.0909
+Anderson-Rubin Wald test           Chi-sq(3)=      6.75     P-val=0.0802
+Stock-Wright LM S statistic        Chi-sq(3)=      8.75     P-val=0.0328
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =        175
+Number of observations               N  =       1166
+Number of regressors                 K  =         26
+Number of endogenous regressors      K1 =          3
+Number of instruments                L  =         26
+Number of excluded instruments       L1 =          3
+
+2-Step GMM estimation
+---------------------
+
+Estimates efficient for arbitrary heteroskedasticity and clustering on wg
+Statistics robust to heteroskedasticity and clustering on wg
+
+Number of clusters (wg) =          175                Number of obs =     1166
+                                                      F( 25,   174) =     9.92
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  240275185.1                Centered R2   =   0.1451
+Total (uncentered) SS   =    743619968                Uncentered R2 =   0.7238
+Residual SS             =  205411207.9                Root MSE      =    419.7
+
+------------------------------------------------------------------------------
+             |               Robust
+      ttlDur |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+st_stbafl1yr |   12.29341   5.943092     2.07   0.039     .6451595    23.94165
+   st_othDum |   263.7169   171.1942     1.54   0.123    -71.81753    599.2513
+       strfc |   311.1704   216.4072     1.44   0.150      -112.98    735.3208
+   stbafl1yr |  -6.429606    4.39036    -1.46   0.143    -15.03455    2.175342
+      lwgipr |   11.20053    6.14175     1.82   0.068    -.8370744    23.23814
+      othDum |  -144.7515   119.7192    -1.21   0.227    -379.3968    89.89377
+       lsize |   49.42357   21.62898     2.29   0.022     7.031548    91.81559
+      lcmsgs |  -55.05839   11.85055    -4.65   0.000    -78.28504   -31.83175
+    lwgidnow |   72.83686   36.30113     2.01   0.045     1.687944    143.9858
+        aut2 |   32.32505   35.16957     0.92   0.358    -36.60604    101.2561
+        aut3 |  -47.27052     33.814    -1.40   0.162    -113.5447    19.00371
+_Itecharea_3 |  -105.4212   53.37794    -1.97   0.048      -210.04   -.8023329
+_Itecharea_4 |  -61.23445   66.75856    -0.92   0.359    -192.0788    69.60992
+_Itecharea_5 |   164.2916    68.0966     2.41   0.016     30.82468    297.7584
+_Itecharea_6 |     72.448   59.36325     1.22   0.222    -43.90183    188.7978
+_Itecharea_8 |   18.58901   57.14534     0.33   0.745    -93.41379    130.5918
+_IpubCo~1994 |   110.7583     81.593     1.36   0.175      -49.161    270.6777
+_IpubCo~1995 |    153.528   89.36361     1.72   0.086    -21.62143    328.6775
+_IpubCo~1996 |   276.9212   91.55586     3.02   0.002     97.47504    456.3674
+_IpubCo~1997 |   136.7989   91.01458     1.50   0.133    -41.58642    315.1842
+_IpubCo~1998 |   111.6058   92.46009     1.21   0.227    -69.61261    292.8243
+_IpubCo~1999 |   304.1548   109.7792     2.77   0.006     88.99143    519.3181
+_IpubCo~2000 |   311.4294   101.3212     3.07   0.002     112.8434    510.0154
+_IpubCo~2001 |   392.6744   102.8793     3.82   0.000     191.0347    594.3141
+_IpubCo~2002 |   366.1146   106.1725     3.45   0.001     158.0204    574.2088
+       _cons |    332.408   326.0493     1.02   0.308     -306.637    971.4529
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              7.987
+                                                   Chi-sq(1) P-val =    0.0047
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                6.407
+                         (Kleibergen-Paap rk Wald F statistic):          3.137
+Stock-Yogo weak ID test critical values:                       <not available>
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+-endog- option:
+Endogeneity test of endogenous regressors:                               1.703
+                                                   Chi-sq(3) P-val =    0.6364
+Regressors tested:    strfc st_stbafl1yr st_othDum
+------------------------------------------------------------------------------
+Instrumented:         st_stbafl1yr st_othDum strfc
+Included instruments: stbafl1yr lwgipr othDum lsize lcmsgs lwgidnow aut2 aut3
+                      _Itecharea_3 _Itecharea_4 _Itecharea_5 _Itecharea_6
+                      _Itecharea_8 _IpubCohort_1994 _IpubCohort_1995
+                      _IpubCohort_1996 _IpubCohort_1997 _IpubCohort_1998
+                      _IpubCohort_1999 _IpubCohort_2000 _IpubCohort_2001
+                      _IpubCohort_2002
+Excluded instruments: stHat stHat_stbafl1yr stHat_othDum
+Dropped collinear:    _IpubCohort_2003
+------------------------------------------------------------------------------
+
+. 
+. *xi: ivreg2 ttlDur (st_stbafl1yr st_lwgipr st_othDum strfc = stHat stHat_*) stbafl1yr lwgipr othDum `controls' i.techarea i.pubCohort if ((strfc|nsrfc) & cSample==1), cluster(wg) gmm2s ffirst endog(
+> strfc st_stbafl1yr st_othDum st_lwgipr)
+. 
+. est store col4
+
+. qui testparm `st_controls' `controls' 
+
+. display  "Controls Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) %8.2f r(df_r)
+Controls Effects          .    0.00    5.00       .
+
+. qui testparm _Ipub*
+
+. display  "PubCohort Effect   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) %8.2f r(df_r)
+PubCohort Effect          .    0.00    9.00       .
+
+. qui testparm _Itech*                                                
+
+. display  "TechArea Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df)
+TechArea Effects          .    0.00    5.00
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        393       33.70       33.70
+          1 |        773       66.30      100.00
+------------+-----------------------------------
+      Total |      1,166      100.00
+
+. display "Model dof           " %8.0f e(df_m)
+Model dof                 25
+
+. display "R-square            " %8.2f e(r2)
+R-square                0.15
+
+. 
+. foreach X in st_stbafl1yr st_lwgipr st_othDum {
+  2.         drop `X'
+  3.         g `X' = `X'_save
+  4.         drop `X'_save
+  5. }
+(314 missing values generated)
+
+. 
+. 
+. ** Col 5: RE Standards Only
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum `controls' i.pubCohort i.techarea if ((strfc) & cSample==1), re i(wg) cluster(wg)
+
+. est store col5
+
+. qui testparm `controls' 
+
+. display  "Controls Effects   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) %8.2f r(df_r)
+Controls Effects          .    0.00    5.00       .
+
+. qui testparm _Ipub*
+
+. display  "PubCohort Effect   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) %8.2f r(df_r)
+PubCohort Effect          .    0.00    9.00       .
+
+. qui testparm _Itech*
+
+. display  "techArea Effect   " %8.2f r(F)  %8.2f r(p)   %8.2f r(df) %8.2f r(df_r)
+techArea Effect          .    0.01    5.00       .
+
+. *display  "WG Fixed Effects   " %8.2f e(N_g)  %8.2f Ftail(e(df_a),e(df_r),e(F_f))
+. *tab strfc if e(sample)
+. display "Model dof           " %8.0f e(df_m)
+Model dof                 22
+
+. display "R-square            " %8.2f e(r2)
+R-square                   .
+
+. 
+. estout  _all, cells(b(fmt(1)) se(par fmt(1) star)) stats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) drop(`st_controls' `controls' _I* strfc _cons) style(tex) starlevels(+ 0.10 * 0.05 ** 0.01 *** 0.001)
+
+            &        col1   &        col2   &        col3   &        col4   &        col5   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   \\
+st_stbafl1yr&         7.8   &         6.8   &         5.4   &        12.3   &         4.2   \\
+            &       (1.9)***&       (1.9)***&       (2.1)*  &       (5.9)*  &       (1.5)** \\
+st_lwgipr   &         6.5   &         0.6   &        -1.1   &               &        18.6   \\
+            &       (9.6)   &      (10.6)   &      (11.3)   &               &       (6.6)** \\
+st_othDum   &       155.7   &       153.6   &        92.2   &       263.7   &        86.7   \\
+            &      (65.7)*  &      (73.2)*  &      (77.8)   &     (171.2)   &      (32.6)** \\
+stbafl1yr   &        -3.3   &        -1.3   &         0.7   &        -6.4   &               \\
+            &       (1.6)*  &       (1.5)   &       (2.7)   &       (4.4)   &               \\
+lwgipr      &         4.9   &         3.6   &        10.9   &        11.2   &               \\
+            &       (7.5)   &       (8.1)   &      (12.0)   &       (6.1)+  &               \\
+othDum      &       -75.0   &       -60.3   &       -46.8   &      -144.8   &               \\
+            &      (59.5)   &      (69.6)   &      (81.2)   &     (119.7)   &               \\
+N           &        1166   &         952   &         952   &        1166   &         773   \\
+r2          &        0.18   &        0.20   &        0.09   &        0.15   &               \\
+df_m        &          31   &          31   &          25   &          25   &          22   \\
+N_g         &               &               &         151   &               &         133   \\
+
+. 
+. *******************
+. ** Hausman Tests **
+. ******************* 
+. ** Column 3: Matched Diff-diffs ** 
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc) & match_samp2 & cSample==1), i(wg)
+
+. est store H1
+
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.pubCohort strfc if ((strfc|nsrfc) & match_samp2 & cSample==1), fe i(wg)
+
+. est store H2
+
+. hausman H2 H1, sigmaless
+
+                 ---- Coefficients ----
+             |      (b)          (B)            (b-B)     sqrt(diag(V_b-V_B))
+             |       H2           H1         Difference          S.E.
+-------------+----------------------------------------------------------------
+st_stbafl1yr |    5.395272     6.697777       -1.302505        1.144616
+   st_lwgipr |   -1.121962     1.914455       -3.036417        7.099108
+   st_othDum |    92.21085     136.1335       -43.92262        26.37055
+   stbafl1yr |    .6560631    -1.152726        1.808789        2.085746
+      lwgipr |    10.93783     5.103885        5.833947        8.365267
+      othDum |   -46.80841    -55.49891        8.690501        24.16682
+    st_lsize |    73.99496     56.58815        17.40682        18.52177
+   st_lcmsgs |    -16.4896    -13.84478       -2.644815        14.49781
+ st_lwgidnow |    31.92115     30.32853        1.592619        34.29173
+     st_aut2 |   -25.32949    -31.87648        6.546993        28.70025
+     st_aut3 |   -126.0878    -124.2692       -1.818579        31.66545
+       lsize |    12.62848     19.11262       -6.484137        16.97398
+      lcmsgs |     5.46352    -29.97955        35.44307        23.63526
+    lwgidnow |   -6.151453     42.09827       -48.24972        39.94313
+        aut2 |    48.42692     56.60124       -8.174313        27.02195
+        aut3 |    16.65744     23.32557       -6.668133        29.06127
+_IpubCo~1994 |    146.7066      185.429       -38.72241        88.12526
+_IpubCo~1995 |     67.5387     156.3428       -88.80412        79.97928
+_IpubCo~1996 |    111.1101     270.8976       -159.7875        78.54074
+_IpubCo~1997 |   -70.50559     93.34192       -163.8475         82.4309
+_IpubCo~1998 |   -106.1712     56.97729       -163.1485        86.16759
+_IpubCo~1999 |    28.60014      224.972       -196.3718        90.59885
+_IpubCo~2000 |    57.03296     257.8772       -200.8443        96.76331
+_IpubCo~2001 |    133.3505     377.5782       -244.2278        105.6206
+_IpubCo~2002 |    14.51168     285.3505       -270.8389        114.8505
+       strfc |   -937.5091      -890.63       -46.87907        184.3815
+------------------------------------------------------------------------------
+                           b = consistent under Ho and Ha; obtained from xtreg
+            B = inconsistent under Ha, efficient under Ho; obtained from xtreg
+
+    Test:  Ho:  difference in coefficients not systematic
+
+                 chi2(26) = (b-B)'[(V_b-V_B)^(-1)](b-B)
+                          =       28.42
+                Prob>chi2 =      0.3380
+
+. 
+. *** Clustered RE Estimates
+. xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `st_controls' `controls' i.pubCohort i.techarea strfc if ((strfc|nsrfc) & match_samp2 & cSample==1), re i(wg) cluster(wg)
+i.pubCohort       _IpubCohort_1993-2003(naturally coded; _IpubCohort_1993 omitted)
+i.techarea        _Itecharea_1-8      (naturally coded; _Itecharea_1 omitted)
+
+Random-effects GLS regression                   Number of obs      =       952
+Group variable: wg                              Number of groups   =       151
+
+R-sq:  within  = 0.0814                         Obs per group: min =         1
+       between = 0.2907                                        avg =       6.3
+       overall = 0.1993                                        max =        41
+
+Random effects u_i ~ Gaussian                   Wald chi2(31)      =         .
+corr(u_i, X)       = 0 (assumed)                Prob > chi2        =         .
+
+                                   (Std. Err. adjusted for 151 clusters in wg)
+------------------------------------------------------------------------------
+             |               Robust
+      ttlDur |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+st_stbafl1yr |   6.697777   1.959221     3.42   0.001     2.857775    10.53778
+   st_lwgipr |   1.914455   10.31493     0.19   0.853    -18.30245    22.13136
+   st_othDum |   136.1335   72.37847     1.88   0.060    -5.725719    277.9927
+   stbafl1yr |  -1.152726   1.638319    -0.70   0.482    -4.363772     2.05832
+      lwgipr |   5.103885   8.689296     0.59   0.557    -11.92682    22.13459
+      othDum |  -55.49891   72.05859    -0.77   0.441    -196.7312    85.73334
+    st_lsize |   56.58815   32.59173     1.74   0.083    -7.290461    120.4668
+   st_lcmsgs |  -13.84478   23.07414    -0.60   0.548    -59.06926     31.3797
+ st_lwgidnow |   30.32853     61.104     0.50   0.620     -89.4331    150.0902
+     st_aut2 |  -31.87648   77.68308    -0.41   0.682    -184.1325    120.3796
+     st_aut3 |  -124.2692     81.919    -1.52   0.129    -284.8275    36.28906
+       lsize |   19.11262   31.08846     0.61   0.539    -41.81964    80.04488
+      lcmsgs |  -29.97955    17.1756    -1.75   0.081    -63.64312    3.684013
+    lwgidnow |   42.09827   53.06331     0.79   0.428    -61.90392    146.1004
+        aut2 |   56.60124   67.99974     0.83   0.405    -76.67581    189.8783
+        aut3 |   23.32557   65.53523     0.36   0.722    -105.1211    151.7723
+_IpubCo~1994 |    185.429   120.6538     1.54   0.124    -51.04808    421.9061
+_IpubCo~1995 |   156.3428   113.9609     1.37   0.170    -67.01636     379.702
+_IpubCo~1996 |   270.8976    114.285     2.37   0.018     46.90308    494.8922
+_IpubCo~1997 |   93.34192   104.5689     0.89   0.372    -111.6093    298.2931
+_IpubCo~1998 |   56.97729   103.9323     0.55   0.584    -146.7263    260.6809
+_IpubCo~1999 |    224.972   114.5863     1.96   0.050     .3869337     449.557
+_IpubCo~2000 |   257.8772   118.4108     2.18   0.029     25.79628    489.9581
+_IpubCo~2001 |   377.5782   117.5648     3.21   0.001     147.1556    608.0009
+_IpubCo~2002 |   285.3505   111.3875     2.56   0.010     67.03505     503.666
+_IpubCo~2003 |  (omitted)
+_Itecharea_3 |  -53.84488   60.20636    -0.89   0.371    -171.8472    64.15742
+_Itecharea_4 |   -92.0036     66.693    -1.38   0.168    -222.7195    38.71227
+_Itecharea_5 |   95.23039   80.65972     1.18   0.238    -62.85977    253.3205
+_Itecharea_6 |   121.2328   77.47871     1.56   0.118    -30.62266    273.0883
+_Itecharea_8 |   38.95096   65.07076     0.60   0.549    -88.58538    166.4873
+       strfc |    -890.63    377.837    -2.36   0.018    -1631.177   -150.0831
+       _cons |   287.1319   297.0403     0.97   0.334    -295.0564    869.3202
+-------------+----------------------------------------------------------------
+     sigma_u |  159.92824
+     sigma_e |  394.85063
+         rho |  .14093271   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. ** Column 5: Standards Only ** 
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum `controls' i.techarea i.pubCohort if (strfc & cSample==1), re i(wg)
+
+. est store H1
+
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum `controls' i.pubCohort if (strfc & cSample==1), fe i(wg)
+
+. est store H2
+
+. hausman H2 H1, sigmaless
+
+                 ---- Coefficients ----
+             |      (b)          (B)            (b-B)     sqrt(diag(V_b-V_B))
+             |       H2           H1         Difference          S.E.
+-------------+----------------------------------------------------------------
+st_stbafl1yr |     3.10388     4.165036       -1.061157        1.783816
+   st_lwgipr |    17.23524     18.59452        -1.35928        6.266573
+   st_othDum |    72.96996      86.6841       -13.71414        15.28503
+       lsize |    57.43078     49.58075        7.850036         7.11842
+      lcmsgs |   -41.30866    -51.84468        10.53602        18.98236
+    lwgidnow |    58.90856     56.48154        2.427025        26.09703
+        aut2 |    2.732649     7.278734       -4.546085         12.3527
+        aut3 |   -99.63533    -88.46442       -11.17092        15.70296
+_IpubCo~1994 |    278.5466     150.5127        128.0339        90.04723
+_IpubCo~1995 |     143.406     152.4177       -9.011649        58.46441
+_IpubCo~1996 |    240.3356     263.3674       -23.03176        59.26282
+_IpubCo~1997 |    70.36826     81.06002       -10.69176        62.58148
+_IpubCo~1998 |    -23.9395    -4.584873       -19.35463        64.94024
+_IpubCo~1999 |     158.481      193.051       -34.56993        69.00093
+_IpubCo~2000 |     173.387     245.6789       -72.29192        77.50019
+_IpubCo~2001 |    283.8838     354.7238       -70.83999        84.67531
+_IpubCo~2002 |    215.2998      298.202       -82.90214        93.10099
+------------------------------------------------------------------------------
+                           b = consistent under Ho and Ha; obtained from xtreg
+            B = inconsistent under Ha, efficient under Ho; obtained from xtreg
+
+    Test:  Ho:  difference in coefficients not systematic
+
+                 chi2(17) = (b-B)'[(V_b-V_B)^(-1)](b-B)
+                          =       13.95
+                Prob>chi2 =      0.6710
+
+. 
+. drop stHat*
+
+. est clear 
+
+. log close
+      name:  <unnamed>
+       log:  /Users/timsimcoe/research/active/SSOCommittees/analysis/tables/olsMainRegs.log
+  log type:  text
+ closed on:  10 Jun 2010, 15:13:45
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

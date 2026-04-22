@@ -1,0 +1,674 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\tablesA2andA3.log
+  log type:  text
+ opened on:  23 Nov 2010, 10:33:17
+
+. * set the data to be used;
+. local data = "../data/dis70panx.dta";
+
+. *********************************;
+. * Census Data Based Regressions *;
+. *********************************;
+. use `data', clear;
+
+. keep if major==1;
+(310 observations deleted)
+
+. replace imp = imp + 1900;
+(368 real changes made)
+
+. *** Make Measures Consistent Over Time;
+. replace publicelemhsw = publicelemw + publichsw if year ~= 1990;
+(276 real changes made)
+
+. replace publicelemhsb = publicelemb + publichsb if year ~= 1990;
+(276 real changes made)
+
+. replace publicelemhst = publicelemt + publichst if year ~= 1990;
+(276 real changes made)
+
+. replace privatelemhsw = privatelemw + privatehsw if year ~= 1990;
+(276 real changes made)
+
+. replace privatelemhsb = privatelemb + privatehsb if year ~= 1990;
+(276 real changes made)
+
+. replace privatelemhst = privatelemt + privatehst if year ~= 1990;
+(276 real changes made)
+
+. replace mpublicelemhsw = mpublicelemw + mpublichsw if year ~= 1990;
+(276 real changes made)
+
+. replace mpublicelemhsb = mpublicelemb + mpublichsb if year ~= 1990;
+mpublicelemhsb was long now double
+(276 real changes made)
+
+. replace mpublicelemhst = mpublicelemt + mpublichst if year ~= 1990;
+(276 real changes made)
+
+. replace mprivatelemhsw = mprivatelemw + mprivatehsw if year ~= 1990;
+(276 real changes made)
+
+. replace mprivatelemhsb = mprivatelemb + mprivatehsb if year ~= 1990;
+mprivatelemhsb was long now double
+(276 real changes made)
+
+. replace mprivatelemhst = mprivatelemt + mprivatehst if year ~= 1990;
+(276 real changes made)
+
+. *** Create Treatment Variables;
+. gen imp_post    = (year >= imp);
+
+. gen impost_0_3  = (year >=  imp) & (year <= imp + 3);
+
+. gen impost_4    = (year >=  imp + 4);
+
+. gen imp_pre23   = (year < imp & year>=imp-2);
+
+. gen nonsouth = (south==0);
+
+. local varlist  = "nonsouth south";
+
+. for var  `varlist' : gen imp_post_X = imp_post*X;
+
+->  gen imp_post_nonsouth = imp_post*nonsouth
+
+->  gen imp_post_south = imp_post*south
+
+. for var  `varlist' : gen impost_0_3_X = impost_0_3*X;
+
+->  gen impost_0_3_nonsouth = impost_0_3*nonsouth
+
+->  gen impost_0_3_south = impost_0_3*south
+
+. for var  `varlist' : gen impost_4_X = impost_4*X;
+
+->  gen impost_4_nonsouth = impost_4*nonsouth
+
+->  gen impost_4_south = impost_4*south
+
+. for var  `varlist' : gen imp_pre23_X = imp_pre23*X;
+
+->  gen imp_pre23_nonsouth = imp_pre23*nonsouth
+
+->  gen imp_pre23_south = imp_pre23*south
+
+. *** Create Control Variables;
+. gen p_black = publicelemhsb / publicelemhst;
+
+. gen p_man = mempman/memp;
+(276 missing values generated)
+
+. for var area marea inct incb incw p_man: gen lnX = ln(X);
+
+->  gen lnarea = ln(area)
+
+->  gen lnmarea = ln(marea)
+
+->  gen lninct = ln(inct)
+(17 missing values generated)
+
+->  gen lnincb = ln(incb)
+(3 missing values generated)
+
+->  gen lnincw = ln(incw)
+(3 missing values generated)
+
+->  gen lnp_man = ln(p_man)
+(276 missing values generated)
+
+. for var p_black lnarea lnmarea lninct lnincb lnincw numdis
+>     : bysort leaid : egen X_b = sum(X * (year == 1970));
+
+->  bysort leaid : egen p_black_b = sum(p_black * (year == 1970))
+
+->  bysort leaid : egen lnarea_b = sum(lnarea * (year == 1970))
+
+->  bysort leaid : egen lnmarea_b = sum(lnmarea * (year == 1970))
+
+->  bysort leaid : egen lninct_b = sum(lninct * (year == 1970))
+
+->  bysort leaid : egen lnincb_b = sum(lnincb * (year == 1970))
+
+->  bysort leaid : egen lnincw_b = sum(lnincw * (year == 1970))
+
+->  bysort leaid : egen numdis_b = sum(numdis * (year == 1970))
+
+. replace numdis_b = numdis_b / 1000;
+(368 real changes made)
+
+. for var p_black lnincb lnincw p_man
+>     : bysort leaid : egen X_6b = sum(X * (year == 1960));
+
+->  bysort leaid : egen p_black_6b = sum(p_black * (year == 1960))
+
+->  bysort leaid : egen lnincb_6b = sum(lnincb * (year == 1960))
+
+->  bysort leaid : egen lnincw_6b = sum(lnincw * (year == 1960))
+
+->  bysort leaid : egen p_man_6b = sum(p_man * (year == 1960))
+
+. local base60 = "i.year|p_black_6b i.year|lnarea_b i.year|lnmarea_b i.year|numdis_b i.year|lnincw_6b i.year|lnincb_6b i.year|p_man_6b";
+
+. *** Prepare Dependent Variables;
+. gen lnwpu = ln(publicelemhsw);
+
+. gen lnbpu = ln(publicelemhsb);
+
+. gen lnwpr = ln(privatelemhsw);
+
+. gen lnbpr = ln(privatelemhsb);
+(1 missing value generated)
+
+. gen lnwto = ln(white);
+
+. gen lnbto = ln(black);
+
+. gen lnwte = ln(publicelemhsw + privatelemhsw);
+
+. gen lnbte = ln(publicelemhsb + privatelemhsb);
+
+. gen lnmwpu = ln(mpublicelemhsw);
+
+. gen lnmbpu = ln(mpublicelemhsb);
+
+. gen lnmwpr = ln(mprivatelemhsw);
+
+. gen lnmbpr = ln(mprivatelemhsb);
+
+. gen lnmwto = ln(mwhite);
+
+. gen lnmbto = ln(mblack);
+
+. ***************************************************;
+. ********* Generate Regression Results *************;
+. ***************************************************;
+.  **************************************************************;
+.  * Total enrollment (public plus private)  Outcomes, Table A2 *;
+.  **************************************************************;
+.  foreach r in te {;
+  2.   xi: xtreg lnw`r' imp_post                         i.year*i.south              , fe i(leaid) cluster(leaid);
+  3.   outreg2 imp_post using tableA2.out, bdec(2) se nor2 nocons replace;
+  4.   xi: xtreg lnw`r' imp_post_south imp_post_nonsouth i.year*i.south              , fe i(leaid) cluster(leaid);
+  5.   outreg2 imp_post_south imp_post_nonsouth using tableA2.out, bdec(2) se nor2 nocons append;
+  6.   test imp_post_south = imp_post_nonsouth;
+  7.   xi: xtreg lnb`r' impost_4                         i.year*i.south              , fe i(leaid) cluster(leaid);
+  8.   outreg2 impost_4  using tableA2.out, bdec(2) se nor2 nocons append;
+  9.   xi: xtreg lnb`r' impost_4_south impost_4_nonsouth i.year*i.south              , fe i(leaid) cluster(leaid);
+ 10.   outreg2 impost_4_south impost_4_nonsouth using tableA2.out, bdec(2) se nor2 nocons append;
+ 11.   test impost_4_south = impost_4_nonsouth;
+ 12.  };
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.5535                         Obs per group: min =         4
+       between = 0.0361                                        avg =       4.0
+       overall = 0.0498                                        max =         4
+
+                                                F(7,91)            =    208.40
+corr(u_i, Xb)  = -0.1665                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwte |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   -.086846   .0398027    -2.18   0.032    -.1659092   -.0077829
+ _Iyear_1970 |  -.0163057   .0336604    -0.48   0.629     -.083168    .0505566
+ _Iyear_1980 |  -.5149116   .0733403    -7.02   0.000    -.6605931   -.3692301
+ _Iyear_1990 |  -.6992563   .0872417    -8.02   0.000    -.8725512   -.5259615
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2146526   .0551861     3.89   0.000     .1050321     .324273
+_IyeaXs~80_1 |    .410959    .102256     4.02   0.000       .20784     .614078
+_IyeaXs~90_1 |   .5076495   .1280119     3.97   0.000     .2533696    .7619294
+       _cons |   10.71649   .0350407   305.83   0.000     10.64689     10.7861
+-------------+----------------------------------------------------------------
+     sigma_u |   .7516564
+     sigma_e |  .28238385
+         rho |  .87631894   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.5542                         Obs per group: min =         4
+       between = 0.0393                                        avg =       4.0
+       overall = 0.0484                                        max =         4
+
+                                                F(8,91)            =    203.27
+corr(u_i, Xb)  = -0.1700                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwte |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |  -.1249124   .0573386    -2.18   0.032    -.2388085   -.0110162
+imp_post_n~h |  -.0246404   .0449274    -0.55   0.585    -.1138832    .0646024
+ _Iyear_1970 |  -.0247883   .0336704    -0.74   0.463    -.0916703    .0420938
+ _Iyear_1980 |  -.5728759   .0717874    -7.98   0.000    -.7154729    -.430279
+ _Iyear_1990 |  -.7614619   .0842861    -9.03   0.000    -.9288859    -.594038
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2405822   .0607388     3.96   0.000      .119932    .3612324
+_IyeaXs~80_1 |   .5061966   .1249996     4.05   0.000     .2579002     .754493
+_IyeaXs~90_1 |   .6079214   .1498464     4.06   0.000       .31027    .9055729
+       _cons |   10.71649   .0352431   304.07   0.000     10.64649     10.7865
+-------------+----------------------------------------------------------------
+     sigma_u |  .75278546
+     sigma_e |  .28267241
+         rho |  .87642287   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+
+ ( 1)  imp_post_south - imp_post_nonsouth = 0
+
+       F(  1,    91) =    1.89
+            Prob > F =    0.1720
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6556                         Obs per group: min =         4
+       between = 0.0015                                        avg =       4.0
+       overall = 0.0413                                        max =         4
+
+                                                F(7,91)            =     98.64
+corr(u_i, Xb)  = -0.0126                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbte |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1175247   .0311379     3.77   0.000     .0556731    .1793763
+ _Iyear_1970 |   .6082004   .0332852    18.27   0.000     .5420836    .6743173
+ _Iyear_1980 |   .5538418   .0493147    11.23   0.000     .4558842    .6517994
+ _Iyear_1990 |   .5392972    .072512     7.44   0.000     .3952609    .6833334
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2386008   .0442642    -5.39   0.000    -.3265263   -.1506753
+_IyeaXs~80_1 |  -.2797064   .0682484    -4.10   0.000    -.4152734   -.1441394
+_IyeaXs~90_1 |  -.1727794   .0889556    -1.94   0.055    -.3494788    .0039201
+       _cons |   9.075967   .0234923   386.34   0.000     9.029303    9.122632
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1177141
+     sigma_e |  .19722621
+         rho |  .96980384   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6595                         Obs per group: min =         4
+       between = 0.0000                                        avg =       4.0
+       overall = 0.0369                                        max =         4
+
+                                                F(8,91)            =     85.10
+corr(u_i, Xb)  = -0.0250                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbte |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+impost_4_s~h |  -.0125288   .0354996    -0.35   0.725    -.0830445    .0579869
+impost_4_n~h |    .181701   .0353489     5.14   0.000     .1114848    .2519172
+ _Iyear_1970 |   .6038248   .0331173    18.23   0.000     .5380413    .6696083
+ _Iyear_1980 |   .5144609     .04514    11.40   0.000     .4247957     .604126
+ _Iyear_1990 |   .4751209   .0690802     6.88   0.000     .3379016    .6123402
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2315157   .0437777    -5.29   0.000    -.3184747   -.1445567
+_IyeaXs~80_1 |  -.1265288    .061979    -2.04   0.044    -.2496424   -.0034151
+_IyeaXs~90_1 |   .0214503   .0857239     0.25   0.803    -.1488297    .1917304
+       _cons |   9.075967   .0233231   389.14   0.000     9.029639    9.122296
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1207668
+     sigma_e |  .19649139
+         rho |  .97017992   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+
+ ( 1)  impost_4_south - impost_4_nonsouth = 0
+
+       F(  1,    91) =   15.03
+            Prob > F =    0.0002
+
+. ************************;
+.  * Metro, Table A3      *;
+.  ************************;
+.  foreach r in pu pr to {;
+  2.  ***************************;
+.  * White Outcomes, Table A3*;
+.  ***************************;
+.  disp " ";
+  3.  disp " ";
+  4.  disp "******************************* White Outcomes, Table A3 *******************************";
+  5.  disp " ";
+  6.  disp " ";
+  7.  disp " ";
+  8.  disp " ";
+  9.  disp "******************************* OUTCOME: `r'             *******************************";
+ 10.  disp " ";
+ 11.  disp " ";
+ 12.  xi: xtreg lnmw`r' imp_post_south imp_post_nonsouth i.year*i.south              , fe i(leaid) cluster(leaid);
+ 13.  if "`r'"=="pu" {;
+ 14.    outreg2 imp_post_south imp_post_nonsouth using tableA3.out, bdec(2) se nor2 nocons replace;
+ 15.  };
+ 16.  else {;
+ 17.    outreg2 imp_post_south imp_post_nonsouth using tableA3.out, bdec(2) se nor2 nocons append;
+ 18.  };
+ 19.  };
+ 
+ 
+******************************* White Outcomes, Table A3 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pu             *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4246                         Obs per group: min =         4
+       between = 0.2520                                        avg =       4.0
+       overall = 0.0008                                        max =         4
+
+                                                F(8,91)            =    175.62
+corr(u_i, Xb)  = -0.1594                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+      lnmwpu |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |  -.0184767   .0411672    -0.45   0.655    -.1002502    .0632968
+imp_post_n~h |   .0001077   .0309106     0.00   0.997    -.0612923    .0615078
+ _Iyear_1970 |    .304037   .0211791    14.36   0.000     .2619672    .3461068
+ _Iyear_1980 |   .0998211   .0423068     2.36   0.020     .0157838    .1838585
+ _Iyear_1990 |  -.0236284   .0544258    -0.43   0.665    -.1317386    .0844817
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .0006397   .0361416     0.02   0.986    -.0711512    .0724305
+_IyeaXs~80_1 |   .1154169   .0707871     1.63   0.106    -.0251929    .2560267
+_IyeaXs~90_1 |   .2266043   .0857141     2.64   0.010     .0563439    .3968648
+       _cons |   11.32146    .018704   605.30   0.000     11.28431    11.35861
+-------------+----------------------------------------------------------------
+     sigma_u |  .95063631
+     sigma_e |  .16120733
+         rho |  .97204702   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+ 
+ 
+******************************* White Outcomes, Table A3 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pr             *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4080                         Obs per group: min =         4
+       between = 0.2977                                        avg =       4.0
+       overall = 0.0780                                        max =         4
+
+                                                F(8,91)            =     14.13
+corr(u_i, Xb)  = -0.4745                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+      lnmwpr |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |   .0936545   .0672283     1.39   0.167    -.0398862    .2271952
+imp_post_n~h |   .0792261   .0838246     0.95   0.347    -.0872811    .2457333
+ _Iyear_1970 |   .0039971   .0290124     0.14   0.891    -.0536325    .0616267
+ _Iyear_1980 |  -.2876406   .0986421    -2.92   0.004    -.4835809   -.0917002
+ _Iyear_1990 |  -.4105738   .1148995    -3.57   0.001    -.6388076     -.18234
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .0898203   .0722192     1.24   0.217    -.0536343    .2332748
+_IyeaXs~80_1 |   .7557005   .1562197     4.84   0.000     .4453893    1.066012
+_IyeaXs~90_1 |   .9094697   .1648945     5.52   0.000     .5819269    1.237012
+       _cons |   9.238433   .0355859   259.61   0.000     9.167745     9.30912
+-------------+----------------------------------------------------------------
+     sigma_u |  1.4684561
+     sigma_e |  .30097042
+         rho |  .95968609   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+ 
+ 
+******************************* White Outcomes, Table A3 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: to             *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.5306                         Obs per group: min =         4
+       between = 0.2561                                        avg =       4.0
+       overall = 0.0040                                        max =         4
+
+                                                F(8,91)            =     21.01
+corr(u_i, Xb)  = -0.2342                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+      lnmwto |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |  -.0401851   .0324754    -1.24   0.219    -.1046935    .0243233
+imp_post_n~h |   .0205314   .0311106     0.66   0.511     -.041266    .0823287
+ _Iyear_1970 |   .1243735   .0210091     5.92   0.000     .0826416    .1661055
+ _Iyear_1980 |   .1535604   .0439566     3.49   0.001      .066246    .2408748
+ _Iyear_1990 |   .2065296   .0561479     3.68   0.000     .0949988    .3180605
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .0764829   .0375788     2.04   0.045     .0018371    .1511286
+_IyeaXs~80_1 |   .2829666   .0729432     3.88   0.000      .138074    .4278593
+_IyeaXs~90_1 |   .3588226   .0921271     3.89   0.000     .1758235    .5418217
+       _cons |   13.03547   .0210754   618.52   0.000     12.99361    13.07734
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0093149
+     sigma_e |  .17251264
+         rho |   .9716154   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+
+.  foreach r in pu pr to {;
+  2.  ***************************;
+.  * Black Outcomes, Table A3*;
+.  ***************************;
+.  disp " ";
+  3.  disp " ";
+  4.  disp "******************************* Black Outcomes, Table A3 *******************************";
+  5.  disp " ";
+  6.  disp " ";
+  7.  disp " ";
+  8.  disp " ";
+  9.  disp "******************************* OUTCOME: `r'             *******************************";
+ 10.  disp " ";
+ 11.  disp " ";
+ 12.  xi: xtreg lnmb`r' imp_post_south imp_post_nonsouth impost_4_south impost_4_nonsouth i.year*i.south, fe i(leaid) cluster(leaid);
+ 13.  outreg2 imp_post_south imp_post_nonsouth impost_4_south impost_4_nonsouth using tableA3.out, bdec(2) se nor2 nocons append;
+ 14.  };
+ 
+ 
+******************************* Black Outcomes, Table A3 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pu             *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7098                         Obs per group: min =         4
+       between = 0.0000                                        avg =       4.0
+       overall = 0.0429                                        max =         4
+
+                                                F(10,91)           =     59.81
+corr(u_i, Xb)  = -0.0558                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+      lnmbpu |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |  -.0000332   .0245395    -0.00   0.999    -.0487778    .0487114
+imp_post_n~h |  -.1331812   .0887557    -1.50   0.137    -.3094834     .043121
+impost_4_s~h |  -.0057686   .0343972    -0.17   0.867    -.0740945    .0625572
+impost_4_n~h |   .1353851   .0343867     3.94   0.000     .0670802      .20369
+ _Iyear_1970 |   .6716622   .0471689    14.24   0.000     .5779669    .7653574
+ _Iyear_1980 |   .8099391   .1270804     6.37   0.000     .5575094    1.062369
+ _Iyear_1990 |     .83964   .1469887     5.71   0.000      .547665    1.131615
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   -.340568   .0557726    -6.11   0.000    -.4513534   -.2297827
+_IyeaXs~80_1 |  -.4119367   .1378812    -2.99   0.004    -.6858207   -.1380526
+_IyeaXs~90_1 |  -.3471143   .1598842    -2.17   0.033    -.6647047   -.0295239
+       _cons |   9.338933   .0253071   369.02   0.000     9.288664    9.389203
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1131365
+     sigma_e |  .20105782
+         rho |  .96840615   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+ 
+ 
+******************************* Black Outcomes, Table A3 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pr             *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.5449                         Obs per group: min =         4
+       between = 0.0469                                        avg =       4.0
+       overall = 0.1264                                        max =         4
+
+                                                F(10,91)           =     21.30
+corr(u_i, Xb)  = 0.0332                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+      lnmbpr |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |  -.4325578   .1562212    -2.77   0.007    -.7428721   -.1222435
+imp_post_n~h |  -.0078012   .1834255    -0.04   0.966    -.3721534     .356551
+impost_4_s~h |  -.3304529   .2360789    -1.40   0.165    -.7993946    .1384888
+impost_4_n~h |  -.0619759   .0848104    -0.73   0.467    -.2304414    .1064895
+ _Iyear_1970 |   .8400839   .1110185     7.57   0.000     .6195593    1.060609
+ _Iyear_1980 |   1.368785   .2512736     5.45   0.000      .869661    1.867909
+ _Iyear_1990 |   1.450775   .2840109     5.11   0.000     .8866219    2.014928
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   -.224698   .1872032    -1.20   0.233    -.5965542    .1471581
+_IyeaXs~80_1 |    .230501   .4334089     0.53   0.596    -.6304124    1.091414
+_IyeaXs~90_1 |   .4209615   .4816881     0.87   0.384    -.5358528    1.377776
+       _cons |   5.655146   .0653803    86.50   0.000     5.525276    5.785016
+-------------+----------------------------------------------------------------
+     sigma_u |  1.4329265
+     sigma_e |  .53643862
+         rho |  .87707779   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+ 
+ 
+******************************* Black Outcomes, Table A3 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: to             *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7503                         Obs per group: min =         4
+       between = 0.0006                                        avg =       4.0
+       overall = 0.0505                                        max =         4
+
+                                                F(10,91)           =     62.17
+corr(u_i, Xb)  = -0.0304                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+      lnmbto |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |   .0091725   .0228823     0.40   0.689    -.0362804    .0546254
+imp_post_n~h |  -.0984875   .0891494    -1.10   0.272    -.2755719    .0785969
+impost_4_s~h |  -.0124218   .0447809    -0.28   0.782    -.1013735      .07653
+impost_4_n~h |   .0815825   .0313226     2.60   0.011     .0193639     .143801
+ _Iyear_1970 |   .3776677   .0437775     8.63   0.000      .290709    .4646264
+ _Iyear_1980 |   .7059633   .1267953     5.57   0.000     .4541001    .9578265
+ _Iyear_1990 |   .8785145   .1458822     6.02   0.000     .5887374    1.168292
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2875027   .0497789    -5.78   0.000    -.3863824   -.1886229
+_IyeaXs~80_1 |  -.3414607    .136975    -2.49   0.014    -.6135447   -.0693767
+_IyeaXs~90_1 |  -.3531139   .1591521    -2.22   0.029    -.6692501   -.0369778
+       _cons |   10.84702    .022782   476.12   0.000     10.80176    10.89227
+-------------+----------------------------------------------------------------
+     sigma_u |   1.123175
+     sigma_e |  .18367412
+         rho |  .97395409   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+dir : seeout
+
+. log close;
+       log:  c:\research\segregation\AER-DATA\tables\tablesA2andA3.log
+  log type:  text
+ closed on:  23 Nov 2010, 10:33:21
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

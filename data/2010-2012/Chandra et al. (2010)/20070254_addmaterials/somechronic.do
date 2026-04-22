@@ -1,0 +1,1 @@
+replace specificdrug=1 if  class==25| class ==32| class ==33| class ==51| class == 1| class ==5 | class ==24| class ==59| class ==63| class ==43| class ==88| class ==102| class ==28| class ==87| class ==61| class ==27| class ==117

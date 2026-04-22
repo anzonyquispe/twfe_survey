@@ -1,0 +1,193 @@
+The file idLevel.dta contains records for 12,377 Internet Drafts submitted to the Internet Engineering Task Force (IETF) between September 13, 1990 and June 16, 2005. Primary data sources include the IETF's online archives (www.ietf.org) and the Internet Draft archive at www.watersprings.org
+
+For an overview of Internet Drafts and the IETF standards development process, please see the related paper "Standards Setting Committees: Governing Shared Technology Platforms" by Timothy Simcoe or read the detailed information provided at www.ietf.org, especially RFC 2026 and the documents at www.ietf.org/about/standards-process.html
+
+The document describes the variables in idLevel.dta, which has three levels of variation: Internet Draft (ID), Working Group (WG), and Request for Comments (RFC). The remainder of this file provides variable definitions and some details on primary data sources.   
+
+*******************************
+*        Definitions		  *
+*******************************
+
+****** ID-Level Variables ********
+
+series: 	A unique numeric ID for each Internet Draft 
+idfile:		Clean version ID root filename
+oldIdfile:	Original version of unique ID filename
+exiType:    Numeric code for ID publication outcome (1=Censored; 2=Expired; 3=Nonstandards-track RFC; 4=Standards-tack RFC)
+
+date: 		Date of initial ID submission. This was typically obtained from archived messages sent to the ietf-announce email listserv. In the rare instance where that data was missing, we used the 15th day of the month listed in the ID fulltext, as downloaded from watersprings. 
+
+age:        Number of revisions prior to exit
+ttlDur: 	Days between initial ID submission and exit. In the case of Expired IDs, exit corresponds to 15 days after the final revision is submitted (though the ID is technically active for an additional 5.5 months). For published ID's exit occurs at the last call announcement. 
+
+idTtlMentions: Number of times the ID filename appears in a message (subject header or message body) sent to any IETF WG email listserv. 
+
+stbEmail:	Suit-share based on sender's address for any mention of an ID on any IETF WG listserv. For example, if an ID filename appeared in 4 email messages across all IETF listservs, and three of those messages were sent from addresses in the dot-com or dot-net top-level domains, this variable would equal 0.75. While this variable yields variation in suit-share at the ID level, I do not use it in the main analysis because of reverse causality concerns (long publication delays may influence stbEmail and/or idTtlMentions). 
+
+wgDum:		Dummy for ID's submitted to an IETF Working Group, which will have a filename with the structure draft-ietf-wgname-idname-XX.txt. In a few cases, ID's were submitted by an individual author and later picked up by a WG. These records will have wgDum ==1 and statechx>0.
+
+rfcKeyCnt:	Count of standards-track keywords in the initial ID submission. This variable was obtained by using a perl script to parse the ID text, as downloaded from www.watersprings.org. Standards-track keywords are defined in RFC 2119. 
+
+rfcDum:		Dummy for ID's that were published as an RFC. 
+filesize:	Internet Draft (version 1) file size in bytes.
+priorwgc:	Dummy for one or more authors serving as a WG chair.
+n_author:	Number of authors on initial ID submission
+n_affil: 	Number of author-affiliations on initial ID submission. Affiliations were typically determined using email or postal mail addresses listed within the ID. For example, timsimcoe@bu.edu would have the "bu" affiliation. These were also hand checked.  
+usAuth:		Dummy for one or more authors with a US affiliation or mailing address.
+forAuth:	Dummy for one or more authors with a non-US affiliation or mailing address.
+n_tld:		Count of ID authors with an email in a particular top-level domain; where tld=(com,net,gov,edu,or org). Email addresses were pre-processed to remove country-code TLDs. So, for example, dieter@tu-munich.de would be assigned to the "edu" top-level domain. 
+
+
+
+****** WG-Level Variables ********
+wg				WG Unique ID code
+wgname          WG Name
+techarea        IETF Technology Area of WG
+wgExitCnt       Cumulative WG ID disposals (to date)
+wgIdCnt         Cumulative WG ID submissions (to date)
+wgRfcCnt        Cumulative WG RFCs published (to date)
+wgIdNow         Current WG ID submissions (equals wgIdCnt - wgExitCnt)
+cumWgOrg2       Number of organization that have submitted one or more ID to the WG. Obtained by counting affiliations listed in the text of the ID, as downloaded from www.watersprings.org
+
+cumWgIpr        Weighted patent count of all Firms contributing an ID to the focal WG. The following text describes how this variable was created.
+
+The affiliation of each Internet Draft author is identified using their email address. This approach identifies 1,460 organizations with one or more contributions to an IETF Working Group. I focus on 498 organizations that appear on two or more Internet Drafts, and attempted to match each organization to a standardized patent assignee number by hand.
+
+I successfully matched 193 organizations to an assignee code. All of the top 100 IETF contributors were either matched or determined to be non-US patent holders. Many of the unmatched organizations were non-profits (e.g.\ the World Wide Web Consortium), network operators (e.g.\ MERIT) or non-US academic institutions. Because of the skew in contribution rates, one or more of the matched organizations appeared as an author on over 90 percent of the proposals in the estimation sample. However, some small patenting firms may not show up in the data because of lags in the US Patent and Trademark Office's patent review and reporting process.
+
+For each firm in the matched group, I construct a five year unadjusted patent stock, and a five year stock depreciated at 15 percent. I also calculated the uncentered correlation coefficient over 3-digit USPTO technology classes between the firm's patent portfolio and the total stock of patents owned by IETF participants. The cumWgIpr is the sum (over all firms with one or more proposals before a Working Group) of the five-year depreciated patent stock weighted by the firm-specific correlation coefficient.
+
+
+****** WG-Listserv Variables ********
+The following variables were created from information contained in each WG's email archives. These archives are currently located at http://datatracker.ietf.org/list/wg/. I have provided some of the rawdata used to construct these measures in the data directory. The email data can be parsed at the level of the message, the unique-user, or the unique-affiliation (roughly, firm). I provide key measures at all three levels of aggregation, although they are typically correlated at 0.9 or greater.   
+
+cummsgs: 		Cumulative email messages on WH listserv (to date)
+
+ttlXXX1yr       Prior-year volume of messages (XXX=msg), users (XXX=usr) or Organizations (XXX=afl) on WG listserv
+
+stbXXXcum		Cumulative suit-share, or percentage of XXX from the dot-com and dot-net top-level domains, where XXX corresponds to messages (XXX=msg), users (XXX=usr) or Organizations (XXX=afl).
+
+stbXXX1yr		Prior-year suit-share, or percentage of XXX from the dot-com and dot-net top-level domains, where XXX corresponds to messages (XXX=msg), users (XXX=usr) or Organizations (XXX=afl).
+
+areaCumUsrs     Cumulative Users in other WGs in the same IETF Technology Area as focal WG
+
+areaUsrGrowth   1-year growth in areaCumUsrs
+
+
+I applied various screen to the email data to remove spam and other sources of unwanted measurement error. The main data are based on a sample of all message sent from an address that contributed to the listserv at least four times. However, I have included the raw (unfiltered) email data and a second screen based on only message that are Replies to some other message in the data directory. The following variables are based on those two alternate screens.    
+
+cummsgs_all     Identical to cummsgs based on unfiltered email data 
+cummsgs_rpl     Identical to cummsgs based on email "replies" data
+
+stbaflall       Identical to stbafl1yr based on unfiltered email data 
+stbaflrpl       Identical to stbafl1yr based on email "replies" data
+
+
+****** RFC-Level Variables ********
+rfc             RFC number for published ID
+rfcPubDate      RFC publication date
+rfcPages        RFC page count
+
+rfctype         RFC Publication type code (0=Not published;1=BCP;2=Draft Stadnard;3=Experimental;4=Historic;5=Informational;6=Proposed Stadnard;7=Internet Standard)
+exprfc          int    %9.0g                  1/0: Published as EXPERIMENTAL RFC
+inforfc         int    %9.0g                  1/0: Published as INFROMATIONAL RFC
+strfc           int    %9.0g                  1/0: Published as Proposed Standard
+nsrfc           int    %9.0g                  1/0: Published as Nonstadnards-track RFC
+
+obsDum          Dummy: Obsoletes one or more older RFCs
+updDum          Dummy: Updates one or more older RFCs                
+
+patCites        Cites from US patents to focal RFC. Collected from www.uspto.gov by searching non-patent prior art field for RFCXXXX or "Request for Comments".
+rfcCites        Forward cites from future RFCs to focal RFC.
+pubCites        Cites from academic journal articles to focal RFC. Collected from ISI web of science by searching on RFCXXXX or "Request for Comments".
+
+backCites       Backwards Cites from focal RFC to previous RFCs
+stBackCites     Backwards Cites from focal RFC to previous Standards-track RFCs
+nsBackCites     Backwards Cites from focal RFC to previous Nonstandards-track RFCs
+
+
+
+************************************
+* Data Types and Variable Labels   *
+************************************
+
+Contains data from data/idLevel.dta
+  obs:        12,377                          
+ vars:            72                          24 Mar 2010 13:53
+ size:     5,086,947 (99.2% of memory free)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+series          int    %9.0g                  Internet Draft Unique ID
+date            int    %d                     ID Version 1.0 submission date
+wg              int    %10.0g      wgname     WG Unique ID code
+rfc             long   %8.0g                  RFC number, if published
+pubCohort       int    %9.0g                  ID Version 1.0 submission year
+wgDum           int    %9.0g                  1/0: ID submitted to IETF WG
+rfcDum          int    %9.0g                  1/0: ID published as RFC
+idWG            str10  %10s                   WG Name
+filesize        long   %12.0g                 ID Version 1.0 file size (bytes)
+n_author        int    %9.0g                  Author Count
+n_affil         int    %9.0g                  Author affiliation count
+usAuth          int    %9.0g                  1/0: has a US based author
+forAuth         int    %9.0g                  1/0: has a non-US based author
+n_com           int    %9.0g                  # dot-com authors
+n_edu           int    %9.0g                  # dot-edu authors
+n_gov           int    %9.0g                  # dot-gov authors
+n_net           int    %9.0g                  # dot-net authors
+n_org           int    %9.0g                  # dot-org authors
+priorwgc        int    %9.0g                  1/0: Prioir WG Chair Author
+wg_pubn         int    %9.0g                  WG Name
+rfcKeyCnt       float  %8.0g                  ID Version 1.0 Standards-track keyword count
+rfcPubDate      str7   %9s                    
+idfile          str76  %76s                   IETF ID filename
+patCites        double %9.0g                  (sum) patCites
+rfcCites        double %9.0g                  (sum) rfcCites
+rfcPages        int    %8.0g                  
+pubCites        double %8.0g                  (sum) pubCites
+backCites       double %9.0g                  (sum) backCites
+stBackCites     double %9.0g                  (sum) stBackCites
+nsBackCites     double %9.0g                  (sum) nsBackCites
+cumWgIpr        float  %9.0g                  Weighted patents measure
+cumWgOrg2       float  %9.0g                  Cum WG org participants
+oldIdfile       str65  %65s                   IETF ID filename
+wgname          str17  %17s                   WG Name
+techarea        int    %8.0g       techarea   WG's IETF Technology Area
+month           float  %9.0g                  ID Version 1.0 submission month
+cummsgs         float  %9.0g                  Cumulative WG listserv volume (message count)
+stbmsgcum       float  %9.0g                  
+stbusrcum       float  %9.0g                  
+stbaflcum       float  %9.0g                  Suit-share: Cumulative orgs
+stbmsg1yr       float  %9.0g                  
+stbusr1yr       float  %9.0g                  Suit-share: 1-year users
+stbafl1yr       float  %9.0g                  Suit-share: 1-year orgs
+ttlmsg1yr       float  %9.0g                  Prior-year WG listserv volume (message count)
+ttlusr1yr       float  %9.0g                  Prior-year WG listserv volume (user count)
+ttlafl1yr       float  %9.0g                  Prior-year WG listserv volume (organization count)
+stbLagUsr       float  %9.0g                  1-year lag of stbusr1yr
+stbLagAfl       float  %9.0g                  1-year lag of stbafl1yr
+areaCumUsrs     float  %9.0g                  Cumulative Members of other WGs in focal Tech Area
+areaCumAfls     float  %9.0g                  Cumulative Orgs of other WGs in focal Tech Area
+areaUsrGrowth   float  %9.0g                  1-year growth in areaCumUsrs
+areaAflGrowth   float  %9.0g                  
+cummsgs_all     float  %9.0g                  Cumulative WG listserv volume (message count)
+stbaflall       float  %9.0g                  Suit-share: 1-year orgs (all emails)
+cummsgs_rpl     float  %9.0g                  Cumulative WG listserv volume (message count)
+stbaflrpl       float  %9.0g                  Suit-share: 1-year orgs (replies only)
+age             int    %9.0g                  ID versions submitted (count)
+idTtlMentions   int    %8.0g                  Mentions of ID on WG listservs (count)
+rfctype         int    %21.0g      rfctype    RFC Publication type code
+ttlDur          int    %9.0g                  days from submission to disposal
+wgIdCnt         int    %9.0g                  Cum WG ID submissions (to date)
+wgRfcCnt        int    %9.0g                  Cum WG RFCs published (to date)
+wgExitCnt       int    %9.0g                  Cum WG ID disposals (to date)
+wgIdNow         int    %9.0g                  WG current ID submissions
+obsDum          float  %9.0g                  
+updDum          float  %9.0g                  
+exiType         int    %9.0g                  1=Censored; 2=Expired; 3=Nonstandard;4=Standard
+exprfc          int    %9.0g                  1/0: Published as EXPERIMENTAL RFC
+inforfc         int    %9.0g                  1/0: Published as INFROMATIONAL RFC
+strfc           int    %9.0g                  1/0: Published as Proposed Standard
+nsrfc           int    %9.0g                  1/0: Published as Nonstadnards-track RFC
+stbEmail        float  %9.0g                  Suit-share based on listserv mentions

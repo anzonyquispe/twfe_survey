@@ -1,0 +1,467 @@
+ Volume in drive C is Windows7_OS
+ Volume Serial Number is D23F-E96F
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data
+
+01/14/2014  12:49 PM    <DIR>          .
+01/14/2014  12:49 PM    <DIR>          ..
+11/18/2013  09:53 PM    <DIR>          1998
+11/18/2013  09:52 PM    <DIR>          1999
+11/18/2013  07:36 PM    <DIR>          2000
+11/18/2013  07:36 PM    <DIR>          2001
+11/18/2013  07:37 PM    <DIR>          2002
+11/18/2013  07:37 PM    <DIR>          2003
+11/18/2013  07:38 PM    <DIR>          2004
+11/18/2013  07:38 PM    <DIR>          2005
+11/18/2013  07:39 PM    <DIR>          2006
+11/18/2013  07:35 PM    <DIR>          2007
+08/01/2013  11:31 AM    <DIR>          2008
+11/18/2013  09:58 PM    <DIR>          2009
+11/18/2013  09:59 PM    <DIR>          2010
+05/22/2013  01:30 PM    <DIR>          93-94
+05/22/2013  01:30 PM    <DIR>          94-95
+01/21/2013  09:29 PM    <DIR>          95-96
+01/21/2013  09:29 PM    <DIR>          96-97
+01/21/2013  09:29 PM    <DIR>          97-98
+12/24/2012  08:37 PM    <DIR>          98-99
+09/20/2013  01:02 PM    <DIR>          Dictionaries
+01/14/2014  12:49 PM               170 manifest.txt
+11/24/2013  02:29 PM               125 Notes on ASI raw data file renaming.txt
+11/18/2013  07:30 PM    <DIR>          summary_record
+
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\1998
+
+11/18/2013  09:53 PM    <DIR>          .
+11/18/2013  09:53 PM    <DIR>          ..
+03/16/2012  03:01 AM         1,671,912 OASIBLA98.TXT
+03/16/2012  03:02 AM         1,541,531 OASIBLB98.TXT
+03/16/2012  03:02 AM        23,790,846 OASIBLC98.TXT
+03/16/2012  03:03 AM        15,992,350 OASIBLD98.TXT
+03/16/2012  03:04 AM        17,082,742 OASIBLE98.TXT
+07/25/2013  05:44 AM         4,743,552 OASIBLF98.TXT
+03/16/2012  03:05 AM         3,860,064 OASIBLG98.TXT
+03/16/2012  03:05 AM        18,431,182 OASIBLH98.TXT
+03/16/2012  03:06 AM           967,890 OASIBLI98.TXT
+03/16/2012  03:06 AM        10,381,203 OASIBLJ98.TXT
+              10 File(s)     98,463,272 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\1999
+
+11/18/2013  09:52 PM    <DIR>          .
+11/18/2013  09:52 PM    <DIR>          ..
+03/16/2012  02:46 AM         2,211,990 OASIBLA99.TXT
+03/16/2012  02:47 AM         1,635,715 OASIBLB99.TXT
+03/16/2012  02:48 AM        24,836,936 OASIBLC99.TXT
+03/16/2012  02:49 AM        16,608,700 OASIBLD99.TXT
+03/16/2012  02:50 AM        17,769,620 OASIBLE99.TXT
+07/25/2013  05:50 AM         4,925,760 OASIBLF99.TXT
+03/16/2012  02:52 AM         3,489,564 OASIBLG99.TXT
+03/16/2012  02:52 AM        19,301,051 OASIBLH99.TXT
+03/16/2012  02:53 AM           995,764 OASIBLI99.TXT
+03/16/2012  02:53 AM        10,560,825 OASIBLJ99.TXT
+              10 File(s)    102,335,925 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2000
+
+11/18/2013  07:36 PM    <DIR>          .
+11/18/2013  07:36 PM    <DIR>          ..
+03/16/2012  03:00 AM         2,712,336 OASIBLA1.TXT
+03/16/2012  03:01 AM         2,048,929 OASIBLB1.TXT
+03/16/2012  03:01 AM        32,026,706 OASIBLC1.TXT
+03/16/2012  03:02 AM        21,216,050 OASIBLD1.TXT
+03/16/2012  03:03 AM        23,795,644 OASIBLE1.TXT
+07/25/2013  06:24 AM         6,225,984 OASIBLF1.TXT
+03/16/2012  03:05 AM         4,429,932 OASIBLG1.TXT
+03/16/2012  03:05 AM        25,047,715 OASIBLH1.TXT
+03/16/2012  03:06 AM         1,349,040 OASIBLI1.TXT
+03/16/2012  03:07 AM        13,333,644 OASIBLJ1.TXT
+              10 File(s)    132,185,980 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2001
+
+11/18/2013  07:36 PM    <DIR>          .
+11/18/2013  07:36 PM    <DIR>          ..
+03/16/2012  01:31 AM         2,787,972 OASIBLA2.TXT
+03/16/2012  01:32 AM         2,194,292 OASIBLB2.TXT
+03/16/2012  01:32 AM        35,103,656 OASIBLC2.TXT
+03/16/2012  01:33 AM        22,935,750 OASIBLD2.TXT
+03/16/2012  01:39 AM        25,738,632 OASIBLE2.TXT
+07/25/2013  05:56 AM         6,668,352 OASIBLF2.TXT
+03/16/2012  01:42 AM         4,791,384 OASIBLG2.TXT
+03/16/2012  01:43 AM        27,056,799 OASIBLH2.TXT
+03/16/2012  01:43 AM         1,508,353 OASIBLI2.TXT
+03/16/2012  01:45 AM        14,463,702 OASIBLJ2.TXT
+              10 File(s)    143,248,892 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2002
+
+11/18/2013  07:37 PM    <DIR>          .
+11/18/2013  07:37 PM    <DIR>          ..
+03/16/2012  01:16 AM         2,761,836 OASIBLA3.TXT
+03/16/2012  01:18 AM         2,194,963 OASIBLB3.TXT
+03/16/2012  01:19 AM        35,594,654 OASIBLC3.TXT
+03/16/2012  01:20 AM        23,148,800 OASIBLD3.TXT
+03/16/2012  01:21 AM        26,071,628 OASIBLE3.TXT
+07/25/2013  05:59 AM         6,723,072 OASIBLF3.TXT
+03/16/2012  01:22 AM         4,834,596 OASIBLG3.TXT
+03/16/2012  01:23 AM        27,459,586 OASIBLH3.TXT
+03/16/2012  01:23 AM         1,567,335 OASIBLI3.TXT
+03/16/2012  01:24 AM        14,630,472 OASIBLJ3.TXT
+              10 File(s)    144,986,942 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2003
+
+11/18/2013  07:37 PM    <DIR>          .
+11/18/2013  07:37 PM    <DIR>          ..
+03/16/2012  01:03 AM         3,754,674 OASIBLA4.TXT
+03/16/2012  01:04 AM         2,984,669 OASIBLB4.TXT
+03/16/2012  01:05 AM        47,557,748 OASIBLC4.TXT
+03/16/2012  01:06 AM        30,771,250 OASIBLD4.TXT
+03/16/2012  01:07 AM        34,753,360 OASIBLE4.TXT
+07/25/2013  06:01 AM         9,069,120 OASIBLF4.TXT
+03/16/2012  01:08 AM         6,432,972 OASIBLG4.TXT
+03/16/2012  01:09 AM        38,464,272 OASIBLH4.TXT
+03/16/2012  01:10 AM         1,931,314 OASIBLI4.TXT
+03/16/2012  01:10 AM        19,358,325 OASIBLJ4.TXT
+              10 File(s)    195,077,704 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2004
+
+11/18/2013  07:38 PM    <DIR>          .
+11/18/2013  07:38 PM    <DIR>          ..
+03/15/2012  03:06 AM         3,256,440 OASIBLA5.TXT
+03/15/2012  03:07 AM         2,705,106 OASIBLB5.TXT
+03/15/2012  03:13 AM        41,391,292 OASIBLC5.TXT
+03/15/2012  04:08 AM        26,604,650 OASIBLD5.TXT
+03/15/2012  04:08 AM        30,436,920 OASIBLE5.TXT
+07/25/2013  06:03 AM         7,910,784 OASIBLF5.TXT
+03/15/2012  04:09 AM         5,589,168 OASIBLG5.TXT
+03/15/2012  04:10 AM        33,462,737 OASIBLH5.TXT
+03/15/2012  04:11 AM         1,762,222 OASIBLI5.TXT
+03/15/2012  04:12 AM        16,629,723 OASIBLJ5.TXT
+              10 File(s)    169,749,042 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2005
+
+11/18/2013  07:38 PM    <DIR>          .
+11/18/2013  07:38 PM    <DIR>          ..
+07/15/2011  05:28 AM         8,710,272 asiblkf6.txt
+03/15/2012  02:46 AM         3,782,064 OASIBLA6.TXT
+03/15/2012  02:50 AM         2,821,006 OASIBLB6.TXT
+03/15/2012  02:51 AM        45,532,436 OASIBLC6.TXT
+03/15/2012  02:52 AM        29,058,650 OASIBLD6.TXT
+03/15/2012  02:53 AM        33,366,270 OASIBLE6.TXT
+07/25/2013  06:05 AM         8,710,272 OASIBLF6.TXT
+03/15/2012  02:55 AM         6,645,132 OASIBLG6.TXT
+03/15/2012  02:56 AM        36,431,934 OASIBLH6.TXT
+03/15/2012  02:56 AM         1,850,464 OASIBLI6.TXT
+03/15/2012  02:57 AM        17,893,962 OASIBLJ6.TXT
+              11 File(s)    194,802,462 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2006
+
+11/18/2013  07:39 PM    <DIR>          .
+11/18/2013  07:39 PM    <DIR>          ..
+03/15/2012  02:27 AM         4,413,750 OASIBLA7.TXT
+03/15/2012  02:31 AM         2,863,706 OASIBLB7.TXT
+03/15/2012  02:32 AM        45,615,072 OASIBLC7.TXT
+03/15/2012  02:34 AM        29,168,100 OASIBLD7.TXT
+03/15/2012  02:35 AM        33,338,186 OASIBLE7.TXT
+07/25/2013  06:07 AM         8,626,176 OASIBLF7.TXT
+03/15/2012  02:36 AM         6,020,820 OASIBLG7.TXT
+03/15/2012  02:37 AM        36,529,570 OASIBLH7.TXT
+03/15/2012  02:38 AM         1,894,046 OASIBLI7.TXT
+03/15/2012  02:39 AM        17,970,003 OASIBLJ7.TXT
+              10 File(s)    186,439,429 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2007
+
+11/18/2013  07:35 PM    <DIR>          .
+11/18/2013  07:35 PM    <DIR>          ..
+03/15/2012  01:59 AM         3,754,608 OASIBLA8.TXT
+03/15/2012  02:02 AM         2,430,057 OASIBLB8.TXT
+03/15/2012  02:10 AM        40,563,472 OASIBLC8.TXT
+03/15/2012  02:11 AM        25,809,500 OASIBLD8.TXT
+03/15/2012  02:13 AM        29,264,118 OASIBLE8.TXT
+07/25/2013  06:10 AM         7,529,280 OASIBLF8.TXT
+03/15/2012  02:15 AM         5,299,632 OASIBLG8.TXT
+03/15/2012  02:16 AM        32,341,232 OASIBLH8.TXT
+03/15/2012  02:17 AM         1,831,291 OASIBLI8.TXT
+03/15/2012  02:18 AM        15,930,666 OASIBLJ8.TXT
+              10 File(s)    164,753,856 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2008
+
+08/01/2013  11:31 AM    <DIR>          .
+08/01/2013  11:31 AM    <DIR>          ..
+03/15/2012  10:05 AM         3,750,012 OASIBLA9.TXT
+03/15/2012  10:26 AM         2,329,733 OASIBLB9.TXT
+03/15/2012  10:29 AM        43,975,350 OASIBLC9.TXT
+03/15/2012  10:31 AM        25,534,000 OASIBLD9.TXT
+03/15/2012  10:38 AM        35,652,638 OASIBLE9.TXT
+03/15/2012  10:40 AM         6,562,080 OASIBLF9.TXT
+03/15/2012  10:41 AM         5,776,008 OASIBLG9.TXT
+03/15/2012  10:43 AM        31,874,150 OASIBLH9.TXT
+03/15/2012  10:44 AM         1,786,708 OASIBLI9.TXT
+03/15/2012  10:47 AM        15,430,662 OASIBLJ9.TXT
+              10 File(s)    172,671,341 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2009
+
+11/18/2013  09:58 PM    <DIR>          .
+11/18/2013  09:58 PM    <DIR>          ..
+08/01/2013  10:28 AM         3,940,797 OASA10.TXT
+08/01/2013  10:29 AM         2,605,735 OASB10.TXT
+08/01/2013  10:29 AM        48,005,140 OASC10.TXT
+08/01/2013  10:31 AM        27,824,300 OASD10.TXT
+08/01/2013  10:32 AM        40,758,428 OASE10.TXT
+08/01/2013  10:32 AM         7,217,448 OASF10.TXT
+08/01/2013  10:33 AM         6,311,928 OASG10.TXT
+08/01/2013  10:34 AM        35,542,640 OASH10.TXT
+08/01/2013  10:34 AM         1,862,000 OASI10.TXT
+08/01/2013  10:35 AM        18,700,902 OASJ10.TXT
+              10 File(s)    192,769,318 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\2010
+
+11/18/2013  09:59 PM    <DIR>          .
+11/18/2013  09:59 PM    <DIR>          ..
+08/21/2013  10:07 AM         3,709,253 OASA11.TXT
+08/21/2013  10:17 AM         2,409,696 OASB11.TXT
+08/21/2013  10:19 AM        56,315,340 OASC11.TXT
+08/21/2013  10:20 AM        31,021,218 OASD11.TXT
+08/21/2013  10:24 AM        41,597,262 OASE11.TXT
+08/21/2013  10:25 AM         8,464,896 OASF11.TXT
+08/21/2013  10:27 AM         7,555,008 OASG11.TXT
+08/21/2013  10:29 AM        35,433,528 OASH11.TXT
+08/21/2013  10:30 AM         1,890,720 OASI11.TXT
+08/21/2013  10:31 AM        18,106,416 OASJ11.TXT
+08/21/2013  10:44 AM            44,032 Paneldatastruc 2010-11.xls
+              11 File(s)    206,547,369 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\93-94
+
+05/22/2013  01:30 PM    <DIR>          .
+05/22/2013  01:30 PM    <DIR>          ..
+05/22/2013  01:30 PM    <DIR>          ASI1993_94_DATA
+09/20/2013  01:26 PM    <DIR>          SUPPORTING_DOCUMENTS_9394
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\93-94\ASI1993_94_DATA
+
+05/22/2013  01:30 PM    <DIR>          .
+05/22/2013  01:30 PM    <DIR>          ..
+07/14/2006  10:25 AM       210,849,468 ASID9394.TXT
+               1 File(s)    210,849,468 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\93-94\SUPPORTING_DOCUMENTS_9394
+
+09/20/2013  01:26 PM    <DIR>          .
+09/20/2013  01:26 PM    <DIR>          ..
+05/11/2010  09:53 AM            59,904 ASICODES1988_89_to_(1994_95).DOC
+09/22/2010  01:48 PM            87,253 ASIsch93_94.pdf
+05/11/2006  11:10 AM            82,432 ASISTATE_CODES.DOC
+04/08/2003  04:13 PM           142,336 CONV7087.DOC
+06/29/2004  04:14 PM           239,104 CONV8798.DOC
+09/20/2013  01:26 PM            94,208 D E Layout 93-94.xls
+12/15/2004  10:46 AM        37,967,872 nic70.doc
+05/23/2001  02:49 PM            84,270 NIC87.TXT
+04/26/2006  04:12 PM            38,400 NOTE_FOR_NIC.doc
+               9 File(s)     38,795,779 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\94-95
+
+05/22/2013  01:30 PM    <DIR>          .
+05/22/2013  01:30 PM    <DIR>          ..
+05/22/2013  01:30 PM    <DIR>          ASI1994_95_DATA
+09/20/2013  01:15 PM    <DIR>          SUPPORTING_DOCUENTS_9495
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\94-95\ASI1994_95_DATA
+
+05/22/2013  01:30 PM    <DIR>          .
+05/22/2013  01:30 PM    <DIR>          ..
+07/17/2006  10:47 AM       216,043,137 ASID9495.TXT
+               1 File(s)    216,043,137 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\94-95\SUPPORTING_DOCUENTS_9495
+
+09/20/2013  01:15 PM    <DIR>          .
+09/20/2013  01:15 PM    <DIR>          ..
+05/11/2010  09:53 AM            59,904 ASICODES1988_89_to_(1994_95).DOC
+09/22/2010  01:48 PM            87,245 ASIsch94_95.pdf
+05/11/2006  11:10 AM            82,432 ASISTATE_CODES.DOC
+04/08/2003  04:13 PM           142,336 CONV7087.DOC
+09/20/2013  01:15 PM           101,376 D E Layout  94-95.xls
+12/15/2004  10:46 AM        37,967,872 nic70.doc
+05/23/2001  02:49 PM            84,270 NIC87.TXT
+04/26/2006  04:12 PM            38,400 NOTE_FOR_NIC.doc
+               8 File(s)     38,563,835 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\95-96
+
+01/21/2013  09:29 PM    <DIR>          .
+01/21/2013  09:29 PM    <DIR>          ..
+02/27/2002  01:38 AM         7,904,078 P9596011.C
+02/27/2002  01:53 AM        54,395,850 P9596040.C
+02/27/2002  02:01 AM        13,499,569 P9596053.C
+02/27/2002  02:04 AM        15,211,384 P9596054.C
+02/27/2002  02:06 AM        16,388,351 P9596073.C
+02/27/2002  02:08 AM         7,679,535 P9596074.C
+02/27/2002  06:26 AM         7,591,581 P9596081.C
+02/27/2002  06:30 AM         7,599,116 P9596082.C
+02/27/2002  06:34 AM        12,405,487 P9596091.C
+02/27/2002  06:36 AM         7,762,968 P9596101.C
+02/27/2002  06:38 AM         7,787,354 P9596102.C
+02/27/2002  06:40 AM         6,609,839 P9596111.C
+02/27/2002  06:42 AM         7,436,223 P9596121.C
+02/27/2002  06:44 AM        19,424,545 P9596131.C
+02/27/2002  06:47 AM        12,699,215 P9596132.C
+02/27/2002  06:52 AM           609,513 P9596133.C
+02/27/2002  06:55 AM        21,302,404 P9596141.C
+              17 File(s)    226,307,012 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\96-97
+
+01/21/2013  09:29 PM    <DIR>          .
+01/21/2013  09:29 PM    <DIR>          ..
+02/28/2002  12:48 AM         8,196,025 P9697011.C
+02/28/2002  01:01 AM        56,551,682 P9697040.C
+02/28/2002  01:05 AM        14,000,167 P9697053.C
+02/28/2002  01:13 AM        15,702,392 P9697054.C
+02/28/2002  01:15 AM        16,905,663 P9697073.C
+02/28/2002  01:18 AM         7,922,299 P9697074.C
+02/28/2002  01:20 AM         7,831,468 P9697081.C
+02/28/2002  01:21 AM         7,830,920 P9697082.C
+02/28/2002  01:23 AM        12,621,399 P9697091.C
+02/28/2002  01:24 AM         8,025,049 P9697101.C
+02/28/2002  12:19 PM         8,051,764 P9697102.C
+02/28/2002  01:27 AM         6,859,316 P9697111.C
+02/28/2002  01:29 AM         7,668,849 P9697121.C
+02/28/2002  01:31 AM        19,280,010 P9697131.C
+02/28/2002  01:32 AM        12,562,626 P9697132.C
+02/28/2002  01:34 AM           797,888 P9697133.C
+02/28/2002  01:36 AM        21,299,938 P9697141.C
+              17 File(s)    232,107,455 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\97-98
+
+01/21/2013  09:29 PM    <DIR>          .
+01/21/2013  09:29 PM    <DIR>          ..
+02/26/2002  02:02 AM         3,791,436 P979811C.RAW
+02/26/2002  02:04 AM         3,746,688 P979821C.RAW
+02/26/2002  02:06 AM         3,675,936 P979822C.RAW
+02/26/2002  02:07 AM         3,760,152 P979823C.RAW
+02/26/2002  02:08 AM         3,520,440 P979831C.RAW
+02/26/2002  02:10 AM         3,513,048 P979832C.RAW
+02/26/2002  02:11 AM         3,718,572 P979833C.RAW
+02/26/2002  02:13 AM         3,623,268 P979841C.RAW
+02/26/2002  02:15 AM         3,658,248 P979842C.RAW
+02/26/2002  02:17 AM         3,746,424 P979851C.RAW
+02/26/2002  02:20 AM         3,748,404 P979852C.RAW
+02/26/2002  02:22 AM        13,956,624 P979861C.RAW
+02/26/2002  02:25 AM           777,084 P979871C.RAW
+02/26/2002  02:28 AM        10,172,976 P979881C.RAW
+02/26/2002  02:29 AM         2,577,432 P979891C.RAW
+02/26/2002  02:32 AM         3,704,448 P979895C.RAW
+              16 File(s)     71,691,180 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\98-99
+
+12/24/2012  08:37 PM    <DIR>          .
+12/24/2012  08:37 PM    <DIR>          ..
+09/05/2002  02:38 AM         3,901,128 block98a.txt
+09/05/2002  02:38 AM         3,891,734 block98b.txt
+09/05/2002  02:40 AM        25,094,454 block98c.txt
+09/05/2002  02:42 AM        49,256,438 block98d.txt
+09/05/2002  02:44 AM        22,294,426 block98e.txt
+09/05/2002  02:45 AM         3,804,724 block98f.txt
+09/05/2002  02:46 AM         3,810,576 block98g.txt
+09/05/2002  02:48 AM        36,862,364 block98h.txt
+09/05/2002  02:48 AM         1,935,780 block98i.txt
+09/05/2002  02:49 AM        10,449,054 block98j.txt
+              10 File(s)    161,300,678 bytes
+
+ Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\Dictionaries
+
+09/20/2013  01:02 PM    <DIR>          .
+09/20/2013  01:02 PM    <DIR>          ..
+12/17/2009  11:52 AM             6,675 in8485.dic
+12/17/2009  11:03 AM             6,697 in8586.dic
+12/15/2009  11:39 AM             6,697 in8687.dic
+12/15/2009  11:39 AM             6,717 in8788.dic
+12/23/2009  04:59 PM             6,431 in8889.dic
+12/15/2009  11:39 AM             6,345 in8990.dic
+12/15/2009  11:39 AM             6,662 in9091.dic
+12/15/2009  11:39 AM             6,663 in9192.dic
+12/15/2009  11:39 AM             6,663 in9293.dic
+12/15/2009  11:40 AM             6,662 in9394.dic
+12/18/2009  04:25 PM               590 in9596_011.dic
+12/25/2009  11:40 AM               602 in9596_040.dic
+12/26/2009  10:27 AM               518 in9596_053.dic
+12/23/2009  06:08 PM               809 in9596_074.dic
+12/18/2009  02:16 PM             1,120 in9596_091.dic
+12/25/2009  12:34 PM               662 in9596_101.dic
+09/20/2013  12:46 PM               395 in9596_102.dic
+12/18/2009  09:18 PM               856 in9596_111.dic
+12/18/2009  02:16 PM               793 in9596_121.dic
+12/25/2009  12:48 PM             1,048 in9596_131.dic
+09/20/2013  12:55 PM               873 in9596_132.dic
+12/25/2009  12:56 PM             1,048 in9596_133.dic
+12/19/2009  08:52 AM               687 in9596_141.dic
+12/18/2009  04:28 PM               590 in9697_011.dic
+12/25/2009  11:41 AM               602 in9697_040.dic
+12/26/2009  10:27 AM               518 in9697_053.dic
+12/23/2009  06:09 PM               809 in9697_074.dic
+12/18/2009  02:18 PM             1,120 in9697_091.dic
+12/26/2009  10:52 AM               395 in9697_102.dic
+12/18/2009  09:19 PM               856 in9697_111.dic
+12/18/2009  02:31 PM               793 in9697_121.dic
+12/26/2009  10:54 AM             1,048 in9697_131.dic
+12/26/2009  10:55 AM               881 in9697_132.dic
+12/26/2009  11:09 AM             1,048 in9697_133.dic
+12/19/2009  08:52 AM               689 in9697_141.dic
+12/18/2009  04:16 PM               760 in9798_11.dic
+12/26/2009  11:33 AM               605 in9798_21.dic
+12/26/2009  11:34 AM               380 in9798_23.dic
+12/23/2009  06:11 PM               518 in9798_31.dic
+12/23/2009  06:12 PM               542 in9798_32.dic
+12/23/2009  07:09 PM               557 in9798_33.dic
+12/20/2009  09:33 AM               748 in9798_41.dic
+12/20/2009  09:32 AM               481 in9798_42.dic
+12/26/2009  12:08 PM               704 in9798_51.dic
+12/26/2009  12:08 PM               642 in9798_52.dic
+12/18/2009  11:00 AM               715 in9798_61.dic
+12/18/2009  12:44 PM               571 in9798_81.dic
+12/18/2009  11:18 AM               474 in9798_91.dic
+12/17/2009  09:13 PM               553 in9899_a.dic
+12/17/2009  09:12 PM               147 in9899_b.dic
+12/24/2009  05:03 PM               476 in9899_c.dic
+12/24/2009  05:04 PM               186 in9899_d.dic
+12/23/2009  06:37 PM               170 in9899_e.dic
+12/24/2009  05:46 PM               202 in9899_f.dic
+12/17/2009  09:12 PM               160 in9899_g.dic
+12/24/2009  05:49 PM               255 in9899_h.dic
+12/24/2009  05:49 PM               255 in9899_i.dic
+12/19/2009  10:39 AM               607 in9899_j.dic
+09/20/2013  12:58 PM    <DIR>          old DNU
+              58 File(s)         96,270 bytes
+
+  Directory of C:\Users\Steve\Documents\My Dropbox\India Power Shortages\01. Data\ASI\raw data\summary_record
+
+11/18/2013  07:30 PM    <DIR>          .
+11/18/2013  07:30 PM    <DIR>          ..
+01/07/2002  01:28 AM        66,328,188 as84fbm1.TXT
+01/07/2002  02:45 AM        67,278,222 as85fbm1.TXT
+01/07/2002  06:46 AM        66,676,572 as86fbm1.TXT
+01/09/2002  01:59 AM        52,627,490 as87fbm1.TXT
+01/09/2002  02:27 AM        54,157,510 as88fbm1.TXT
+01/08/2002  05:01 AM        55,993,760 as89fbm1.TXT
+01/04/2002  01:56 AM        59,142,768 as90fbm1.TXT
+01/04/2002  01:26 AM        60,418,266 as91fbm1.TXT
+01/04/2002  06:33 AM        61,683,450 as92fbm1.TXT
+01/04/2002  12:09 AM        63,081,570 as93fbm1.TXT
+01/04/2002  06:50 AM        65,945,424 as94fbm1.TXT
+07/07/2003  12:33 PM        80,240,119 ASI99_2000.TXT
+              12 File(s)    753,573,339 bytes

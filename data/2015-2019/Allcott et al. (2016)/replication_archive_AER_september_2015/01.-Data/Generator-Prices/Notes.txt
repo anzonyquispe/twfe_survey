@@ -1,0 +1,3 @@
+Price details on generators compiled by Steve via web research and calling some of the companies locally. These data should be treated as suggestive and non-exhaustive.
+
+The files created here will be used in the simulations.

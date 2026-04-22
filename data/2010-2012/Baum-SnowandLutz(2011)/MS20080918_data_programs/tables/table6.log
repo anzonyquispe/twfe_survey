@@ -1,0 +1,2495 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+       log:  C:\research\segregation\AER-DATA\tables\table6.log
+  log type:  text
+ opened on:  22 Nov 2010, 18:06:40
+
+. * set the data to be used;
+. local data = "../data/dis70panx.dta";
+
+. *********************************;
+. * Census Data Based Regressions *;
+. *********************************;
+. use `data', clear;
+
+. keep if major==1;
+(310 observations deleted)
+
+. replace imp = imp + 1900;
+(368 real changes made)
+
+. *** Make Measures Consistent Over Time;
+. replace publicelemhsw = publicelemw + publichsw if year ~= 1990;
+(276 real changes made)
+
+. replace publicelemhsb = publicelemb + publichsb if year ~= 1990;
+(276 real changes made)
+
+. replace publicelemhst = publicelemt + publichst if year ~= 1990;
+(276 real changes made)
+
+. replace privatelemhsw = privatelemw + privatehsw if year ~= 1990;
+(276 real changes made)
+
+. replace privatelemhsb = privatelemb + privatehsb if year ~= 1990;
+(276 real changes made)
+
+. replace privatelemhst = privatelemt + privatehst if year ~= 1990;
+(276 real changes made)
+
+. *** Create Treatment Variables;
+. gen imp_post    = (year >= imp);
+
+. gen impost_4    = (year >=  imp + 4);
+
+. gen nonsouth = (south==0);
+
+. local varlist  = "nonsouth south west";
+
+. for var  `varlist' : gen imp_post_X = imp_post*X;
+
+->  gen imp_post_nonsouth = imp_post*nonsouth
+
+->  gen imp_post_south = imp_post*south
+
+->  gen imp_post_west = imp_post*west
+
+. for var  `varlist' : gen impost_4_X = impost_4*X;
+
+->  gen impost_4_nonsouth = impost_4*nonsouth
+
+->  gen impost_4_south = impost_4*south
+
+->  gen impost_4_west = impost_4*west
+
+. *** Prepare Dependent Variables;
+. gen lnwpu = ln(publicelemhsw);
+
+. gen lnbpu = ln(publicelemhsb);
+
+. gen lnwpr = ln(privatelemhsw);
+
+. gen lnbpr = ln(privatelemhsb);
+(1 missing value generated)
+
+. gen lnwto = ln(white);
+
+. gen lnbto = ln(black);
+
+. * recode based on the data in Cascio et. al.;
+. replace disd = 1 if year == 1960 &  south == 1   & (state ~= 10 & state ~= 24 & state ~= 21 & state ~= 29 & state ~= 54 & state ~= 40);
+(41 real changes made)
+
+. replace disdm4 = 1 if year == 1960 &  south == 1 & (state ~= 10 & state ~= 24 & state ~= 21 & state ~= 29 & state ~= 54 & state ~= 40);
+(41 real changes made)
+
+. gen disd_south = disd*south;
+(55 missing values generated)
+
+. gen disd_nonsouth = disd*(1-south);
+(55 missing values generated)
+
+. gen disdm4_south = disdm4*south;
+(63 missing values generated)
+
+. gen disdm4_nonsouth = disdm4*(1-south);
+(63 missing values generated)
+
+.  disp " ";
+ 
+
+.  disp "***************************************** TABLE 6: TEXT ONLY ***********************************************";
+***************************************** TABLE 6: TEXT ONLY ***********************************************
+
+.  disp " ";
+ 
+
+.  ** diss and exp results for text;
+.  sum disd, det;
+
+         dissimilarity index 1969-1970, 1979-1980 or
+                     1989-1990 from W&L
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .1279302              0
+ 5%      .169682       .0916293
+10%     .2343605       .1233236       Obs                 313
+25%     .3654953       .1279302       Sum of Wgt.         313
+
+50%     .6118243                      Mean            .589126
+                        Largest       Std. Dev.      .2658658
+75%     .8010693              1
+90%            1              1       Variance       .0706846
+95%            1              1       Skewness       .0125224
+99%            1              1       Kurtosis       1.864313
+
+.  sum disd if year == 1970, det;
+
+         dissimilarity index 1969-1970, 1979-1980 or
+                     1989-1990 from W&L
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .1458154       .1458154
+ 5%     .3525232       .3172931
+10%     .4200188       .3419669       Obs                  92
+25%     .6379161       .3459057       Sum of Wgt.          92
+
+50%     .7555024                      Mean           .7161173
+                        Largest       Std. Dev.      .1683577
+75%     .8322574       .9239854
+90%      .898892       .9340634       Variance       .0283443
+95%     .9225549       .9446785       Skewness      -1.050513
+99%     .9725201       .9725201       Kurtosis       3.726894
+
+.  tabstat disd, by(year) stat(mean);
+
+Summary for variables: disd
+     by categories of: year 
+
+    year |      mean
+---------+----------
+    1960 |         1
+    1970 |  .7161173
+    1980 |  .4458387
+    1990 |  .4150823
+---------+----------
+   Total |   .589126
+--------------------
+
+.  xi: xtreg disd      imp_post i.year*i.south                     , fe i(leaid) cluster(leaid);
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       313
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7877                         Obs per group: min =         2
+       between = 0.1216                                        avg =       3.4
+       overall = 0.1706                                        max =         4
+
+                                                F(6,91)            =     99.10
+corr(u_i, Xb)  = -0.5140                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+        disd |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1509365   .0400725    -3.77   0.000    -.2305356   -.0713375
+ _Iyear_1970 |   .1528345   .0424441     3.60   0.001     .0685246    .2371444
+ _Iyear_1980 |   .0475401   .0188829     2.52   0.014     .0100315    .0850487
+ _Iyear_1990 |  (dropped)
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.3138787   .0612476    -5.12   0.000    -.4355396   -.1922178
+_IyeaXs~80_1 |    -.43769   .0506584    -8.64   0.000    -.5383167   -.3370633
+_IyeaXs~90_1 |  -.3917241   .0443641    -8.83   0.000    -.4798479   -.3036002
+       _cons |   .8003305   .0206252    38.80   0.000      .759361       .8413
+-------------+----------------------------------------------------------------
+     sigma_u |  .26141716
+     sigma_e |  .11810941
+         rho |  .83047708   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+.  *** First Stage for Whites (drop relevant collinear variables to help Stata);
+.  xi: xtreg disd imp_post imp_post_west i.year*i.south i.year*i.west                    , fe i(leaid) cluster(leaid);
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       313
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7959                         Obs per group: min =         2
+       between = 0.1335                                        avg =       3.4
+       overall = 0.1524                                        max =         4
+
+                                                F(9,91)            =     68.35
+corr(u_i, Xb)  = -0.5453                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+        disd |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1742626   .0390886    -4.46   0.000    -.2519072    -.096618
+imp_post_w~t |   .1973839    .136554     1.45   0.152    -.0738639    .4686317
+ _Iyear_1970 |   .1672291   .0461765     3.62   0.000     .0755052     .258953
+ _Iyear_1980 |   .0750447    .022868     3.28   0.001     .0296203    .1204692
+ _Iyear_1990 |  (dropped)
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.3170136   .0624469    -5.08   0.000    -.4410567   -.1929705
+_IyeaXs~80_1 |  -.4417859   .0559371    -7.90   0.000    -.5528981   -.3306738
+_IyeaXs~90_1 |  -.3680435    .043065    -8.55   0.000    -.4535869   -.2825001
+ _Iyear_1970 |   .1672291   .0461765     3.62   0.000     .0755052     .258953
+ _Iyear_1980 |   .0750447    .022868     3.28   0.001     .0296203    .1204692
+ _Iyear_1990 |  (dropped)
+    _Iwest_1 |  (dropped)
+_IyeaXw~70_1 |  (dropped)
+_IyeaXw~80_1 |  -.1413595   .1414302    -1.00   0.320    -.4222932    .1395741
+_IyeaXw~90_1 |  -.0697492   .1394461    -0.50   0.618    -.3467417    .2072433
+       _cons |    .791578   .0217313    36.43   0.000     .7484115    .8347446
+-------------+----------------------------------------------------------------
+     sigma_u |  .27210876
+     sigma_e |  .11661247
+         rho |   .8448401   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+.  test imp_post imp_post_west;
+
+ ( 1)  imp_post = 0
+ ( 2)  imp_post_west = 0
+
+       F(  2,    91) =    9.95
+            Prob > F =    0.0001
+
+.  xi: xtreg disd_south    imp_post_south i.year if south==1, fe i(leaid) cluster(leaid);
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       182
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.8223                         Obs per group: min =         3
+       between = 0.2997                                        avg =       3.8
+       overall = 0.6764                                        max =         4
+
+                                                F(4,47)            =    116.64
+corr(u_i, Xb)  = 0.0446                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  disd_south |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_s~h |  -.1501879   .0498363    -3.01   0.004    -.2504456   -.0499302
+ _Iyear_1970 |  -.1614056   .0321349    -5.02   0.000    -.2260527   -.0967585
+ _Iyear_1980 |  -.3909012   .0562521    -6.95   0.000    -.5040659   -.2777365
+ _Iyear_1990 |  -.3924841   .0519839    -7.55   0.000    -.4970622   -.2879059
+       _cons |   .9861647   .0177644    55.51   0.000     .9504274    1.021902
+-------------+----------------------------------------------------------------
+     sigma_u |  .12700911
+     sigma_e |  .12262061
+         rho |   .5175746   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+.  test imp_post_south;
+
+ ( 1)  imp_post_south = 0
+
+       F(  1,    47) =    9.08
+            Prob > F =    0.0042
+
+.  xi: xtreg disd_nonsouth imp_post_nonsouth imp_post_west i.year*i.west if south==0, fe i(leaid) cluster(leaid);
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       131
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.7094                         Obs per group: min =         2
+       between = 0.0495                                        avg =       3.0
+       overall = 0.1506                                        max =         3
+
+                                                F(6,43)            =     25.84
+corr(u_i, Xb)  = -0.4137                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+disd_nonso~h |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+imp_post_n~h |  -.2409921    .050433    -4.78   0.000    -.3426999   -.1392844
+imp_post_w~t |   .2641134   .1420728     1.86   0.070    -.0224037    .5506306
+ _Iyear_1970 |   .0395897    .039878     0.99   0.326     -.040832    .1200113
+ _Iyear_1980 |  (dropped)
+ _Iyear_1990 |   -.070114   .0238761    -2.94   0.005    -.1182647   -.0219632
+    _Iwest_1 |  (dropped)
+_IyeaXw~70_1 |   .1272747    .141902     0.90   0.375     -.158898    .4134473
+_IyeaXw~80_1 |  -.0666796   .0305823    -2.18   0.035    -.1283547   -.0050045
+_IyeaXw~90_1 |  (dropped)
+       _cons |   .6117886   .0541365    11.30   0.000     .5026119    .7209652
+-------------+----------------------------------------------------------------
+     sigma_u |  .19912062
+     sigma_e |   .1058745
+         rho |  .77959586   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+.  test imp_post_nonsouth imp_post_west;
+
+ ( 1)  imp_post_nonsouth = 0
+ ( 2)  imp_post_west = 0
+
+       F(  2,    43) =   11.43
+            Prob > F =    0.0001
+
+.  *** First Stage for Blacks (drop relevant collinear variables to help Stata);
+.  xi: xtreg disdm4 impost_4 impost_4_west i.year*i.south i.year*i.west, fe i(leaid) cluster(leaid);
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       305
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7837                         Obs per group: min =         2
+       between = 0.1914                                        avg =       3.3
+       overall = 0.6033                                        max =         4
+
+                                                F(9,91)            =     61.23
+corr(u_i, Xb)  = -0.0662                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+      disdm4 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.2092836   .0455416    -4.60   0.000    -.2997464   -.1188208
+impost_4_w~t |   .0386142   .0665425     0.58   0.563    -.0935643    .1707927
+ _Iyear_1970 |  -.3379579   .0474976    -7.12   0.000    -.4323059   -.2436098
+ _Iyear_1980 |  -.3398044   .0511036    -6.65   0.000    -.4413154   -.2382933
+ _Iyear_1990 |  -.4589298    .073004    -6.29   0.000    -.6039432   -.3139164
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2068111   .0446585     4.63   0.000     .1181025    .2955196
+_IyeaXs~80_1 |  (dropped)
+_IyeaXs~90_1 |   .1057317   .0430914     2.45   0.016     .0201359    .1913274
+ _Iyear_1970 |  -.3379579   .0474976    -7.12   0.000    -.4323059   -.2436098
+ _Iyear_1980 |  -.3398044   .0511036    -6.65   0.000    -.4413154   -.2382933
+ _Iyear_1990 |  -.4589298    .073004    -6.29   0.000    -.6039432   -.3139164
+    _Iwest_1 |  (dropped)
+_IyeaXw~70_1 |  (dropped)
+_IyeaXw~80_1 |  -.0430085    .083481    -0.52   0.608    -.2088332    .1228161
+_IyeaXw~90_1 |   .0809511    .105853     0.76   0.446    -.1293128     .291215
+       _cons |   1.011098   .0263006    38.44   0.000     .9588554    1.063341
+-------------+----------------------------------------------------------------
+     sigma_u |  .14097704
+     sigma_e |   .1290749
+         rho |  .54398809   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+.  test  impost_4 impost_4_west;
+
+ ( 1)  impost_4 = 0
+ ( 2)  impost_4_west = 0
+
+       F(  2,    91) =   16.75
+            Prob > F =    0.0000
+
+.  xi: xtreg disdm4_south    impost_4_south i.year if south==1, fe i(leaid) cluster(leaid);
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       177
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.8382                         Obs per group: min =         3
+       between = 0.2178                                        avg =       3.7
+       overall = 0.7100                                        max =         4
+
+                                                F(4,47)            =    114.78
+corr(u_i, Xb)  = 0.0195                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+disdm4_south |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+impost_4_s~h |  -.2512592   .0764706    -3.29   0.002    -.4050981   -.0974202
+ _Iyear_1970 |  -.1296167   .0212805    -6.09   0.000    -.1724275   -.0868059
+ _Iyear_1980 |   -.302953   .0728213    -4.16   0.000    -.4494507   -.1564554
+ _Iyear_1990 |  -.3110999   .0721058    -4.31   0.000    -.4561581   -.1660417
+       _cons |   .9915374   .0176851    56.07   0.000     .9559595    1.027115
+-------------+----------------------------------------------------------------
+     sigma_u |   .1216957
+     sigma_e |  .12668555
+         rho |  .47991863   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+.  test impost_4_south;
+
+ ( 1)  impost_4_south = 0
+
+       F(  1,    47) =   10.80
+            Prob > F =    0.0019
+
+.  xi: xtreg disdm4_nonsouth impost_4_nonsouth impost_4_west i.year*i.west if south==0, fe i(leaid) cluster(leaid);
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       128
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.5853                         Obs per group: min =         2
+       between = 0.0076                                        avg =       2.9
+       overall = 0.2994                                        max =         3
+
+                                                F(6,43)            =     16.84
+corr(u_i, Xb)  = -0.0605                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+disdm4_non~h |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+impost_4_n~h |   -.168674   .0513587    -3.28   0.002    -.2722486   -.0650993
+impost_4_w~t |  -.0019955   .0711635    -0.03   0.978    -.1455104    .1415194
+ _Iyear_1970 |  (dropped)
+ _Iyear_1980 |  -.0262123   .0324028    -0.81   0.423    -.0915587    .0391341
+ _Iyear_1990 |  -.1598718   .0556042    -2.88   0.006    -.2720082   -.0477353
+    _Iwest_1 |  (dropped)
+_IyeaXw~70_1 |  (dropped)
+_IyeaXw~80_1 |  -.0186427    .083532    -0.22   0.824    -.1871011    .1498157
+_IyeaXw~90_1 |   .1198509   .1080137     1.11   0.273    -.0979794    .3376812
+       _cons |   .6988618   .0206315    33.87   0.000     .6572544    .7404692
+-------------+----------------------------------------------------------------
+     sigma_u |  .15683689
+     sigma_e |  .13286422
+         rho |  .58218688   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+.  test impost_4_nonsouth impost_4_west;
+
+ ( 1)  impost_4_nonsouth = 0
+ ( 2)  impost_4_west = 0
+
+       F(  2,    43) =   11.40
+            Prob > F =    0.0001
+
+. foreach r in pu to pr {;
+  2.  **************************;
+.  * White Outcomes         *;
+.  **************************;
+.  disp " ";
+  3.  disp " ";
+  4.  disp "******************************* White Outcomes, Table 6 *******************************";
+  5.  disp " ";
+  6.  disp " ";
+  7.  disp " ";
+  8.  disp " ";
+  9.  disp "******************************* OUTCOME: `r'            *******************************";
+ 10.  disp " ";
+ 11.  disp " ";
+ 12.  xi: ivregress 2sls lnw`r' (disd=imp_post imp_post_west ) i.year*i.south i.year*i.west  i.leaid, cluster(leaid);
+ 13.  if "`r'"=="pu" {;
+ 14.   outreg2 disd using table6w.out, bdec(2) se nor2 nocons replace;
+ 15.  };
+ 16.   else {;
+ 17.   outreg2 disd using table6w.out, bdec(2) se nor2 nocons append;
+ 18.  };
+ 19.   xi: ivregress 2sls lnw`r' (disd_south disd_nonsouth=imp_post_south imp_post_nonsouth imp_post_west) i.year*i.south i.year*i.west  i.leaid, cluster(leaid);
+ 20.  outreg2 disd_south disd_nonsouth using table6w.out, bdec(2) se nor2 nocons append;
+ 21. };
+ 
+ 
+******************************* White Outcomes, Table 6 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pu            *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_634590 dropped because of collinearity
+note: _Ileaid_2511130 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     313
+                                                       Wald chi2(99) =  438.44
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.8995
+                                                       Root MSE      =  .24756
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwpu |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        disd |   .7346838   .3308881     2.22   0.026     .0861549    1.383213
+ _Iyear_1970 |   .6403342   .1641339     3.90   0.000     .3186377    .9620307
+ _Iyear_1980 |    .169237   .2191515     0.77   0.440    -.2602921    .5987661
+ _Iyear_1990 |   .0104057   .2467661     0.04   0.966     -.473247    .4940584
+   _Isouth_1 |  -.2508208   .1438035    -1.74   0.081    -.5326705     .031029
+_IyeaXs~70_1 |    -.25419   .0801122    -3.17   0.002     -.411207   -.0971731
+_IyeaXs~90_1 |   .1152927   .0517259     2.23   0.026     .0139118    .2166735
+    _Iwest_1 |   .4649925   .0343652    13.53   0.000      .397638     .532347
+_IyeaXw~70_1 |  -.1100881   .0979109    -1.12   0.261    -.3019898    .0818137
+_IyeaXw~90_1 |   .0642623   .0575639     1.12   0.264    -.0485609    .1770855
+_Ilea~102370 |   .9238457   .0433031    21.33   0.000     .8389733    1.008718
+_Ilea~408800 |   .4280888   .0560785     7.63   0.000     .3181769    .5380007
+_Ilea~509000 |  -.2734304    .108536    -2.52   0.012    -.4861571   -.0607037
+_Ilea~614550 |   .2044495   .0936053     2.18   0.029     .0209865    .3879124
+_Ilea~622710 |   2.195161    .153819    14.27   0.000     1.893681    2.496641
+_Ilea~628050 |  -1.064773   .1195062    -8.91   0.000    -1.299001    -.830545
+_Ilea~633840 |    .003054   .0186242     0.16   0.870    -.0334487    .0395567
+_Ilea~634170 |  -.1230301   .0188199    -6.54   0.000    -.1599164   -.0861437
+_Ilea~634320 |   .8356292   .0890023     9.39   0.000     .6611879     1.01007
+_Ilea~634410 |  -.2019756   .0533195    -3.79   0.000    -.3064799   -.0974713
+_Ilea~640740 |  -1.241658   .0026761  -463.97   0.000    -1.246904   -1.236413
+_Ilea~803360 |   .3795105   .0637437     5.95   0.000     .2545752    .5044459
+_Ilea~901920 |  -.9777546   .1492389    -6.55   0.000    -1.270257   -.6852518
+_Ile~1200150 |   1.010849   .1072581     9.42   0.000     .8006271    1.221071
+_Ile~1200180 |   1.668517   .0499117    33.43   0.000     1.570692    1.766342
+_Ile~1200390 |   2.315661   .0326887    70.84   0.000     2.251593     2.37973
+_Ile~1200480 |   1.570878   .0672067    23.37   0.000     1.439155      1.7026
+_Ile~1200870 |   1.757662   .0912704    19.26   0.000     1.578775    1.936549
+_Ile~1201080 |   .3483777   .1441085     2.42   0.016     .0659303     .630825
+_Ile~1201440 |    1.37035   .0598198    22.91   0.000     1.253105    1.487594
+_Ile~1201500 |   1.121422   .0545062    20.57   0.000     1.014592    1.228253
+_Ile~1201590 |   1.090981   .0970458    11.24   0.000     .9007744    1.281187
+_Ile~1201920 |    .637416    .107259     5.94   0.000     .4271921    .8476399
+_Ile~1300120 |   .1685002   .0255044     6.61   0.000     .1185125    .2184879
+_Ile~1301830 |  -.3911118   .0490273    -7.98   0.000    -.4872035     -.29502
+_Ile~1303870 |   .3895847   .0793874     4.91   0.000     .2339881    .5451812
+_Ile~1709930 |   1.813566   .1842641     9.84   0.000     1.452415    2.174717
+_Ile~1734510 |   .2903941   .0681534     4.26   0.000     .1568158    .4239723
+_Ile~1803630 |   .4329901   .0656253     6.60   0.000     .3043669    .5616132
+_Ile~1804770 |   .7748991   .0622771    12.44   0.000     .6528383    .8969599
+_Ile~1810290 |   .1080481   .0591421     1.83   0.068    -.0078683    .2239646
+_Ile~2012990 |   .8370944   .0140496    59.58   0.000     .8095577    .8646311
+_Ile~2101860 |   .6664444    .105484     6.32   0.000     .4596997    .8731892
+_Ile~2102990 |   .2411727   .1185321     2.03   0.042      .008854    .4734913
+_Ile~2200300 |   .4517473   .0368514    12.26   0.000       .37952    .5239747
+_Ile~2200330 |   .4314534   .0322018    13.40   0.000     .3683391    .4945677
+_Ile~2200540 |   .7593567   .0340954    22.27   0.000     .6925309    .8261825
+_Ile~2201170 |   .1477432   .0169745     8.70   0.000     .1144738    .1810127
+_Ile~2201290 |   .1408862   .0749619     1.88   0.060    -.0060365    .2878088
+_Ile~2201740 |   .0431916   .1153018     0.37   0.708    -.1827958    .2691789
+_Ile~2400090 |    .708731   .0223521    31.71   0.000     .6649217    .7525404
+_Ile~2502790 |   .4724026    .067644     6.98   0.000     .3398228    .6049824
+_Ile~2612000 |   .6295173   .1326254     4.75   0.000     .3695764    .8894583
+_Ile~2616440 |   -.012804   .0807471    -0.16   0.874    -.1710654    .1454575
+_Ile~2621150 |   .1233273   .0031521    39.13   0.000     .1171494    .1295052
+_Ile~2721240 |   .6153877   .0528007    11.65   0.000     .5119002    .7188751
+_Ile~2916400 |  -.2007848   .1087387    -1.85   0.065    -.4139087    .0123391
+_Ile~2929280 |  -.1587965   .1465036    -1.08   0.278    -.4459382    .1283453
+_Ile~3174820 |   .6578777   .0681581     9.65   0.000     .5242903    .7914651
+_Ile~3200060 |   .9478835    .022213    42.67   0.000     .9043468    .9914201
+_Ile~3407830 |   -.449591    .131099    -3.43   0.001    -.7065404   -.1926416
+_Ile~3411340 |  -.4716948   .1937271    -2.43   0.015    -.8513929   -.0919967
+_Ile~3605850 |   .4688141   .0452145    10.37   0.000     .3801953    .5574329
+_Ile~3624750 |  -.0674076   .0562911    -1.20   0.231    -.1777362     .042921
+_Ile~3702970 |   1.272018    .114941    11.07   0.000     1.046737    1.497298
+_Ile~3703330 |   .0177137   .1371812     0.13   0.897    -.2511565    .2865839
+_Ile~3904348 |   .4121018    .086635     4.76   0.000     .2423004    .5819032
+_Ile~3904375 |   .3872116   .0873416     4.43   0.000     .2160251     .558398
+_Ile~3904378 |    .475824   .1194945     3.98   0.000     .2416192    .7100289
+_Ile~3904380 |   1.010306   .0358612    28.17   0.000     .9400194    1.080593
+_Ile~3904384 |   .1312937   .0646216     2.03   0.042     .0046377    .2579497
+_Ile~3904490 |   .3967828   .1233911     3.22   0.001     .1549407    .6386249
+_Ile~4017250 |   .2099473   .1815979     1.16   0.248     -.145978    .5658725
+_Ile~4022770 |    .790588   .0786706    10.05   0.000     .6363965    .9447794
+_Ile~4030240 |   .9305976   .0269802    34.49   0.000     .8777175    .9834778
+_Ile~4110040 |   .3750999   .0896577     4.18   0.000      .199374    .5508258
+_Ile~4218990 |   1.166604   .1612031     7.24   0.000     .8506519    1.482557
+_Ile~4219170 |   .2999219   .0866897     3.46   0.001     .1300132    .4698306
+_Ile~4501440 |   .4659898   .0513869     9.07   0.000     .3652733    .5667062
+_Ile~4502310 |   1.037895   .0983535    10.55   0.000     .8451254    1.230664
+_Ile~4503360 |  -.0452378   .0566657    -0.80   0.425    -.1563005     .065825
+_Ile~4702940 |   .8649717   .0175284    49.35   0.000     .8306166    .8993268
+_Ile~4703180 |   1.318335   .0785674    16.78   0.000     1.164345    1.472324
+_Ile~4808130 |   .4900397   .0714363     6.86   0.000     .3500271    .6300523
+_Ile~4808940 |   .9730375   .0467645    20.81   0.000     .8813808    1.064694
+_Ile~4816230 |   1.471744   .0210638    69.87   0.000      1.43046    1.513029
+_Ile~4818000 |   .2373308   .0328387     7.23   0.000     .1729681    .3016935
+_Ile~4818300 |    1.28159   .1047144    12.24   0.000     1.076353    1.486826
+_Ile~4819700 |    1.03928    .041914    24.80   0.000     .9571299     1.12143
+_Ile~4823640 |   1.838618   .0144071   127.62   0.000     1.810381    1.866856
+_Ile~4828500 |   .3151479   .0291025    10.83   0.000      .258108    .3721877
+_Ile~4838730 |   1.097993   .0319046    34.41   0.000     1.035461    1.160524
+_Ile~4844280 |  -.2023517   .1050311    -1.93   0.054    -.4082089    .0035056
+_Ile~5102670 |    .442819   .0950123     4.66   0.000     .2565983    .6290398
+_Ile~5103300 |  -.2820806   .0778056    -3.63   0.000    -.4345768   -.1295844
+_Ile~5307710 |   .2300569   .0447066     5.15   0.000     .1424336    .3176801
+_Ile~5308700 |  -.0471771   .0049655    -9.50   0.000    -.0569093   -.0374448
+_Ile~5509600 |   1.004064   .0781594    12.85   0.000      .850874    1.157253
+_Ile~9999999 |  -1.690679   .1245334   -13.58   0.000     -1.93476   -1.446598
+       _cons |   9.151174    .287894    31.79   0.000     8.586912    9.715436
+------------------------------------------------------------------------------
+Instrumented:  disd
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_640740
+               _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2612000 _Ileaid_2616440 _Ileaid_2621150
+               _Ileaid_2721240 _Ileaid_2916400 _Ileaid_2929280
+               _Ileaid_3174820 _Ileaid_3200060 _Ileaid_3407830
+               _Ileaid_3411340 _Ileaid_3605850 _Ileaid_3624750
+               _Ileaid_3702970 _Ileaid_3703330 _Ileaid_3904348
+               _Ileaid_3904375 _Ileaid_3904378 _Ileaid_3904380
+               _Ileaid_3904384 _Ileaid_3904490 _Ileaid_4017250
+               _Ileaid_4022770 _Ileaid_4030240 _Ileaid_4110040
+               _Ileaid_4218990 _Ileaid_4219170 _Ileaid_4501440
+               _Ileaid_4502310 _Ileaid_4503360 _Ileaid_4702940
+               _Ileaid_4703180 _Ileaid_4808130 _Ileaid_4808940
+               _Ileaid_4816230 _Ileaid_4818000 _Ileaid_4818300
+               _Ileaid_4819700 _Ileaid_4823640 _Ileaid_4828500
+               _Ileaid_4838730 _Ileaid_4844280 _Ileaid_5102670
+               _Ileaid_5103300 _Ileaid_5307710 _Ileaid_5308700
+               _Ileaid_5509600 _Ileaid_9999999 imp_post imp_post_west
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_622710 dropped because of collinearity
+note: _Ileaid_2511130 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     313
+                                                       Wald chi2(100)=  533.73
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.8959
+                                                       Root MSE      =  .25204
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwpu |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  disd_south |   .9853048   .5238848     1.88   0.060    -.0414905      2.0121
+disd_nonso~h |   .2987378   .2452709     1.22   0.223    -.1819844      .77946
+ _Iyear_1970 |   .8761403   .3209042     2.73   0.006     .2471797    1.505101
+ _Iyear_1980 |   .3049787   .3168733     0.96   0.336    -.3160816    .9260391
+ _Iyear_1990 |   .1078185   .3181013     0.34   0.735    -.5156485    .7312855
+   _Isouth_1 |  -.5098309   .3452142    -1.48   0.140    -1.186438    .1667765
+_IyeaXs~70_1 |  -.4313753   .1832471    -2.35   0.019     -.790533   -.0722175
+_IyeaXs~90_1 |   .1544569   .0511954     3.02   0.003     .0541158     .254798
+    _Iwest_1 |   2.864303   .1149579    24.92   0.000      2.63899    3.089616
+_IyeaXw~70_1 |  -.1164037   .0881522    -1.32   0.187    -.2891789    .0563714
+_IyeaXw~90_1 |    .101766   .0493178     2.06   0.039     .0051049    .1984271
+_Ilea~102370 |   .9566443   .0685604    13.95   0.000     .8222684     1.09102
+_Ilea~408800 |  -1.895846   .0724502   -26.17   0.000    -2.037845   -1.753846
+_Ilea~509000 |  -.1912231   .1718417    -1.11   0.266    -.5280266    .1455804
+_Ilea~614550 |  -2.070043   .0446335   -46.38   0.000    -2.157523   -1.982563
+_Ilea~628050 |  -3.305141   .0254344  -129.95   0.000    -3.354992   -3.255291
+_Ilea~633840 |  -2.370227   .1002132   -23.65   0.000    -2.566641   -2.173812
+_Ilea~634170 |  -2.496053   .1000681   -24.94   0.000    -2.692183   -2.299923
+_Ilea~634320 |  -1.444928   .0480454   -30.07   0.000    -1.539095   -1.350761
+_Ilea~634410 |  -2.529545   .0744953   -33.96   0.000    -2.675553   -2.383537
+_Ilea~634590 |  -2.397818   .1140184   -21.03   0.000     -2.62129   -2.174346
+_Ilea~640740 |  -3.635951   .1120347   -32.45   0.000    -3.855535   -3.416367
+_Ilea~803360 |  -1.934325   .0667684   -28.97   0.000    -2.065189   -1.803461
+_Ilea~901920 |   -.781132   .1106233    -7.06   0.000    -.9979498   -.5643142
+_Ile~1200150 |   1.092088   .1698184     6.43   0.000     .7592506    1.424926
+_Ile~1200180 |   1.706321   .0790237    21.59   0.000     1.551437    1.861205
+_Ile~1200390 |    2.34042    .051755    45.22   0.000     2.238982    2.441858
+_Ile~1200480 |   1.621781   .1064063    15.24   0.000     1.413229    1.830334
+_Ile~1200870 |   1.826792   .1445056    12.64   0.000     1.543566    2.110018
+_Ile~1201080 |   .4575282   .2281624     2.01   0.045     .0103381    .9047183
+_Ile~1201440 |   1.415658   .0947108    14.95   0.000     1.230029    1.601288
+_Ile~1201500 |   1.162706    .086298    13.47   0.000     .9935655    1.331848
+_Ile~1201590 |   1.164485   .1536495     7.58   0.000     .8633375    1.465633
+_Ile~1201920 |   .7186561   .1698199     4.23   0.000     .3858152    1.051497
+_Ile~1300120 |   .1801491   .0323503     5.57   0.000     .1167436    .2435546
+_Ile~1301830 |  -.3590897   .0720492    -4.98   0.000    -.5003034   -.2178759
+_Ile~1303870 |   .4454949   .1211223     3.68   0.000     .2080994    .6828903
+_Ile~1709930 |   2.056334   .1365858    15.06   0.000     1.788631    2.324038
+_Ile~1734510 |   .3801864   .0505188     7.53   0.000     .2811715    .4792013
+_Ile~1803630 |   .5194515   .0486447    10.68   0.000     .4241096    .6147935
+_Ile~1804770 |   .8569493   .0461629    18.56   0.000     .7664717    .9474269
+_Ile~1810290 |    .185968   .0438391     4.24   0.000     .1000449    .2718911
+_Ile~2012990 |   .8556048   .0104143    82.16   0.000     .8351932    .8760164
+_Ile~2101860 |    .748264   .1682856     4.45   0.000     .4184304    1.078098
+_Ile~2102990 |   .3330522   .1891545     1.76   0.078    -.0376839    .7037883
+_Ile~2200300 |   .4796593   .0583456     8.22   0.000     .3653039    .5940146
+_Ile~2200330 |   .4558437    .050984     8.94   0.000     .3559168    .5557706
+_Ile~2200540 |   .7851813   .0539822    14.55   0.000     .6793781    .8909845
+_Ile~2201170 |      .1606   .0268752     5.98   0.000     .1079256    .2132745
+_Ile~2201290 |   .1976638   .1186848     1.67   0.096    -.0349542    .4302818
+_Ile~2201740 |   .1305234   .1825537     0.71   0.475    -.2272753     .488322
+_Ile~2400090 |   .7182776   .0270233    26.58   0.000     .6653128    .7712423
+_Ile~2502790 |   .5615237   .0501411    11.20   0.000     .4632489    .6597985
+_Ile~2612000 |   .8042516   .0983086     8.18   0.000     .6115703    .9969329
+_Ile~2616440 |   .0935806   .0598538     1.56   0.118    -.0237308    .2108919
+_Ile~2621150 |   .1274802   .0023365    54.56   0.000     .1229008    .1320595
+_Ile~2721240 |   .6849527   .0391385    17.50   0.000     .6082426    .7616628
+_Ile~2916400 |  -.0575213   .0806026    -0.71   0.475    -.2154994    .1004569
+_Ile~2929280 |   .0328792   .1106234     0.30   0.766    -.1839388    .2496972
+_Ile~3174820 |   .7476761   .0505222    14.80   0.000     .6486545    .8466978
+_Ile~3200060 |  -1.420669    .097553   -14.56   0.000    -1.611869   -1.229468
+_Ile~3407830 |  -.2768677   .0971772    -2.85   0.004    -.4673315   -.0864039
+_Ile~3411340 |  -.2164589   .1436003    -1.51   0.132    -.4979102    .0649924
+_Ile~3605850 |   .5283843   .0335153    15.77   0.000     .4626956     .594073
+_Ile~3624750 |   .0067561   .0417258     0.16   0.871     -.075025    .0885372
+_Ile~3702970 |   1.359076   .1819824     7.47   0.000     1.002397    1.715755
+_Ile~3703330 |   .1216174   .2171947     0.56   0.576    -.3040763    .5473111
+_Ile~3904348 |   .5262436   .0642182     8.19   0.000     .4003782    .6521089
+_Ile~3904375 |   .5022844    .064742     7.76   0.000     .3753924    .6291764
+_Ile~3904378 |   .6332583   .0885753     7.15   0.000     .4596539    .8068628
+_Ile~3904380 |   1.057553   .0265821    39.78   0.000     1.005453    1.109653
+_Ile~3904384 |   .2164328   .0479008     4.52   0.000      .122549    .3103166
+_Ile~3904490 |   .5593509   .0914637     6.12   0.000     .3800854    .7386164
+_Ile~4017250 |   .3500857   .2895879     1.21   0.227    -.2174962    .9176677
+_Ile~4022770 |   .8515424   .1251717     6.80   0.000     .6062103    1.096875
+_Ile~4030240 |    .947044   .0373266    25.37   0.000     .8738852    1.020203
+_Ile~4110040 |  -1.904594   .0475596   -40.05   0.000    -1.997809   -1.811379
+_Ile~4218990 |    1.37899   .1194919    11.54   0.000      1.14479     1.61319
+_Ile~4219170 |   .4141358   .0642588     6.44   0.000     .2881909    .5400807
+_Ile~4501440 |   .5049112   .0813593     6.21   0.000       .34545    .6643724
+_Ile~4502310 |    1.11239     .15572     7.14   0.000      .807184    1.417595
+_Ile~4503360 |  -.0023181    .089717    -0.03   0.979    -.1781602    .1735241
+_Ile~4702940 |   .8782481   .0277522    31.65   0.000     .8238548    .9326415
+_Ile~4703180 |   1.377843   .1243933    11.08   0.000     1.134037     1.62165
+_Ile~4808130 |    .544147   .1131029     4.81   0.000     .3224694    .7658246
+_Ile~4808940 |   1.008458   .0740407    13.62   0.000     .8633407    1.153575
+_Ile~4816230 |   1.487699   .0333497    44.61   0.000     1.422334    1.553063
+_Ile~4818000 |   .2622035   .0519925     5.04   0.000     .1603001    .3641069
+_Ile~4818300 |   1.360902    .165791     8.21   0.000     1.035958    1.685847
+_Ile~4819700 |   1.071026   .0663611    16.14   0.000     .9409609    1.201091
+_Ile~4823640 |    1.84953   .0228103    81.08   0.000     1.804823    1.894238
+_Ile~4828500 |   .3371907   .0460771     7.32   0.000     .2468813       .4275
+_Ile~4838730 |   1.122158   .0505135    22.21   0.000     1.023153    1.221162
+_Ile~4844280 |  -.1227991   .1662925    -0.74   0.460    -.4487264    .2031282
+_Ile~5102670 |   .5147832   .1504301     3.42   0.001     .2199457    .8096207
+_Ile~5103300 |  -.2231491   .1231872    -1.81   0.070    -.4645916    .0182933
+_Ile~5307710 |   -2.10886   .0808796   -26.07   0.000    -2.267381   -1.950339
+_Ile~5308700 |  -2.438453   .1103377   -22.10   0.000    -2.654711   -2.222195
+_Ile~5509600 |   1.107039   .0579357    19.11   0.000      .993487    1.220591
+_Ile~9999999 |  -1.594185   .1987378    -8.02   0.000    -1.983704   -1.204666
+       _cons |   9.110952    .322528    28.25   0.000     8.478808    9.743095
+------------------------------------------------------------------------------
+Instrumented:  disd_south disd_nonsouth
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_628050 _Ileaid_633840 _Ileaid_634170
+               _Ileaid_634320 _Ileaid_634410 _Ileaid_634590 _Ileaid_640740
+               _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2612000 _Ileaid_2616440 _Ileaid_2621150
+               _Ileaid_2721240 _Ileaid_2916400 _Ileaid_2929280
+               _Ileaid_3174820 _Ileaid_3200060 _Ileaid_3407830
+               _Ileaid_3411340 _Ileaid_3605850 _Ileaid_3624750
+               _Ileaid_3702970 _Ileaid_3703330 _Ileaid_3904348
+               _Ileaid_3904375 _Ileaid_3904378 _Ileaid_3904380
+               _Ileaid_3904384 _Ileaid_3904490 _Ileaid_4017250
+               _Ileaid_4022770 _Ileaid_4030240 _Ileaid_4110040
+               _Ileaid_4218990 _Ileaid_4219170 _Ileaid_4501440
+               _Ileaid_4502310 _Ileaid_4503360 _Ileaid_4702940
+               _Ileaid_4703180 _Ileaid_4808130 _Ileaid_4808940
+               _Ileaid_4816230 _Ileaid_4818000 _Ileaid_4818300
+               _Ileaid_4819700 _Ileaid_4823640 _Ileaid_4828500
+               _Ileaid_4838730 _Ileaid_4844280 _Ileaid_5102670
+               _Ileaid_5103300 _Ileaid_5307710 _Ileaid_5308700
+               _Ileaid_5509600 _Ileaid_9999999 imp_post_south
+               imp_post_nonsouth imp_post_west
+dir : seeout
+ 
+ 
+******************************* White Outcomes, Table 6 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: to            *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_634590 dropped because of collinearity
+note: _Ileaid_2511130 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     313
+                                                       Wald chi2(99) =   66.97
+                                                       Prob > chi2   =  0.9943
+                                                       R-squared     =  0.9290
+                                                       Root MSE      =  .20088
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwto |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        disd |   .4902015   .2843387     1.72   0.085    -.0670922    1.047495
+ _Iyear_1970 |   .5928923     .13398     4.43   0.000     .3302963    .8554883
+ _Iyear_1980 |   .4581539   .1905117     2.40   0.016     .0847578      .83155
+ _Iyear_1990 |    .354418   .2169294     1.63   0.102    -.0707557    .7795917
+   _Isouth_1 |   .0303865   .1207249     0.25   0.801      -.20623    .2670031
+_IyeaXs~70_1 |  -.3413597   .0564756    -6.04   0.000    -.4520498   -.2306696
+_IyeaXs~90_1 |    .146725   .0462403     3.17   0.002     .0560956    .2373544
+    _Iwest_1 |   .2720491   .0173828    15.65   0.000     .2379795    .3061186
+_IyeaXw~70_1 |  -.1801065   .0713105    -2.53   0.012    -.3198724   -.0403405
+_IyeaXw~90_1 |   .1338313   .0488092     2.74   0.006     .0381671    .2294955
+_Ilea~102370 |   .5491791   .0372112    14.76   0.000     .4762465    .6221117
+_Ilea~408800 |   .3998025   .0481894     8.30   0.000      .305353    .4942519
+_Ilea~509000 |  -.3300829   .0932672    -3.54   0.000    -.5128832   -.1472826
+_Ilea~614550 |   .1661119   .0804369     2.07   0.039     .0084585    .3237652
+_Ilea~622710 |    2.44685   .1321797    18.51   0.000     2.187783    2.705918
+_Ilea~628050 |  -.2415634    .102694    -2.35   0.019      -.44284   -.0402867
+_Ilea~633840 |    .161134   .0160041    10.07   0.000     .1297665    .1925015
+_Ilea~634170 |  -.2416415   .0161723   -14.94   0.000    -.2733387   -.2099444
+_Ilea~634320 |    1.10706   .0764814    14.47   0.000     .9571596    1.256961
+_Ilea~634410 |   .9082854   .0458185    19.82   0.000     .8184828     .998088
+_Ilea~640740 |  -1.145018   .0022997  -497.91   0.000    -1.149525   -1.140511
+_Ilea~803360 |   .7793397   .0547762    14.23   0.000     .6719803    .8866991
+_Ilea~901920 |  -.6935034   .1282439    -5.41   0.000    -.9448568   -.4421499
+_Ile~1200150 |   .5212959    .092169     5.66   0.000     .3406479    .7019438
+_Ile~1200180 |   1.527969   .0428902    35.63   0.000     1.443906    1.612032
+_Ile~1200390 |    2.10214     .02809    74.84   0.000     2.047085    2.157196
+_Ile~1200480 |   1.156587    .057752    20.03   0.000     1.043395    1.269779
+_Ile~1200870 |   1.356635   .0784305    17.30   0.000     1.202914    1.510356
+_Ile~1201080 |   .0751944   .1238353     0.61   0.544    -.1675183     .317907
+_Ile~1201440 |   .9690878   .0514043    18.85   0.000     .8683372    1.069838
+_Ile~1201500 |   1.024672   .0468383    21.88   0.000     .9328704    1.116473
+_Ile~1201590 |   .6089868   .0833934     7.30   0.000     .4455388    .7724347
+_Ile~1201920 |   .4057386   .0921698     4.40   0.000     .2250891    .5863882
+_Ile~1300120 |   .3785473   .0221421    17.10   0.000     .3351496    .4219451
+_Ile~1301830 |  -.8749228   .0422391   -20.71   0.000    -.9577099   -.7921357
+_Ile~1303870 |  -.0657866   .0682801    -0.96   0.335    -.1996132    .0680399
+_Ile~1709930 |   2.315937   .1583418    14.63   0.000     2.005593    2.626281
+_Ile~1734510 |   .1730534   .0585656     2.95   0.003      .058267    .2878399
+_Ile~1803630 |   .3319165   .0563931     5.89   0.000     .2213881    .4424449
+_Ile~1804770 |   .7204106   .0535159    13.46   0.000     .6155213    .8252998
+_Ile~1810290 |   .0842725    .050822     1.66   0.097    -.0153367    .1838818
+_Ile~2012990 |   .7073976   .0120731    58.59   0.000     .6837348    .7310605
+_Ile~2101860 |   .2925609   .0887966     3.29   0.001     .1185228     .466599
+_Ile~2102990 |   .2049021   .1000262     2.05   0.041     .0088543    .4009499
+_Ile~2200300 |   .0851922   .0316671     2.69   0.007     .0231258    .1472586
+_Ile~2200330 |  -.1179174   .0276716    -4.26   0.000    -.1721528    -.063682
+_Ile~2200540 |   .4250677   .0292989    14.51   0.000      .367643    .4824924
+_Ile~2201170 |   .6616412   .0145865    45.36   0.000     .6330521    .6902303
+_Ile~2201290 |  -.3785894   .0644163    -5.88   0.000    -.5048429   -.2523358
+_Ile~2201740 |  -.6271959   .0990811    -6.33   0.000    -.8213913   -.4330005
+_Ile~2400090 |   .9044853   .0176199    51.33   0.000      .869951    .9390196
+_Ile~2502790 |    1.14136   .0581278    19.64   0.000     1.027431    1.255288
+_Ile~2612000 |   1.057575   .1139676     9.28   0.000     .8342025    1.280947
+_Ile~2616440 |   .1536225   .0693876     2.21   0.027     .0176253    .2896197
+_Ile~2621150 |  -.1023965   .0027086   -37.80   0.000    -.1077053   -.0970877
+_Ile~2721240 |   .9407563   .0453727    20.73   0.000     .8518275    1.029685
+_Ile~2916400 |   .2612496   .0934413     2.80   0.005      .078108    .4443912
+_Ile~2929280 |   .5672971   .1246187     4.55   0.000      .323049    .8115451
+_Ile~3174820 |   .6576364   .0585696    11.23   0.000     .5428421    .7724307
+_Ile~3200060 |   .8485564   .0190881    44.45   0.000     .8111445    .8859683
+_Ile~3407830 |  -.0277636    .112656    -0.25   0.805    -.2485653    .1930381
+_Ile~3411340 |  -.3631222   .1664735    -2.18   0.029    -.6894043   -.0368401
+_Ile~3605850 |   .7370588   .0388537    18.97   0.000     .6609069    .8132107
+_Ile~3624750 |   .3078648   .0483721     6.36   0.000     .2130573    .4026724
+_Ile~3702970 |   .8313619    .098771     8.42   0.000     .6377742     1.02495
+_Ile~3703330 |  -.5022863   .1178825    -4.26   0.000    -.7333317   -.2712408
+_Ile~3904348 |   .3625131   .0744471     4.87   0.000     .2165994    .5084268
+_Ile~3904375 |   .8003766   .0750544    10.66   0.000     .6532727    .9474805
+_Ile~3904378 |   .8309955    .102684     8.09   0.000     .6297387    1.032252
+_Ile~3904380 |   1.074588   .0308162    34.87   0.000      1.01419    1.134987
+_Ile~3904384 |   .2273793   .0555306     4.09   0.000     .1185414    .3362173
+_Ile~3904490 |   .4845605   .1060324     4.57   0.000     .2767408    .6923802
+_Ile~4017250 |  -.4393979    .154272    -2.85   0.004    -.7417654   -.1370304
+_Ile~4022770 |   .5586463   .0657073     8.50   0.000     .4298623    .6874303
+_Ile~4030240 |   .6146321   .0212833    28.88   0.000     .5729177    .6563466
+_Ile~4110040 |   .6612436   .0770447     8.58   0.000     .5102388    .8122483
+_Ile~4218990 |   1.890646    .138525    13.65   0.000     1.619142     2.16215
+_Ile~4219170 |   .8682058   .0744942    11.65   0.000     .7221999    1.014212
+_Ile~4501440 |    .188195   .0441578     4.26   0.000     .1016473    .2747427
+_Ile~4502310 |   .5616928   .0845171     6.65   0.000     .3960423    .7273432
+_Ile~4503360 |  -.1802515    .048694    -3.70   0.000      -.27569   -.0848131
+_Ile~4702940 |   .8274901   .0150625    54.94   0.000     .7979681    .8570122
+_Ile~4703180 |    1.03529   .0675145    15.33   0.000     .9029639    1.167616
+_Ile~4808130 |  -.0162537   .0613867    -0.26   0.791    -.1365693    .1040619
+_Ile~4808940 |   .6735493   .0401856    16.76   0.000     .5947869    .7523117
+_Ile~4816230 |   1.338542   .0181006    73.95   0.000     1.303066    1.374019
+_Ile~4818000 |   -.406526   .0282189   -14.41   0.000    -.4618341   -.3512179
+_Ile~4818300 |   .5988746   .0899831     6.66   0.000     .4225109    .7752383
+_Ile~4819700 |   .7535333   .0360175    20.92   0.000     .6829403    .8241263
+_Ile~4823640 |   1.619155   .0123803   130.78   0.000      1.59489     1.64342
+_Ile~4828500 |   -.100032   .0250083    -4.00   0.000    -.1490475   -.0510165
+_Ile~4838730 |   .6493983   .0274163    23.69   0.000     .5956635    .7031332
+_Ile~4844280 |  -.4795819   .0902553    -5.31   0.000    -.6564792   -.3026847
+_Ile~5102670 |   .2733033    .081646     3.35   0.001     .1132802    .4333265
+_Ile~5103300 |  -.5829789   .0668599    -8.72   0.000    -.7140219   -.4519359
+_Ile~5307710 |   .8864004   .0384172    23.07   0.000      .811104    .9616968
+_Ile~5308700 |  -.0676447    .004267   -15.85   0.000    -.0760079   -.0592816
+_Ile~5509600 |   1.267796   .0671639    18.88   0.000     1.136157    1.399435
+_Ile~9999999 |  -1.266889   .1051902   -12.04   0.000    -1.473058    -1.06072
+       _cons |   11.10333   .2487575    44.64   0.000     10.61577    11.59089
+------------------------------------------------------------------------------
+Instrumented:  disd
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_640740
+               _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2612000 _Ileaid_2616440 _Ileaid_2621150
+               _Ileaid_2721240 _Ileaid_2916400 _Ileaid_2929280
+               _Ileaid_3174820 _Ileaid_3200060 _Ileaid_3407830
+               _Ileaid_3411340 _Ileaid_3605850 _Ileaid_3624750
+               _Ileaid_3702970 _Ileaid_3703330 _Ileaid_3904348
+               _Ileaid_3904375 _Ileaid_3904378 _Ileaid_3904380
+               _Ileaid_3904384 _Ileaid_3904490 _Ileaid_4017250
+               _Ileaid_4022770 _Ileaid_4030240 _Ileaid_4110040
+               _Ileaid_4218990 _Ileaid_4219170 _Ileaid_4501440
+               _Ileaid_4502310 _Ileaid_4503360 _Ileaid_4702940
+               _Ileaid_4703180 _Ileaid_4808130 _Ileaid_4808940
+               _Ileaid_4816230 _Ileaid_4818000 _Ileaid_4818300
+               _Ileaid_4819700 _Ileaid_4823640 _Ileaid_4828500
+               _Ileaid_4838730 _Ileaid_4844280 _Ileaid_5102670
+               _Ileaid_5103300 _Ileaid_5307710 _Ileaid_5308700
+               _Ileaid_5509600 _Ileaid_9999999 imp_post imp_post_west
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_622710 dropped because of collinearity
+note: _Ileaid_2511130 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     313
+                                                       Wald chi2(100)=  129.56
+                                                       Prob > chi2   =  0.0250
+                                                       R-squared     =  0.9233
+                                                       Root MSE      =  .20885
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwto |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  disd_south |   .9589121   .4274393     2.24   0.025     .1211465    1.796678
+disd_nonso~h |  -.3276988   .2568152    -1.28   0.202    -.8310473    .1756497
+ _Iyear_1970 |   1.034492   .2722485     3.80   0.000     .5008948    1.568089
+ _Iyear_1980 |   .7120175   .2650016     2.69   0.007      .192624    1.231411
+ _Iyear_1990 |   .5363708   .2669454     2.01   0.045     .0131673    1.059574
+   _Isouth_1 |  -.4545821   .2796249    -1.63   0.104    -1.002637    .0934726
+_IyeaXs~70_1 |  -.6733267    .154479    -4.36   0.000    -.9760999   -.3705535
+_IyeaXs~90_1 |   .2201981   .0473224     4.65   0.000     .1274479    .3129482
+    _Iwest_1 |   3.101915   .1210472    25.63   0.000     2.864666    3.339163
+_IyeaXw~70_1 |  -.1919557   .0578048    -3.32   0.001    -.3052509   -.0786604
+_IyeaXw~90_1 |   .2041939   .0455889     4.48   0.000     .1148413    .2935465
+_Ilea~102370 |   .6105189   .0559386    10.91   0.000     .5008812    .7201567
+_Ilea~408800 |  -2.288646   .0758602   -30.17   0.000    -2.437329   -2.139963
+_Ilea~509000 |  -.1763391   .1402062    -1.26   0.208    -.4511382      .09846
+_Ilea~614550 |  -2.429577   .0467342   -51.99   0.000    -2.521174   -2.337979
+_Ilea~628050 |  -2.773229   .0266315  -104.13   0.000    -2.825426   -2.721032
+_Ilea~633840 |  -2.619895     .10493   -24.97   0.000    -2.825554   -2.414236
+_Ilea~634170 |  -3.022187   .1047781   -28.84   0.000    -3.227548   -2.816826
+_Ilea~634320 |  -1.500006   .0503068   -29.82   0.000    -1.598605   -1.401406
+_Ilea~634410 |  -1.786983   .0780016   -22.91   0.000    -1.939863   -1.634103
+_Ilea~634590 |  -2.827065   .1193849   -23.68   0.000    -3.061055   -2.593075
+_Ilea~640740 |  -3.965468   .1173079   -33.80   0.000    -4.195388   -3.735549
+_Ilea~803360 |  -1.890162    .069911   -27.04   0.000    -2.027185   -1.753139
+_Ilea~901920 |  -.3246098   .1158301    -2.80   0.005    -.5516326    -.097587
+_Ile~1200150 |   .6732294   .1385554     4.86   0.000     .4016659    .9447929
+_Ile~1200180 |    1.59867   .0644757    24.79   0.000       1.4723     1.72504
+_Ile~1200390 |   2.148445   .0422271    50.88   0.000     2.065681    2.231208
+_Ile~1200480 |   1.251787   .0868172    14.42   0.000     1.081628    1.421945
+_Ile~1200870 |   1.485921   .1179026    12.60   0.000     1.254836    1.717006
+_Ile~1201080 |   .2793273   .1861584     1.50   0.133    -.0855365    .6441911
+_Ile~1201440 |   1.053824   .0772748    13.64   0.000      .902368     1.20528
+_Ile~1201500 |   1.101881   .0704108    15.65   0.000     .9638784    1.239884
+_Ile~1201590 |   .7464543   .1253632     5.95   0.000     .5007471    .9921616
+_Ile~1201920 |   .5576735   .1385566     4.02   0.000     .2861076    .8292395
+_Ile~1300120 |   .4003331   .0267341    14.97   0.000     .3479351     .452731
+_Ile~1301830 |  -.8150351   .0586314   -13.90   0.000    -.9299506   -.7001196
+_Ile~1303870 |   .0387764   .0985183     0.39   0.694    -.1543159    .2318687
+_Ile~1709930 |   2.771407   .1430145    19.38   0.000     2.491103     3.05171
+_Ile~1734510 |   .3415174   .0528965     6.46   0.000      .237842    .4451927
+_Ile~1803630 |   .4941312   .0509343     9.70   0.000     .3943018    .5939607
+_Ile~1804770 |   .8743491   .0483357    18.09   0.000     .7796129    .9690852
+_Ile~1810290 |    .230462   .0459025     5.02   0.000     .1404948    .3204293
+_Ile~2012990 |   .7421259   .0109045    68.06   0.000     .7207536    .7634982
+_Ile~2101860 |   .4455797   .1358595     3.28   0.001     .1792999    .7118595
+_Ile~2102990 |   .3767349     .15287     2.46   0.014     .0771152    .6763545
+_Ile~2200300 |    .137393   .0476044     2.89   0.004     .0440901    .2306959
+_Ile~2200330 |  -.0723029   .0415981    -1.74   0.082    -.1538335    .0092278
+_Ile~2200540 |   .4733647   .0440443    10.75   0.000     .3870395    .5596898
+_Ile~2201170 |    .685686   .0219276    31.27   0.000     .6427087    .7286633
+_Ile~2201290 |  -.2724041   .0968353    -2.81   0.005    -.4621979   -.0826103
+_Ile~2201740 |  -.4638683   .1489461    -3.11   0.002    -.7557974   -.1719392
+_Ile~2400090 |   .9223393    .021942    42.04   0.000     .8793338    .9653448
+_Ile~2502790 |   1.308564   .0525011    24.92   0.000     1.205664    1.411465
+_Ile~2612000 |   1.385403   .1029357    13.46   0.000     1.183652    1.587153
+_Ile~2616440 |   .3532159    .062671     5.64   0.000      .230383    .4760488
+_Ile~2621150 |  -.0946051   .0024464   -38.67   0.000    -.0994001   -.0898102
+_Ile~2721240 |   1.071271   .0409807    26.14   0.000     .9909502    1.151591
+_Ile~2916400 |   .5300335   .0843963     6.28   0.000     .3646198    .6954473
+_Ile~2929280 |   .9269094   .1131786     8.19   0.000     .7050834    1.148735
+_Ile~3174820 |   .8261119   .0529001    15.62   0.000     .7224295    .9297942
+_Ile~3200060 |  -1.923602   .1021446   -18.83   0.000    -2.123802   -1.723402
+_Ile~3407830 |   .2962913   .1017511     2.91   0.004     .0968629    .4957198
+_Ile~3411340 |   .1157388   .1503591     0.77   0.441    -.1789597    .4104373
+_Ile~3605850 |   .8488215   .0350927    24.19   0.000      .780041     .917602
+_Ile~3624750 |   .4470071   .0436897    10.23   0.000     .3613768    .5326374
+_Ile~3702970 |   .9941784     .14848     6.70   0.000     .7031629    1.285194
+_Ile~3703330 |   -.307966   .1772098    -1.74   0.082    -.6552909    .0393589
+_Ile~3904348 |   .5766602   .0672408     8.58   0.000     .4448707    .7084497
+_Ile~3904375 |   1.016271   .0677892    14.99   0.000     .8834061    1.149135
+_Ile~3904378 |   1.126366   .0927443    12.14   0.000     .9445904    1.308142
+_Ile~3904380 |   1.163231   .0278332    41.79   0.000     1.108679    1.217783
+_Ile~3904384 |   .3871131   .0501553     7.72   0.000     .2888105    .4854157
+_Ile~3904490 |   .7895627   .0957686     8.24   0.000     .6018596    .9772658
+_Ile~4017250 |  -.1773115   .2347694    -0.76   0.450     -.637451    .2828281
+_Ile~4022770 |   .6726431   .1007372     6.68   0.000     .4752019    .8700843
+_Ile~4030240 |   .6453901   .0297587    21.69   0.000     .5870642     .703716
+_Ile~4110040 |  -1.944203   .0497981   -39.04   0.000    -2.041805     -1.8466
+_Ile~4218990 |   2.289113    .125116    18.30   0.000     2.043891    2.534336
+_Ile~4219170 |   1.082488   .0672833    16.09   0.000     .9506155    1.214361
+_Ile~4501440 |   .2609857   .0663813     3.93   0.000     .1308808    .3910907
+_Ile~4502310 |   .7010127   .1270524     5.52   0.000     .4519946    .9500309
+_Ile~4503360 |  -.0999833   .0732004    -1.37   0.172    -.2434535    .0434869
+_Ile~4702940 |   .8523196   .0226431    37.64   0.000     .8079399    .8966993
+_Ile~4703180 |   1.146583   .1014929    11.30   0.000       .94766    1.345505
+_Ile~4808130 |   .0849375    .092281     0.92   0.357      -.09593     .265805
+_Ile~4808940 |   .7397922   .0604101    12.25   0.000     .6213907    .8581937
+_Ile~4816230 |    1.36838   .0272101    50.29   0.000     1.315049    1.421711
+_Ile~4818000 |  -.3600092   .0424208    -8.49   0.000    -.4431526   -.2768659
+_Ile~4818300 |   .7472049   .1352694     5.52   0.000     .4820818    1.012328
+_Ile~4819700 |   .8129053   .0541442    15.01   0.000     .7067847     .919026
+_Ile~4823640 |   1.639563    .018611    88.10   0.000     1.603086     1.67604
+_Ile~4828500 |  -.0588076   .0375944    -1.56   0.118    -.1324914    .0148761
+_Ile~4838730 |   .6945919   .0412142    16.85   0.000     .6138136    .7753702
+_Ile~4844280 |  -.3308029   .1356786    -2.44   0.015    -.5967281   -.0648778
+_Ile~5102670 |   .4078905   .1227364     3.32   0.001     .1673316    .6484494
+_Ile~5103300 |  -.4727655   .1005088    -4.70   0.000    -.6697592   -.2757718
+_Ile~5307710 |  -1.830158   .0846864   -21.61   0.000     -1.99614   -1.664175
+_Ile~5308700 |  -2.882436    .115531   -24.95   0.000    -3.108872   -2.655999
+_Ile~5509600 |   1.460993   .0606626    24.08   0.000     1.342097     1.57989
+_Ile~9999999 |  -1.086427   .1606826    -6.76   0.000    -1.401359   -.7714947
+       _cons |   11.02867   .2710662    40.69   0.000     10.49739    11.55995
+------------------------------------------------------------------------------
+Instrumented:  disd_south disd_nonsouth
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_628050 _Ileaid_633840 _Ileaid_634170
+               _Ileaid_634320 _Ileaid_634410 _Ileaid_634590 _Ileaid_640740
+               _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2612000 _Ileaid_2616440 _Ileaid_2621150
+               _Ileaid_2721240 _Ileaid_2916400 _Ileaid_2929280
+               _Ileaid_3174820 _Ileaid_3200060 _Ileaid_3407830
+               _Ileaid_3411340 _Ileaid_3605850 _Ileaid_3624750
+               _Ileaid_3702970 _Ileaid_3703330 _Ileaid_3904348
+               _Ileaid_3904375 _Ileaid_3904378 _Ileaid_3904380
+               _Ileaid_3904384 _Ileaid_3904490 _Ileaid_4017250
+               _Ileaid_4022770 _Ileaid_4030240 _Ileaid_4110040
+               _Ileaid_4218990 _Ileaid_4219170 _Ileaid_4501440
+               _Ileaid_4502310 _Ileaid_4503360 _Ileaid_4702940
+               _Ileaid_4703180 _Ileaid_4808130 _Ileaid_4808940
+               _Ileaid_4816230 _Ileaid_4818000 _Ileaid_4818300
+               _Ileaid_4819700 _Ileaid_4823640 _Ileaid_4828500
+               _Ileaid_4838730 _Ileaid_4844280 _Ileaid_5102670
+               _Ileaid_5103300 _Ileaid_5307710 _Ileaid_5308700
+               _Ileaid_5509600 _Ileaid_9999999 imp_post_south
+               imp_post_nonsouth imp_post_west
+dir : seeout
+ 
+ 
+******************************* White Outcomes, Table 6 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pr            *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_634590 dropped because of collinearity
+note: _Ileaid_2511130 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     313
+                                                       Wald chi2(99) =  233.18
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.9367
+                                                       Root MSE      =  .28897
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwpr |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        disd |   .1945843   .5009001     0.39   0.698    -.7871618     1.17633
+ _Iyear_1970 |    1.13855   .2234674     5.09   0.000     .7005618    1.576538
+ _Iyear_1980 |   .6130768   .3280811     1.87   0.062    -.0299504    1.256104
+ _Iyear_1990 |    .364653   .3753231     0.97   0.331    -.3709667    1.100273
+   _Isouth_1 |  -.5592632   .2136678    -2.62   0.009    -.9780445    -.140482
+_IyeaXs~70_1 |  -.8409684   .0866565    -9.70   0.000    -1.010812   -.6711249
+_IyeaXs~90_1 |   .1806512   .0762453     2.37   0.018     .0312131    .3300892
+    _Iwest_1 |  -.5077703   .0319251   -15.91   0.000    -.5703422   -.4451984
+_IyeaXw~70_1 |  -.4373313    .086453    -5.06   0.000    -.6067761   -.2678865
+_IyeaXw~90_1 |   .1364795   .0890648     1.53   0.125    -.0380842    .3110433
+_Ilea~102370 |   1.448448   .0655524    22.10   0.000     1.319967    1.576928
+_Ilea~408800 |   .2764829   .0848919     3.26   0.001     .1100978     .442868
+_Ilea~509000 |   .1207533   .1643024     0.73   0.462    -.2012735      .44278
+_Ilea~614550 |  -.2613734   .1417001    -1.84   0.065    -.5391005    .0163537
+_Ilea~622710 |   3.053722    .232852    13.11   0.000      2.59734    3.510103
+_Ilea~628050 |   .2160861   .1809091     1.19   0.232    -.1384891    .5706614
+_Ilea~633840 |   .3898232   .0281933    13.83   0.000     .3345653    .4450811
+_Ilea~634170 |  -.2676717   .0284896    -9.40   0.000    -.3235104    -.211833
+_Ilea~634320 |   1.135804   .1347321     8.43   0.000     .8717342    1.399874
+_Ilea~634410 |   1.591607   .0807153    19.72   0.000     1.433408    1.749806
+_Ilea~640740 |  -1.075972   .0040511  -265.60   0.000    -1.083912   -1.068032
+_Ilea~803360 |   1.233436   .0964955    12.78   0.000     1.044309    1.422564
+_Ilea~901920 |  -.9156188   .2259185    -4.05   0.000    -1.358411   -.4728266
+_Ile~1200150 |   .2885017   .1623678     1.78   0.076    -.0297334    .6067368
+_Ile~1200180 |   1.731044   .0755566    22.91   0.000     1.582956    1.879132
+_Ile~1200390 |   2.559408   .0494843    51.72   0.000     2.462421    2.656395
+_Ile~1200480 |   1.387087   .1017378    13.63   0.000     1.187685     1.58649
+_Ile~1200870 |   1.472855   .1381656    10.66   0.000     1.202056    1.743655
+_Ile~1201080 |  -.5565934   .2181521    -2.55   0.011    -.9841637   -.1290232
+_Ile~1201440 |   .8553164   .0905555     9.45   0.000     .6778309    1.032802
+_Ile~1201500 |   1.350908   .0825118    16.37   0.000     1.189188    1.512628
+_Ile~1201590 |  -.0275532   .1469084    -0.19   0.851    -.3154884    .2603819
+_Ile~1201920 |   .0498871   .1623693     0.31   0.759    -.2683508     .368125
+_Ile~1300120 |   .6946747   .0353694    19.64   0.000      .625352    .7639974
+_Ile~1301830 |  -1.178729   .0732021   -16.10   0.000    -1.322203   -1.035256
+_Ile~1303870 |  -.7942237   .1199927    -6.62   0.000    -1.029405   -.5590424
+_Ile~1709930 |   2.797668   .2789398    10.03   0.000     2.250956     3.34438
+_Ile~1734510 |  -.1092799    .103171    -1.06   0.290    -.3114914    .0929315
+_Ile~1803630 |   .4443938   .0993438     4.47   0.000     .2496834    .6391041
+_Ile~1804770 |   .3823874   .0942753     4.06   0.000     .1976112    .5671637
+_Ile~1810290 |   .0389738   .0895296     0.44   0.663     -.136501    .2144487
+_Ile~2012990 |   .1192565   .0212684     5.61   0.000     .0775713    .1609418
+_Ile~2101860 |   .0092688   .1547362     0.06   0.952    -.2940086    .3125462
+_Ile~2102990 |   .8060802   .1746505     4.62   0.000     .4637716    1.148389
+_Ile~2200300 |   .4277889   .0557858     7.67   0.000     .3184507     .537127
+_Ile~2200330 |  -.0093627   .0487472    -0.19   0.848    -.1049054    .0861801
+_Ile~2200540 |   1.270547   .0516138    24.62   0.000     1.169385    1.371708
+_Ile~2201170 |   2.133606   .0256961    83.03   0.000     2.083242    2.183969
+_Ile~2201290 |   .0136644   .1134777     0.12   0.904    -.2087478    .2360767
+_Ile~2201740 |  -.1673237   .1745444    -0.96   0.338    -.5094245     .174777
+_Ile~2400090 |   1.894214   .0242367    78.15   0.000     1.846711    1.941717
+_Ile~2502790 |   1.301632   .1023998    12.71   0.000     1.100932    1.502332
+_Ile~2612000 |   1.390242   .2007689     6.92   0.000     .9967426    1.783742
+_Ile~2616440 |   .5116129   .1222354     4.19   0.000      .272036    .7511898
+_Ile~2621150 |  -.7941734   .0047716  -166.44   0.000    -.8035256   -.7848212
+_Ile~2721240 |   .4228735   .0799299     5.29   0.000     .2662137    .5795333
+_Ile~2916400 |   .1362926   .1646092     0.83   0.408    -.1863354    .4589207
+_Ile~2929280 |   1.041721   .2202943     4.73   0.000     .6099521     1.47349
+_Ile~3174820 |   .8560901    .103178     8.30   0.000     .6538648    1.058315
+_Ile~3200060 |   .1789669   .0336261     5.32   0.000     .1130609    .2448729
+_Ile~3407830 |   .5210546   .1984584     2.63   0.009     .1320834    .9100259
+_Ile~3411340 |  -.1500865    .293265    -0.51   0.609    -.7248753    .4247023
+_Ile~3605850 |   .9189109   .0684459    13.43   0.000     .7847594    1.053062
+_Ile~3624750 |   .2740673   .0852138     3.22   0.001     .1070514    .4410832
+_Ile~3702970 |    .668898   .1739982     3.84   0.000     .3278678    1.009928
+_Ile~3703330 |  -1.254951   .2076655    -6.04   0.000    -1.661968   -.8479339
+_Ile~3904348 |  -.1103544   .1311484    -0.84   0.400    -.3674005    .1466918
+_Ile~3904375 |   1.110039   .1322182     8.40   0.000     .8508959    1.369182
+_Ile~3904378 |   1.241871   .1808913     6.87   0.000     .8873305    1.596411
+_Ile~3904380 |   .5340111   .0542868     9.84   0.000     .4276109    .6404112
+_Ile~3904384 |  -.0384513   .0978245    -0.39   0.694    -.2301837    .1532811
+_Ile~3904490 |   .7207422     .18679     3.86   0.000     .3546405    1.086844
+_Ile~4017250 |  -2.249397   .2705772    -8.31   0.000    -2.779719   -1.719076
+_Ile~4022770 |   .5983613   .1136477     5.27   0.000     .3756159    .8211066
+_Ile~4030240 |   .5241866   .0318651    16.45   0.000     .4617322     .586641
+_Ile~4110040 |   .8438285   .1357243     6.22   0.000     .5778138    1.109843
+_Ile~4218990 |   2.677359   .2440301    10.97   0.000     2.199069    3.155649
+_Ile~4219170 |   1.196227   .1312313     9.12   0.000     .9390187    1.453436
+_Ile~4501440 |   .8583445   .0777897    11.03   0.000     .7058794     1.01081
+_Ile~4502310 |   .3003065    .148888     2.02   0.044     .0084915    .5921216
+_Ile~4503360 |  -.2541676   .0857808    -2.96   0.003     -.422295   -.0860403
+_Ile~4702940 |   1.610046   .0265346    60.68   0.000     1.558039    1.662053
+_Ile~4703180 |   1.411954   .1189357    11.87   0.000     1.178844    1.645064
+_Ile~4808130 |  -.4822145   .1081407    -4.46   0.000    -.6941663   -.2702627
+_Ile~4808940 |   .2082441   .0707923     2.94   0.003     .0694938    .3469944
+_Ile~4816230 |   1.569754   .0318865    49.23   0.000     1.507258    1.632251
+_Ile~4818000 |  -1.830919   .0497114   -36.83   0.000    -1.928352   -1.733486
+_Ile~4818300 |    .415965   .1585171     2.62   0.009     .1052772    .7266528
+_Ile~4819700 |   .5977717   .0634496     9.42   0.000     .4734128    .7221305
+_Ile~4823640 |    1.96236   .0218095    89.98   0.000     1.919614    2.005106
+_Ile~4828500 |  -.8645418   .0440555   -19.62   0.000     -.950889   -.7781947
+_Ile~4838730 |   1.147427   .0482973    23.76   0.000     1.052766    1.242088
+_Ile~4844280 |  -.7591664   .1589967    -4.77   0.000    -1.070794   -.4475386
+_Ile~5102670 |   .7489771   .1438301     5.21   0.000     .4670752    1.030879
+_Ile~5103300 |  -1.191313   .1177825   -10.11   0.000    -1.422163   -.9604637
+_Ile~5307710 |   1.239913    .067677    18.32   0.000     1.107268    1.372557
+_Ile~5308700 |  -.0112325   .0075169    -1.49   0.135    -.0259652    .0035003
+_Ile~5509600 |   1.507903   .1183181    12.74   0.000     1.276004    1.739802
+_Ile~9999999 |  -.2193889   .1837985    -1.19   0.233    -.5796274    .1408495
+       _cons |   7.778048   .4336602    17.94   0.000      6.92809    8.628007
+------------------------------------------------------------------------------
+Instrumented:  disd
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_640740
+               _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2612000 _Ileaid_2616440 _Ileaid_2621150
+               _Ileaid_2721240 _Ileaid_2916400 _Ileaid_2929280
+               _Ileaid_3174820 _Ileaid_3200060 _Ileaid_3407830
+               _Ileaid_3411340 _Ileaid_3605850 _Ileaid_3624750
+               _Ileaid_3702970 _Ileaid_3703330 _Ileaid_3904348
+               _Ileaid_3904375 _Ileaid_3904378 _Ileaid_3904380
+               _Ileaid_3904384 _Ileaid_3904490 _Ileaid_4017250
+               _Ileaid_4022770 _Ileaid_4030240 _Ileaid_4110040
+               _Ileaid_4218990 _Ileaid_4219170 _Ileaid_4501440
+               _Ileaid_4502310 _Ileaid_4503360 _Ileaid_4702940
+               _Ileaid_4703180 _Ileaid_4808130 _Ileaid_4808940
+               _Ileaid_4816230 _Ileaid_4818000 _Ileaid_4818300
+               _Ileaid_4819700 _Ileaid_4823640 _Ileaid_4828500
+               _Ileaid_4838730 _Ileaid_4844280 _Ileaid_5102670
+               _Ileaid_5103300 _Ileaid_5307710 _Ileaid_5308700
+               _Ileaid_5509600 _Ileaid_9999999 imp_post imp_post_west
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_622710 dropped because of collinearity
+note: _Ileaid_2511130 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     313
+                                                       Wald chi2(100)=  334.56
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.9320
+                                                       Root MSE      =  .29948
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnwpr |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  disd_south |   .8586629   .6681771     1.29   0.199    -.4509402    2.168266
+disd_nonso~h |  -.9680917   .3307129    -2.93   0.003    -1.616277   -.3199063
+ _Iyear_1970 |   1.765103   .4177158     4.23   0.000      .946395    2.583811
+ _Iyear_1980 |   .9727558   .4102509     2.37   0.018     .1686789    1.776833
+ _Iyear_1990 |   .6221081    .414442     1.50   0.133    -.1901832    1.434399
+   _Isouth_1 |  -1.247222   .4415492    -2.82   0.005    -2.112642   -.3818014
+_IyeaXs~70_1 |  -1.312192   .2326382    -5.64   0.000    -1.768154   -.8562292
+_IyeaXs~90_1 |   .2850885   .0806325     3.54   0.000     .1270516    .4431254
+    _Iwest_1 |   3.090422   .1573423    19.64   0.000     2.782037    3.398807
+_IyeaXw~70_1 |  -.4541754   .0795779    -5.71   0.000    -.6101453   -.2982055
+_IyeaXw~90_1 |   .2365026   .0887119     2.67   0.008     .0626305    .4103746
+_Ilea~102370 |   1.535355   .0874438    17.56   0.000     1.363968    1.706742
+_Ilea~408800 |   -3.12068   .0976887   -31.95   0.000    -3.312146   -2.929213
+_Ilea~509000 |   .3385805   .2191716     1.54   0.122     -.090988     .768149
+_Ilea~614550 |  -3.526675   .0601819   -58.60   0.000    -3.644629    -3.40872
+_Ilea~628050 |  -2.958204   .0342946   -86.26   0.000     -3.02542   -2.890988
+_Ilea~633840 |  -3.138947   .1351233   -23.23   0.000    -3.403784    -2.87411
+_Ilea~634170 |  -3.795754   .1349276   -28.13   0.000    -4.060207   -3.531301
+_Ilea~634320 |  -2.145671   .0647824   -33.12   0.000    -2.272642     -2.0187
+_Ilea~634410 |   -1.81525   .1004463   -18.07   0.000    -2.012121   -1.618379
+_Ilea~634590 |  -3.594212   .1537376   -23.38   0.000    -3.895532   -3.292892
+_Ilea~640740 |   -4.66078   .1510629   -30.85   0.000    -4.956858   -4.364702
+_Ilea~803360 |  -2.136792   .0900276   -23.73   0.000    -2.313243   -1.960342
+_Ilea~901920 |  -.3912227   .1491598    -2.62   0.009    -.6835706   -.0988748
+_Ile~1200150 |   .5037642    .216591     2.33   0.020     .0792536    .9282749
+_Ile~1200180 |   1.831215    .100789    18.17   0.000     1.633672    2.028758
+_Ile~1200390 |   2.625013   .0660097    39.77   0.000     2.495636     2.75439
+_Ile~1200480 |   1.521968   .1357135    11.21   0.000     1.255975    1.787962
+_Ile~1200870 |   1.656031   .1843065     8.99   0.000     1.294797    2.017265
+_Ile~1201080 |  -.2673738   .2910046    -0.92   0.358    -.8377324    .3029848
+_Ile~1201440 |   .9753722   .1207968     8.07   0.000     .7386149    1.212129
+_Ile~1201500 |     1.4603   .1100669    13.27   0.000     1.244573    1.676027
+_Ile~1201590 |   .1672136   .1959689     0.85   0.394    -.2168783    .5513055
+_Ile~1201920 |   .2651515    .216593     1.22   0.221    -.1593629    .6896659
+_Ile~1300120 |   .7255412   .0429655    16.89   0.000     .6413303    .8097521
+_Ile~1301830 |  -1.093879   .0946698   -11.55   0.000    -1.279429   -.9083298
+_Ile~1303870 |  -.6460768   .1575495    -4.10   0.000     -.954868   -.3372855
+_Ile~1709930 |   3.445136   .1841665    18.71   0.000     3.084176    3.806095
+_Ile~1734510 |   .1301979   .0681173     1.91   0.056    -.0033097    .2637054
+_Ile~1803630 |   .6749881   .0655905    10.29   0.000      .546433    .8035431
+_Ile~1804770 |   .6012168   .0622441     9.66   0.000     .4792206     .723213
+_Ile~1810290 |   .2467877   .0591108     4.18   0.000     .1309326    .3626427
+_Ile~2012990 |   .1686241   .0140422    12.01   0.000      .141102    .1961463
+_Ile~2101860 |   .2260689   .2102866     1.08   0.282    -.1860853    .6382231
+_Ile~2102990 |   1.049536   .2369394     4.43   0.000     .5851437    1.513929
+_Ile~2200300 |    .501748   .0744156     6.74   0.000     .3558961       .6476
+_Ile~2200330 |   .0552649   .0650265     0.85   0.395    -.0721846    .1827145
+_Ile~2200540 |   1.338975   .0688504    19.45   0.000      1.20403    1.473919
+_Ile~2201170 |   2.167673   .0342774    63.24   0.000      2.10049    2.234855
+_Ile~2201290 |   .1641099   .1513739     1.08   0.278    -.1325776    .4607973
+_Ile~2201740 |   .0640821    .232834     0.28   0.783    -.3922642    .5204284
+_Ile~2400090 |    1.91951   .0296841    64.66   0.000      1.86133    1.977689
+_Ile~2502790 |    1.53932   .0676082    22.77   0.000     1.406811     1.67183
+_Ile~2612000 |   1.856262   .1325551    14.00   0.000     1.596459    2.116065
+_Ile~2616440 |   .7953424   .0807044     9.86   0.000     .6371648    .9535201
+_Ile~2621150 |  -.7830977   .0031504  -248.57   0.000    -.7892723    -.776923
+_Ile~2721240 |   .6084048   .0527727    11.53   0.000     .5049721    .7118374
+_Ile~2916400 |   .5183791   .1086811     4.77   0.000      .305368    .7313901
+_Ile~2929280 |   1.552923   .1477679    10.51   0.000     1.263304    1.842543
+_Ile~3174820 |   1.095584    .068122    16.08   0.000     .9620676    1.229101
+_Ile~3200060 |  -3.337193   .1315363   -25.37   0.000    -3.594999   -3.079386
+_Ile~3407830 |   .9817109   .1310296     7.49   0.000     .7248976    1.238524
+_Ile~3411340 |   .5306324   .1936245     2.74   0.006     .1511354    .9101295
+_Ile~3605850 |   1.077786   .0451906    23.85   0.000     .9892139    1.166358
+_Ile~3624750 |   .4718633   .0562613     8.39   0.000     .3615931    .5821334
+_Ile~3702970 |   .8995796   .2321054     3.88   0.000     .4446615    1.354498
+_Ile~3703330 |   -.979634   .2770161    -3.54   0.000    -1.522575   -.4366924
+_Ile~3904348 |   .1940639   .0865891     2.24   0.025     .0243524    .3637753
+_Ile~3904375 |    1.41694   .0872954    16.23   0.000     1.245844    1.588036
+_Ile~3904378 |   1.661751   .1194312    13.91   0.000      1.42767    1.895832
+_Ile~3904380 |   .6600201   .0358422    18.41   0.000     .5897708    .7302695
+_Ile~3904384 |   .1886163   .0645874     2.92   0.003     .0620274    .3152052
+_Ile~3904490 |   1.154314   .1233258     9.36   0.000     .9126003    1.396028
+_Ile~4017250 |  -1.878068   .3651388    -5.14   0.000    -2.593727   -1.162409
+_Ile~4022770 |   .7598743   .1551907     4.90   0.000     .4557061    1.064042
+_Ile~4030240 |   .5677652   .0425738    13.34   0.000      .484322    .6512083
+_Ile~4110040 |  -2.435344   .0641273   -37.98   0.000    -2.561031   -2.309656
+_Ile~4218990 |   3.243795   .1611178    20.13   0.000      2.92801     3.55958
+_Ile~4219170 |   1.500838   .0866438    17.32   0.000     1.331019    1.670657
+_Ile~4501440 |   .9614759   .1037679     9.27   0.000     .7580946    1.164857
+_Ile~4502310 |   .4976978   .1986095     2.51   0.012     .1084303    .8869654
+_Ile~4503360 |  -.1404419   .1144276    -1.23   0.220    -.3647159    .0838321
+_Ile~4702940 |   1.645225    .035396    46.48   0.000      1.57585      1.7146
+_Ile~4703180 |   1.569636   .1586547     9.89   0.000     1.258678    1.880593
+_Ile~4808130 |  -.3388448   .1442546    -2.35   0.019    -.6215785    -.056111
+_Ile~4808940 |   .3020984   .0944336     3.20   0.001      .117012    .4871848
+_Ile~4816230 |   1.612029   .0425351    37.90   0.000     1.528661    1.695396
+_Ile~4818000 |  -1.765013   .0663127   -26.62   0.000    -1.894983   -1.635043
+_Ile~4818300 |   .6261223   .2114544     2.96   0.003     .2116794    1.040565
+_Ile~4819700 |   .6818912   .0846387     8.06   0.000     .5160024      .84778
+_Ile~4823640 |   1.991274   .0290929    68.45   0.000     1.934253    2.048295
+_Ile~4828500 |  -.8061344    .058768   -13.72   0.000    -.9213174   -.6909513
+_Ile~4838730 |   1.211458   .0644264    18.80   0.000     1.085184    1.337731
+_Ile~4844280 |  -.5483733   .2120941    -2.59   0.010      -.96407   -.1326765
+_Ile~5102670 |   .9396629   .1918626     4.90   0.000     .5636191    1.315707
+_Ile~5103300 |  -1.035161   .1571163    -6.59   0.000    -1.343103   -.7272182
+_Ile~5307710 |  -2.197209   .1090547   -20.15   0.000    -2.410952   -1.983466
+_Ile~5308700 |  -3.587996   .1487747   -24.12   0.000    -3.879589   -3.296403
+_Ile~5509600 |    1.78254    .078118    22.82   0.000     1.629431    1.935648
+_Ile~9999999 |   .0362935   .2491762     0.15   0.884    -.4520829    .5246699
+       _cons |   7.673121   .4178468    18.36   0.000     6.854156    8.492086
+------------------------------------------------------------------------------
+Instrumented:  disd_south disd_nonsouth
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_628050 _Ileaid_633840 _Ileaid_634170
+               _Ileaid_634320 _Ileaid_634410 _Ileaid_634590 _Ileaid_640740
+               _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2612000 _Ileaid_2616440 _Ileaid_2621150
+               _Ileaid_2721240 _Ileaid_2916400 _Ileaid_2929280
+               _Ileaid_3174820 _Ileaid_3200060 _Ileaid_3407830
+               _Ileaid_3411340 _Ileaid_3605850 _Ileaid_3624750
+               _Ileaid_3702970 _Ileaid_3703330 _Ileaid_3904348
+               _Ileaid_3904375 _Ileaid_3904378 _Ileaid_3904380
+               _Ileaid_3904384 _Ileaid_3904490 _Ileaid_4017250
+               _Ileaid_4022770 _Ileaid_4030240 _Ileaid_4110040
+               _Ileaid_4218990 _Ileaid_4219170 _Ileaid_4501440
+               _Ileaid_4502310 _Ileaid_4503360 _Ileaid_4702940
+               _Ileaid_4703180 _Ileaid_4808130 _Ileaid_4808940
+               _Ileaid_4816230 _Ileaid_4818000 _Ileaid_4818300
+               _Ileaid_4819700 _Ileaid_4823640 _Ileaid_4828500
+               _Ileaid_4838730 _Ileaid_4844280 _Ileaid_5102670
+               _Ileaid_5103300 _Ileaid_5307710 _Ileaid_5308700
+               _Ileaid_5509600 _Ileaid_9999999 imp_post_south
+               imp_post_nonsouth imp_post_west
+dir : seeout
+
+. foreach r in pu to pr {;
+  2.  **************************;
+.  * Black Outcomes         *;
+.  **************************;
+.  disp " ";
+  3.  disp " ";
+  4.  disp "******************************* Black Outcomes, Table 6 *******************************";
+  5.  disp " ";
+  6.  disp " ";
+  7.  disp " ";
+  8.  disp " ";
+  9.  disp "******************************* OUTCOME: `r'            *******************************";
+ 10.  disp " ";
+ 11.  disp " ";
+ 12.  xi: ivregress 2sls lnb`r' (disdm4=impost_4 impost_4_west) i.year*i.south i.year*i.west  i.leaid, cluster(leaid);
+ 13.  if "`r'"=="pu" {;
+ 14.   outreg2 disdm4 using table6b.out, bdec(2) se nor2 nocons replace;
+ 15.  };
+ 16.   else {;
+ 17.   outreg2 disdm4 using table6b.out, bdec(2) se nor2 nocons append;
+ 18.  };
+ 19.  xi: ivregress 2sls lnb`r' (disdm4_south disdm4_nonsouth=impost_4_south impost_4_nonsouth impost_4_west) i.year*i.south i.year*i.west  i.leaid, cluster(leaid);
+ 20.  outreg2 disdm4_south disdm4_nonsouth using table6b.out, bdec(2) se nor2 nocons append;
+ 21. };
+ 
+ 
+******************************* Black Outcomes, Table 6 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pu            *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1970_1 dropped because of collinearity
+note: _Ileaid_901920 dropped because of collinearity
+note: _Ileaid_5308700 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     305
+                                                       Wald chi2(99) =  155.38
+                                                       Prob > chi2   =  0.0003
+                                                       R-squared     =  0.9828
+                                                       Root MSE      =  .14413
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbpu |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      disdm4 |  -.4042697    .165081    -2.45   0.014    -.7278224   -.0807169
+ _Iyear_1970 |   .2278688   .0831357     2.74   0.006     .0649259    .3908117
+ _Iyear_1980 |   .1490121   .0922594     1.62   0.106     -.031813    .3298371
+ _Iyear_1990 |   .0457098   .1319534     0.35   0.729     -.212914    .3043337
+   _Isouth_1 |   1.001709   .0409154    24.48   0.000     .9215165    1.081902
+_IyeaXs~70_1 |   .0806762    .059812     1.35   0.177    -.0365531    .1979055
+_IyeaXs~90_1 |   .1935736   .0545073     3.55   0.000     .0867413    .3004058
+    _Iwest_1 |  -1.237792   .1305752    -9.48   0.000    -1.493714   -.9818688
+_IyeaXw~80_1 |    -.01271    .071782    -0.18   0.859    -.1534003    .1279802
+_IyeaXw~90_1 |   .2022405   .1196342     1.69   0.091    -.0322383    .4367193
+_Ilea~102370 |  -.2066047   .0177759   -11.62   0.000    -.2414448   -.1717646
+_Ilea~408800 |  -.5342147   .0407071   -13.12   0.000    -.6139992   -.4544302
+_Ilea~509000 |   -1.33051   .0495018   -26.88   0.000    -1.427532   -1.233489
+_Ilea~614550 |   .3754639    .026472    14.18   0.000     .3235797    .4273481
+_Ilea~622710 |   3.536777   .0814711    43.41   0.000     3.377096    3.696457
+_Ilea~628050 |   2.127676   .0612287    34.75   0.000      2.00767    2.247682
+_Ilea~633840 |   .6198391   .0291683    21.25   0.000     .5626703    .6770079
+_Ilea~634170 |   .3094059   .0299422    10.33   0.000     .2507203    .3680915
+_Ilea~634320 |   1.413072   .0537272    26.30   0.000     1.307768    1.518375
+_Ilea~634410 |   1.329205   .0277838    47.84   0.000      1.27475    1.383661
+_Ilea~634590 |  -1.957368    .031721   -61.71   0.000     -2.01954   -1.895196
+_Ilea~640740 |  -.1658227   .0260878    -6.36   0.000    -.2169539   -.1146916
+_Ilea~803360 |   1.166042   .0479483    24.32   0.000     1.072065    1.260019
+_Ile~1200150 |  -1.896903   .0388611   -48.81   0.000    -1.973069   -1.820736
+_Ile~1200180 |   -.287704   .0316818    -9.08   0.000    -.3497992   -.2256087
+_Ile~1200390 |   .5457047   .0159611    34.19   0.000     .5144215    .5769879
+_Ile~1200480 |   -.081028   .0324507    -2.50   0.013    -.1446301   -.0174259
+_Ile~1200870 |  -.6467535   .0473611   -13.66   0.000    -.7395795   -.5539274
+_Ile~1201080 |  -2.241836   .0547351   -40.96   0.000    -2.349115   -2.134557
+_Ile~1201440 |  -.7882504   .0229779   -34.30   0.000    -.8332863   -.7432145
+_Ile~1201500 |  -.6543616   .0308495   -21.21   0.000    -.7148255   -.5938977
+_Ile~1201590 |  -1.102646   .0334251   -32.99   0.000    -1.168157   -1.037134
+_Ile~1201920 |  -1.686256   .0480002   -35.13   0.000    -1.780334   -1.592177
+_Ile~1300120 |   .4106498   .0019143   214.52   0.000     .4068978    .4144018
+_Ile~1301830 |  -1.269384    .025902   -49.01   0.000    -1.320151   -1.218617
+_Ile~1303870 |   -1.05239     .04018   -26.19   0.000    -1.131142    -.973639
+_Ile~1709930 |   3.122213   .0181664   171.87   0.000     3.086608    3.157819
+_Ile~1734510 |  -.9386136   .0505388   -18.57   0.000    -1.037668   -.8395593
+_Ile~1803630 |  -.7488441   .0456568   -16.40   0.000    -.8383299   -.6593584
+_Ile~1804770 |    .876306   .0551254    15.90   0.000     .7682622    .9843498
+_Ile~1810290 |  -.8768475   .0619633   -14.15   0.000    -.9982933   -.7554018
+_Ile~2012990 |  -.5538242   .0785079    -7.05   0.000    -.7076969   -.3999516
+_Ile~2101860 |  -1.935413   .0571002   -33.90   0.000    -2.047327   -1.823499
+_Ile~2102990 |   -.762206   .0592671   -12.86   0.000    -.8783674   -.6460446
+_Ile~2200300 |  -.3598608   .0192562   -18.69   0.000    -.3976023   -.3221193
+_Ile~2200330 |  -1.299384   .0093011  -139.70   0.000    -1.317614   -1.281154
+_Ile~2200540 |  -.3270739   .0188722   -17.33   0.000    -.3640628    -.290085
+_Ile~2201170 |   .6429778   .0018423   349.00   0.000     .6393669    .6465887
+_Ile~2201290 |  -1.365401   .0318127   -42.92   0.000    -1.427753   -1.303049
+_Ile~2201740 |  -2.302336   .0413475   -55.68   0.000    -2.383375   -2.221296
+_Ile~2400090 |   1.019586   .0123106    82.82   0.000     .9954576    1.043714
+_Ile~2502790 |   .7517146   .0609775    12.33   0.000     .6322009    .8712283
+_Ile~2511130 |  -.7844588   .0905778    -8.66   0.000    -.9619879   -.6069296
+_Ile~2612000 |   2.610705   .0312514    83.54   0.000     2.549454    2.671957
+_Ile~2616440 |  -.4477563   .0431114   -10.39   0.000    -.5322531   -.3632595
+_Ile~2621150 |  -1.122827   .0843408   -13.31   0.000    -1.288131   -.9575217
+_Ile~2721240 |  -.6196765   .0625961    -9.90   0.000    -.7423625   -.4969905
+_Ile~2916400 |   .7722202   .0226127    34.15   0.000     .7279002    .8165402
+_Ile~2929280 |     1.4652   .0154749    94.68   0.000      1.43487    1.495531
+_Ile~3174820 |  -.1808492   .0405807    -4.46   0.000    -.2603859   -.1013125
+_Ile~3200060 |   1.127288   .0070916   158.96   0.000     1.113388    1.141187
+_Ile~3407830 |    .150498   .0284564     5.29   0.000     .0947244    .2062716
+_Ile~3411340 |   1.345779   .0155167    86.73   0.000     1.315366    1.376191
+_Ile~3605850 |   .5842337   .0540871    10.80   0.000      .478225    .6902424
+_Ile~3624750 |   .1703754   .0593078     2.87   0.004     .0541343    .2866165
+_Ile~3702970 |  -.4613323   .0478737    -9.64   0.000     -.555163   -.3675016
+_Ile~3703330 |  -1.895639   .0669783   -28.30   0.000    -2.026914   -1.764364
+_Ile~3904348 |    .012576   .0433785     0.29   0.772    -.0724444    .0975963
+_Ile~3904375 |   .8873601   .0406494    21.83   0.000     .8076888    .9670315
+_Ile~3904378 |   1.562877   .0287673    54.33   0.000     1.506494     1.61926
+_Ile~3904380 |   .6405052   .0544998    11.75   0.000     .5336876    .7473228
+_Ile~3904384 |   .3654177   .0423174     8.64   0.000     .2824772    .4483583
+_Ile~3904490 |   .1736372   .0305155     5.69   0.000      .113828    .2334464
+_Ile~4017250 |  -2.477531   .0887666   -27.91   0.000     -2.65151   -2.303551
+_Ile~4022770 |  -1.049263   .0529667   -19.81   0.000    -1.153076   -.9454502
+_Ile~4030240 |    -1.2274   .0130189   -94.28   0.000    -1.252916   -1.201883
+_Ile~4110040 |   .4932878   .0467566    10.55   0.000     .4016465     .584929
+_Ile~4218990 |    2.43074   .0182357   133.30   0.000     2.394998    2.466481
+_Ile~4219170 |   .5793927   .0406097    14.27   0.000     .4997991    .6589863
+_Ile~4501440 |  -.3408261   .0211072   -16.15   0.000    -.3821954   -.2994568
+_Ile~4502310 |  -1.141314   .0446456   -25.56   0.000    -1.228818    -1.05381
+_Ile~4503360 |  -.6483409    .026279   -24.67   0.000    -.6998468    -.596835
+_Ile~4702940 |   .6924758    .012832    53.96   0.000     .6673255    .7176261
+_Ile~4703180 |  -.5404201   .0386852   -13.97   0.000    -.6162417   -.4645985
+_Ile~4808130 |  -2.944137   .0388226   -75.84   0.000    -3.020227   -2.868046
+_Ile~4808940 |  -1.381009   .0275957   -50.04   0.000    -1.435095   -1.326922
+_Ile~4816230 |   .3672632   .0052971    69.33   0.000     .3568811    .3776454
+_Ile~4818000 |  -3.245365   .0139632  -232.42   0.000    -3.272732   -3.217998
+_Ile~4818300 |  -2.967458   .0498443   -59.53   0.000    -3.065151   -2.869765
+_Ile~4819700 |  -.5680714   .0228487   -24.86   0.000    -.6128541   -.5232886
+_Ile~4823640 |   .6995429    .004648   150.50   0.000     .6904329    .7086529
+_Ile~4828500 |  -2.267561   .0030124  -752.75   0.000    -2.273465   -2.261657
+_Ile~4838730 |  -1.440868   .0080948  -178.00   0.000    -1.456733   -1.425002
+_Ile~4844280 |  -2.187259   .0541794   -40.37   0.000    -2.293448   -2.081069
+_Ile~5102670 |  -.6179003   .0535345   -11.54   0.000     -.722826   -.5129746
+_Ile~5103300 |  -2.081741   .0404061   -51.52   0.000    -2.160935   -2.002546
+_Ile~5307710 |   .8784719   .0387798    22.65   0.000     .8024648     .954479
+_Ile~5509600 |    1.16194   .0408969    28.41   0.000     1.081784    1.242097
+_Ile~9999999 |  -1.411967   .0323251   -43.68   0.000    -1.475323   -1.348612
+       _cons |   9.518415   .2289064    41.58   0.000     9.069767    9.967064
+------------------------------------------------------------------------------
+Instrumented:  disdm4
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1980_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_634590
+               _Ileaid_640740 _Ileaid_803360 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2511130 _Ileaid_2612000 _Ileaid_2616440
+               _Ileaid_2621150 _Ileaid_2721240 _Ileaid_2916400
+               _Ileaid_2929280 _Ileaid_3174820 _Ileaid_3200060
+               _Ileaid_3407830 _Ileaid_3411340 _Ileaid_3605850
+               _Ileaid_3624750 _Ileaid_3702970 _Ileaid_3703330
+               _Ileaid_3904348 _Ileaid_3904375 _Ileaid_3904378
+               _Ileaid_3904380 _Ileaid_3904384 _Ileaid_3904490
+               _Ileaid_4017250 _Ileaid_4022770 _Ileaid_4030240
+               _Ileaid_4110040 _Ileaid_4218990 _Ileaid_4219170
+               _Ileaid_4501440 _Ileaid_4502310 _Ileaid_4503360
+               _Ileaid_4702940 _Ileaid_4703180 _Ileaid_4808130
+               _Ileaid_4808940 _Ileaid_4816230 _Ileaid_4818000
+               _Ileaid_4818300 _Ileaid_4819700 _Ileaid_4823640
+               _Ileaid_4828500 _Ileaid_4838730 _Ileaid_4844280
+               _Ileaid_5102670 _Ileaid_5103300 _Ileaid_5307710
+               _Ileaid_5509600 _Ileaid_9999999 impost_4 impost_4_west
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_5308700 dropped because of collinearity
+note: _Ileaid_5509600 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     305
+                                                       Wald chi2(100)=  181.23
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.9823
+                                                       Root MSE      =  .14629
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbpu |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+disdm4_south |   -.033107   .1435943    -0.23   0.818    -.3145468    .2483327
+disdm4_non~h |  -.7573865   .2438386    -3.11   0.002    -1.235301   -.2794716
+ _Iyear_1970 |   .4671801   .0848775     5.50   0.000     .3008231     .633537
+ _Iyear_1980 |   .3433304   .0740536     4.64   0.000      .198188    .4884727
+ _Iyear_1990 |    .171514   .0970944     1.77   0.077    -.0187876    .3618155
+   _Isouth_1 |  -.6181692   .1849415    -3.34   0.001    -.9806478   -.2556906
+_IyeaXs~70_1 |  -.1071267   .0679123    -1.58   0.115    -.2402325     .025979
+_IyeaXs~90_1 |   .2767689   .0669434     4.13   0.000     .1455622    .4079755
+    _Iwest_1 |  -2.509379   .0944522   -26.57   0.000    -2.694502   -2.324256
+_IyeaXw~70_1 |   .0088989   .0887172     0.10   0.920    -.1649836    .1827813
+_IyeaXw~90_1 |   .2570475   .0917018     2.80   0.005     .0773154    .4367797
+_Ilea~102370 |   -.166638   .0154622   -10.78   0.000    -.1969434   -.1363327
+_Ilea~408800 |  -.4724728   .0557293    -8.48   0.000    -.5817002   -.3632455
+_Ilea~509000 |  -1.219212   .0430587   -28.32   0.000    -1.303606   -1.134819
+_Ilea~614550 |   .3877818   .0326496    11.88   0.000     .3237897    .4517738
+_Ilea~622710 |   3.695511   .1178152    31.37   0.000     3.464598    3.926425
+_Ilea~628050 |   2.240146   .0873032    25.66   0.000     2.069034    2.411257
+_Ilea~633840 |   .6452953   .0371605    17.37   0.000     .5724621    .7181285
+_Ilea~634170 |   .3379202   .0384424     8.79   0.000     .2625746    .4132659
+_Ilea~634320 |   1.507736   .0758764    19.87   0.000     1.359021    1.656451
+_Ilea~634410 |   1.348578   .0348513    38.70   0.000      1.28027    1.416885
+_Ilea~634590 |  -1.922415   .0413648   -46.47   0.000    -2.003488   -1.841341
+_Ilea~640740 |  -.1900872   .0325038    -5.85   0.000    -.2537935    -.126381
+_Ilea~803360 |   1.246529   .0669976    18.61   0.000     1.115216    1.377842
+_Ilea~901920 |  -1.081468   .0544209   -19.87   0.000    -1.188131    -.974805
+_Ile~1200150 |  -1.812136   .0337888   -53.63   0.000    -1.878361   -1.745911
+_Ile~1200180 |  -.2164716   .0275582    -7.86   0.000    -.2704846   -.1624586
+_Ile~1200390 |   .5815911   .0138836    41.89   0.000     .5543797    .6088026
+_Ile~1200480 |   -.008067   .0282269    -0.29   0.775    -.0633908    .0472568
+_Ile~1200870 |  -.5402683   .0411967   -13.11   0.000    -.6210123   -.4595244
+_Ile~1201080 |  -2.121128    .047581   -44.58   0.000    -2.214386   -2.027871
+_Ile~1201440 |  -.7365876   .0199872   -36.85   0.000    -.7757617   -.6974135
+_Ile~1201500 |  -.5850007   .0268342   -21.80   0.000    -.6375947   -.5324067
+_Ile~1201590 |  -1.030243   .0290692   -35.44   0.000    -1.087218   -.9732686
+_Ile~1201920 |  -1.580776    .041728   -37.88   0.000    -1.662562   -1.498991
+_Ile~1300120 |   .4149539   .0016651   249.20   0.000     .4116903    .4182175
+_Ile~1301830 |  -1.211146   .0225307   -53.76   0.000    -1.255306   -1.166987
+_Ile~1303870 |  -.9620509   .0349502   -27.53   0.000    -1.030552   -.8935498
+_Ile~1709930 |   2.062677   .0688578    29.96   0.000     1.927718    2.197636
+_Ile~1734510 |  -2.121565   .0174776  -121.39   0.000     -2.15582   -2.087309
+_Ile~1803630 |  -1.920767   .0105288  -182.43   0.000    -1.941403   -1.900131
+_Ile~1804770 |   -.316905   .0243035   -13.04   0.000     -.364539    -.269271
+_Ile~1810290 |  -2.085224   .0345844   -60.29   0.000    -2.153008    -2.01744
+_Ile~2012990 |  -1.798492   .0594583   -30.25   0.000    -1.915028   -1.681955
+_Ile~2101860 |  -1.811671   .0514458   -35.22   0.000    -1.912503   -1.710839
+_Ile~2102990 |  -.6335257   .0533263   -11.88   0.000    -.7380434    -.529008
+_Ile~2200300 |  -.3200761   .0167916   -19.06   0.000    -.3529871    -.287165
+_Ile~2200330 |  -1.278472   .0080905  -158.02   0.000    -1.294329   -1.262615
+_Ile~2200540 |  -.2846422   .0164159   -17.34   0.000    -.3168166   -.2524677
+_Ile~2201170 |   .6471201   .0016025   403.81   0.000     .6439791     .650261
+_Ile~2201290 |  -1.296675   .0276699   -46.86   0.000    -1.350907   -1.242443
+_Ile~2201740 |  -2.209371   .0359657   -61.43   0.000    -2.279863    -2.13888
+_Ile~2400090 |   1.034363   .0125175    82.63   0.000     1.009829    1.058897
+_Ile~2502790 |  -.4544834   .0331003   -13.73   0.000    -.5193587   -.3896081
+_Ile~2511130 |  -2.055388   .0775332   -26.51   0.000     -2.20735   -1.903426
+_Ile~2612000 |    1.47257   .0153836    95.72   0.000     1.442419    1.502722
+_Ile~2616440 |  -1.613872   .0074156  -217.63   0.000    -1.628406   -1.599337
+_Ile~2621150 |  -2.380201   .0682004   -34.90   0.000    -2.513872   -2.246531
+_Ile~2721240 |   -1.82945   .0355372   -51.48   0.000    -1.899102   -1.759798
+_Ile~2916400 |  -.3431345   .0305932   -11.22   0.000    -.4030961   -.2831729
+_Ile~2929280 |   .3829393   .0532308     7.19   0.000     .2786088    .4872698
+_Ile~3174820 |   -1.34114   .0055922  -239.82   0.000      -1.3521   -1.330179
+_Ile~3200060 |   1.112118   .0104748   106.17   0.000     1.091588    1.132649
+_Ile~3407830 |  -.9806479   .0199643   -49.12   0.000    -1.019777   -.9415186
+_Ile~3411340 |   .2690788   .0570517     4.72   0.000     .1572595    .3808981
+_Ile~3605850 |  -.6066618   .0227492   -26.67   0.000    -.6512494   -.5620742
+_Ile~3624750 |  -1.032127    .030587   -33.74   0.000    -1.092077   -.9721777
+_Ile~3702970 |  -.3536946   .0416425    -8.49   0.000    -.4353125   -.2720768
+_Ile~3703330 |  -1.747292   .0582236   -30.01   0.000    -1.861408   -1.633176
+_Ile~3904348 |  -1.154151   .0077045  -149.80   0.000    -1.169251    -1.13905
+_Ile~3904375 |  -.2730893   .0056117   -48.66   0.000    -.2840879   -.2620906
+_Ile~3904378 |   .4309415   .0194406    22.17   0.000     .3928386    .4690445
+_Ile~3904380 |   -.551311   .0233666   -23.59   0.000    -.5971087   -.5055134
+_Ile~3904384 |  -.7988759   .0066405  -120.30   0.000     -.811891   -.7858608
+_Ile~3904490 |  -.9626801   .0165615   -58.13   0.000    -.9951401   -.9302201
+_Ile~4017250 |  -2.281949   .0789454   -28.91   0.000    -2.436679   -2.127219
+_Ile~4022770 |  -.9349561   .0478592   -19.54   0.000    -1.028758   -.8411538
+_Ile~4030240 |  -1.210215   .0131646   -91.93   0.000    -1.236017   -1.184413
+_Ile~4110040 |   .5707802   .0651558     8.76   0.000     .4430773    .6984831
+_Ile~4218990 |   1.329967   .0405387    32.81   0.000     1.250513    1.409422
+_Ile~4219170 |   -.580965   .0056002  -103.74   0.000    -.5919412   -.5699888
+_Ile~4501440 |  -.2933695   .0183599   -15.98   0.000    -.3293542   -.2573847
+_Ile~4502310 |  -1.040934   .0388346   -26.80   0.000    -1.117049   -.9648197
+_Ile~4503360 |  -.5892561   .0228586   -25.78   0.000    -.6340581   -.5444541
+_Ile~4702940 |   .7213269   .0111618    64.62   0.000     .6994501    .7432036
+_Ile~4703180 |  -.4534416     .03365   -13.48   0.000    -.5193944   -.3874888
+_Ile~4808130 |  -2.856849   .0337695   -84.60   0.000    -2.923036   -2.790662
+_Ile~4808940 |  -1.318963   .0240039   -54.95   0.000     -1.36601   -1.271916
+_Ile~4816230 |   .3791731   .0046077    82.29   0.000     .3701423    .3882039
+_Ile~4818000 |  -3.213971   .0121457  -264.62   0.000    -3.237776   -3.190166
+_Ile~4818300 |   -2.85539   .0433567   -65.86   0.000    -2.940367   -2.770412
+_Ile~4819700 |   -.516699   .0198748   -26.00   0.000    -.5556529   -.4777451
+_Ile~4823640 |   .7099934   .0040431   175.61   0.000     .7020692    .7179177
+_Ile~4828500 |  -2.260788   .0026203  -862.81   0.000    -2.265924   -2.255653
+_Ile~4838730 |  -1.429134   .0072424  -197.33   0.000    -1.443329    -1.41494
+_Ile~4844280 |  -2.065443   .0471275   -43.83   0.000    -2.157812   -1.973075
+_Ile~5102670 |  -.4975351   .0465665   -10.68   0.000    -.5888039   -.4062664
+_Ile~5103300 |  -1.990893   .0351469   -56.64   0.000     -2.05978   -1.922007
+_Ile~5307710 |   .9349305   .0526926    17.74   0.000     .8316549    1.038206
+_Ile~9999999 |  -1.345346   .0299692   -44.89   0.000    -1.404084   -1.286607
+       _cons |   10.70223   .1730424    61.85   0.000     10.36308    11.04139
+------------------------------------------------------------------------------
+Instrumented:  disdm4_south disdm4_nonsouth
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_634590
+               _Ileaid_640740 _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150
+               _Ileaid_1200180 _Ileaid_1200390 _Ileaid_1200480
+               _Ileaid_1200870 _Ileaid_1201080 _Ileaid_1201440
+               _Ileaid_1201500 _Ileaid_1201590 _Ileaid_1201920
+               _Ileaid_1300120 _Ileaid_1301830 _Ileaid_1303870
+               _Ileaid_1709930 _Ileaid_1734510 _Ileaid_1803630
+               _Ileaid_1804770 _Ileaid_1810290 _Ileaid_2012990
+               _Ileaid_2101860 _Ileaid_2102990 _Ileaid_2200300
+               _Ileaid_2200330 _Ileaid_2200540 _Ileaid_2201170
+               _Ileaid_2201290 _Ileaid_2201740 _Ileaid_2400090
+               _Ileaid_2502790 _Ileaid_2511130 _Ileaid_2612000
+               _Ileaid_2616440 _Ileaid_2621150 _Ileaid_2721240
+               _Ileaid_2916400 _Ileaid_2929280 _Ileaid_3174820
+               _Ileaid_3200060 _Ileaid_3407830 _Ileaid_3411340
+               _Ileaid_3605850 _Ileaid_3624750 _Ileaid_3702970
+               _Ileaid_3703330 _Ileaid_3904348 _Ileaid_3904375
+               _Ileaid_3904378 _Ileaid_3904380 _Ileaid_3904384
+               _Ileaid_3904490 _Ileaid_4017250 _Ileaid_4022770
+               _Ileaid_4030240 _Ileaid_4110040 _Ileaid_4218990
+               _Ileaid_4219170 _Ileaid_4501440 _Ileaid_4502310
+               _Ileaid_4503360 _Ileaid_4702940 _Ileaid_4703180
+               _Ileaid_4808130 _Ileaid_4808940 _Ileaid_4816230
+               _Ileaid_4818000 _Ileaid_4818300 _Ileaid_4819700
+               _Ileaid_4823640 _Ileaid_4828500 _Ileaid_4838730
+               _Ileaid_4844280 _Ileaid_5102670 _Ileaid_5103300
+               _Ileaid_5307710 _Ileaid_9999999 impost_4_south
+               impost_4_nonsouth impost_4_west
+dir : seeout
+ 
+ 
+******************************* Black Outcomes, Table 6 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: to            *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1970_1 dropped because of collinearity
+note: _Ileaid_901920 dropped because of collinearity
+note: _Ileaid_5308700 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     305
+                                                       Wald chi2(99) =  293.67
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.9891
+                                                       Root MSE      =  .11648
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbto |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      disdm4 |  -.1368669   .1338188    -1.02   0.306     -.399147    .1254131
+ _Iyear_1970 |     .15888   .0664281     2.39   0.017     .0286833    .2890768
+ _Iyear_1980 |   .2888379   .0794003     3.64   0.000     .1332161    .4444596
+ _Iyear_1990 |   .3459532   .1106829     3.13   0.002     .1290188    .5628877
+   _Isouth_1 |   1.162935   .0332081    35.02   0.000     1.097848    1.228022
+_IyeaXs~70_1 |  -.0781725   .0481369    -1.62   0.104    -.1725191     .016174
+_IyeaXs~90_1 |   .0569237   .0409099     1.39   0.164    -.0232582    .1371056
+    _Iwest_1 |   -1.28683   .1082534   -11.89   0.000    -1.499003   -1.074657
+_IyeaXw~80_1 |   .1070187   .0501418     2.13   0.033     .0087427    .2052948
+_IyeaXw~90_1 |   .2665689   .0971851     2.74   0.006     .0760895    .4570483
+_Ilea~102370 |   -.262943   .0144096   -18.25   0.000    -.2911852   -.2347007
+_Ilea~408800 |  -.4165604   .0332698   -12.52   0.000    -.4817679   -.3513529
+_Ilea~509000 |  -1.328404   .0401274   -33.10   0.000    -1.407052   -1.249755
+_Ilea~614550 |   .3724038   .0209684    17.76   0.000     .3313065    .4135011
+_Ilea~622710 |    3.71343   .0667515    55.63   0.000       3.5826    3.844261
+_Ilea~628050 |   2.284505   .0502126    45.50   0.000      2.18609     2.38292
+_Ilea~633840 |   .6882576   .0234216    29.39   0.000     .6423522    .7341631
+_Ilea~634170 |    .298315   .0241046    12.38   0.000     .2510709    .3455592
+_Ilea~634320 |    1.50176    .044053    34.09   0.000     1.415418    1.588103
+_Ilea~634410 |   1.708004   .0221806    77.00   0.000     1.664531    1.751477
+_Ilea~634590 |  -1.395156   .0256547   -54.38   0.000    -1.445438   -1.344874
+_Ilea~640740 |  -.0741879    .019942    -3.72   0.000    -.1132735   -.0351022
+_Ilea~803360 |   1.283029   .0392866    32.66   0.000     1.206029     1.36003
+_Ile~1200150 |   -1.97043   .0301223   -65.41   0.000    -2.029469   -1.911392
+_Ile~1200180 |  -.3816788   .0256821   -14.86   0.000    -.4320148   -.3313429
+_Ile~1200390 |   .4965572   .0129385    38.38   0.000     .4711983    .5219162
+_Ile~1200480 |  -.1025492   .0263053    -3.90   0.000    -.1541067   -.0509918
+_Ile~1200870 |  -.6406689   .0383921   -16.69   0.000     -.715916   -.5654217
+_Ile~1201080 |  -2.345768   .0429632   -54.60   0.000    -2.429975   -2.261562
+_Ile~1201440 |  -.8542892   .0186265   -45.86   0.000    -.8907965    -.817782
+_Ile~1201500 |  -.6930393   .0250074   -27.71   0.000    -.7420529   -.6440258
+_Ile~1201590 |  -1.183639   .0257323   -46.00   0.000    -1.234074   -1.133205
+_Ile~1201920 |  -1.707556   .0375126   -45.52   0.000    -1.781079   -1.634033
+_Ile~1300120 |   .4692707   .0015518   302.41   0.000     .4662293    .4723122
+_Ile~1301830 |  -1.386434   .0209968   -66.03   0.000    -1.427587   -1.345281
+_Ile~1303870 |   -1.05996   .0325709   -32.54   0.000    -1.123798   -.9961221
+_Ile~1709930 |   3.176527   .0137177   231.56   0.000     3.149641    3.203413
+_Ile~1734510 |  -.9635137   .0418697   -23.01   0.000    -1.045577   -.8814505
+_Ile~1803630 |  -.7736167   .0378846   -20.42   0.000    -.8478691   -.6993643
+_Ile~1804770 |   .9811797   .0456085    21.51   0.000     .8917888    1.070571
+_Ile~1810290 |  -.8670811   .0511756   -16.94   0.000    -.9673835   -.7667788
+_Ile~2012990 |  -.5140768   .0646259    -7.95   0.000    -.6407412   -.3874124
+_Ile~2101860 |  -1.815315    .044958   -40.38   0.000    -1.903431   -1.727199
+_Ile~2102990 |  -.6931887   .0467113   -14.84   0.000    -.7847412   -.6016362
+_Ile~2200300 |  -.4692454    .014352   -32.70   0.000    -.4973749   -.4411159
+_Ile~2200330 |  -1.430026   .0075397  -189.67   0.000    -1.444804   -1.415249
+_Ile~2200540 |  -.3793772   .0152983   -24.80   0.000    -.4093613   -.3493931
+_Ile~2201170 |   .6862291   .0014934   459.49   0.000      .683302    .6891562
+_Ile~2201290 |  -1.431313   .0244315   -58.58   0.000    -1.479198   -1.383428
+_Ile~2201740 |   -2.43087   .0335173   -72.53   0.000    -2.496563   -2.365177
+_Ile~2400090 |   1.037394    .009387   110.51   0.000     1.018996    1.055793
+_Ile~2502790 |   .9196932   .0503734    18.26   0.000     .8209631    1.018423
+_Ile~2511130 |  -.7088087   .0744283    -9.52   0.000    -.8546854    -.562932
+_Ile~2612000 |    2.71055   .0260562   104.03   0.000     2.659481     2.76162
+_Ile~2616440 |   -.532159   .0358036   -14.86   0.000    -.6023328   -.4619852
+_Ile~2621150 |   -1.10746   .0693637   -15.97   0.000    -1.243411     -.97151
+_Ile~2721240 |  -.5291649   .0516905   -10.24   0.000    -.6304764   -.4278534
+_Ile~2916400 |   .8491197   .0188169    45.13   0.000     .8122392    .8860002
+_Ile~2929280 |   1.510463   .0121537   124.28   0.000     1.486642    1.534283
+_Ile~3174820 |  -.2062132   .0337319    -6.11   0.000    -.2723265   -.1400998
+_Ile~3200060 |   1.168324   .0057486   203.24   0.000     1.157057    1.179591
+_Ile~3407830 |   .2417834   .0237363    10.19   0.000     .1952612    .2883056
+_Ile~3411340 |    1.37241   .0119961   114.40   0.000     1.348898    1.395922
+_Ile~3605850 |   .6771478   .0447625    15.13   0.000      .589415    .7648806
+_Ile~3624750 |   .1948282   .0490144     3.97   0.000     .0987618    .2908947
+_Ile~3702970 |  -.4240137   .0388076   -10.93   0.000    -.5000753   -.3479522
+_Ile~3703330 |  -1.939104   .0528768   -36.67   0.000     -2.04274   -1.835467
+_Ile~3904348 |    .047868   .0360221     1.33   0.184     -.022734    .1184701
+_Ile~3904375 |   1.011829   .0337882    29.95   0.000      .945605    1.078052
+_Ile~3904378 |   1.677882    .023995    69.93   0.000     1.630853    1.724912
+_Ile~3904380 |   .7913764   .0450987    17.55   0.000     .7029845    .8797683
+_Ile~3904384 |   .4727375    .035154    13.45   0.000      .403837     .541638
+_Ile~3904490 |   .2180543   .0254467     8.57   0.000     .1681797    .2679288
+_Ile~4017250 |   -2.33788   .0705982   -33.12   0.000     -2.47625    -2.19951
+_Ile~4022770 |  -1.054962   .0416145   -25.35   0.000    -1.136525   -.9733995
+_Ile~4030240 |  -1.307585   .0098732  -132.44   0.000    -1.326937   -1.288234
+_Ile~4110040 |   .5665629   .0383005    14.79   0.000     .4914953    .6416304
+_Ile~4218990 |   2.601881   .0149792   173.70   0.000     2.572523     2.63124
+_Ile~4219170 |   .7442225   .0337557    22.05   0.000     .6780625    .8103825
+_Ile~4501440 |    -.49454     .01711   -28.90   0.000     -.528075    -.461005
+_Ile~4502310 |  -1.136714   .0361909   -31.41   0.000    -1.207647   -1.065781
+_Ile~4503360 |  -.6730115   .0213024   -31.59   0.000    -.7147635   -.6312596
+_Ile~4702940 |     .62089   .0104019    59.69   0.000     .6005025    .6412774
+_Ile~4703180 |  -.4065144   .0313592   -12.96   0.000    -.4679773   -.3450515
+_Ile~4808130 |  -2.913848   .0314706   -92.59   0.000    -2.975529   -2.852166
+_Ile~4808940 |  -1.354986   .0223698   -60.57   0.000     -1.39883   -1.311142
+_Ile~4816230 |   .3677815    .004294    85.65   0.000     .3593655    .3761976
+_Ile~4818000 |      -3.35   .0113189  -295.97   0.000    -3.372185   -3.327816
+_Ile~4818300 |   -2.65446   .0404051   -65.70   0.000    -2.733652   -2.575267
+_Ile~4819700 |  -.5808836   .0185218   -31.36   0.000    -.6171856   -.5445816
+_Ile~4823640 |   .7179219   .0037678   190.54   0.000     .7105371    .7253067
+_Ile~4828500 |  -2.443285   .0024419 -1000.57   0.000    -2.448071   -2.438499
+_Ile~4838730 |  -1.327673   .0059074  -224.75   0.000    -1.339252   -1.316095
+_Ile~4844280 |  -2.204931   .0439192   -50.20   0.000    -2.291011   -2.118851
+_Ile~5102670 |   -.520317   .0433964   -11.99   0.000    -.6053724   -.4352616
+_Ile~5103300 |  -2.049661   .0327542   -62.58   0.000    -2.113858   -1.985464
+_Ile~5307710 |   1.063634   .0316554    33.60   0.000      1.00159    1.125677
+_Ile~5509600 |   1.072846   .0342441    31.33   0.000     1.005728    1.139963
+_Ile~9999999 |  -1.460802   .0249584   -58.53   0.000     -1.50972   -1.411884
+       _cons |   10.59898   .1905234    55.63   0.000     10.22557     10.9724
+------------------------------------------------------------------------------
+Instrumented:  disdm4
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1980_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_634590
+               _Ileaid_640740 _Ileaid_803360 _Ileaid_1200150 _Ileaid_1200180
+               _Ileaid_1200390 _Ileaid_1200480 _Ileaid_1200870
+               _Ileaid_1201080 _Ileaid_1201440 _Ileaid_1201500
+               _Ileaid_1201590 _Ileaid_1201920 _Ileaid_1300120
+               _Ileaid_1301830 _Ileaid_1303870 _Ileaid_1709930
+               _Ileaid_1734510 _Ileaid_1803630 _Ileaid_1804770
+               _Ileaid_1810290 _Ileaid_2012990 _Ileaid_2101860
+               _Ileaid_2102990 _Ileaid_2200300 _Ileaid_2200330
+               _Ileaid_2200540 _Ileaid_2201170 _Ileaid_2201290
+               _Ileaid_2201740 _Ileaid_2400090 _Ileaid_2502790
+               _Ileaid_2511130 _Ileaid_2612000 _Ileaid_2616440
+               _Ileaid_2621150 _Ileaid_2721240 _Ileaid_2916400
+               _Ileaid_2929280 _Ileaid_3174820 _Ileaid_3200060
+               _Ileaid_3407830 _Ileaid_3411340 _Ileaid_3605850
+               _Ileaid_3624750 _Ileaid_3702970 _Ileaid_3703330
+               _Ileaid_3904348 _Ileaid_3904375 _Ileaid_3904378
+               _Ileaid_3904380 _Ileaid_3904384 _Ileaid_3904490
+               _Ileaid_4017250 _Ileaid_4022770 _Ileaid_4030240
+               _Ileaid_4110040 _Ileaid_4218990 _Ileaid_4219170
+               _Ileaid_4501440 _Ileaid_4502310 _Ileaid_4503360
+               _Ileaid_4702940 _Ileaid_4703180 _Ileaid_4808130
+               _Ileaid_4808940 _Ileaid_4816230 _Ileaid_4818000
+               _Ileaid_4818300 _Ileaid_4819700 _Ileaid_4823640
+               _Ileaid_4828500 _Ileaid_4838730 _Ileaid_4844280
+               _Ileaid_5102670 _Ileaid_5103300 _Ileaid_5307710
+               _Ileaid_5509600 _Ileaid_9999999 impost_4 impost_4_west
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_5308700 dropped because of collinearity
+note: _Ileaid_5509600 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     305
+                                                       Wald chi2(100)=  318.11
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.9890
+                                                       Root MSE      =  .11681
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbto |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+disdm4_south |   .0128011    .191724     0.07   0.947    -.3629711    .3885733
+disdm4_non~h |  -.2794727     .18599    -1.50   0.133    -.6440064     .085061
+ _Iyear_1970 |   .2554075   .1168427     2.19   0.029        .0264     .484415
+ _Iyear_1980 |    .367195   .1115565     3.29   0.001     .1485482    .5858417
+ _Iyear_1990 |    .396641   .1215803     3.26   0.001      .158348     .634934
+   _Isouth_1 |  -.0947012   .1673769    -0.57   0.572    -.4227539    .2333515
+_IyeaXs~70_1 |  -.1539297   .0900929    -1.71   0.088    -.3305086    .0226492
+_IyeaXs~90_1 |    .090513   .0521825     1.73   0.083    -.0117627    .1927888
+    _Iwest_1 |  -2.291805   .0617275   -37.13   0.000    -2.412789   -2.170821
+_IyeaXw~70_1 |  -.1085579   .0534389    -2.03   0.042    -.2132962   -.0038195
+_IyeaXw~90_1 |   .1765509   .0629038     2.81   0.005     .0532618    .2998401
+_Ilea~102370 |  -.2468268   .0206448   -11.96   0.000    -.2872898   -.2063637
+_Ilea~408800 |   -.391626   .0437773    -8.95   0.000     -.477428    -.305824
+_Ilea~509000 |  -1.283524   .0574911   -22.33   0.000    -1.396204   -1.170843
+_Ilea~614550 |   .3773783   .0234012    16.13   0.000     .3315128    .4232438
+_Ilea~622710 |   3.777535   .0924259    40.87   0.000     3.596384    3.958686
+_Ilea~628050 |   2.329926   .0687811    33.87   0.000     2.195117    2.464734
+_Ilea~633840 |   .6985381   .0279148    25.02   0.000     .6438261    .7532502
+_Ilea~634170 |   .3098305   .0291014    10.65   0.000     .2527929    .3668682
+_Ilea~634320 |    1.53999   .0598364    25.74   0.000     1.422713    1.657268
+_Ilea~634410 |   1.715827   .0256919    66.78   0.000     1.665472    1.766183
+_Ilea~634590 |   -1.38104   .0317224   -43.54   0.000    -1.443215   -1.318865
+_Ilea~640740 |  -.0839871   .0201816    -4.16   0.000    -.1235423   -.0444319
+_Ilea~803360 |   1.315534   .0528215    24.91   0.000     1.212006    1.419062
+_Ilea~901920 |  -1.040347   .0448479   -23.20   0.000    -1.128247   -.9524467
+_Ile~1200150 |  -1.936249   .0428424   -45.19   0.000    -2.020219    -1.85228
+_Ile~1200180 |   -.352955   .0367951    -9.59   0.000     -.425072    -.280838
+_Ile~1200390 |   .5110281   .0185371    27.57   0.000      .474696    .5473602
+_Ile~1200480 |  -.0731284    .037688    -1.94   0.052    -.1469955    .0007387
+_Ile~1200870 |  -.5977297   .0550049   -10.87   0.000    -.7055373   -.4899221
+_Ile~1201080 |  -2.297094    .061332   -37.45   0.000    -2.417302   -2.176885
+_Ile~1201440 |  -.8334566   .0266864   -31.23   0.000    -.8857611   -.7811522
+_Ile~1201500 |  -.6650701   .0358284   -18.56   0.000    -.7352925   -.5948478
+_Ile~1201590 |  -1.154444   .0364997   -31.63   0.000    -1.225982   -1.082906
+_Ile~1201920 |  -1.665022   .0534914   -31.13   0.000    -1.769864   -1.560181
+_Ile~1300120 |   .4710063   .0022233   211.85   0.000     .4666488    .4753638
+_Ile~1301830 |   -1.36295   .0300824   -45.31   0.000    -1.421911    -1.30399
+_Ile~1303870 |  -1.023531   .0466648   -21.93   0.000    -1.114993   -.9320701
+_Ile~1709930 |   2.145037   .0537364    39.92   0.000     2.039716    2.250359
+_Ile~1734510 |  -2.044845   .0117693  -173.74   0.000    -2.067912   -2.021777
+_Ile~1803630 |  -1.850494   .0063503  -291.40   0.000     -1.86294   -1.838047
+_Ile~1804770 |  -.1042945   .0170427    -6.12   0.000    -.1376976   -.0708913
+_Ile~1810290 |   -1.95868   .0249402   -78.54   0.000    -2.007562   -1.909798
+_Ile~2012990 |  -1.620332   .0439715   -36.85   0.000    -1.706514   -1.534149
+_Ile~2101860 |  -1.765417   .0634117   -27.84   0.000    -1.889702   -1.641133
+_Ile~2102990 |  -.6412995   .0659428    -9.73   0.000     -.770545    -.512054
+_Ile~2200300 |  -.4532026   .0199022   -22.77   0.000    -.4922101    -.414195
+_Ile~2200330 |  -1.421594   .0108022  -131.60   0.000    -1.442766   -1.400422
+_Ile~2200540 |   -.362267   .0219181   -16.53   0.000    -.4052257   -.3193083
+_Ile~2201170 |   .6878994   .0021397   321.50   0.000     .6837057    .6920931
+_Ile~2201290 |    -1.4036   .0346168   -40.55   0.000    -1.471448   -1.335752
+_Ile~2201740 |  -2.393383   .0480207   -49.84   0.000    -2.487502   -2.299264
+_Ile~2400090 |   1.043353   .0103977   100.34   0.000     1.022974    1.063732
+_Ile~2502790 |  -.1710258   .0238021    -7.19   0.000     -.217677   -.1243746
+_Ile~2511130 |  -1.825669   .0577779   -31.60   0.000    -1.938912   -1.712427
+_Ile~2612000 |   1.647319   .0126326   130.40   0.000     1.622559    1.672078
+_Ile~2616440 |  -1.606691   .0039677  -404.94   0.000    -1.614467   -1.598914
+_Ile~2621150 |  -2.218847   .0506503   -43.81   0.000     -2.31812   -2.119574
+_Ile~2721240 |  -1.621328   .0256706   -63.16   0.000    -1.671641   -1.571014
+_Ile~2916400 |  -.2049123   .0244436    -8.38   0.000    -.2528208   -.1570038
+_Ile~2929280 |   .4697955   .0417926    11.24   0.000     .3878836    .5517074
+_Ile~3174820 |  -1.278392   .0031441  -406.60   0.000    -1.284555    -1.27223
+_Ile~3200060 |   1.162198   .0079898   145.46   0.000     1.146538    1.177857
+_Ile~3407830 |  -.8186259    .016227   -50.45   0.000    -.8504303   -.7868216
+_Ile~3411340 |   .3339889   .0447142     7.47   0.000     .2463507     .421627
+_Ile~3605850 |  -.4073913   .0158449   -25.71   0.000    -.4384468   -.3763359
+_Ile~3624750 |  -.8943984   .0218735   -40.89   0.000    -.9372697    -.851527
+_Ile~3702970 |  -.3806098   .0556002    -6.85   0.000    -.4895842   -.2716354
+_Ile~3703330 |  -1.879284   .0755758   -24.87   0.000     -2.02741   -1.731158
+_Ile~3904348 |  -1.026911   .0041774  -245.83   0.000    -1.035098   -1.018723
+_Ile~3904375 |  -.0604148   .0031297   -19.30   0.000     -.066549   -.0542806
+_Ile~3904378 |   .6171541   .0158188    39.01   0.000     .5861499    .6481583
+_Ile~3904380 |  -.2935345   .0163209   -17.99   0.000    -.3255228   -.2615462
+_Ile~3904384 |  -.6010585   .0034479  -174.33   0.000    -.6078162   -.5943007
+_Ile~3904490 |  -.8444435   .0135629   -62.26   0.000    -.8710264   -.8178606
+_Ile~4017250 |  -2.259014    .100332   -22.52   0.000    -2.455661   -2.062366
+_Ile~4022770 |  -1.008869   .0585803   -17.22   0.000    -1.123685    -.894054
+_Ile~4030240 |  -1.300656   .0112302  -115.82   0.000    -1.322667   -1.278645
+_Ile~4110040 |   .5978581   .0513562    11.64   0.000     .4972017    .6985144
+_Ile~4218990 |   1.553738   .0320774    48.44   0.000     1.490868    1.616609
+_Ile~4219170 |  -.3279839   .0031377  -104.53   0.000    -.3341338   -.3218341
+_Ile~4501440 |  -.4754035   .0245137   -19.39   0.000    -.5234496   -.4273575
+_Ile~4502310 |  -1.096237   .0518511   -21.14   0.000    -1.197863   -.9946101
+_Ile~4503360 |  -.6491861   .0305203   -21.27   0.000    -.7090047   -.5893675
+_Ile~4702940 |   .6325239    .014903    42.44   0.000     .6033145    .6617333
+_Ile~4703180 |  -.3714411   .0449288    -8.27   0.000    -.4594998   -.2833823
+_Ile~4808130 |   -2.87865   .0450883   -63.84   0.000    -2.967021   -2.790278
+_Ile~4808940 |  -1.329967   .0320495   -41.50   0.000    -1.392783   -1.267151
+_Ile~4816230 |   .3725841    .006152    60.56   0.000     .3605263    .3846418
+_Ile~4818000 |  -3.337341   .0162167  -205.80   0.000    -3.369125   -3.305557
+_Ile~4818300 |  -2.609269   .0578889   -45.07   0.000    -2.722729   -2.495809
+_Ile~4819700 |  -.5601682   .0265364   -21.11   0.000    -.6121785   -.5081578
+_Ile~4823640 |    .722136   .0053982   133.77   0.000     .7115557    .7327163
+_Ile~4828500 |  -2.440554   .0034985  -697.59   0.000    -2.447411   -2.433697
+_Ile~4838730 |  -1.322942   .0067167  -196.96   0.000    -1.336106   -1.309777
+_Ile~4844280 |   -2.15581   .0629237   -34.26   0.000    -2.279138   -2.032482
+_Ile~5102670 |  -.4717808   .0621746    -7.59   0.000    -.5936408   -.3499208
+_Ile~5103300 |  -2.013027   .0469274   -42.90   0.000    -2.105003   -1.921051
+_Ile~5307710 |   1.086435   .0412969    26.31   0.000     1.005494    1.167375
+_Ile~9999999 |  -1.433937   .0343464   -41.75   0.000    -1.501255    -1.36662
+       _cons |   11.68078   .1603006    72.87   0.000      11.3666    11.99497
+------------------------------------------------------------------------------
+Instrumented:  disdm4_south disdm4_nonsouth
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_634590
+               _Ileaid_640740 _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150
+               _Ileaid_1200180 _Ileaid_1200390 _Ileaid_1200480
+               _Ileaid_1200870 _Ileaid_1201080 _Ileaid_1201440
+               _Ileaid_1201500 _Ileaid_1201590 _Ileaid_1201920
+               _Ileaid_1300120 _Ileaid_1301830 _Ileaid_1303870
+               _Ileaid_1709930 _Ileaid_1734510 _Ileaid_1803630
+               _Ileaid_1804770 _Ileaid_1810290 _Ileaid_2012990
+               _Ileaid_2101860 _Ileaid_2102990 _Ileaid_2200300
+               _Ileaid_2200330 _Ileaid_2200540 _Ileaid_2201170
+               _Ileaid_2201290 _Ileaid_2201740 _Ileaid_2400090
+               _Ileaid_2502790 _Ileaid_2511130 _Ileaid_2612000
+               _Ileaid_2616440 _Ileaid_2621150 _Ileaid_2721240
+               _Ileaid_2916400 _Ileaid_2929280 _Ileaid_3174820
+               _Ileaid_3200060 _Ileaid_3407830 _Ileaid_3411340
+               _Ileaid_3605850 _Ileaid_3624750 _Ileaid_3702970
+               _Ileaid_3703330 _Ileaid_3904348 _Ileaid_3904375
+               _Ileaid_3904378 _Ileaid_3904380 _Ileaid_3904384
+               _Ileaid_3904490 _Ileaid_4017250 _Ileaid_4022770
+               _Ileaid_4030240 _Ileaid_4110040 _Ileaid_4218990
+               _Ileaid_4219170 _Ileaid_4501440 _Ileaid_4502310
+               _Ileaid_4503360 _Ileaid_4702940 _Ileaid_4703180
+               _Ileaid_4808130 _Ileaid_4808940 _Ileaid_4816230
+               _Ileaid_4818000 _Ileaid_4818300 _Ileaid_4819700
+               _Ileaid_4823640 _Ileaid_4828500 _Ileaid_4838730
+               _Ileaid_4844280 _Ileaid_5102670 _Ileaid_5103300
+               _Ileaid_5307710 _Ileaid_9999999 impost_4_south
+               impost_4_nonsouth impost_4_west
+dir : seeout
+ 
+ 
+******************************* Black Outcomes, Table 6 *******************************
+ 
+ 
+ 
+ 
+******************************* OUTCOME: pr            *******************************
+ 
+ 
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_3200060 dropped because of collinearity
+note: _Ileaid_5509600 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     304
+                                                       Wald chi2(99) =   67.96
+                                                       Prob > chi2   =  0.9927
+                                                       R-squared     =  0.9164
+                                                       Root MSE      =  .44815
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbpr |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      disdm4 |   1.634907    .460348     3.55   0.000     .7326419    2.537173
+ _Iyear_1970 |   .9168247   .2657794     3.45   0.001     .3959066    1.437743
+ _Iyear_1980 |   1.349731   .3092346     4.36   0.000     .7436425     1.95582
+ _Iyear_1990 |   1.625972   .3940563     4.13   0.000     .8536356    2.398308
+   _Isouth_1 |  -.8034038   .0800771   -10.03   0.000    -.9603521   -.6464555
+_IyeaXs~70_1 |  -.6107264   .1584542    -3.85   0.000    -.9212908   -.3001619
+_IyeaXs~90_1 |  -.0421328   .1183796    -0.36   0.722    -.2741526     .189887
+    _Iwest_1 |  -1.498722   .1583813    -9.46   0.000    -1.809144   -1.188301
+_IyeaXw~70_1 |  -.2238294   .1441313    -1.55   0.120    -.5063215    .0586627
+_IyeaXw~90_1 |  -.0937853    .143682    -0.65   0.514    -.3753968    .1878263
+_Ilea~102370 |   .5915331   .0495701    11.93   0.000     .4943774    .6886888
+_Ilea~408800 |  -1.489417   .1144087   -13.02   0.000    -1.713653    -1.26518
+_Ilea~509000 |  -.9473668   .1380417    -6.86   0.000    -1.217924   -.6768101
+_Ilea~614550 |  -1.132254   .0642343   -17.63   0.000    -1.258151   -1.006357
+_Ilea~622710 |   2.727023   .2341273    11.65   0.000     2.268142    3.185904
+_Ilea~628050 |   1.593176   .1758511     9.06   0.000     1.248514    1.937837
+_Ilea~633840 |  -.0466725   .0754886    -0.62   0.536    -.1946274    .1012823
+_Ilea~634170 |  -.7414752   .0784137    -9.46   0.000    -.8951633   -.5877871
+_Ilea~634320 |   .1837355   .1538431     1.19   0.232    -.1177915    .4852625
+_Ilea~634410 |   1.608689   .0699815    22.99   0.000     1.471527     1.74585
+_Ilea~634590 |  -1.630096   .0559653   -29.13   0.000    -1.739787   -1.520406
+_Ilea~640740 |  -.7022678   .0532821   -13.18   0.000    -.8066988   -.5978369
+_Ilea~803360 |   .3460899   .1366038     2.53   0.011     .0783514    .6138284
+_Ilea~901920 |  -1.591086   .1094535   -14.54   0.000    -1.805611   -1.376562
+_Ile~1200150 |  -2.392218   .1148788   -20.82   0.000    -2.617376   -2.167059
+_Ile~1200180 |  -.2244455   .0883485    -2.54   0.011    -.3976054   -.0512856
+_Ile~1200390 |   .5975264   .0445094    13.42   0.000     .5102896    .6847633
+_Ile~1200480 |  -.0676219   .0904925    -0.75   0.455     -.244984    .1097402
+_Ile~1200870 |     .18629    .132072     1.41   0.158    -.0725665    .4451465
+_Ile~1201080 |  -2.807271   .1587097   -17.69   0.000    -3.118336   -2.496206
+_Ile~1201440 |  -1.137272   .0640767   -17.75   0.000     -1.26286   -1.011684
+_Ile~1201500 |  -.7822589   .0860274    -9.09   0.000    -.9508696   -.6136482
+_Ile~1201590 |  -1.895557   .0999538   -18.96   0.000    -2.091463   -1.699651
+_Ile~1201920 |  -1.942907   .1400808   -13.87   0.000     -2.21746   -1.668354
+_Ile~1300120 |   .3308367   .0053383    61.97   0.000     .3203738    .3412995
+_Ile~1301830 |  -2.742468   .0722309   -37.97   0.000    -2.884038   -2.600898
+_Ile~1303870 |  -1.182767   .1120466   -10.56   0.000    -1.402374   -.9631597
+_Ile~1709930 |   1.766434   .1353538    13.05   0.000     1.501146    2.031723
+_Ile~1734510 |  -2.065709   .0321144   -64.32   0.000    -2.128652   -2.002766
+_Ile~1803630 |  -1.738646   .0216753   -80.21   0.000    -1.781128   -1.696163
+_Ile~1804770 |  -.4260336    .043874    -9.71   0.000     -.512025   -.3400422
+_Ile~1810290 |  -2.335338   .0624588   -37.39   0.000    -2.457755   -2.212921
+_Ile~2012990 |  -2.423777   .1086455   -22.31   0.000    -2.636718   -2.210836
+_Ile~2101860 |  -2.282721   .1496875   -15.25   0.000    -2.576103   -1.989339
+_Ile~2102990 |  -.0576277   .1556136    -0.37   0.711    -.3626248    .2473695
+_Ile~2200300 |  -.4747289   .0615534    -7.71   0.000    -.5953714   -.3540865
+_Ile~2200330 |  -.8274912   .0259371   -31.90   0.000     -.878327   -.7766554
+_Ile~2200540 |   .3017539   .0526275     5.73   0.000      .198606    .4049018
+_Ile~2201170 |   2.132294   .0051376   415.04   0.000     2.122225    2.142364
+_Ile~2201290 |  -1.326397   .0955406   -13.88   0.000    -1.513653   -1.139141
+_Ile~2201740 |  -2.375296   .1153023   -20.60   0.000    -2.601284   -2.149307
+_Ile~2400090 |   1.363896   .0396983    34.36   0.000     1.286089    1.441704
+_Ile~2502790 |   .1894696   .0597424     3.17   0.002     .0723766    .3065626
+_Ile~2511130 |   -1.56445   .1425295   -10.98   0.000    -1.843802   -1.285097
+_Ile~2612000 |   1.392345   .0363731    38.28   0.000     1.321056    1.463635
+_Ile~2616440 |  -1.954836   .0184468  -105.97   0.000    -1.990991   -1.918681
+_Ile~2621150 |  -2.650954   .1250172   -21.20   0.000    -2.895983   -2.405925
+_Ile~2721240 |  -1.599458   .0642067   -24.91   0.000      -1.7253   -1.473615
+_Ile~2916400 |  -.7223127   .0639402   -11.30   0.000    -.8476332   -.5969922
+_Ile~2929280 |  -.0410991   .1060578    -0.39   0.698    -.2489686    .1667704
+_Ile~3174820 |  -1.748981   .0180425   -96.94   0.000    -1.784343   -1.713618
+_Ile~3407830 |  -.5183434   .0445404   -11.64   0.000     -.605641   -.4310459
+_Ile~3411340 |  -.1625361   .1132112    -1.44   0.151     -.384426    .0593537
+_Ile~3605850 |  -.2801636   .0411338    -6.81   0.000    -.3607844   -.1995428
+_Ile~3624750 |  -.7190321   .0551627   -13.03   0.000    -.8271491   -.6109151
+_Ile~3702970 |  -.5741864   .1335015    -4.30   0.000    -.8358445   -.3125283
+_Ile~3703330 |  -1.952184   .1926488   -10.13   0.000    -2.329769     -1.5746
+_Ile~3904348 |  -1.477882   .0186688   -79.16   0.000    -1.514472   -1.441292
+_Ile~3904375 |   -.363215   .0180112   -20.17   0.000    -.3985164   -.3279137
+_Ile~3904378 |   .1061277   .0435986     2.43   0.015     .0206761    .1915793
+_Ile~3904380 |  -.4874066   .0422189   -11.54   0.000    -.5701541    -.404659
+_Ile~3904384 |  -1.220666   .0179799   -67.89   0.000    -1.255906   -1.185426
+_Ile~3904490 |  -.8282266   .0384564   -21.54   0.000    -.9035997   -.7528535
+_Ile~4017250 |   -2.29108   .2368975    -9.67   0.000     -2.75539   -1.826769
+_Ile~4022770 |  -.5806021   .1384126    -4.19   0.000    -.8518858   -.3093184
+_Ile~4030240 |  -1.182452   .0405162   -29.18   0.000    -1.261863   -1.103042
+_Ile~4110040 |  -.1896689   .1330054    -1.43   0.154    -.4503547     .071017
+_Ile~4218990 |   1.499744   .0823684    18.21   0.000     1.338305    1.661184
+_Ile~4219170 |  -.7005937    .018029   -38.86   0.000    -.7359299   -.6652576
+_Ile~4501440 |  -.2330278   .0588599    -3.96   0.000    -.3483911   -.1176646
+_Ile~4502310 |  -1.197286   .1244996    -9.62   0.000    -1.441301   -.9532716
+_Ile~4503360 |  -.8808731   .0732821   -12.02   0.000    -1.024503   -.7372427
+_Ile~4702940 |   .2602576   .0357836     7.27   0.000     .1901231    .3303921
+_Ile~4703180 |   .1101573   .1078783     1.02   0.307    -.1012803    .3215949
+_Ile~4808130 |  -3.245719   .1082613   -29.98   0.000    -3.457908   -3.033531
+_Ile~4808940 |  -1.498784    .076954   -19.48   0.000    -1.649611   -1.347957
+_Ile~4816230 |   .3482247   .0147716    23.57   0.000     .3192729    .3771766
+_Ile~4818000 |  -3.927199   .0389379  -100.86   0.000    -4.003516   -3.850882
+_Ile~4818300 |  -2.379943   .1389968   -17.12   0.000    -2.652372   -2.107515
+_Ile~4819700 |  -.6095547   .0637164    -9.57   0.000    -.7344366   -.4846727
+_Ile~4823640 |   .5930353   .0129616    45.75   0.000      .567631    .6184396
+_Ile~4828500 |  -3.491523   .0084003  -415.64   0.000    -3.507987   -3.475058
+_Ile~4838730 |  -.6553166   .0327585   -20.00   0.000    -.7195221    -.591111
+_Ile~4844280 |  -2.373515   .1510858   -15.71   0.000    -2.669638   -2.077393
+_Ile~5102670 |  -.2038642   .1492873    -1.37   0.172    -.4964619    .0887335
+_Ile~5103300 |  -2.841958   .1126771   -25.22   0.000    -3.062801   -2.621115
+_Ile~5307710 |   .4315713   .1083275     3.98   0.000     .2192533    .6438892
+_Ile~5308700 |  -1.064516   .0197756   -53.83   0.000    -1.103275   -1.025756
+_Ile~9999999 |  -.7575626   .0832545    -9.10   0.000    -.9207385   -.5943867
+       _cons |   5.641714   .5711012     9.88   0.000     4.522376    6.761052
+------------------------------------------------------------------------------
+Instrumented:  disdm4
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_634590
+               _Ileaid_640740 _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150
+               _Ileaid_1200180 _Ileaid_1200390 _Ileaid_1200480
+               _Ileaid_1200870 _Ileaid_1201080 _Ileaid_1201440
+               _Ileaid_1201500 _Ileaid_1201590 _Ileaid_1201920
+               _Ileaid_1300120 _Ileaid_1301830 _Ileaid_1303870
+               _Ileaid_1709930 _Ileaid_1734510 _Ileaid_1803630
+               _Ileaid_1804770 _Ileaid_1810290 _Ileaid_2012990
+               _Ileaid_2101860 _Ileaid_2102990 _Ileaid_2200300
+               _Ileaid_2200330 _Ileaid_2200540 _Ileaid_2201170
+               _Ileaid_2201290 _Ileaid_2201740 _Ileaid_2400090
+               _Ileaid_2502790 _Ileaid_2511130 _Ileaid_2612000
+               _Ileaid_2616440 _Ileaid_2621150 _Ileaid_2721240
+               _Ileaid_2916400 _Ileaid_2929280 _Ileaid_3174820
+               _Ileaid_3407830 _Ileaid_3411340 _Ileaid_3605850
+               _Ileaid_3624750 _Ileaid_3702970 _Ileaid_3703330
+               _Ileaid_3904348 _Ileaid_3904375 _Ileaid_3904378
+               _Ileaid_3904380 _Ileaid_3904384 _Ileaid_3904490
+               _Ileaid_4017250 _Ileaid_4022770 _Ileaid_4030240
+               _Ileaid_4110040 _Ileaid_4218990 _Ileaid_4219170
+               _Ileaid_4501440 _Ileaid_4502310 _Ileaid_4503360
+               _Ileaid_4702940 _Ileaid_4703180 _Ileaid_4808130
+               _Ileaid_4808940 _Ileaid_4816230 _Ileaid_4818000
+               _Ileaid_4818300 _Ileaid_4819700 _Ileaid_4823640
+               _Ileaid_4828500 _Ileaid_4838730 _Ileaid_4844280
+               _Ileaid_5102670 _Ileaid_5103300 _Ileaid_5307710
+               _Ileaid_5308700 _Ileaid_9999999 impost_4 impost_4_west
+dir : seeout
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+i.west            _Iwest_0-1          (naturally coded; _Iwest_0 omitted)
+i.year*i.west     _IyeaXwes_#_#       (coded as above)
+i.leaid           _Ileaid_100390-9999999(naturally coded; _Ileaid_100390 omitted)
+note: _IyeaXsou_1980_1 dropped because of collinearity
+note: _Iyear_1970 dropped because of collinearity
+note: _Iyear_1980 dropped because of collinearity
+note: _Iyear_1990 dropped because of collinearity
+note: _IyeaXwes_1980_1 dropped because of collinearity
+note: _Ileaid_3200060 dropped because of collinearity
+note: _Ileaid_5509600 dropped because of collinearity
+
+Instrumental variables (2SLS) regression               Number of obs =     304
+                                                       Wald chi2(100)=   76.66
+                                                       Prob > chi2   =  0.9601
+                                                       R-squared     =  0.9142
+                                                       Root MSE      =  .45381
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+       lnbpr |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+disdm4_south |   2.015093   .7459843     2.70   0.007      .552991    3.477196
+disdm4_non~h |   1.309792   .4847387     2.70   0.007     .3597213    2.259862
+ _Iyear_1970 |   1.157292   .4496897     2.57   0.010     .2759168    2.038668
+ _Iyear_1980 |   1.548774   .4417732     3.51   0.000     .6829141    2.414633
+ _Iyear_1990 |   1.761933    .456516     3.86   0.000      .867178    2.656688
+   _Isouth_1 |  -1.250075   .5770818    -2.17   0.030    -2.381135    -.119016
+_IyeaXs~70_1 |  -.7984334   .2942358    -2.71   0.007    -1.375125   -.2217418
+_IyeaXs~90_1 |   .0359864   .1393934     0.26   0.796    -.2372197    .3091925
+    _Iwest_1 |  -1.601939   .1583326   -10.12   0.000    -1.912265   -1.291613
+_IyeaXw~70_1 |  -.2289942   .1309439    -1.75   0.080    -.4856396    .0276512
+_IyeaXw~90_1 |  -.0550265   .1355179    -0.41   0.685    -.3206367    .2105838
+_Ilea~102370 |   .6324714   .0803274     7.87   0.000     .4750326    .7899102
+_Ilea~408800 |  -1.418052   .1188273   -11.93   0.000     -1.65095   -1.185155
+_Ilea~509000 |  -.8333628   .2236937    -3.73   0.000    -1.271794   -.3949312
+_Ilea~614550 |  -1.106394   .0625864   -17.68   0.000    -1.229062   -.9837273
+_Ilea~622710 |   2.887689   .2467878    11.70   0.000     2.403994    3.371384
+_Ilea~628050 |   1.711245   .1848397     9.26   0.000     1.348966    2.073524
+_Ilea~633840 |  -.0087166   .0757029    -0.12   0.908    -.1570915    .1396583
+_Ilea~634170 |  -.7007037   .0790345    -8.87   0.000    -.8556085   -.5457989
+_Ilea~634320 |   .2854118   .1613233     1.77   0.077    -.0307761    .6015997
+_Ilea~634410 |   1.641043   .0693548    23.66   0.000      1.50511    1.776976
+_Ilea~634590 |  -1.590572   .0589306   -26.99   0.000    -1.706073    -1.47507
+_Ilea~640740 |  -.7100899   .0478972   -14.83   0.000    -.8039667   -.6162132
+_Ilea~803360 |   .4347127     .14282     3.04   0.002     .1547906    .7146348
+_Ilea~901920 |  -1.516995   .1147074   -13.22   0.000    -1.741818   -1.292173
+_Ile~1200150 |  -2.305391   .1806737   -12.76   0.000    -2.659505   -1.951277
+_Ile~1200180 |  -.1514814   .1431669    -1.06   0.290    -.4320834    .1291206
+_Ile~1200390 |   .6342853   .0721266     8.79   0.000     .4929198    .7756508
+_Ile~1200480 |   .0071129   .1466412     0.05   0.961    -.2802987    .2945244
+_Ile~1200870 |   .2953639     .21402     1.38   0.168    -.1241076    .7148355
+_Ile~1201080 |  -2.683629   .2524182   -10.63   0.000    -3.178359   -2.188898
+_Ile~1201440 |  -1.084354    .103835   -10.44   0.000    -1.287866   -.8808409
+_Ile~1201500 |  -.7112117   .1394057    -5.10   0.000    -.9844418   -.4379816
+_Ile~1201590 |  -1.821394   .1560986   -11.67   0.000    -2.127342   -1.515447
+_Ile~1201920 |  -1.834864   .2219806    -8.27   0.000    -2.269937    -1.39979
+_Ile~1300120 |   .3352454   .0086506    38.75   0.000     .3182906    .3522002
+_Ile~1301830 |  -2.682815   .1170486   -22.92   0.000    -2.912226   -2.453404
+_Ile~1303870 |  -1.090231   .1815692    -6.00   0.000    -1.446101   -.7343623
+_Ile~1709930 |   1.860718   .1425468    13.05   0.000     1.581331    2.140104
+_Ile~1734510 |  -2.085054   .0325971   -63.96   0.000    -2.148943   -2.021165
+_Ile~1803630 |  -1.747837   .0211602   -82.60   0.000     -1.78931   -1.706364
+_Ile~1804770 |  -.4548247   .0452341   -10.05   0.000    -.5434818   -.3661676
+_Ile~1810290 |  -2.378092    .065012   -36.58   0.000    -2.505513   -2.250671
+_Ile~2012990 |  -2.499944   .1138565   -21.96   0.000    -2.723099    -2.27679
+_Ile~2101860 |  -2.155971   .2434005    -8.86   0.000    -2.633027   -1.678914
+_Ile~2102990 |    .074181   .2532014     0.29   0.770    -.4220845    .5704466
+_Ile~2200300 |   -.433977   .0919765    -4.72   0.000    -.6142475   -.2537064
+_Ile~2200330 |  -.8060706   .0420306   -19.18   0.000     -.888449   -.7236923
+_Ile~2200540 |   .3452172   .0852817     4.05   0.000     .1780681    .5123663
+_Ile~2201170 |   2.136537   .0083254   256.63   0.000      2.12022    2.152854
+_Ile~2201290 |     -1.256   .1488085    -8.44   0.000    -1.547659   -.9643408
+_Ile~2201740 |  -2.280071    .186845   -12.20   0.000    -2.646281   -1.913862
+_Ile~2400090 |   1.379033   .0445324    30.97   0.000     1.291751    1.466315
+_Ile~2502790 |   .1487213   .0621292     2.39   0.017     .0269502    .2704924
+_Ile~2511130 |  -1.664796    .149604   -11.13   0.000    -1.958015   -1.371578
+_Ile~2612000 |   1.414263   .0376508    37.56   0.000     1.340469    1.488057
+_Ile~2616440 |   -1.95868   .0175565  -111.56   0.000     -1.99309    -1.92427
+_Ile~2621150 |  -2.738821   .1311332   -20.89   0.000    -2.995838   -2.481805
+_Ile~2721240 |  -1.643498   .0668659   -24.58   0.000    -1.774553   -1.512443
+_Ile~2916400 |  -.6794213   .0670806   -10.13   0.000    -.8108968   -.5479458
+_Ile~2929280 |   .0322617   .1116327     0.29   0.773    -.1865344    .2510579
+_Ile~3174820 |  -1.747462   .0172041  -101.57   0.000    -1.781181   -1.713742
+_Ile~3407830 |  -.4899911   .0464246   -10.55   0.000    -.5809815   -.3990006
+_Ile~3411340 |  -.0840552   .1191844    -0.71   0.481    -.3176523     .149542
+_Ile~3605850 |  -.3068229   .0423023    -7.25   0.000    -.3897338   -.2239119
+_Ile~3624750 |  -.7563779   .0572641   -13.21   0.000    -.8686135   -.6441423
+_Ile~3702970 |   -.463932   .2163364    -2.14   0.032    -.8879435   -.0399205
+_Ile~3703330 |  -1.800231   .3077463    -5.85   0.000    -2.403403    -1.19706
+_Ile~3904348 |  -1.482289   .0178027   -83.26   0.000    -1.517182   -1.447397
+_Ile~3904375 |  -.3618425   .0171645   -21.08   0.000    -.3954843   -.3282007
+_Ile~3904378 |   .1337528   .0454163     2.95   0.003     .0447385    .2227672
+_Ile~3904380 |  -.5149136    .043464   -11.85   0.000    -.6001014   -.4297257
+_Ile~3904384 |  -1.222833   .0170487   -71.73   0.000    -1.256248   -1.189418
+_Ile~3904490 |  -.8046356   .0398963   -20.17   0.000    -.8828308   -.7264403
+_Ile~4017250 |  -2.090743   .3866056    -5.41   0.000    -2.848476    -1.33301
+_Ile~4022770 |  -.4635162   .2247046    -2.06   0.039    -.9039292   -.0231032
+_Ile~4030240 |   -1.16485   .0470318   -24.77   0.000     -1.25703   -1.072669
+_Ile~4110040 |  -.1038031   .1389455    -0.75   0.455    -.3761312     .168525
+_Ile~4218990 |   1.556062   .0866001    17.97   0.000     1.386329    1.725795
+_Ile~4219170 |  -.6991367   .0171871   -40.68   0.000    -.7328227   -.6654507
+_Ile~4501440 |  -.1844174   .0953812    -1.93   0.053    -.3713611    .0025263
+_Ile~4502310 |  -1.094466   .2017491    -5.42   0.000    -1.489887   -.6990453
+_Ile~4503360 |  -.8203518   .1187522    -6.91   0.000    -1.053102   -.5876018
+_Ile~4702940 |   .2898101   .0579865     5.00   0.000     .1761586    .4034616
+_Ile~4703180 |   .1992504   .1748146     1.14   0.254    -.1433798    .5418807
+_Ile~4808130 |   -3.15631   .1754353   -17.99   0.000    -3.500157   -2.812463
+_Ile~4808940 |   -1.43523   .1247023   -11.51   0.000    -1.679643   -1.190818
+_Ile~4816230 |   .3604241   .0239371    15.06   0.000     .3135082      .40734
+_Ile~4818000 |  -3.895041   .0630981   -61.73   0.000    -4.018711   -3.771371
+_Ile~4818300 |  -2.265151   .2252415   -10.06   0.000    -2.706616   -1.823685
+_Ile~4819700 |  -.5569333   .1032512    -5.39   0.000    -.7593019   -.3545647
+_Ile~4823640 |   .6037399    .021004    28.74   0.000     .5625728    .6449071
+_Ile~4828500 |  -3.484585   .0136125  -255.98   0.000    -3.511265   -3.457905
+_Ile~4838730 |  -.6432979   .0406721   -15.82   0.000    -.7230137   -.5635821
+_Ile~4844280 |  -2.248739   .2448314    -9.18   0.000    -2.728599   -1.768878
+_Ile~5102670 |  -.0805728    .241917    -0.33   0.739    -.5547213    .3935757
+_Ile~5103300 |  -2.748902    .182591   -15.05   0.000    -3.106773    -2.39103
+_Ile~5307710 |   .4980711   .1122044     4.44   0.000     .2781546    .7179876
+_Ile~5308700 |  -1.050549   .0208234   -50.45   0.000    -1.091362   -1.009736
+_Ile~9999999 |  -.6893214   .1313948    -5.25   0.000    -.9468505   -.4317924
+       _cons |   5.641723   .5330082    10.58   0.000     4.597046      6.6864
+------------------------------------------------------------------------------
+Instrumented:  disdm4_south disdm4_nonsouth
+Instruments:   _Iyear_1970 _Iyear_1980 _Iyear_1990 _Isouth_1
+               _IyeaXsou_1970_1 _IyeaXsou_1990_1 _Iwest_1 _IyeaXwes_1970_1
+               _IyeaXwes_1990_1 _Ileaid_102370 _Ileaid_408800 _Ileaid_509000
+               _Ileaid_614550 _Ileaid_622710 _Ileaid_628050 _Ileaid_633840
+               _Ileaid_634170 _Ileaid_634320 _Ileaid_634410 _Ileaid_634590
+               _Ileaid_640740 _Ileaid_803360 _Ileaid_901920 _Ileaid_1200150
+               _Ileaid_1200180 _Ileaid_1200390 _Ileaid_1200480
+               _Ileaid_1200870 _Ileaid_1201080 _Ileaid_1201440
+               _Ileaid_1201500 _Ileaid_1201590 _Ileaid_1201920
+               _Ileaid_1300120 _Ileaid_1301830 _Ileaid_1303870
+               _Ileaid_1709930 _Ileaid_1734510 _Ileaid_1803630
+               _Ileaid_1804770 _Ileaid_1810290 _Ileaid_2012990
+               _Ileaid_2101860 _Ileaid_2102990 _Ileaid_2200300
+               _Ileaid_2200330 _Ileaid_2200540 _Ileaid_2201170
+               _Ileaid_2201290 _Ileaid_2201740 _Ileaid_2400090
+               _Ileaid_2502790 _Ileaid_2511130 _Ileaid_2612000
+               _Ileaid_2616440 _Ileaid_2621150 _Ileaid_2721240
+               _Ileaid_2916400 _Ileaid_2929280 _Ileaid_3174820
+               _Ileaid_3407830 _Ileaid_3411340 _Ileaid_3605850
+               _Ileaid_3624750 _Ileaid_3702970 _Ileaid_3703330
+               _Ileaid_3904348 _Ileaid_3904375 _Ileaid_3904378
+               _Ileaid_3904380 _Ileaid_3904384 _Ileaid_3904490
+               _Ileaid_4017250 _Ileaid_4022770 _Ileaid_4030240
+               _Ileaid_4110040 _Ileaid_4218990 _Ileaid_4219170
+               _Ileaid_4501440 _Ileaid_4502310 _Ileaid_4503360
+               _Ileaid_4702940 _Ileaid_4703180 _Ileaid_4808130
+               _Ileaid_4808940 _Ileaid_4816230 _Ileaid_4818000
+               _Ileaid_4818300 _Ileaid_4819700 _Ileaid_4823640
+               _Ileaid_4828500 _Ileaid_4838730 _Ileaid_4844280
+               _Ileaid_5102670 _Ileaid_5103300 _Ileaid_5307710
+               _Ileaid_5308700 _Ileaid_9999999 impost_4_south
+               impost_4_nonsouth impost_4_west
+dir : seeout
+
+. log close;
+       log:  C:\research\segregation\AER-DATA\tables\table6.log
+  log type:  text
+ closed on:  22 Nov 2010, 18:06:53
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

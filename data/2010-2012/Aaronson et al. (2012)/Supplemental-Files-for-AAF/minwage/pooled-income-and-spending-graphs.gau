@@ -1,0 +1,106 @@
+// This file is designed to calculate Y,C,I,A with Hike minus Y,C,I,A with no Hike.
+
+// Y = income  (note tempy2 is income; YprofileM = income + r*assets)
+// C = nondurable consumption
+// I = durable investment
+// A = asset change from t to t+1
+
+
+new; cls;
+version = "671";
+print "version " version ;
+v=stof(version);
+
+loadPathNoHike = "C:\\Research\\minwage\\results\\Results_" $+ version $+ "_nohike\\sims";
+//loadPathNoHike = "D:\\RESULTS_minwage\\Results_" $+ version $+ "_nohike\\sims";
+load path = ^loadpathNoHike;
+load tempy2,YprofileM CprofileM,IprofileM,Amat;
+
+Achange = zeros(188,5000);
+for t (2,188,1);
+   for sim (1,5000,1);
+      Achange[t,sim]=Amat[t,sim] - Amat[t-1,sim];
+   endfor;
+endfor;
+
+Anohike=amean(mattoarray(Achange),1);
+Ynohike=amean(mattoarray(tempy2),1);
+Ymod_nohike = YprofileM;
+Cnohike = CprofileM;
+Inohike = IprofileM;
+
+Ydiffmat=zeros(21,3);
+Ymod_diffmat=zeros(21,3);
+Cdiffmat=zeros(21,3);
+Idiffmat=zeros(21,3);
+Tdiffmat=zeros(21,3);
+Adiffmat=zeros(21,3);
+
+for n (v,v+2,1);
+  idx=n-v+1;
+  vstr=ftos(n,"%*.*lf",1,0);
+  loadpathHike="C:\\Research\\minwage\\results\\Results_" $+ vstr $+ "_hike\\sims";
+  //loadpathHike="D:\\RESULTS_minwage\\Results_" $+ vstr $+ "_hike\\sims";
+
+  load path = ^loadpathHike;
+  load tempy2,YprofileM, CprofileM,IprofileM, Amat;
+
+  Achange = zeros(188,5000);
+  for t (2,188,1);
+     for sim (1,5000,1);
+        Achange[t,sim]=Amat[t,sim] - Amat[t-1,sim];
+     endfor;
+  endfor;
+
+  Ahike=amean(mattoarray(Achange),1);
+  Yhike=amean(mattoarray(tempy2),1);
+  Chike = CprofileM;
+  Ihike = IprofileM;
+  Ymod_hike = YprofileM;
+  
+  if n==v; hikestart=16; 
+   elseif n==v+1; hikestart=64; 
+   elseif n==v+2; hikestart=128;
+  endif;
+  //print "Hike Start is" hikeStart ;
+
+  t1 = hikeStart -10;
+  t2 = hikeStart +10;
+
+  Ydiff = 1000*(Yhike - Ynohike);
+  Cdiff = 1000*(Chike - Cnohike);
+  Idiff = 1000*(Ihike - Inohike);
+  Tdiff = Cdiff + Idiff;
+  Adiff = 1000*(Ahike - Anohike);
+  Ymod_diff = 1000*(Ymod_hike - Ymod_nohike);
+
+  Ydiffmat[.,idx]=Ydiff[t1:t2,.];
+  Cdiffmat[.,idx]=Cdiff[t1:t2,.];
+  Idiffmat[.,idx]=Idiff[t1:t2,.];
+  Tdiffmat[.,idx]=Tdiff[t1:t2,.];
+  Adiffmat[.,idx]=Adiff[t1:t2,.];
+  Ymod_diffmat[.,idx]=Ymod_diff[t1:t2,.];
+endfor;
+
+//Ydiffmat;
+//Cdiffmat;
+
+
+Yout=amean(mattoarray(Ydiffmat),1);
+Cout=amean(mattoarray(Cdiffmat),1);
+Iout=amean(mattoarray(Idiffmat),1);
+Tout=amean(mattoarray(Tdiffmat),1);
+Aout=amean(mattoarray(Adiffmat),1);
+Ymod_out=amean(mattoarray(Ymod_diffmat),1);
+
+
+
+print "Ymod (to use for Figure 8, Debt calculation, analytic model)" Ymod_out;
+print "Income Change (Figure 5)" Yout;
+print "Spending Change" ;
+print "Total   Nondur   Durables   AssetChange";
+print (arraytomat(Tout)~arraytomat(Cout)~arraytomat(Iout)~arraytomat(Aout));
+
+
+
+

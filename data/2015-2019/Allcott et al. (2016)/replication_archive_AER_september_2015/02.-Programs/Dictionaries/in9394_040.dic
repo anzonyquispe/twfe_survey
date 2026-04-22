@@ -1,0 +1,20 @@
+dictionary using 93-94/ASI1993_94_DATA/ASID9394.TXT {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+
+_column(16)	slno		%3.0f	""
+
+_column(19)  	grossopening	%11.0f 	""
+_column(30)  	additiontogrossfcfromrevaluation	%11.0f 	""
+_column(41)  	grossactualaddition	%11.0f 	""
+_column(52)  	grossdeductionandadj	%11.0f 	""
+_column(74)  	depn		%11.0f 	""
+_column(96)  	fcapopen	%11.0f 	""
+_column(107)  	fcapclose	%11.0f 	""
+
+};
+

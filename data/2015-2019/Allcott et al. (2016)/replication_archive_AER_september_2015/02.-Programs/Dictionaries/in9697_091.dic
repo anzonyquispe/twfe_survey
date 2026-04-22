@@ -1,0 +1,37 @@
+dictionary using 96-97/P9697091.C {
+
+_column(1)	nic87		%4.0f	"Industry"
+_column(5)	runslno		%5.0f	"Running Serial No. "
+_column(10)	stcode		%2.0f	"State Code (ST)"
+_column(12)	schcode   	%1.0f  	"Scheme Code"
+_column(13)	recordcat	%3.0f	"Record Category"
+
+_column(16)	linkcode	%3.0f	"Link Code"
+_column(19)	filler		%1.0f	"Filler"
+
+
+_column(20)	fuelcode1	%5.0f	"Fuel Item Code - 1"
+_column(25)	qfuelcons1	%11.0f	"Fuel Quantity - 1"
+_column(36)	vfuelcons1	%11.0f	"Fuel Value - 1"
+_column(47)	filler1		%1.0f	"Filler1"
+	
+
+_column(48)	fuelcode2	%5.0f	"Fuel Item Code - 2"
+_column(53)	qfuelcons2	%11.0f	"Fuel Quantity - 2"
+_column(64)	vfuelcons2	%11.0f	"Fuel Value - 2"
+_column(75)	filler2		%1.0f	"Filler2"
+
+
+_column(76)	fuelcode3	%5.0f	"Fuel Item Code - 3"
+_column(81)	qfuelcons3	%11.0f	"Fuel Quantity - 3"
+_column(92)	vfuelcons3	%11.0f	"Fuel Value - 3"
+_column(103)	filler3		%1.0f	"Filler3"
+
+
+_column(104)	fuelcode4	%5.0f	"Fuel Item Code - 4"
+_column(109)	qfuelcons4	%11.0f	"Fuel Quantity - 4"
+_column(120)	vfuelcons4	%11.0f	"Fuel Value - 4"
+
+_column(131)	unused		%5.0f	"Unused"
+
+};

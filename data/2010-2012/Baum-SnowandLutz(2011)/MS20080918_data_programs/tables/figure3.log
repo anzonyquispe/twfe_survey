@@ -1,0 +1,3084 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+       log:  c:\research\segregation\AER-DATA\tables\figure3.log
+  log type:  text
+ opened on:  17 Nov 2010, 15:54:35
+
+. 
+. * set the data to be used
+. local data = "../data/dis70panx.dta"
+
+. 
+. use `data', clear
+
+. 
+. keep if major==1
+(310 observations deleted)
+
+. replace imp = imp + 1900
+(368 real changes made)
+
+. 
+. *** Create Treatment Variables
+. gen imp_post    = (year >= imp)
+
+. gen impost_4    = (year >=  imp + 4)
+
+. 
+. *** Create Dependent Variables
+. for any 04 59 1014 1519 2024  2529  3034  3539  4044  4549  5054  5559  6064  6569  7074  75up: gen lnpopXw = ln(popXw)
+
+->  gen lnpop04w = ln(pop04w)
+
+->  gen lnpop59w = ln(pop59w)
+
+->  gen lnpop1014w = ln(pop1014w)
+
+->  gen lnpop1519w = ln(pop1519w)
+
+->  gen lnpop2024w = ln(pop2024w)
+
+->  gen lnpop2529w = ln(pop2529w)
+
+->  gen lnpop3034w = ln(pop3034w)
+
+->  gen lnpop3539w = ln(pop3539w)
+
+->  gen lnpop4044w = ln(pop4044w)
+
+->  gen lnpop4549w = ln(pop4549w)
+
+->  gen lnpop5054w = ln(pop5054w)
+
+->  gen lnpop5559w = ln(pop5559w)
+
+->  gen lnpop6064w = ln(pop6064w)
+
+->  gen lnpop6569w = ln(pop6569w)
+
+->  gen lnpop7074w = ln(pop7074w)
+
+->  gen lnpop75upw = ln(pop75upw)
+
+. for any 04 59 1014 1519 2024  2529  3034  3539  4044  4549  5054  5559  6064  6569  7074  75up: gen lnpopXb = ln(popXb)
+
+->  gen lnpop04b = ln(pop04b)
+
+->  gen lnpop59b = ln(pop59b)
+
+->  gen lnpop1014b = ln(pop1014b)
+
+->  gen lnpop1519b = ln(pop1519b)
+
+->  gen lnpop2024b = ln(pop2024b)
+
+->  gen lnpop2529b = ln(pop2529b)
+
+->  gen lnpop3034b = ln(pop3034b)
+
+->  gen lnpop3539b = ln(pop3539b)
+
+->  gen lnpop4044b = ln(pop4044b)
+
+->  gen lnpop4549b = ln(pop4549b)
+
+->  gen lnpop5054b = ln(pop5054b)
+
+->  gen lnpop5559b = ln(pop5559b)
+
+->  gen lnpop6064b = ln(pop6064b)
+
+->  gen lnpop6569b = ln(pop6569b)
+
+->  gen lnpop7074b = ln(pop7074b)
+
+->  gen lnpop75upb = ln(pop75upb)
+
+. 
+. matrix whites = J(16,2,0)
+
+. matrix blacks = J(16,2,0)
+
+. matrix whitess = J(16,2,0)
+
+. matrix blackss = J(16,2,0)
+
+. matrix whitesn = J(16,2,0)
+
+. matrix blacksn = J(16,2,0)
+
+. 
+. capture program drop runregs
+
+. program define runregs
+  1. 
+. xi: xtreg lnpop`1'w imp_post i.year*i.south, fe i(leaid) cluster(leaid)
+  2. matrix whites[`2',1] = _b[imp_post]
+  3. matrix whites[`2',2] = _se[imp_post]
+  4. xi: xtreg lnpop`1'b impost_4 i.year*i.south, fe i(leaid) cluster(leaid)
+  5. matrix blacks[`2',1] = _b[impost_4]
+  6. matrix blacks[`2',2] = _se[impost_4]
+  7. xi: xtreg lnpop`1'w imp_post i.year if south==1, fe i(leaid) cluster(leaid)
+  8. matrix whitess[`2',1] = _b[imp_post]
+  9. matrix whitess[`2',2] = _se[imp_post]
+ 10. xi: xtreg lnpop`1'b impost_4 i.year if south==1, fe i(leaid) cluster(leaid)
+ 11. matrix blackss[`2',1] = _b[impost_4]
+ 12. matrix blackss[`2',2] = _se[impost_4]
+ 13. xi: xtreg lnpop`1'w imp_post i.year if south==0, fe i(leaid) cluster(leaid)
+ 14. matrix whitesn[`2',1] = _b[imp_post]
+ 15. matrix whitesn[`2',2] = _se[imp_post]
+ 16. xi: xtreg lnpop`1'b impost_4 i.year if south==0, fe i(leaid) cluster(leaid)
+ 17. matrix blacksn[`2',1] = _b[impost_4]
+ 18. matrix blacksn[`2',2] = _se[impost_4]
+ 19. 
+. end
+
+. 
+. runregs 04 1
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6011                         Obs per group: min =         4
+       between = 0.0539                                        avg =       4.0
+       overall = 0.0628                                        max =         4
+
+                                                F(7,91)            =     63.58
+corr(u_i, Xb)  = -0.1415                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop04w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0715378   .0450453    -1.59   0.116    -.1610148    .0179392
+ _Iyear_1970 |  -.3675365   .0319901   -11.49   0.000    -.4310809   -.3039921
+ _Iyear_1980 |  -.7971362   .0722377   -11.03   0.000    -.9406275   -.6536449
+ _Iyear_1990 |  -.7561367   .0881417    -8.58   0.000    -.9312194    -.581054
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .1562406   .0541545     2.89   0.005     .0486694    .2638118
+_IyeaXs~80_1 |   .3660078   .0902169     4.06   0.000     .1868031    .5452126
+_IyeaXs~90_1 |   .4185599    .120627     3.47   0.001     .1789491    .6581706
+       _cons |   10.11615   .0316103   320.03   0.000     10.05336    10.17894
+-------------+----------------------------------------------------------------
+     sigma_u |  .74560216
+     sigma_e |  .26838804
+         rho |  .88529087   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.2237                         Obs per group: min =         4
+       between = 0.0047                                        avg =       4.0
+       overall = 0.0108                                        max =         4
+
+                                                F(7,91)            =     23.11
+corr(u_i, Xb)  = 0.0109                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop04b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0998081    .040129     2.49   0.015     .0200967    .1795195
+ _Iyear_1970 |   .0141288   .0347945     0.41   0.686    -.0549862    .0832438
+ _Iyear_1980 |   -.076788   .0504645    -1.52   0.132    -.1770296    .0234536
+ _Iyear_1990 |   .1070049   .0792974     1.35   0.181    -.0505096    .2645195
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.1619038   .0437554    -3.70   0.000    -.2488185   -.0749892
+_IyeaXs~80_1 |  -.1169424    .062058    -1.88   0.063    -.2402129    .0063282
+_IyeaXs~90_1 |  -.1366411   .0825048    -1.66   0.101    -.3005268    .0272446
+       _cons |   8.681874   .0209998   413.43   0.000     8.640161    8.723588
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0900353
+     sigma_e |  .19529764
+         rho |  .96889782   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3651                         Obs per group: min =         4
+       between = 0.0019                                        avg =       4.0
+       overall = 0.0648                                        max =         4
+
+                                                F(4,47)            =     35.64
+corr(u_i, Xb)  = 0.0017                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop04w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1305393   .0523559    -2.49   0.016    -.2358657    -.025213
+ _Iyear_1970 |  -.1842535   .0485074    -3.80   0.000    -.2818377   -.0866692
+ _Iyear_1980 |   -.373356   .0895789    -4.17   0.000    -.5535656   -.1931465
+ _Iyear_1990 |  -.2785753   .1166275    -2.39   0.021    -.5131995   -.0439511
+       _cons |   9.841028   .0485356   202.76   0.000     9.743387    9.938669
+-------------+----------------------------------------------------------------
+     sigma_u |  .70138668
+     sigma_e |  .29736743
+         rho |  .84763635   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.2618                         Obs per group: min =         4
+       between = 0.2107                                        avg =       4.0
+       overall = 0.0091                                        max =         4
+
+                                                F(4,47)            =     19.93
+corr(u_i, Xb)  = 0.0106                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop04b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0216095   .0720772     0.30   0.766    -.1233911      .16661
+ _Iyear_1970 |  -.1461459   .0267796    -5.46   0.000    -.2000196   -.0922722
+ _Iyear_1980 |  -.1253065   .0799774    -1.57   0.124    -.2862003    .0355872
+ _Iyear_1990 |   .0485625   .0919727     0.53   0.600    -.1364627    .2335876
+       _cons |   8.690001   .0255314   340.37   0.000     8.638639    8.741364
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0048422
+     sigma_e |  .16813877
+         rho |  .97276375   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.7623                         Obs per group: min =         4
+       between = 0.1047                                        avg =       4.0
+       overall = 0.2012                                        max =         4
+
+                                                F(4,43)            =     77.12
+corr(u_i, Xb)  = -0.0026                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop04w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0248788   .0777103     0.32   0.750    -.1318389    .1815965
+ _Iyear_1970 |  -.3806842   .0319984   -11.90   0.000    -.4452152   -.3161532
+ _Iyear_1980 |   -.886979   .0896518    -9.89   0.000    -1.067779   -.7061788
+ _Iyear_1990 |  -.8525533    .107049    -7.96   0.000    -1.068438   -.6366683
+       _cons |   10.41628   .0412422   252.56   0.000     10.33311    10.49946
+-------------+----------------------------------------------------------------
+     sigma_u |  .68305739
+     sigma_e |  .23234912
+         rho |  .89629094   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.2031                         Obs per group: min =         4
+       between = 0.0023                                        avg =       4.0
+       overall = 0.0046                                        max =         4
+
+                                                F(4,43)            =     18.79
+corr(u_i, Xb)  = -0.0137                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop04b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1383961   .0456198     3.03   0.004      .046395    .2303971
+ _Iyear_1970 |   .0114978   .0347785     0.33   0.743    -.0586396    .0816353
+ _Iyear_1980 |   -.100467   .0515024    -1.95   0.058    -.2043314    .0033974
+ _Iyear_1990 |    .068417    .081906     0.84   0.408    -.0967623    .2335962
+       _cons |   8.673008   .0341307   254.11   0.000     8.604177    8.741839
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1911448
+     sigma_e |  .22114738
+         rho |  .96667909   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 59 2
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6156                         Obs per group: min =         4
+       between = 0.0352                                        avg =       4.0
+       overall = 0.0731                                        max =         4
+
+                                                F(7,91)            =    115.95
+corr(u_i, Xb)  = -0.1452                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop59w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0800898   .0407445    -1.97   0.052    -.1610238    .0008442
+ _Iyear_1970 |  -.1677819   .0351438    -4.77   0.000    -.2375907   -.0979731
+ _Iyear_1980 |  -.7518688   .0694267   -10.83   0.000    -.8897763   -.6139613
+ _Iyear_1990 |  -.7507803   .0844919    -8.89   0.000    -.9186131   -.5829476
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2079578   .0576364     3.61   0.001     .0934701    .3224454
+_IyeaXs~80_1 |   .4119482    .097965     4.21   0.000     .2173527    .6065437
+_IyeaXs~90_1 |   .4656629   .1233152     3.78   0.000     .2207125    .7106134
+       _cons |    9.99468   .0338586   295.19   0.000     9.927424    10.06194
+-------------+----------------------------------------------------------------
+     sigma_u |  .74715195
+     sigma_e |  .27407223
+         rho |  .88139987   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3214                         Obs per group: min =         4
+       between = 0.0028                                        avg =       4.0
+       overall = 0.0138                                        max =         4
+
+                                                F(7,91)            =     44.92
+corr(u_i, Xb)  = -0.0021                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop59b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1226932   .0386206     3.18   0.002     .0459782    .1994082
+ _Iyear_1970 |   .3518326   .0338888    10.38   0.000     .2845167    .4191485
+ _Iyear_1980 |   .1318185   .0510614     2.58   0.011     .0303912    .2332457
+ _Iyear_1990 |   .2133069   .0726344     2.94   0.004     .0690277    .3575861
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2043709   .0459714    -4.45   0.000    -.2956875   -.1130543
+_IyeaXs~80_1 |  -.1864911   .0710253    -2.63   0.010     -.327574   -.0454081
+_IyeaXs~90_1 |  -.1269872   .0854343    -1.49   0.141    -.2966919    .0427174
+       _cons |   8.494988   .0231941   366.26   0.000     8.448916    8.541061
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1000652
+     sigma_e |  .19958998
+         rho |  .96813055   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3665                         Obs per group: min =         4
+       between = 0.0003                                        avg =       4.0
+       overall = 0.0658                                        max =         4
+
+                                                F(4,47)            =     53.14
+corr(u_i, Xb)  = -0.0003                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop59w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1149097   .0526276    -2.18   0.034    -.2207828   -.0090366
+ _Iyear_1970 |    .056135   .0496466     1.13   0.264    -.0437411    .1560111
+ _Iyear_1980 |  -.3058261   .0961199    -3.18   0.003    -.4991945   -.1124577
+ _Iyear_1990 |  -.2502975   .1165909    -2.15   0.037    -.4848481   -.0157469
+       _cons |   9.733252   .0525321   185.28   0.000     9.627571    9.838933
+-------------+----------------------------------------------------------------
+     sigma_u |  .71279927
+     sigma_e |  .30681489
+         rho |   .8436856   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.2245                         Obs per group: min =         4
+       between = 0.2153                                        avg =       4.0
+       overall = 0.0060                                        max =         4
+
+                                                F(4,47)            =     21.50
+corr(u_i, Xb)  = -0.0021                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop59b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.0040203   .0519206    -0.08   0.939    -.1084711    .1004305
+ _Iyear_1970 |   .1501016    .030598     4.91   0.000     .0885464    .2116567
+ _Iyear_1980 |   .0562017   .0595804     0.94   0.350    -.0636586    .1760621
+ _Iyear_1990 |   .2130332   .0718251     2.97   0.005     .0685397    .3575267
+       _cons |   8.530735   .0292437   291.71   0.000     8.471904    8.589565
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0174275
+     sigma_e |  .17747344
+         rho |  .97047142   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.7797                         Obs per group: min =         4
+       between = 0.1213                                        avg =       4.0
+       overall = 0.2215                                        max =         4
+
+                                                F(4,43)            =    157.65
+corr(u_i, Xb)  = 0.0024                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop59w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0231893   .0641764    -0.36   0.720    -.1526133    .1062347
+ _Iyear_1970 |  -.1755411   .0347129    -5.06   0.000    -.2455463   -.1055358
+ _Iyear_1980 |  -.8048897   .0772174   -10.42   0.000    -.9606135   -.6491659
+ _Iyear_1990 |  -.8076808   .0936054    -8.63   0.000     -.996454   -.6189076
+       _cons |   10.27987   .0429305   239.45   0.000      10.1933    10.36645
+-------------+----------------------------------------------------------------
+     sigma_u |  .68521719
+     sigma_e |  .23380319
+         rho |  .89571664   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.3868                         Obs per group: min =         4
+       between = 0.0027                                        avg =       4.0
+       overall = 0.0125                                        max =         4
+
+                                                F(4,43)            =     52.67
+corr(u_i, Xb)  = -0.0137                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+    lnpop59b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1852214   .0457383     4.05   0.000     .0929814    .2774614
+ _Iyear_1970 |   .3475693   .0338804    10.26   0.000      .279243    .4158956
+ _Iyear_1980 |   .0934489   .0485856     1.92   0.061    -.0045334    .1914312
+ _Iyear_1990 |   .1507787   .0724383     2.08   0.043     .0046929    .2968645
+       _cons |   8.455993   .0365976   231.05   0.000     8.382187    8.529799
+-------------+----------------------------------------------------------------
+     sigma_u |   1.200073
+     sigma_e |  .22001139
+         rho |  .96748243   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 1014 3
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6057                         Obs per group: min =         4
+       between = 0.0362                                        avg =       4.0
+       overall = 0.0745                                        max =         4
+
+                                                F(7,91)            =    148.77
+corr(u_i, Xb)  = -0.1572                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1014w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0976912      .0412    -2.37   0.020    -.1795299   -.0158525
+ _Iyear_1970 |  -.0336833   .0359133    -0.94   0.351    -.1050207     .037654
+ _Iyear_1980 |  -.5604679   .0721983    -7.76   0.000     -.703881   -.4170548
+ _Iyear_1990 |  -.7931974   .0870343    -9.11   0.000    -.9660803   -.6203144
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2407502   .0610445     3.94   0.000     .1194929    .3620076
+_IyeaXs~80_1 |   .4128626   .1036812     3.98   0.000     .2069125    .6188126
+_IyeaXs~90_1 |   .5200061   .1311314     3.97   0.000     .2595297    .7804825
+       _cons |   9.886349   .0360713   274.08   0.000     9.814698       9.958
+-------------+----------------------------------------------------------------
+     sigma_u |  .74845772
+     sigma_e |  .28815298
+         rho |  .87091198   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6236                         Obs per group: min =         4
+       between = 0.0016                                        avg =       4.0
+       overall = 0.0384                                        max =         4
+
+                                                F(7,91)            =     97.84
+corr(u_i, Xb)  = -0.0100                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1014b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1158394   .0326069     3.55   0.001     .0510699    .1806089
+ _Iyear_1970 |   .6340543   .0333643    19.00   0.000     .5677801    .7003284
+ _Iyear_1980 |   .5171278   .0483999    10.68   0.000     .4209873    .6132682
+ _Iyear_1990 |   .4628226    .071405     6.48   0.000     .3209853    .6046598
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.1990428    .046706    -4.26   0.000    -.2918186   -.1062669
+_IyeaXs~80_1 |  -.2790164   .0697123    -4.00   0.000    -.4174914   -.1405415
+_IyeaXs~90_1 |  -.1618192   .0886687    -1.82   0.071    -.3379486    .0143102
+       _cons |   8.210433   .0237753   345.33   0.000     8.163207     8.25766
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1176111
+     sigma_e |  .20231519
+         rho |  .96826986   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3654                         Obs per group: min =         4
+       between = 0.0000                                        avg =       4.0
+       overall = 0.0709                                        max =         4
+
+                                                F(4,47)            =     66.99
+corr(u_i, Xb)  = -0.0018                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1014w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1114897   .0563303    -1.98   0.054    -.2248118    .0018323
+ _Iyear_1970 |   .2133912   .0539461     3.96   0.000     .1048656    .3219168
+ _Iyear_1980 |  -.1340943   .1054387    -1.27   0.210    -.3462095    .0780209
+ _Iyear_1990 |  -.2593927   .1285372    -2.02   0.049    -.5179762   -.0008093
+       _cons |   9.613387    .055631   172.81   0.000     9.501472    9.725302
+-------------+----------------------------------------------------------------
+     sigma_u |  .70886064
+     sigma_e |  .32228381
+         rho |  .82870156   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.5656                         Obs per group: min =         4
+       between = 0.2194                                        avg =       4.0
+       overall = 0.0285                                        max =         4
+
+                                                F(4,47)            =     68.19
+corr(u_i, Xb)  = -0.0003                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1014b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.0011793   .0371311    -0.03   0.975    -.0758774    .0735189
+ _Iyear_1970 |   .4374494   .0323525    13.52   0.000     .3723646    .5025342
+ _Iyear_1980 |   .3405027   .0448377     7.59   0.000     .2503009    .4307045
+ _Iyear_1990 |   .4180221   .0551023     7.59   0.000     .3071705    .5288736
+       _cons |   8.266358   .0308328   268.10   0.000      8.20433    8.328385
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0251775
+     sigma_e |  .18074802
+         rho |  .96985227   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.7691                         Obs per group: min =         4
+       between = 0.1231                                        avg =       4.0
+       overall = 0.2333                                        max =         4
+
+                                                F(4,43)            =    195.28
+corr(u_i, Xb)  = 0.0074                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1014w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0751425   .0589129    -1.28   0.209    -.1939517    .0436667
+ _Iyear_1970 |  -.0367582    .035018    -1.05   0.300    -.1073787    .0338624
+ _Iyear_1980 |  -.5814792   .0748079    -7.77   0.000    -.7323437   -.4306147
+ _Iyear_1990 |  -.8157461   .0894884    -9.12   0.000    -.9962166   -.6352755
+       _cons |   10.18413   .0458603   222.07   0.000     10.09164    10.27661
+-------------+----------------------------------------------------------------
+     sigma_u |  .68090303
+     sigma_e |  .24668979
+         rho |  .88397022   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.6612                         Obs per group: min =         4
+       between = 0.0033                                        avg =       4.0
+       overall = 0.0422                                        max =         4
+
+                                                F(4,43)            =     99.61
+corr(u_i, Xb)  = -0.0076                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1014b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1735836   .0397443     4.37   0.000     .0934316    .2537356
+ _Iyear_1970 |   .6301172   .0334478    18.84   0.000     .5626632    .6975711
+ _Iyear_1980 |   .4816938   .0453098    10.63   0.000     .3903179    .5730697
+ _Iyear_1990 |   .4050784   .0705401     5.74   0.000     .2628207    .5473361
+       _cons |   8.149425   .0364962   223.30   0.000     8.075823    8.223026
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2248095
+     sigma_e |  .22260028
+         rho |  .96802569   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 1519 4
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4384                         Obs per group: min =         4
+       between = 0.0444                                        avg =       4.0
+       overall = 0.0178                                        max =         4
+
+                                                F(7,91)            =    171.61
+corr(u_i, Xb)  = -0.2189                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1519w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0979329   .0424281    -2.31   0.023    -.1822112   -.0136547
+ _Iyear_1970 |   .1712248    .033829     5.06   0.000     .1040275     .238422
+ _Iyear_1980 |  -.1132165   .0753889    -1.50   0.137    -.2629672    .0365342
+ _Iyear_1990 |  -.4860003   .0909029    -5.35   0.000    -.6665676   -.3054329
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2192695   .0613653     3.57   0.001     .0973748    .3411642
+_IyeaXs~80_1 |   .4426486   .1077955     4.11   0.000     .2285262    .6567711
+_IyeaXs~90_1 |   .5591151   .1338985     4.18   0.000     .2931422    .8250879
+       _cons |   9.699575   .0370337   261.91   0.000     9.626012    9.773138
+-------------+----------------------------------------------------------------
+     sigma_u |  .75390668
+     sigma_e |  .29606815
+         rho |  .86638396   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.8034                         Obs per group: min =         4
+       between = 0.0000                                        avg =       4.0
+       overall = 0.0853                                        max =         4
+
+                                                F(7,91)            =    193.97
+corr(u_i, Xb)  = -0.0268                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1519b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0480786   .0433425     1.11   0.270     -.038016    .1341731
+ _Iyear_1970 |    .805943   .0283122    28.47   0.000     .7497044    .8621817
+ _Iyear_1980 |   1.026171   .0547206    18.75   0.000     .9174753    1.134867
+ _Iyear_1990 |   .8649809   .0780485    11.08   0.000     .7099472    1.020015
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2827136   .0429597    -6.58   0.000    -.3680478   -.1973793
+_IyeaXs~80_1 |  -.3317147   .0728521    -4.55   0.000    -.4764264   -.1870029
+_IyeaXs~90_1 |   -.246485   .0862388    -2.86   0.005    -.4177877   -.0751823
+       _cons |    7.89791   .0234726   336.47   0.000     7.851284    7.944535
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1011961
+     sigma_e |   .2037776
+         rho |  .96688989   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.2444                         Obs per group: min =         4
+       between = 0.0003                                        avg =       4.0
+       overall = 0.0450                                        max =         4
+
+                                                F(4,47)            =     76.78
+corr(u_i, Xb)  = -0.0012                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1519w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1412888   .0549976    -2.57   0.013    -.2519296   -.0306479
+ _Iyear_1970 |   .4103657   .0550752     7.45   0.000     .2995687    .5211627
+ _Iyear_1980 |   .3718847   .1025448     3.63   0.001     .1655912    .5781782
+ _Iyear_1990 |   .1164706   .1234856     0.94   0.350    -.1319505    .3648916
+       _cons |   9.406992   .0575595   163.43   0.000     9.291197    9.522786
+-------------+----------------------------------------------------------------
+     sigma_u |  .68756713
+     sigma_e |  .32836938
+         rho |  .81427646   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.7442                         Obs per group: min =         4
+       between = 0.2070                                        avg =       4.0
+       overall = 0.0652                                        max =         4
+
+                                                F(4,47)            =     87.01
+corr(u_i, Xb)  = -0.0191                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1519b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.1297898   .0860991    -1.51   0.138    -.3029988    .0434193
+ _Iyear_1970 |    .526935   .0314105    16.78   0.000     .4637453    .5901247
+ _Iyear_1980 |   .8500912   .0862448     9.86   0.000     .6765891    1.023593
+ _Iyear_1990 |   .7963642   .0919886     8.66   0.000     .6113071    .9814213
+       _cons |   8.001169   .0318887   250.91   0.000     7.937017    8.065321
+-------------+----------------------------------------------------------------
+     sigma_u |   1.019808
+     sigma_e |  .19855639
+         rho |  .96347653   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.6166                         Obs per group: min =         4
+       between = 0.1125                                        avg =       4.0
+       overall = 0.1297                                        max =         4
+
+                                                F(4,43)            =    223.75
+corr(u_i, Xb)  = 0.0036                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1519w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0270836   .0641808    -0.42   0.675    -.1565165    .1023493
+ _Iyear_1970 |   .1615635   .0333154     4.85   0.000     .0943766    .2287504
+ _Iyear_1980 |  -.1792352   .0799811    -2.24   0.030    -.3405324   -.0179379
+ _Iyear_1990 |  -.5568496   .0938421    -5.93   0.000    -.7461003   -.3675989
+       _cons |   10.01876   .0469006   213.62   0.000     9.924173    10.11334
+-------------+----------------------------------------------------------------
+     sigma_u |  .70000847
+     sigma_e |  .25673886
+         rho |  .88143249   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.8459                         Obs per group: min =         4
+       between = 0.0076                                        avg =       4.0
+       overall = 0.1039                                        max =         4
+
+                                                F(4,43)            =    270.26
+corr(u_i, Xb)  = -0.0051                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop1519b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1358497   .0369735     3.67   0.001     .0612855    .2104138
+ _Iyear_1970 |   .7999586    .028451    28.12   0.000     .7425817    .8573355
+ _Iyear_1980 |   .9723116   .0502391    19.35   0.000     .8709947    1.073628
+ _Iyear_1990 |   .7772098   .0724839    10.72   0.000     .6310322    .9233875
+       _cons |   7.785264   .0344223   226.17   0.000     7.715844    7.854683
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1935322
+     sigma_e |  .20602396
+         rho |  .97106552   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 2024 5
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3276                         Obs per group: min =         4
+       between = 0.0634                                        avg =       4.0
+       overall = 0.0037                                        max =         4
+
+                                                F(7,91)            =     74.88
+corr(u_i, Xb)  = -0.1918                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2024w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1094784   .0539065    -2.03   0.045    -.2165571   -.0023998
+ _Iyear_1970 |   .2821115   .0361097     7.81   0.000      .210384    .3538389
+ _Iyear_1980 |   .2719136   .0806665     3.37   0.001     .1116796    .4321477
+ _Iyear_1990 |  -.0136746   .0924628    -0.15   0.883    -.1973406    .1699915
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .1214285   .0653787     1.86   0.067    -.0084382    .2512952
+_IyeaXs~80_1 |   .3253041   .0966434     3.37   0.001     .1333338    .5172743
+_IyeaXs~90_1 |   .3919687   .1234311     3.18   0.002     .1467881    .6371493
+       _cons |   9.659075   .0335047   288.29   0.000     9.592522    9.725628
+-------------+----------------------------------------------------------------
+     sigma_u |  .77198205
+     sigma_e |  .28060896
+         rho |  .88329382   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7989                         Obs per group: min =         4
+       between = 0.0008                                        avg =       4.0
+       overall = 0.0828                                        max =         4
+
+                                                F(7,91)            =    142.26
+corr(u_i, Xb)  = -0.0054                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2024b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0278907   .0395509     0.71   0.482    -.0506722    .1064537
+ _Iyear_1970 |   .5032364   .0369485    13.62   0.000     .4298426    .5766301
+ _Iyear_1980 |   .9031638   .0523171    17.26   0.000     .7992424    1.007085
+ _Iyear_1990 |   .7921871   .0733546    10.80   0.000     .6464772     .937897
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.1988187   .0543387    -3.66   0.000    -.3067558   -.0908816
+_IyeaXs~80_1 |  -.1731962   .0668737    -2.59   0.011    -.3060326   -.0403598
+_IyeaXs~90_1 |  -.1389156   .0787395    -1.76   0.081    -.2953219    .0174906
+       _cons |   7.866693   .0227981   345.06   0.000     7.821408    7.911979
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0949837
+     sigma_e |  .19423924
+         rho |  .96949274   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3268                         Obs per group: min =         4
+       between = 0.0087                                        avg =       4.0
+       overall = 0.0631                                        max =         4
+
+                                                F(4,47)            =     57.51
+corr(u_i, Xb)  = 0.0079                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2024w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   -.202749   .0601603    -3.37   0.002     -.323776    -.081722
+ _Iyear_1970 |    .446289   .0603512     7.39   0.000      .324878       .5677
+ _Iyear_1980 |   .6885452   .0999608     6.89   0.000       .48745    .8896404
+ _Iyear_1990 |   .4715647   .1222705     3.86   0.000     .2255883    .7175412
+       _cons |   9.367891   .0518304   180.74   0.000     9.263621     9.47216
+-------------+----------------------------------------------------------------
+     sigma_u |  .69737591
+     sigma_e |  .31002787
+         rho |  .83497775   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.7947                         Obs per group: min =         4
+       between = 0.1688                                        avg =       4.0
+       overall = 0.0777                                        max =         4
+
+                                                F(4,47)            =    121.61
+corr(u_i, Xb)  = -0.0061                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2024b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.0487875    .085892    -0.57   0.573    -.2215799    .1240049
+ _Iyear_1970 |   .3060151   .0397373     7.70   0.000     .2260741    .3859562
+ _Iyear_1980 |    .797061   .0917752     8.68   0.000     .6124332    .9816889
+ _Iyear_1990 |   .7299497   .0989738     7.38   0.000       .53084    .9290594
+       _cons |   7.902572   .0311311   253.85   0.000     7.839945      7.9652
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0238365
+     sigma_e |  .18076981
+         rho |  .96976857   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.3479                         Obs per group: min =         4
+       between = 0.0855                                        avg =       4.0
+       overall = 0.0352                                        max =         4
+
+                                                F(4,43)            =     80.83
+corr(u_i, Xb)  = -0.0095                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2024w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0429385   .0910389     0.47   0.640     -.140659    .2265359
+ _Iyear_1970 |   .2613274    .035414     7.38   0.000     .1899082    .3327465
+ _Iyear_1980 |   .1298888   .0973286     1.33   0.189     -.066393    .3261707
+ _Iyear_1990 |  -.1660914   .1104257    -1.50   0.140    -.3887861    .0566032
+       _cons |    9.97673   .0436988   228.31   0.000     9.888603    10.06486
+-------------+----------------------------------------------------------------
+     sigma_u |  .73332742
+     sigma_e |  .24220068
+         rho |  .90164622   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.8037                         Obs per group: min =         4
+       between = 0.0057                                        avg =       4.0
+       overall = 0.0833                                        max =         4
+
+                                                F(4,43)            =    131.61
+corr(u_i, Xb)  = -0.0023                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2024b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0657285    .038799     1.69   0.097    -.0125172    .1439741
+ _Iyear_1970 |   .5006565   .0371097    13.49   0.000     .4258178    .5754953
+ _Iyear_1980 |   .8799452   .0517935    16.99   0.000     .7754937    .9843966
+ _Iyear_1990 |   .7543494   .0725712    10.39   0.000     .6079956    .9007031
+       _cons |   7.827552   .0337782   231.73   0.000     7.759432    7.895673
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1816449
+     sigma_e |  .20792339
+         rho |  .96996761   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 2529 6
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3000                         Obs per group: min =         4
+       between = 0.0650                                        avg =       4.0
+       overall = 0.0006                                        max =         4
+
+                                                F(7,91)            =     14.35
+corr(u_i, Xb)  = -0.1948                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2529w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0417121   .0411886    -1.01   0.314    -.1235282    .0401041
+ _Iyear_1970 |   .0348902    .036763     0.95   0.345    -.0381349    .1079153
+ _Iyear_1980 |    .193163   .0715098     2.70   0.008     .0511175    .3352085
+ _Iyear_1990 |   .1500696    .082222     1.83   0.071    -.0132543    .3133934
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .1322566   .0595264     2.22   0.029     .0140146    .2504985
+_IyeaXs~80_1 |   .2579313   .0868566     2.97   0.004     .0854014    .4304612
+_IyeaXs~90_1 |   .3547566   .1158504     3.06   0.003      .124634    .5848791
+       _cons |   9.611084   .0311577   308.47   0.000     9.549193    9.672974
+-------------+----------------------------------------------------------------
+     sigma_u |  .77928782
+     sigma_e |  .25673445
+         rho |  .90209095   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7932                         Obs per group: min =         4
+       between = 0.0067                                        avg =       4.0
+       overall = 0.0853                                        max =         4
+
+                                                F(7,91)            =    119.11
+corr(u_i, Xb)  = 0.0055                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2529b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0889275   .0379999     2.34   0.021     .0134453    .1644097
+ _Iyear_1970 |   .2199033   .0356663     6.17   0.000     .1490566      .29075
+ _Iyear_1980 |   .6152945   .0569454    10.80   0.000     .5021794    .7284097
+ _Iyear_1990 |   .7495319   .0802603     9.34   0.000     .5901047     .908959
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   -.170978   .0499537    -3.42   0.001    -.2702049   -.0717511
+_IyeaXs~80_1 |  -.0925874     .06289    -1.47   0.144    -.2175106    .0323358
+_IyeaXs~90_1 |  -.0741988   .0822364    -0.90   0.369    -.2375513    .0891537
+       _cons |    7.90699   .0216718   364.85   0.000     7.863941    7.950038
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1193022
+     sigma_e |  .20023175
+         rho |  .96899078   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3850                         Obs per group: min =         4
+       between = 0.0042                                        avg =       4.0
+       overall = 0.0624                                        max =         4
+
+                                                F(4,47)            =     21.37
+corr(u_i, Xb)  = 0.0030                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2529w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0904344   .0458479    -1.97   0.054    -.1826685    .0017996
+ _Iyear_1970 |   .1894778   .0512826     3.69   0.001     .0863105    .2926452
+ _Iyear_1980 |   .4988016    .082815     6.02   0.000     .3321993    .6654039
+ _Iyear_1990 |   .5535485   .1088127     5.09   0.000     .3346456    .7724514
+       _cons |   9.335091   .0469851   198.68   0.000     9.240569    9.429613
+-------------+----------------------------------------------------------------
+     sigma_u |  .71677263
+     sigma_e |  .28227135
+         rho |  .86573689   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.8403                         Obs per group: min =         4
+       between = 0.1813                                        avg =       4.0
+       overall = 0.0956                                        max =         4
+
+                                                F(4,47)            =    165.04
+corr(u_i, Xb)  = 0.0057                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2529b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0492417   .0671777     0.73   0.467    -.0859024    .1843858
+ _Iyear_1970 |   .0497521   .0352627     1.41   0.165    -.0211872    .1206914
+ _Iyear_1980 |   .5574322   .0747376     7.46   0.000     .4070795    .7077849
+ _Iyear_1990 |   .7150189   .0900949     7.94   0.000     .5337713    .8962664
+       _cons |   7.889707   .0266155   296.43   0.000     7.836164    7.943251
+-------------+----------------------------------------------------------------
+     sigma_u |   1.046626
+     sigma_e |  .17055507
+         rho |  .97413193   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.0936                         Obs per group: min =         4
+       between = 0.0781                                        avg =       4.0
+       overall = 0.0040                                        max =         4
+
+                                                F(4,43)            =      8.05
+corr(u_i, Xb)  = -0.0195                        Prob > F           =    0.0001
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2529w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0379069   .0754084     0.50   0.618    -.1141686    .1899824
+ _Iyear_1970 |    .024033   .0366217     0.66   0.515    -.0498217    .0978878
+ _Iyear_1980 |   .1189726   .0883431     1.35   0.185    -.0591883    .2971335
+ _Iyear_1990 |   .0704506   .1009572     0.70   0.489     -.133149    .2740502
+       _cons |   9.912166   .0417088   237.65   0.000     9.828053     9.99628
+-------------+----------------------------------------------------------------
+     sigma_u |  .74096448
+     sigma_e |  .22563525
+         rho |  .91513935   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.7485                         Obs per group: min =         4
+       between = 0.0030                                        avg =       4.0
+       overall = 0.0705                                        max =         4
+
+                                                F(4,43)            =     48.16
+corr(u_i, Xb)  = -0.0033                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop2529b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1085109   .0456648     2.38   0.022      .016419    .2006028
+ _Iyear_1970 |   .2185681   .0358554     6.10   0.000     .1462587    .2908774
+ _Iyear_1980 |   .6032775   .0598051    10.09   0.000     .4826689     .723886
+ _Iyear_1990 |   .7299485   .0855696     8.53   0.000      .557381    .9025159
+       _cons |   7.925843   .0352183   225.05   0.000     7.854819    7.996868
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2072089
+     sigma_e |  .22881564
+         rho |   .9653201   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 3034 7
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3644                         Obs per group: min =         4
+       between = 0.0490                                        avg =       4.0
+       overall = 0.0044                                        max =         4
+
+                                                F(7,91)            =     71.88
+corr(u_i, Xb)  = -0.1907                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3034w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0620988   .0394551    -1.57   0.119    -.1404715     .016274
+ _Iyear_1970 |  -.3130018   .0395649    -7.91   0.000    -.3915927   -.2344109
+ _Iyear_1980 |  -.0712603   .0747771    -0.95   0.343    -.2197958    .0772753
+ _Iyear_1990 |   .0863372   .0838436     1.03   0.306    -.0802078    .2528822
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2199401   .0607654     3.62   0.000     .0992371    .3406431
+_IyeaXs~80_1 |   .3042292   .0947653     3.21   0.002     .1159895    .4924689
+_IyeaXs~90_1 |   .3657735   .1161647     3.15   0.002     .1350266    .5965205
+       _cons |   9.655826   .0326229   295.98   0.000     9.591024    9.720627
+-------------+----------------------------------------------------------------
+     sigma_u |  .77996347
+     sigma_e |  .26056039
+         rho |  .89960333   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7784                         Obs per group: min =         4
+       between = 0.0099                                        avg =       4.0
+       overall = 0.0817                                        max =         4
+
+                                                F(7,91)            =    120.73
+corr(u_i, Xb)  = 0.0065                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3034b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0964473   .0399635     2.41   0.018     .0170646    .1758299
+ _Iyear_1970 |     .05404   .0386877     1.40   0.166    -.0228085    .1308884
+ _Iyear_1980 |   .3579421   .0580295     6.17   0.000     .2426736    .4732105
+ _Iyear_1990 |   .7167386   .0813207     8.81   0.000      .555205    .8782723
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.1084552   .0508981    -2.13   0.036     -.209558   -.0073525
+_IyeaXs~80_1 |  -.0979809   .0677174    -1.45   0.151    -.2324933    .0365314
+_IyeaXs~90_1 |  -.0307865   .0846529    -0.36   0.717    -.1989392    .1373661
+       _cons |   7.923574   .0227988   347.54   0.000     7.878287    7.968861
+-------------+----------------------------------------------------------------
+     sigma_u |   1.127852
+     sigma_e |  .20590073
+         rho |  .96774677   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3930                         Obs per group: min =         4
+       between = 0.0015                                        avg =       4.0
+       overall = 0.0615                                        max =         4
+
+                                                F(4,47)            =     51.63
+corr(u_i, Xb)  = 0.0014                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3034w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1025681   .0459931    -2.23   0.031    -.1950944   -.0100419
+ _Iyear_1970 |  -.0745132   .0503678    -1.48   0.146    -.1758401    .0268137
+ _Iyear_1980 |   .2725952   .0913137     2.99   0.004     .0888957    .4562947
+ _Iyear_1990 |   .4925801   .1103037     4.47   0.000     .2706777    .7144825
+       _cons |   9.386614   .0485698   193.26   0.000     9.288904    9.484324
+-------------+----------------------------------------------------------------
+     sigma_u |  .73078751
+     sigma_e |  .28185365
+         rho |  .87050932   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.8374                         Obs per group: min =         4
+       between = 0.1925                                        avg =       4.0
+       overall = 0.0936                                        max =         4
+
+                                                F(4,47)            =    158.36
+corr(u_i, Xb)  = 0.0016                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3034b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0133885   .0601214     0.22   0.825    -.1075602    .1343371
+ _Iyear_1970 |  -.0526848   .0332821    -1.58   0.120    -.1196399    .0142702
+ _Iyear_1980 |   .3326376   .0710023     4.68   0.000     .1897993    .4754759
+ _Iyear_1990 |   .7690109   .0840706     9.15   0.000     .5998827    .9381391
+       _cons |   7.890668   .0285609   276.28   0.000     7.833211    7.948125
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0438453
+     sigma_e |  .17212591
+         rho |  .97352907   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.3178                         Obs per group: min =         4
+       between = 0.0895                                        avg =       4.0
+       overall = 0.0318                                        max =         4
+
+                                                F(4,43)            =     81.00
+corr(u_i, Xb)  = -0.0010                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3034w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0040337   .0709548     0.06   0.955    -.1390604    .1471277
+ _Iyear_1970 |  -.3220199   .0399979    -8.05   0.000    -.4026834   -.2413564
+ _Iyear_1980 |  -.1328837   .0889255    -1.49   0.142    -.3122191    .0464517
+ _Iyear_1990 |   .0202048   .1011078     0.20   0.843    -.1836985     .224108
+       _cons |   9.949511    .044277   224.71   0.000     9.860218     10.0388
+-------------+----------------------------------------------------------------
+     sigma_u |  .73318611
+     sigma_e |  .23552348
+         rho |  .90646171   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.7224                         Obs per group: min =         4
+       between = 0.0031                                        avg =       4.0
+       overall = 0.0640                                        max =         4
+
+                                                F(4,43)            =     48.61
+corr(u_i, Xb)  = -0.0045                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3034b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1374336   .0491446     2.80   0.008      .038324    .2365431
+ _Iyear_1970 |   .0512455   .0387224     1.32   0.193    -.0268457    .1293366
+ _Iyear_1980 |   .3327914   .0606567     5.49   0.000     .2104654    .4551174
+ _Iyear_1990 |   .6757523   .0865946     7.80   0.000     .5011176    .8503871
+       _cons |   7.959471    .036453   218.35   0.000     7.885957    8.032986
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2276842
+     sigma_e |  .23731849
+         rho |  .96397887   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 3539 8
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4097                         Obs per group: min =         4
+       between = 0.0418                                        avg =       4.0
+       overall = 0.0072                                        max =         4
+
+                                                F(7,91)            =    114.07
+corr(u_i, Xb)  = -0.2196                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3539w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0885872   .0408901    -2.17   0.033    -.1698103   -.0073642
+ _Iyear_1970 |  -.4270408   .0386559   -11.05   0.000    -.5038261   -.3502555
+ _Iyear_1980 |  -.5051267   .0778504    -6.49   0.000    -.6597669   -.3504865
+ _Iyear_1990 |  -.1211065   .0884143    -1.37   0.174    -.2967306    .0545176
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |    .284851   .0622143     4.58   0.000       .16127     .408432
+_IyeaXs~80_1 |   .4398501    .102904     4.27   0.000      .235444    .6442563
+_IyeaXs~90_1 |   .4336181   .1205989     3.60   0.001     .1940632     .673173
+       _cons |   9.699486   .0346982   279.54   0.000     9.630562    9.768409
+-------------+----------------------------------------------------------------
+     sigma_u |  .78683622
+     sigma_e |   .2727223
+         rho |  .89274886   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6912                         Obs per group: min =         4
+       between = 0.0120                                        avg =       4.0
+       overall = 0.0587                                        max =         4
+
+                                                F(7,91)            =    153.13
+corr(u_i, Xb)  = 0.0089                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3539b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1199216   .0362792     3.31   0.001     .0478574    .1919857
+ _Iyear_1970 |   .0466644   .0352059     1.33   0.188    -.0232678    .1165966
+ _Iyear_1980 |   .1043422   .0559906     1.86   0.066    -.0068762    .2155606
+ _Iyear_1990 |   .5567672   .0821791     6.78   0.000     .3935285    .7200059
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.0911953   .0479642    -1.90   0.060    -.1864702    .0040797
+_IyeaXs~80_1 |   -.119701   .0730774    -1.64   0.105    -.2648603    .0254582
+_IyeaXs~90_1 |  -.0184724   .0904185    -0.20   0.839    -.1980777    .1611329
+       _cons |   7.876518   .0238455   330.32   0.000     7.829152    7.923884
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1436497
+     sigma_e |  .21591558
+         rho |  .96558311   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.2925                         Obs per group: min =         4
+       between = 0.0001                                        avg =       4.0
+       overall = 0.0425                                        max =         4
+
+                                                F(4,47)            =     65.76
+corr(u_i, Xb)  = -0.0011                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3539w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1122284   .0474235    -2.37   0.022    -.2076323   -.0168246
+ _Iyear_1970 |  -.1313543   .0530535    -2.48   0.017    -.2380842   -.0246244
+ _Iyear_1980 |  -.0421279   .0976727    -0.43   0.668    -.2386201    .1543642
+ _Iyear_1990 |   .3361527   .1115358     3.01   0.004     .1117716    .5605339
+       _cons |   9.411724   .0525703   179.03   0.000     9.305966    9.517482
+-------------+----------------------------------------------------------------
+     sigma_u |  .73718381
+     sigma_e |   .2965833
+         rho |  .86068826   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.7835                         Obs per group: min =         4
+       between = 0.1979                                        avg =       4.0
+       overall = 0.0707                                        max =         4
+
+                                                F(4,47)            =    218.84
+corr(u_i, Xb)  = 0.0076                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3539b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0528164   .0424453     1.24   0.220    -.0325725    .1382053
+ _Iyear_1970 |  -.0431328   .0322516    -1.34   0.188    -.1080146    .0217489
+ _Iyear_1980 |   .0433582   .0513883     0.84   0.403    -.0600217    .1467381
+ _Iyear_1990 |   .6053999   .0604365    10.02   0.000     .4838173    .7269825
+       _cons |   7.841018   .0295592   265.26   0.000     7.781552    7.900484
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0528978
+     sigma_e |  .17379525
+         rho |  .97347662   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.5343                         Obs per group: min =         4
+       between = 0.1020                                        avg =       4.0
+       overall = 0.0864                                        max =         4
+
+                                                F(4,43)            =    133.50
+corr(u_i, Xb)  = 0.0078                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3539w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0499543   .0756107    -0.66   0.512    -.2024378    .1025292
+ _Iyear_1970 |  -.4323089   .0396535   -10.90   0.000    -.5122779     -.35234
+ _Iyear_1980 |  -.5411256   .0967013    -5.60   0.000    -.7361424   -.3461088
+ _Iyear_1990 |  -.1597394   .1086679    -1.47   0.149    -.3788891    .0594102
+       _cons |   10.01341   .0456122   219.53   0.000     9.921422    10.10539
+-------------+----------------------------------------------------------------
+     sigma_u |  .72453861
+     sigma_e |  .24493304
+         rho |  .89744019   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.6071                         Obs per group: min =         4
+       between = 0.0032                                        avg =       4.0
+       overall = 0.0421                                        max =         4
+
+                                                F(4,43)            =     52.69
+corr(u_i, Xb)  = -0.0063                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop3539b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1530353   .0484855     3.16   0.003      .055255    .2508157
+ _Iyear_1970 |   .0444066   .0353244     1.26   0.216    -.0268319    .1156451
+ _Iyear_1980 |   .0840224   .0568513     1.48   0.147    -.0306292     .198674
+ _Iyear_1990 |   .5236534   .0870627     6.01   0.000     .3480747     .699232
+       _cons |   7.915245   .0383113   206.60   0.000     7.837983    7.992508
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2491935
+     sigma_e |  .25435251
+         rho |  .96019197   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 4044 9
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4400                         Obs per group: min =         4
+       between = 0.0452                                        avg =       4.0
+       overall = 0.0066                                        max =         4
+
+                                                F(7,91)            =    158.87
+corr(u_i, Xb)  = -0.2670                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4044w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   -.085638   .0426658    -2.01   0.048    -.1703883   -.0008876
+ _Iyear_1970 |  -.2584632   .0350342    -7.38   0.000    -.3280543   -.1888721
+ _Iyear_1980 |  -.6727448   .0783148    -8.59   0.000    -.8283076    -.517182
+ _Iyear_1990 |  -.2722765   .0916223    -2.97   0.004    -.4542729   -.0902801
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .3341213   .0603355     5.54   0.000     .2142723    .4539704
+_IyeaXs~80_1 |    .549937   .1064987     5.16   0.000     .3383905    .7614836
+_IyeaXs~90_1 |   .5727575   .1263275     4.53   0.000     .3218234    .8236916
+       _cons |   9.618592   .0353204   272.32   0.000     9.548433    9.688752
+-------------+----------------------------------------------------------------
+     sigma_u |  .80638185
+     sigma_e |  .28539739
+         rho |  .88868211   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6132                         Obs per group: min =         4
+       between = 0.0042                                        avg =       4.0
+       overall = 0.0397                                        max =         4
+
+                                                F(7,91)            =    101.23
+corr(u_i, Xb)  = 0.0019                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4044b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0910195   .0371753     2.45   0.016     .0171753    .1648636
+ _Iyear_1970 |   .2609148   .0301537     8.65   0.000     .2010182    .3208113
+ _Iyear_1980 |    .199848   .0577743     3.46   0.001     .0850863    .3146096
+ _Iyear_1990 |   .5562515   .0811758     6.85   0.000     .3950058    .7174972
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   -.204521   .0376587    -5.43   0.000    -.2793255   -.1297166
+_IyeaXs~80_1 |  -.2296997   .0699849    -3.28   0.001    -.3687161   -.0906833
+_IyeaXs~90_1 |  -.1169316   .0875789    -1.34   0.185    -.2908963    .0570331
+       _cons |    7.72222   .0222972   346.33   0.000     7.677929    7.766511
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1521882
+     sigma_e |  .20772259
+         rho |  .96852039   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.2520                         Obs per group: min =         4
+       between = 0.0000                                        avg =       4.0
+       overall = 0.0362                                        max =         4
+
+                                                F(4,47)            =     92.20
+corr(u_i, Xb)  = -0.0016                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4044w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0991935   .0528062    -1.88   0.067     -.205426    .0070389
+ _Iyear_1970 |   .0818711   .0540199     1.52   0.136     -.026803    .1905451
+ _Iyear_1980 |  -.1095347   .1052289    -1.04   0.303    -.3212278    .1021585
+ _Iyear_1990 |   .3140365   .1201841     2.61   0.012     .0722573    .5558158
+       _cons |   9.290809   .0528333   175.85   0.000     9.184523    9.397096
+-------------+----------------------------------------------------------------
+     sigma_u |  .74062478
+     sigma_e |  .30539842
+         rho |  .85467564   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.6685                         Obs per group: min =         4
+       between = 0.2071                                        avg =       4.0
+       overall = 0.0421                                        max =         4
+
+                                                F(4,47)            =    116.94
+corr(u_i, Xb)  = 0.0069                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4044b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0356696   .0372818     0.96   0.344    -.0393317    .1106709
+ _Iyear_1970 |   .0575469   .0220098     2.61   0.012     .0132689    .1018249
+ _Iyear_1980 |   .0185794   .0371671     0.50   0.619     -.056191    .0933499
+ _Iyear_1990 |   .4946699   .0462373    10.70   0.000     .4016524    .5876873
+       _cons |   7.735177   .0266238   290.54   0.000     7.681617    7.788737
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0615152
+     sigma_e |  .17753746
+         rho |  .97278889   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.5917                         Obs per group: min =         4
+       between = 0.0982                                        avg =       4.0
+       overall = 0.1186                                        max =         4
+
+                                                F(4,43)            =    184.37
+corr(u_i, Xb)  = 0.0080                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4044w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0634864   .0728927    -0.87   0.389    -.2104885    .0835157
+ _Iyear_1970 |  -.2614839   .0347965    -7.51   0.000    -.3316576   -.1913101
+ _Iyear_1980 |  -.6933861   .0903976    -7.67   0.000    -.8756902    -.511082
+ _Iyear_1990 |  -.2944281   .1049875    -2.80   0.008    -.5061556   -.0827006
+       _cons |   9.976174   .0471902   211.40   0.000     9.881006    10.07134
+-------------+----------------------------------------------------------------
+     sigma_u |  .72590804
+     sigma_e |  .26292201
+         rho |  .88402716   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.5703                         Obs per group: min =         4
+       between = 0.0048                                        avg =       4.0
+       overall = 0.0310                                        max =         4
+
+                                                F(4,43)            =     53.86
+corr(u_i, Xb)  = -0.0063                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4044b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1183325    .051898     2.28   0.028     .0136703    .2229948
+ _Iyear_1970 |   .2590525   .0303532     8.53   0.000     .1978394    .3202657
+ _Iyear_1980 |   .1830877   .0609486     3.00   0.004     .0601732    .3060022
+ _Iyear_1990 |   .5289385   .0888055     5.96   0.000     .3498451    .7080319
+       _cons |   7.708085   .0366908   210.08   0.000     7.634091    7.782079
+-------------+----------------------------------------------------------------
+     sigma_u |   1.258423
+     sigma_e |  .23672847
+         rho |  .96582214   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 4549 10
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4230                         Obs per group: min =         4
+       between = 0.0527                                        avg =       4.0
+       overall = 0.0034                                        max =         4
+
+                                                F(7,91)            =    104.24
+corr(u_i, Xb)  = -0.3013                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4549w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0842028   .0439191    -1.92   0.058    -.1714427    .0030371
+ _Iyear_1970 |  -.1395104   .0358171    -3.90   0.000    -.2106566   -.0683642
+ _Iyear_1980 |  -.6346207   .0823779    -7.70   0.000    -.7982542   -.4709871
+ _Iyear_1990 |  -.5254533   .0979979    -5.36   0.000    -.7201142   -.3307924
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .3239015     .05661     5.72   0.000     .2114528    .4363502
+_IyeaXs~80_1 |   .6030898   .1088402     5.54   0.000     .3868922    .8192874
+_IyeaXs~90_1 |   .6787569   .1344506     5.05   0.000     .4116873    .9458264
+       _cons |   9.559822   .0364744   262.10   0.000      9.48737    9.632274
+-------------+----------------------------------------------------------------
+     sigma_u |  .82344831
+     sigma_e |  .29956803
+         rho |  .88312054   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4255                         Obs per group: min =         4
+       between = 0.0022                                        avg =       4.0
+       overall = 0.0180                                        max =         4
+
+                                                F(7,91)            =     29.82
+corr(u_i, Xb)  = -0.0145                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4549b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0790623   .0403362     1.96   0.053    -.0010606    .1591852
+ _Iyear_1970 |   .2867034   .0273628    10.48   0.000     .2323505    .3410563
+ _Iyear_1980 |   .2676927   .0527372     5.08   0.000     .1629368    .3724487
+ _Iyear_1990 |    .418216   .0717321     5.83   0.000      .275729    .5607029
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2575838   .0350679    -7.35   0.000    -.3272418   -.1879257
+_IyeaXs~80_1 |  -.2747464   .0678887    -4.05   0.000    -.4095989   -.1398939
+_IyeaXs~90_1 |  -.1882797   .0876503    -2.15   0.034    -.3623863   -.0141732
+       _cons |   7.620471   .0215991   352.81   0.000     7.577567    7.663375
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1704095
+     sigma_e |  .20717626
+         rho |  .96961877   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.1164                         Obs per group: min =         4
+       between = 0.0000                                        avg =       4.0
+       overall = 0.0150                                        max =         4
+
+                                                F(4,47)            =     46.92
+corr(u_i, Xb)  = -0.0048                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4549w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1227678   .0576875    -2.13   0.039    -.2388201   -.0067155
+ _Iyear_1970 |   .2020667   .0490004     4.12   0.000     .1034906    .3006428
+ _Iyear_1980 |   .0062307   .1030269     0.06   0.952    -.2010326     .213494
+ _Iyear_1990 |   .1918686   .1270056     1.51   0.138    -.0636338     .447371
+       _cons |   9.201424   .0539976   170.40   0.000     9.092795    9.310053
+-------------+----------------------------------------------------------------
+     sigma_u |  .74692834
+     sigma_e |   .3204439
+         rho |  .84455581   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3660                         Obs per group: min =         4
+       between = 0.2176                                        avg =       4.0
+       overall = 0.0090                                        max =         4
+
+                                                F(4,47)            =     20.34
+corr(u_i, Xb)  = -0.0197                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4549b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.0560359   .0589472    -0.95   0.347    -.1746223    .0625505
+ _Iyear_1970 |   .0319341   .0219989     1.45   0.153    -.0123219    .0761902
+ _Iyear_1980 |   .1111572    .061388     1.81   0.077    -.0123395    .2346539
+ _Iyear_1990 |   .3650344   .0730097     5.00   0.000     .2181578     .511911
+       _cons |   7.666223   .0274247   279.54   0.000     7.611051    7.721394
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0693826
+     sigma_e |  .18909001
+         rho |  .96968202   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.6196                         Obs per group: min =         4
+       between = 0.0988                                        avg =       4.0
+       overall = 0.1374                                        max =         4
+
+                                                F(4,43)            =    131.78
+corr(u_i, Xb)  = 0.0025                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4549w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0211823   .0654907    -0.32   0.748     -.153257    .1108923
+ _Iyear_1970 |  -.1481041     .03627    -4.08   0.000    -.2212496   -.0749587
+ _Iyear_1980 |  -.6933443   .0886605    -7.82   0.000    -.8721452   -.5145434
+ _Iyear_1990 |  -.5884737   .1043651    -5.64   0.000     -.798946   -.3780015
+       _cons |   9.950802   .0498967   199.43   0.000     9.850175    10.05143
+-------------+----------------------------------------------------------------
+     sigma_u |  .72716551
+     sigma_e |   .2756744
+         rho |  .87433757   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.4743                         Obs per group: min =         4
+       between = 0.0060                                        avg =       4.0
+       overall = 0.0168                                        max =         4
+
+                                                F(4,43)            =     31.01
+corr(u_i, Xb)  = -0.0112                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop4549b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |    .145728   .0474222     3.07   0.004     .0500921    .2413639
+ _Iyear_1970 |    .282158   .0275018    10.26   0.000     .2266954    .3376206
+ _Iyear_1980 |   .2267842   .0517605     4.38   0.000     .1223991    .3311693
+ _Iyear_1990 |   .3515503   .0704848     4.99   0.000     .2094042    .4936964
+       _cons |    7.57056   .0336183   225.19   0.000     7.502762    7.638358
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2884526
+     sigma_e |  .22386296
+         rho |  .97069705   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 5054 11
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.4020                         Obs per group: min =         4
+       between = 0.0651                                        avg =       4.0
+       overall = 0.0004                                        max =         4
+
+                                                F(7,91)            =     46.66
+corr(u_i, Xb)  = -0.3263                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5054w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0681594   .0406407    -1.68   0.097    -.1488871    .0125683
+ _Iyear_1970 |  -.0766152   .0343228    -2.23   0.028    -.1447933   -.0084371
+ _Iyear_1980 |  -.3880685   .0788494    -4.92   0.000    -.5446932   -.2314438
+ _Iyear_1990 |  -.6611337    .099145    -6.67   0.000    -.8580731   -.4641943
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2796966   .0541828     5.16   0.000     .1720692     .387324
+_IyeaXs~80_1 |   .5836497   .1020417     5.72   0.000     .3809563    .7863431
+_IyeaXs~90_1 |   .7635134   .1381602     5.53   0.000     .4890751    1.037952
+       _cons |   9.450905   .0360047   262.49   0.000     9.379386    9.522424
+-------------+----------------------------------------------------------------
+     sigma_u |  .84338477
+     sigma_e |  .29783837
+         rho |  .88911615   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.5084                         Obs per group: min =         4
+       between = 0.0007                                        avg =       4.0
+       overall = 0.0222                                        max =         4
+
+                                                F(7,91)            =     27.21
+corr(u_i, Xb)  = -0.0332                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5054b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0016968   .0432131     0.04   0.969    -.0841408    .0875344
+ _Iyear_1970 |   .3543254   .0347678    10.19   0.000     .2852634    .4233873
+ _Iyear_1980 |   .5449279   .0526659    10.35   0.000     .4403136    .6495423
+ _Iyear_1990 |   .6358453   .0819079     7.76   0.000     .4731453    .7985452
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2373772   .0417483    -5.69   0.000    -.3203051   -.1544494
+_IyeaXs~80_1 |  -.3361822   .0671871    -5.00   0.000    -.4696412   -.2027232
+_IyeaXs~90_1 |  -.3064254   .0958301    -3.20   0.002    -.4967802   -.1160707
+       _cons |   7.405982    .022802   324.80   0.000     7.360689    7.451275
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1900748
+     sigma_e |  .21907183
+         rho |  .96722432   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.0703                         Obs per group: min =         4
+       between = 0.0001                                        avg =       4.0
+       overall = 0.0079                                        max =         4
+
+                                                F(4,47)            =     29.92
+corr(u_i, Xb)  = -0.0066                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5054w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1143708   .0500294    -2.29   0.027    -.2150169   -.0137247
+ _Iyear_1970 |   .2242616   .0460249     4.87   0.000     .1316715    .3168518
+ _Iyear_1980 |   .2408298   .0896926     2.69   0.010     .0603916     .421268
+ _Iyear_1990 |   .1485911   .1197749     1.24   0.221    -.0923649    .3895471
+       _cons |   9.068614   .0531918   170.49   0.000     8.961606    9.175622
+-------------+----------------------------------------------------------------
+     sigma_u |  .75245248
+     sigma_e |  .31462872
+         rho |  .85118038   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3464                         Obs per group: min =         4
+       between = 0.2203                                        avg =       4.0
+       overall = 0.0020                                        max =         4
+
+                                                F(4,47)            =     11.34
+corr(u_i, Xb)  = -0.0727                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5054b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.2083821   .0876543    -2.38   0.022    -.3847198   -.0320445
+ _Iyear_1970 |   .1213248   .0225629     5.38   0.000      .075934    .1667155
+ _Iyear_1980 |   .3925648   .0898539     4.37   0.000      .211802    .5733275
+ _Iyear_1990 |   .5394988   .1034065     5.22   0.000     .3314718    .7475258
+       _cons |   7.481608   .0267222   279.98   0.000      7.42785    7.535366
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0872805
+     sigma_e |  .20244288
+         rho |  .96649412   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.6020                         Obs per group: min =         4
+       between = 0.0944                                        avg =       4.0
+       overall = 0.1254                                        max =         4
+
+                                                F(4,43)            =     44.82
+corr(u_i, Xb)  = -0.0009                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5054w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0073563   .0666593     0.11   0.913     -.127075    .1417875
+ _Iyear_1970 |  -.0869128   .0351705    -2.47   0.018    -.1578409   -.0159847
+ _Iyear_1980 |  -.4584354   .0884307    -5.18   0.000     -.636773   -.2800979
+ _Iyear_1990 |  -.7366494   .1067879    -6.90   0.000    -.9520077   -.5212912
+       _cons |    9.86795   .0495187   199.28   0.000     9.768086    9.967814
+-------------+----------------------------------------------------------------
+     sigma_u |  .74125547
+     sigma_e |  .27881557
+         rho |  .87605485   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.6071                         Obs per group: min =         4
+       between = 0.0083                                        avg =       4.0
+       overall = 0.0318                                        max =         4
+
+                                                F(4,43)            =     50.81
+corr(u_i, Xb)  = -0.0066                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5054b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1053626   .0294303     3.58   0.001     .0460107    .1647144
+ _Iyear_1970 |   .3472573   .0344357    10.08   0.000      .277811    .4167035
+ _Iyear_1980 |   .4813149   .0418474    11.50   0.000     .3969215    .5657082
+ _Iyear_1990 |   .5321795   .0713731     7.46   0.000      .388242     .676117
+       _cons |   7.323481   .0370646   197.59   0.000     7.248733    7.398229
+-------------+----------------------------------------------------------------
+     sigma_u |   1.310608
+     sigma_e |  .23164708
+         rho |  .96970658   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 5559 12
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3747                         Obs per group: min =         4
+       between = 0.0777                                        avg =       4.0
+       overall = 0.0005                                        max =         4
+
+                                                F(7,91)            =     96.49
+corr(u_i, Xb)  = -0.3583                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5559w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0590835     .04183    -1.41   0.161    -.1421736    .0240066
+ _Iyear_1970 |  -.0353245   .0331601    -1.07   0.290    -.1011928    .0305439
+ _Iyear_1980 |  -.1942394   .0788491    -2.46   0.016    -.3508635   -.0376153
+ _Iyear_1990 |   -.600649   .1055532    -5.69   0.000    -.8103175   -.3909806
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |    .291478   .0522593     5.58   0.000     .1876714    .3952846
+_IyeaXs~80_1 |   .5856586   .0998542     5.87   0.000     .3873105    .7840066
+_IyeaXs~90_1 |   .8258378   .1427685     5.78   0.000     .5422456     1.10943
+       _cons |   9.319831    .036028   258.68   0.000     9.248266    9.391396
+-------------+----------------------------------------------------------------
+     sigma_u |  .86666086
+     sigma_e |  .30359585
+         rho |  .89069897   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.5763                         Obs per group: min =         4
+       between = 0.0006                                        avg =       4.0
+       overall = 0.0241                                        max =         4
+
+                                                F(7,91)            =     42.13
+corr(u_i, Xb)  = -0.0265                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5559b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0719618   .0365909     1.97   0.052    -.0007215    .1446451
+ _Iyear_1970 |   .3491023   .0281797    12.39   0.000     .2931268    .4050778
+ _Iyear_1980 |   .5493558   .0533254    10.30   0.000     .4434314    .6552801
+ _Iyear_1990 |   .5585116   .0787534     7.09   0.000     .4020777    .7149455
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.1692771   .0346284    -4.89   0.000    -.2380622   -.1004921
+_IyeaXs~80_1 |  -.3738349   .0586721    -6.37   0.000    -.4903797     -.25729
+_IyeaXs~90_1 |  -.2654726   .0877472    -3.03   0.003    -.4397715   -.0911737
+       _cons |   7.250534   .0206756   350.68   0.000     7.209465    7.291604
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2043404
+     sigma_e |  .19905241
+         rho |  .97340918   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.1753                         Obs per group: min =         4
+       between = 0.0012                                        avg =       4.0
+       overall = 0.0217                                        max =         4
+
+                                                F(4,47)            =     76.48
+corr(u_i, Xb)  = -0.0081                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5559w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1307898   .0504684    -2.59   0.013     -.232319   -.0292605
+ _Iyear_1970 |   .2890189   .0454676     6.36   0.000     .1975498    .3804879
+ _Iyear_1980 |   .4616315   .0889503     5.19   0.000     .2826866    .6405765
+ _Iyear_1990 |    .296895   .1202112     2.47   0.017     .0550613    .5387287
+       _cons |   8.908042   .0525136   169.63   0.000     8.802398    9.013686
+-------------+----------------------------------------------------------------
+     sigma_u |  .76424283
+     sigma_e |  .31601917
+         rho |  .85398015   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.4382                         Obs per group: min =         4
+       between = 0.2400                                        avg =       4.0
+       overall = 0.0180                                        max =         4
+
+                                                F(4,47)            =     21.73
+corr(u_i, Xb)  = 0.0132                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5559b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0386413   .0501976     0.77   0.445    -.0623432    .1396258
+ _Iyear_1970 |   .1805194   .0196096     9.21   0.000       .14107    .2199687
+ _Iyear_1980 |   .2046763   .0508145     4.03   0.000     .1024506    .3069019
+ _Iyear_1990 |   .3263594   .0632427     5.16   0.000     .1991316    .4535873
+       _cons |   7.328388   .0246307   297.53   0.000     7.278837    7.377938
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0765309
+     sigma_e |  .17433652
+         rho |   .9744447   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.5292                         Obs per group: min =         4
+       between = 0.0840                                        avg =       4.0
+       overall = 0.0969                                        max =         4
+
+                                                F(4,43)            =     90.13
+corr(u_i, Xb)  = -0.0074                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5559w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0580943   .0643267     0.90   0.371    -.0716329    .1878215
+ _Iyear_1970 |  -.0513033   .0345187    -1.49   0.145    -.1209169    .0183104
+ _Iyear_1980 |  -.3034278   .0845391    -3.59   0.001    -.4739172   -.1329385
+ _Iyear_1990 |  -.7178268   .1105496    -6.49   0.000    -.9407714   -.4948823
+       _cons |   9.769055   .0508284   192.20   0.000      9.66655     9.87156
+-------------+----------------------------------------------------------------
+     sigma_u |  .74962603
+     sigma_e |  .28891525
+         rho |  .87066847   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.6362                         Obs per group: min =         4
+       between = 0.0116                                        avg =       4.0
+       overall = 0.0323                                        max =         4
+
+                                                F(4,43)            =     52.57
+corr(u_i, Xb)  = -0.0061                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop5559b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0884041   .0486778     1.82   0.076     -.009764    .1865722
+ _Iyear_1970 |   .3479812   .0282684    12.31   0.000     .2909725    .4049899
+ _Iyear_1980 |   .5392661   .0570106     9.46   0.000     .4242932     .654239
+ _Iyear_1990 |   .5420692   .0850285     6.38   0.000      .370593    .7135455
+       _cons |   7.165603   .0340766   210.28   0.000     7.096881    7.234325
+-------------+----------------------------------------------------------------
+     sigma_u |  1.3390159
+     sigma_e |  .22352969
+         rho |  .97288798   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 6064 13
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3080                         Obs per group: min =         4
+       between = 0.0889                                        avg =       4.0
+       overall = 0.0106                                        max =         4
+
+                                                F(7,91)            =     34.46
+corr(u_i, Xb)  = -0.4151                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6064w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0577363   .0451495    -1.28   0.204    -.1474201    .0319476
+ _Iyear_1970 |  -.0286989   .0314587    -0.91   0.364    -.0911876    .0337899
+ _Iyear_1980 |  -.1548264   .0796479    -1.94   0.055    -.3130372    .0033845
+ _Iyear_1990 |  -.3613632   .1062863    -3.40   0.001    -.5724879   -.1502384
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |     .36205   .0508248     7.12   0.000     .2610928    .4630072
+_IyeaXs~80_1 |   .6109434   .1008564     6.06   0.000     .4106045    .8112823
+_IyeaXs~90_1 |   .8781008   .1399348     6.28   0.000     .6001375    1.156064
+       _cons |      9.154   .0354379   258.31   0.000     9.083607    9.224393
+-------------+----------------------------------------------------------------
+     sigma_u |  .90983604
+     sigma_e |  .30169872
+         rho |  .90093626   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7331                         Obs per group: min =         4
+       between = 0.0005                                        avg =       4.0
+       overall = 0.0530                                        max =         4
+
+                                                F(7,91)            =     60.00
+corr(u_i, Xb)  = -0.0109                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6064b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .1146664   .0360748     3.18   0.002     .0430083    .1863245
+ _Iyear_1970 |   .3958091   .0317502    12.47   0.000     .3327412    .4588769
+ _Iyear_1980 |   .6434656   .0579586    11.10   0.000      .528338    .7585931
+ _Iyear_1990 |    .802781   .0778187    10.32   0.000     .6482037    .9573582
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.0710783   .0415312    -1.71   0.090    -.1535749    .0114183
+_IyeaXs~80_1 |  -.3022511   .0650667    -4.65   0.000    -.4314982    -.173004
+_IyeaXs~90_1 |    -.27189   .0879382    -3.09   0.003    -.4465684   -.0972115
+       _cons |   6.904813   .0220891   312.59   0.000     6.860935     6.94869
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2232415
+     sigma_e |  .20730936
+         rho |     .97208   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.3111                         Obs per group: min =         4
+       between = 0.0062                                        avg =       4.0
+       overall = 0.0405                                        max =         4
+
+                                                F(4,47)            =     29.83
+corr(u_i, Xb)  = -0.0087                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6064w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1181516   .0555368    -2.13   0.039    -.2298772    -.006426
+ _Iyear_1970 |   .3610415   .0454319     7.95   0.000     .2696443    .4524388
+ _Iyear_1980 |   .5152737     .09224     5.59   0.000     .3297108    .7008367
+ _Iyear_1990 |    .577153   .1173697     4.92   0.000     .3410357    .8132703
+       _cons |   8.702397   .0514107   169.27   0.000     8.598972    8.805822
+-------------+----------------------------------------------------------------
+     sigma_u |  .80406531
+     sigma_e |  .31138852
+         rho |  .86958316   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.6637                         Obs per group: min =         4
+       between = 0.2349                                        avg =       4.0
+       overall = 0.0434                                        max =         4
+
+                                                F(4,47)            =     46.13
+corr(u_i, Xb)  = 0.0031                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6064b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |    .016546   .0468934     0.35   0.726    -.0777913    .1108833
+ _Iyear_1970 |   .3267749   .0269857    12.11   0.000     .2724866    .3810632
+ _Iyear_1980 |   .4270699   .0511613     8.35   0.000     .3241465    .5299932
+ _Iyear_1990 |   .6290115   .0769006     8.18   0.000     .4743075    .7837154
+       _cons |   6.971006   .0273115   255.24   0.000     6.916062    7.025949
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1135536
+     sigma_e |  .19495573
+         rho |   .9702602   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.3099                         Obs per group: min =         4
+       between = 0.0705                                        avg =       4.0
+       overall = 0.0397                                        max =         4
+
+                                                F(4,43)            =     20.97
+corr(u_i, Xb)  = -0.0075                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6064w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0409906   .0726074     0.56   0.575    -.1054362    .1874174
+ _Iyear_1970 |  -.0421616   .0328164    -1.28   0.206    -.1083421    .0240189
+ _Iyear_1980 |  -.2468219   .0897337    -2.75   0.009    -.4277871   -.0658566
+ _Iyear_1990 |  -.4600901   .1147974    -4.01   0.000     -.691601   -.2285791
+       _cons |   9.646658   .0501423   192.39   0.000     9.545537     9.74778
+-------------+----------------------------------------------------------------
+     sigma_u |  .75828173
+     sigma_e |   .2907341
+         rho |  .87183613   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.7755                         Obs per group: min =         4
+       between = 0.0168                                        avg =       4.0
+       overall = 0.0585                                        max =         4
+
+                                                F(4,43)            =     60.81
+corr(u_i, Xb)  = -0.0102                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6064b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |    .163085    .045759     3.56   0.001     .0708033    .2553668
+ _Iyear_1970 |   .3925078   .0321544    12.21   0.000     .3276622    .4573534
+ _Iyear_1980 |   .6137541   .0606857    10.11   0.000     .4913698    .7361384
+ _Iyear_1990 |   .7543624   .0830403     9.08   0.000     .5868956    .9218291
+       _cons |   6.832602   .0350995   194.66   0.000     6.761817    6.903387
+-------------+----------------------------------------------------------------
+     sigma_u |  1.3470431
+     sigma_e |  .21961436
+         rho |    .974108   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 6569 14
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3342                         Obs per group: min =         4
+       between = 0.0916                                        avg =       4.0
+       overall = 0.0104                                        max =         4
+
+                                                F(7,91)            =     13.25
+corr(u_i, Xb)  = -0.4102                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6569w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0564339   .0442616    -1.28   0.206    -.1443542    .0314863
+ _Iyear_1970 |  -.1001289    .033686    -2.97   0.004    -.1670421   -.0332157
+ _Iyear_1980 |  -.1349116    .077135    -1.75   0.084    -.2881309    .0183077
+ _Iyear_1990 |  -.1955982    .108216    -1.81   0.074    -.4105559    .0193595
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .3806075   .0533444     7.13   0.000     .2746454    .4865697
+_IyeaXs~80_1 |   .6140142   .0981364     6.26   0.000     .4190783    .8089501
+_IyeaXs~90_1 |   .8820638    .138135     6.39   0.000     .6076757    1.156452
+       _cons |   9.003612   .0349465   257.64   0.000     8.934195    9.073029
+-------------+----------------------------------------------------------------
+     sigma_u |  .94355417
+     sigma_e |  .29620277
+         rho |  .91029311   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7806                         Obs per group: min =         4
+       between = 0.0004                                        avg =       4.0
+       overall = 0.0520                                        max =         4
+
+                                                F(7,91)            =     70.13
+corr(u_i, Xb)  = -0.0373                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6569b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0446315   .0398549     1.12   0.266    -.0345353    .1237984
+ _Iyear_1970 |   .4776063   .0297365    16.06   0.000     .4185385    .5366742
+ _Iyear_1980 |   .7407253   .0597152    12.40   0.000     .6221084    .8593422
+ _Iyear_1990 |   1.020071   .0771101    13.23   0.000     .8669017    1.173241
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.1720606   .0421235    -4.08   0.000    -.2557339   -.0883874
+_IyeaXs~80_1 |  -.3189014   .0675003    -4.72   0.000    -.4529824   -.1848204
+_IyeaXs~90_1 |  -.4269843   .0851136    -5.02   0.000    -.5960519   -.2579167
+       _cons |   6.706471   .0225444   297.48   0.000     6.661689    6.751252
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2478499
+     sigma_e |  .19842409
+         rho |   .9753385   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.4543                         Obs per group: min =         4
+       between = 0.0132                                        avg =       4.0
+       overall = 0.0616                                        max =         4
+
+                                                F(4,47)            =     16.85
+corr(u_i, Xb)  = -0.0078                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6569w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.1027843   .0570335    -1.80   0.078    -.2175209    .0119522
+ _Iyear_1970 |   .3017225    .047272     6.38   0.000     .2066235    .3968216
+ _Iyear_1980 |   .5244874   .0943873     5.56   0.000     .3346047    .7143701
+ _Iyear_1990 |    .732816   .1186925     6.17   0.000     .4940375    .9715946
+       _cons |   8.536857   .0491715   173.61   0.000     8.437937    8.635777
+-------------+----------------------------------------------------------------
+     sigma_u |  .85354331
+     sigma_e |  .29788626
+         rho |  .89142393   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.6920                         Obs per group: min =         4
+       between = 0.2580                                        avg =       4.0
+       overall = 0.0374                                        max =         4
+
+                                                F(4,47)            =     46.73
+corr(u_i, Xb)  = -0.0126                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6569b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.0630113   .0607181    -1.04   0.305    -.1851603    .0591377
+ _Iyear_1970 |   .3077883   .0290648    10.59   0.000     .2493174    .3662592
+ _Iyear_1980 |   .5160114   .0645157     8.00   0.000     .3862225    .6458003
+ _Iyear_1990 |   .7007299   .0751311     9.33   0.000     .5495857    .8518741
+       _cons |   6.844414   .0281321   243.30   0.000     6.787819    6.901008
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1201993
+     sigma_e |  .18315262
+         rho |  .97396375   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.1230                         Obs per group: min =         4
+       between = 0.0624                                        avg =       4.0
+       overall = 0.0126                                        max =         4
+
+                                                F(4,43)            =      3.13
+corr(u_i, Xb)  = -0.0058                        Prob > F           =    0.0242
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6569w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |    .019309   .0663202     0.29   0.772    -.1144383    .1530564
+ _Iyear_1970 |  -.1104575   .0343798    -3.21   0.002     -.179791   -.0411241
+ _Iyear_1980 |  -.2054902   .0827757    -2.48   0.017    -.3724234    -.038557
+ _Iyear_1990 |  -.2713411   .1128549    -2.40   0.021    -.4989347   -.0437476
+       _cons |     9.5128   .0510765   186.25   0.000     9.409794    9.615806
+-------------+----------------------------------------------------------------
+     sigma_u |   .7642195
+     sigma_e |  .29480525
+         rho |  .87046542   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.8240                         Obs per group: min =         4
+       between = 0.0171                                        avg =       4.0
+       overall = 0.0734                                        max =         4
+
+                                                F(4,43)            =     72.87
+corr(u_i, Xb)  = -0.0052                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop6569b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0977491   .0475011     2.06   0.046     .0019539    .1935443
+ _Iyear_1970 |   .4739847   .0295742    16.03   0.000     .4143426    .5336268
+ _Iyear_1980 |   .7081305   .0616787    11.48   0.000     .5837435    .8325175
+ _Iyear_1990 |   .9669538   .0803456    12.03   0.000     .8049215    1.128986
+       _cons |   6.555987   .0357387   183.44   0.000     6.483913    6.628061
+-------------+----------------------------------------------------------------
+     sigma_u |  1.3765108
+     sigma_e |  .21314338
+         rho |  .97658498   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 7074 15
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.3806                         Obs per group: min =         4
+       between = 0.1068                                        avg =       4.0
+       overall = 0.0079                                        max =         4
+
+                                                F(7,91)            =     11.38
+corr(u_i, Xb)  = -0.3959                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop7074w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   -.049323   .0451556    -1.09   0.278    -.1390191    .0403732
+ _Iyear_1970 |  -.0060005   .0300356    -0.20   0.842    -.0656626    .0536616
+ _Iyear_1980 |  -.0748297   .0748469    -1.00   0.320    -.2235038    .0738444
+ _Iyear_1990 |  -.0956795   .1043864    -0.92   0.362    -.3030303    .1116712
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .3171797   .0531772     5.96   0.000     .2115496    .4228097
+_IyeaXs~80_1 |   .6429213   .0968287     6.64   0.000     .4505829    .8352597
+_IyeaXs~90_1 |    .860499   .1369331     6.28   0.000     .5884982      1.1325
+       _cons |   8.705465   .0345184   252.20   0.000     8.636898    8.774032
+-------------+----------------------------------------------------------------
+     sigma_u |  .96957561
+     sigma_e |  .29549432
+         rho |  .91501127   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.7793                         Obs per group: min =         4
+       between = 0.0009                                        avg =       4.0
+       overall = 0.0670                                        max =         4
+
+                                                F(7,91)            =     73.92
+corr(u_i, Xb)  = -0.0265                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop7074b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   .0869354   .0438444     1.98   0.050    -.0001562    .1740269
+ _Iyear_1970 |   .4463838   .0503473     8.87   0.000     .3463749    .5463926
+ _Iyear_1980 |   .7273443   .0567076    12.83   0.000     .6147016     .839987
+ _Iyear_1990 |   1.057139   .0744945    14.19   0.000     .9091652    1.205113
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.1519524   .0597289    -2.54   0.013    -.2705965   -.0333083
+_IyeaXs~80_1 |  -.2575817    .067871    -3.80   0.000    -.3923991   -.1227643
+_IyeaXs~90_1 |  -.3601791   .0879529    -4.10   0.000    -.5348866   -.1854715
+       _cons |   6.287939    .023781   264.41   0.000     6.240701    6.335177
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2570711
+     sigma_e |  .22395919
+         rho |  .96923567   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.5181                         Obs per group: min =         4
+       between = 0.0137                                        avg =       4.0
+       overall = 0.0779                                        max =         4
+
+                                                F(4,47)            =     14.55
+corr(u_i, Xb)  = -0.0065                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop7074w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0987422     .05575    -1.77   0.083    -.2108967    .0134122
+ _Iyear_1970 |   .3338296   .0495577     6.74   0.000     .2341323    .4335269
+ _Iyear_1980 |   .6164813    .097965     6.29   0.000     .4194012    .8135614
+ _Iyear_1990 |   .8142387   .1226776     6.64   0.000     .5674432    1.061034
+       _cons |   8.218138   .0504234   162.98   0.000       8.1167    8.319577
+-------------+----------------------------------------------------------------
+     sigma_u |  .87418587
+     sigma_e |  .30243162
+         rho |  .89310677   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.7431                         Obs per group: min =         4
+       between = 0.2508                                        avg =       4.0
+       overall = 0.0632                                        max =         4
+
+                                                F(4,47)            =     46.41
+corr(u_i, Xb)  = -0.0015                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop7074b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.0093247    .086696    -0.11   0.915    -.1837346    .1650851
+ _Iyear_1970 |   .2964368   .0320882     9.24   0.000     .2318837      .36099
+ _Iyear_1980 |   .5539902   .0900064     6.16   0.000     .3729206    .7350598
+ _Iyear_1990 |   .7932203   .0997101     7.96   0.000     .5926295    .9938112
+       _cons |   6.423626   .0327468   196.16   0.000     6.357748    6.489504
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1134755
+     sigma_e |  .20054627
+         rho |   .9685802   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.0640                         Obs per group: min =         4
+       between = 0.0526                                        avg =       4.0
+       overall = 0.0045                                        max =         4
+
+                                                F(4,43)            =      3.87
+corr(u_i, Xb)  = -0.0128                        Prob > F           =    0.0090
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop7074w |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0314348   .0719432     0.44   0.664    -.1136525    .1765222
+ _Iyear_1970 |  -.0170129   .0306676    -0.55   0.582    -.0788601    .0448342
+ _Iyear_1980 |  -.1500813   .0832977    -1.80   0.079    -.3180672    .0179045
+ _Iyear_1990 |  -.1764373   .1111442    -1.59   0.120     -.400581    .0477064
+       _cons |   9.237094   .0482903   191.28   0.000     9.139707     9.33448
+-------------+----------------------------------------------------------------
+     sigma_u |  .77765706
+     sigma_e |  .28807568
+         rho |  .87933256   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.8012                         Obs per group: min =         4
+       between = 0.0207                                        avg =       4.0
+       overall = 0.0800                                        max =         4
+
+                                                F(4,43)            =     84.36
+corr(u_i, Xb)  = -0.0075                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop7074b |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |    .134436   .0472011     2.85   0.007     .0392459    .2296261
+ _Iyear_1970 |   .4431451   .0511908     8.66   0.000     .3399091    .5463811
+ _Iyear_1980 |   .6981962   .0585122    11.93   0.000     .5801951    .8161973
+ _Iyear_1990 |   1.009639    .074109    13.62   0.000     .8601836    1.159094
+       _cons |   6.139917   .0346833   177.03   0.000     6.069971    6.209863
+-------------+----------------------------------------------------------------
+     sigma_u |  1.3999984
+     sigma_e |  .24682367
+         rho |  .96985432   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. runregs 75up 16
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.6221                         Obs per group: min =         4
+       between = 0.1334                                        avg =       4.0
+       overall = 0.0073                                        max =         4
+
+                                                F(7,91)            =     44.42
+corr(u_i, Xb)  = -0.2695                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop75upw |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |  -.0556132   .0347291    -1.60   0.113    -.1245984     .013372
+ _Iyear_1970 |   .2485235   .0277326     8.96   0.000     .1934361    .3036108
+ _Iyear_1980 |   .2905251   .0634856     4.58   0.000     .1644187    .4166315
+ _Iyear_1990 |   .3663209   .0888194     4.12   0.000     .1898921    .5427498
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |   .2155667   .0514525     4.19   0.000     .1133626    .3177708
+_IyeaXs~80_1 |   .4736248   .0884359     5.36   0.000     .2979578    .6492917
+_IyeaXs~90_1 |   .7558135   .1249437     6.05   0.000     .5076282    1.003999
+       _cons |   8.830737   .0320658   275.39   0.000     8.767042    8.894432
+-------------+----------------------------------------------------------------
+     sigma_u |  .97357404
+     sigma_e |  .26723253
+         rho |  .92993618   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+i.south           _Isouth_0-1         (naturally coded; _Isouth_0 omitted)
+i.year*i.south    _IyeaXsou_#_#       (coded as above)
+
+Fixed-effects (within) regression               Number of obs      =       368
+Group variable: leaid                           Number of groups   =        92
+
+R-sq:  within  = 0.8759                         Obs per group: min =         4
+       between = 0.0042                                        avg =       4.0
+       overall = 0.1120                                        max =         4
+
+                                                F(7,91)            =    132.34
+corr(u_i, Xb)  = -0.0233                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 92 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop75upb |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |  -.0368084   .0499512    -0.74   0.463    -.1360304    .0624136
+ _Iyear_1970 |   .6394204   .0376981    16.96   0.000     .5645378     .714303
+ _Iyear_1980 |   1.011677   .0547318    18.48   0.000     .9029587    1.120395
+ _Iyear_1990 |   1.455756   .0768344    18.95   0.000     1.303134    1.608379
+   _Isouth_1 |  (dropped)
+_IyeaXs~70_1 |  -.2021846   .0489195    -4.13   0.000    -.2993572   -.1050119
+_IyeaXs~80_1 |  -.2140709   .0752462    -2.84   0.005    -.3635382   -.0646036
+_IyeaXs~90_1 |  -.2572219   .0860106    -2.99   0.004    -.4280715   -.0863723
+       _cons |   6.330112   .0236808   267.31   0.000     6.283073    6.377151
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2664796
+     sigma_e |   .2084426
+         rho |  .97362643   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.7303                         Obs per group: min =         4
+       between = 0.0067                                        avg =       4.0
+       overall = 0.1555                                        max =         4
+
+                                                F(4,47)            =     36.13
+corr(u_i, Xb)  = -0.0038                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop75upw |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |    -.11168    .038133    -2.93   0.005    -.1883937   -.0349662
+ _Iyear_1970 |   .4897875   .0471886    10.38   0.000     .3948561    .5847188
+ _Iyear_1980 |   .8190486    .084277     9.72   0.000     .6495052    .9885921
+ _Iyear_1990 |   1.178201   .1112551    10.59   0.000     .9543848    1.402017
+       _cons |   8.348593   .0484154   172.44   0.000     8.251194    8.445992
+-------------+----------------------------------------------------------------
+     sigma_u |  .88026364
+     sigma_e |  .27780683
+         rho |  .90942142   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       192
+Group variable: leaid                           Number of groups   =        48
+
+R-sq:  within  = 0.8577                         Obs per group: min =         4
+       between = 0.2428                                        avg =       4.0
+       overall = 0.1220                                        max =         4
+
+                                                F(4,47)            =    113.15
+corr(u_i, Xb)  = -0.0039                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 48 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop75upb |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   -.036872   .1066387    -0.35   0.731    -.2514014    .1776574
+ _Iyear_1970 |   .4372372   .0314753    13.89   0.000      .373917    .5005573
+ _Iyear_1980 |   .7976616   .1159755     6.88   0.000      .564349    1.030974
+ _Iyear_1990 |   1.198598   .1296751     9.24   0.000     .9377255    1.459471
+       _cons |   6.484915    .031006   209.15   0.000     6.422539    6.547291
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1325073
+     sigma_e |  .20370996
+         rho |  .96865896   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.2270                         Obs per group: min =         4
+       between = 0.0323                                        avg =       4.0
+       overall = 0.0192                                        max =         4
+
+                                                F(4,43)            =     30.90
+corr(u_i, Xb)  = -0.0063                        Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop75upw |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    imp_post |   .0360075   .0602954     0.60   0.554    -.0855898    .1576049
+ _Iyear_1970 |   .2360297   .0281966     8.37   0.000     .1791659    .2928936
+ _Iyear_1980 |   .2051513   .0689329     2.98   0.005     .0661349    .3441677
+ _Iyear_1990 |   .2747002   .0927071     2.96   0.005     .0877386    .4616618
+       _cons |   9.356712   .0429533   217.83   0.000     9.270089    9.443336
+-------------+----------------------------------------------------------------
+     sigma_u |  .78783059
+     sigma_e |  .25506187
+         rho |  .90512852   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+i.year            _Iyear_1960-1990    (naturally coded; _Iyear_1960 omitted)
+
+Fixed-effects (within) regression               Number of obs      =       176
+Group variable: leaid                           Number of groups   =        44
+
+R-sq:  within  = 0.8899                         Obs per group: min =         4
+       between = 0.0284                                        avg =       4.0
+       overall = 0.1239                                        max =         4
+
+                                                F(4,43)            =    122.45
+corr(u_i, Xb)  = 0.0017                         Prob > F           =    0.0000
+
+                                 (Std. Err. adjusted for 44 clusters in leaid)
+------------------------------------------------------------------------------
+             |               Robust
+  lnpop75upb |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    impost_4 |   -.036777   .0536151    -0.69   0.496    -.1449022    .0713482
+ _Iyear_1970 |   .6394183   .0377558    16.94   0.000     .5632763    .7155602
+ _Iyear_1980 |   1.011658    .053503    18.91   0.000     .9037585    1.119557
+ _Iyear_1990 |   1.455725   .0767745    18.96   0.000     1.300895    1.610556
+       _cons |   6.161236   .0366393   168.16   0.000     6.087345    6.235126
+-------------+----------------------------------------------------------------
+     sigma_u |  1.3916335
+     sigma_e |   .2142923
+         rho |  .97683749   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. matrix list whites
+
+whites[16,2]
+             c1          c2
+ r1  -.07153778   .04504534
+ r2   -.0800898   .04074451
+ r3  -.09769119   .04119996
+ r4  -.09793295   .04242812
+ r5  -.10947841   .05390651
+ r6  -.04171207   .04118864
+ r7  -.06209878   .03945513
+ r8  -.08858725   .04089006
+ r9  -.08563797   .04266578
+r10   -.0842028   .04391912
+r11  -.06815942   .04064068
+r12   -.0590835   .04182995
+r13  -.05773625   .04514945
+r14   -.0564339   .04426161
+r15  -.04932296   .04515564
+r16   -.0556132   .03472914
+
+. matrix list blacks
+
+blacks[16,2]
+             c1          c2
+ r1   .09980809   .04012904
+ r2   .12269321   .03862057
+ r3   .11583941   .03260686
+ r4   .04807858    .0433425
+ r5   .02789073   .03955088
+ r6   .08892747   .03799993
+ r7   .09644727   .03996354
+ r8   .11992157   .03627918
+ r9   .09101948   .03717528
+r10   .07906231    .0403362
+r11   .00169681   .04321314
+r12   .07196177   .03659089
+r13   .11466643   .03607477
+r14   .04463153   .03985489
+r15   .08693538   .04384441
+r16  -.03680839   .04995124
+
+. matrix list whitess
+
+whitess[16,2]
+             c1          c2
+ r1  -.13053935   .05235586
+ r2  -.11490972   .05262762
+ r3  -.11148972   .05633035
+ r4  -.14128877   .05499758
+ r5  -.20274901   .06016035
+ r6  -.09043443   .04584789
+ r7  -.10256814   .04599314
+ r8  -.11222843   .04742354
+ r9  -.09919351   .05280624
+r10   -.1227678   .05768749
+r11   -.1143708   .05002936
+r12  -.13078977   .05046838
+r13  -.11815158   .05553677
+r14  -.10278434   .05703346
+r15  -.09874222   .05574995
+r16  -.11167997   .03813303
+
+. matrix list blackss
+
+blackss[16,2]
+             c1          c2
+ r1   .02160946   .07207718
+ r2   -.0040203    .0519206
+ r3  -.00117928   .03713111
+ r4  -.12978975   .08609909
+ r5   -.0487875   .08589199
+ r6   .04924169   .06717768
+ r7   .01338846    .0601214
+ r8   .05281643   .04244529
+ r9   .03566956    .0372818
+r10  -.05603588   .05894717
+r11  -.20838212   .08765426
+r12   .03864131   .05019757
+r13     .016546   .04689339
+r14  -.06301128   .06071806
+r15  -.00932475   .08669599
+r16  -.03687201   .10663872
+
+. matrix list whitesn
+
+whitesn[16,2]
+             c1          c2
+ r1   .02487882   .07771027
+ r2   -.0231893   .06417637
+ r3  -.07514252    .0589129
+ r4  -.02708363   .06418078
+ r5   .04293847   .09103891
+ r6   .03790691    .0754084
+ r7   .00403366   .07095484
+ r8  -.04995433    .0756107
+ r9  -.06348637   .07289269
+r10  -.02118234   .06549075
+r11   .00735627   .06665929
+r12   .05809432   .06432671
+r13   .04099063    .0726074
+r14   .01930902   .06632015
+r15   .03143485   .07194323
+r16   .03600753   .06029544
+
+. matrix list blacksn
+
+blacksn[16,2]
+            c1         c2
+ r1  .13839608  .04561979
+ r2   .1852214  .04573825
+ r3  .17358358  .03974427
+ r4  .13584968   .0369735
+ r5  .06572845  .03879901
+ r6  .10851086  .04566483
+ r7  .13743356   .0491446
+ r8  .15303534   .0484855
+ r9  .11833251  .05189798
+r10  .14572801  .04742217
+r11  .10536258  .02943029
+r12  .08840412  .04867778
+r13  .16308505  .04575898
+r14  .09774907  .04750114
+r15    .134436  .04720113
+r16   -.036777  .05361514
+
+. 
+. log close
+       log:  c:\research\segregation\AER-DATA\tables\figure3.log
+  log type:  text
+ closed on:  17 Nov 2010, 15:54:53
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

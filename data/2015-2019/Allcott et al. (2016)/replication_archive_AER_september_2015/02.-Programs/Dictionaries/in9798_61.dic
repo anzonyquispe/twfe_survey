@@ -1,0 +1,24 @@
+dictionary using 97-98/P979861C.RAW {
+
+_column(1)	nic87		%4.0f	"Industry - NIC-87 Industry Code"
+_column(5)	runslno		%6.0f	"Running Serial No. "
+_column(11)	stcode		%2.0f	"State Code (ST)"
+_column(13)	permid		%5.0f	"Permanent Serial No.
+_column(18)	schcode   	%1.0f  	"Scheme Code"
+
+_column(21)	linkcode	%3.0f	"Link Code"
+
+_column(24)	itemcode1	%5.0f	"Item Code 1"
+_column(29)	qcons1		%12.0f	"Quantity 1"
+_column(41)	vcons1		%12.0f	"Value 1"
+
+_column(53)	itemcode2	%5.0f	"Item Code 2"
+_column(58)	qcons2		%12.0f	"Quantity 2"
+_column(70)	vcons2		%12.0f	"Value 2"
+
+_column(82)	itemcode3	%5.0f	"Item Code 3"
+_column(87)	qcons3		%12.0f	"Quantity 3"
+_column(99)	vcons3		%12.0f	"Value 3"
+
+};
+

@@ -1,0 +1,1128 @@
+/*minwageDP_Sim_Graph.gau
+This reads in results and parameters from disk (.fmt, gauss matrix files, output by minwageDP.gau) and runs
+the simulation and does the graphing.  This is usually included by minwageDP.gau to get results
+immediately, but can be run as standalone (i.e. via SimmerGrapher.gau which just calls sim_graph() ).
+This file does all simulation.
+This file does the "standard" graphs (by definition).  These are just some basic graphs of the C,I,A,S profiles,
+for some arbitrarily fixed PermIncome.  Further graphs (particularly, graphs of dec rules) can be done in 
+comparisonGrapher.
+Note: we computed according to the rules 
+A(t+1)= (1+r) A(t) + Y(t) -C(t) - I(t)
+S(t+1)= (1-d)S(t)+I(t)
+ so c_t is between a_t and a_t+1, etc.  for more precise timing information check the c code comments.
+*/
+
+/* sim_graph():
+Required libraries:  minwage_functions.gau.
+Arguments:
+loadpath is the directory from which the *.fmt output files from the DP will be loaded.
+innovationPath is similar.  if innovationpath != loadpath, then the output from a second
+DP run should be sitting in innovationPath, it will be read in and loaded during the 
+simulation, i.e. as an "information innovation" to the sims.
+simsDir is the directory for output of simulation *.fmt and .log files.
+savepathsgraphs: the Graph output will be to c:\temp\ $+ savepathgraphs because I don't know how to make
+the graph output work with spaces in the path.
+--rndSwitch == 0 then no randomness; otherwise, randomness.
+*/
+
+/*
+consM, investM, amat, smat, bufferM, TSmat, cOHmat, Ymat TSmat are all analagous arrays;
+they are averaged to get the assocaited "profiles"
+CprofileM, IprofileM, AprofileM, SprofileM, PIprofileM, TSprofileM, CCOHProfileM, YprofileM, bufferProfileM, PIidx1M.
+See above for timing info.
+*/
+
+
+proc(0) = sim_graph(loadpath, innovationpath, savepathsims, savetempdirgraphs, rndSwitch, numsims, innovationTime);
+    local tmp, tmp2, tmp3, tmp4, fmt,
+        rndseedVal, Cfloor, timeGetter,  Ineeded,
+        periods, numInitPIstates, PIstatesIndices, simOrd, statesOrd, 
+        atemp, logfilename, bestCM, bestIM, bestCM_total, bestIM_total, Astates, numAstates, numSstates, 
+        PIstates, numPIstates, Cdec, Idec, Sstates, pathTmp, timer,  stemp, gridscale,
+        PImat, PIIdxmat, PIshocks, PIidx, transitionM, t,m, sim, Aprev, Sprev, COH, R, wageHike, y,
+        PIgrowthR, AidxLow, hikeStart, fixedDurableCost, AidxHigh, delta, AwghtHigh,
+        downpaymentR, AfloorFnVersion, IncomeLevelAtHike, SidxLow, PIgrowthChangeTime, SidxHigh, SwghtHigh,
+        SidxTest, Sidx, AidxTest, Aidx, fixedCostTest, Afloor, sfloor, assetAdjustmentNeeded,
+        maxConsAdjustment, maxNonFCinvestAdjustment, rndnum, cumulProb,
+        amat, smat, TSmat, COHmat, Ymat, consM, investM, bufferM,
+        CprofileM, IprofileM, AprofileM, SprofileM, PIprofileM, TSprofileM, COHprofileM, YprofileM, bufferProfileM, PIidx1M,
+        CprofileM_Ipos, IprofileM_Ipos, //? neeeded?
+        subTitle, rootGraphOutDir,
+        govtPays, //0 is false
+        AAdjCounter, tTracker, govtPaysTracker, sfloorTracker,
+        FDC, TSvals, TSprobabilities, numTSvals,
+        positiveInvestCount,totalTimeBetweenInvestments,t_prevInvest, runtime, //vars for calculating 'runtime'
+         positiveInvestCount_Agent, totalTimeBetweenInvests_Agent, runtime_agent, sumAgentAvgs,//vars for calculating 'runtime"
+        isIpos,agevec3, //vars for Ipos graphs
+        cumulProbs, probChooser, // for doing random shocks
+        periodsVec, relativePeriodsVec,numPeriodsBeforeHikeStart,numPeriodsOutput, outMat, timeVec,timeMat,//vars for outputting in a format stata can grasp
+        decOrds, swapTimes, swapToday, newEndTime, decIdxAdj, currPath, newDecLength, //Vars for trying to fix swapping / get sim to runf aster whatever the probe is.
+        incIdx, a_s_pi, scf_ASPI_path, simGenM, initSims, numColsGuess, numRows, 
+        aidx_IS, sidx_IS,incIdx_IS,piIdx_IS, initFeasibilityViolated, tempyAve, tempy, tempyAvev, ttempy, tempy2, tempy2ave, pit, tst,lny, meany, devy, vary, meany2, sortamat, sortamat2, initialPI  ;
+        //vars for loading initial distribution from stata into initial simvalues for the sim
+
+    AAdjCounter=0;
+    tTracker=-1~-1;
+    govtPaysTracker=(-1)~(-1);
+    sfloorTracker= (-1)~(-1);
+
+
+
+
+
+    logfilename = "minwageDP_sim.log";
+    load path = ^loadpath;
+    load bestCM_total=bestCM, bestIM_total=bestIM, Astates, Sstates, PIstates, transitionM, R, wageHike, hikeStart, PIgrowthR, //VM for graphing; A,S,PI, transM for sim, wageHike for getIncome in sim
+         fixedDurableCost, delta, downpaymentR, Cdec, Idec, AfloorFnVersion, PIgrowthChangeTime, //Cdec needed for Cfloor, (Ifloor is 0), needed for feasibility test
+        TSvals, TSprobabilities, incomeLevelAtHike, gridscale, initialPI;
+    //load VM; //occasionally used for graphing; usually done elsewhere; causes memory problems
+
+    
+    ///////////////////end tests on initial values to ensure they comply with rules ////////////////////////////
+    
+    
+    //////////////open output 
+    pathTmp = savepathsims $+ "\\" $+ logfilename;
+    output file = ^pathTmp reset; //diff than minwageDP file.  two different things so have them log separately. log to wherever it was loaded from
+    outwidth 256; //256 is max
+    screen on;
+    "loadpath is " loadPath;
+    "Careful! if loadpath is NOT C:\.....\newResults_tmp  you might be looking at the wrong sim results!";
+    "InnovationTime is " innovationTime;
+    "InnovationPath is " innovationPath;
+    "initialPI is " initialPI;
+    print /flush;
+
+
+///////////////////////// initializations (ie initstates)  //////////////////////////////////////////////////////////////
+  
+    rndseedVal = 561; //i never change this
+    if (rndSwitch == 0);
+        rndseed rndseedVal; 
+        print "rndseed is " rndseedVal;
+    else; //excessive code; just want to reset rndseed so it's not accidentally fixed by a previous run to rndseedVal. i do it by using time
+        timeGetter = time;
+        rndseedVal = (360000*timeGetter[1]+6000*timeGetter[2]+100*timeGetter[3]+timeGetter[4])*((2^32)/36000000); //convert time to # between 0 and 2^32, almost inclusive.
+        rndseed rndseedVal; //rndseedVal is saved
+    endif;
+
+    decOrds = getorders(bestCM_total);// dimensions: numAstates|numSstates|numPIstates|time.  VM has periods, dec rules have periods-1 entries for time.
+    numAstates = decOrds[1]; numSstates = decOrds[2]; numPIstates = decOrds[3]; periods = decOrds[4]+1; 
+    numTSvals = rows(TSvals)*cols(TSvals);
+    
+    Cfloor = Cdec[1];
+    Sfloor = Sstates[1];
+
+    ////////////////////////////////////////end initializations //////////////////////////////////////////////////////////////
+
+    if ( (numAstates /= rows(Astates)) or (numSstates /= rows(Sstates)) or (numPIstates /= rows(PIstates)) ); print /flush "Error in input."; end; endif;
+
+
+
+
+    /*************************************SIM CODE ***********************************/
+
+
+
+    //////////////////////new init distribution code//////////////////////new init distribution code
+    numColsGuess=5; //shouldnt actally be a guess.  changes based on what stata is spitting out at the moment.
+
+    //Initial Distribution of the state variables, from SCF
+    scf_ASPI_path = "C:\\Research\\minwage\\calculatingInitDistForSim\\scf.out";
+
+    
+    loadm a_s_pi[]=^scf_ASPI_path; 
+    numRows = rows(a_s_pi)/numColsGuess;
+    loadm a_s_pi[numRows, numColsGuess]=^scf_ASPI_path;
+    a_s_pi = a_s_pi./gridScale;
+    a_s_pi = a_s_pi[.,1:3]; //drop 2 excess rows for now
+    a_s_pi = (seqa(1,1,numRows)./numRows)~seqa(1,1,numRows)~a_s_pi;
+    aidx=5; sidx=4; incIdx=3;
+    a_s_pi = a_s_pi~income2PI(a_s_pi[.,incIdx], hikeStart, PIstates, PIgrowthR, incomeLevelAtHike, 81, initialPI);
+    piidx=6;
+
+//grab mean and compare to mean or mid of our disribution  ?
+//"mean scf" meanc(a_s_pi[.,incIdx]);
+//"income mid" getIncome(hikeStart, seqa(1,1,numPIstates), PIstates, PIgrowthR, zeros(hikeLength,1),  hikeStart, IncomeLevelAtHike, PIgrowthChangeTime);
+
+
+// Phil's note:
+// I've stared at this section a lot, let's review what the code is actually doing
+// read in 5 rows, drop last 2.  cols are now 1=>wageincome 2=>durables 3=>a
+// add two rows of generated numbers to the front, cols are now 1=>numbers 2=>count 1-rows 3=>wageincome 4=>durables 5=>a
+// apparently this is about when durables start being called "stocks"
+// now we add pi as the next col, cols are now 1=>numbers 2=>count 3=>wageincome 4=>durables 5=>a 6=>pi
+// next we drop the first two cols and tack some final column on it.  cols are now 1=>wageincome 2=>durables 3=>a 4=>pi, 5=>other, 
+// note this differs from the documentation below and I have no idea why
+// now we get afloor, we pass initSims[n,2], that's durables to getAfloor, getAfloor calls its first argument "stocks" so I think we're 
+// still consistent
+  
+    //set initsims
+    simGenM=rndu(numsims,1);
+    initFeasibilityViolated=-1;
+    initSims = zeros(numsims,4);
+    aidx_IS=3; sidx_IS=2; incIdx_IS=1; piIdx_IS=4; // "_IS" is "for initial sims array"
+    for n (1, numsims, 1);
+        tmp = selif(a_s_pi[.,3|4|5|6], simGenM[n].<a_s_pi[.,1]); //3,4,5,6 are: a,s,income, permincomeIdx
+        initSims[n,.] = tmp[1,.];
+
+
+        //check that feasibility is satisfied:
+        afloor = getAfloor(initSims[n,2], downpaymentR, 1, periods, AfloorFnVersion);
+        if (initSims[n,aidx_IS]<afloor); initSims[n,aidx_IS]=afloor; initFeasibilityViolated=initFeasibilityViolated|n; endif;
+        if (initSims[n,sidx_IS]<sfloor); initSims[n,sidx_IS]=sfloor; endif;
+    endfor;
+    //"initsims" seqa(1,1,rows(initsims))~initSims;
+    "initFeasibilityViolated (length: " rows(initFeasibilityViolated) ")";
+    //"the sim indices that had init feasibility violated: " initFeasibilityViolated;
+
+
+    //////////////////////new init distribution code//////////////////////new init distribution code
+
+
+
+    /*comments: periods := dieage-bornage+1. Each year of consumption
+    has two associated years of state vars, before and after.  So
+    periods-1 is the number of years of consumption/choice vars
+    and periods is number years of state vars */
+    timer=zeros(4,2);
+    timer[.,1] = time;
+    /* initialize the simulation matrices here */
+    /*some initializations for the simulation are at the top of the file */
+
+    simOrd = periods|numsims; 
+    amat=arrayinit(simOrd, 0);
+    smat=arrayinit(simOrd, 0);
+    PIidxmat = arrayinit(simOrd,0); //PIidx is a state var. note the laast index is irrelevant of course.
+    
+    if (numsims>1);
+        //setArray amat, 1, (initSims[.,aidx_IS]+initSims[.,incIdx_IS])'; //COH!  2 options exist. is this correct one?  PHIL: This one is wrong, we end up double counting wage income, we add it into period one but never deduct C and I
+        setArray amat, 1, (initSims[.,aidx_IS])'; //COH!  2 options exist. is this correct one?
+        setArray smat, 1, initSims[.,sIdx_IS]';
+        setArray PIidxmat, 1, initSims[.,piIdx_IS]';
+    elseif (numsims==1); //GAUSS is stupid and can't figure out how to use setarray if numdims are nx1x1..x1 or something.
+//        amat[1,1] = (initSims[1,aidx_IS]+initSims[1,incIdx_IS])'; //initSims is just 1x4 vector since numsims is 1, but leave the "1" index for conformity
+        amat[1,1] = (initSims[1,aidx_IS])'; //COH!  2 options exist. is this correct one?
+
+        smat[1,1] = initSims[1,sIdx_IS]';
+        PIidxmat[1,1] = initSims[1,piIdx_IS]';
+    else;
+        print /flush "numsims<1; error, ending."; end;
+    endif;
+
+
+    simOrd = (periods-1)|numsims; 
+    consM=arrayinit(simOrd,0);
+    investM = arrayinit(simOrd,0);
+    TSmat = arrayinit(simOrd,0);
+    COHmat = arrayinit(simOrd,0); // state variable ... although the last value is less useful.  so should fix it sometimme
+    PImat = arrayinit(simOrd,0);
+    Ymat = arrayinit(simOrd,0);
+    tempy2 = arrayinit(simOrd,0); // these are both temporary measures to test values of Eric's version of Y
+    pit = arrayinit(simOrd,0);  //  these are both temporary measures to test values of Eric's version of Y
+    lny = arrayinit(simOrd,0);
+    devy = arrayinit(1|numsims,0);
+    pit=amat;
+
+
+
+
+//Tried setarray'ing here.  setarray doesn't work if dimensions are nx1x1x1...x1.   seems simple enough to me, but gauss can't figure it out.
+
+    /* Simulation uses linear interpolation function of state and choice variables.
+    The function does no extrapolation, capping at the max/min.  This keeps from 
+    having too much downward or upward bias in the simulation while not letting the 
+    variables run off to +/- infinite, but opens up the door to huge errors if you're not careful
+    In doing corrections, the code adjusts C first, then I.  This is because adjusting
+    I also adjusts the Afloor, so it is more complicated.
+    */ 
+    /* simulate here */ 
+
+    if (cols(TSprobabilities) > 1); TSprobabilities=TSprobabilities'; endif; //Need to use cumsumc later.
+
+
+//init code for sorting.  handled by 'sizeDecMatrices' after this code.
+    decIdxAdj = 0;
+    currPath=loadpath;
+    newDecLength = 20;
+    newEndTime=-1;
+    swapTimes = seqa(1, newDecLength, (periods-1)/newDecLength+1);
+    swapTimes=swapTimes|innovationTime;
+    swapTimes = sortc(swapTimes,1);
+    t=1; m=rows(swapTimes)-1;
+    do while (t<=m); //makesure swapTimes doesnt have redundancies
+        if (swapTimes[t] == swapTimes[t+1]);
+            if (t+2<rows(swapTimes)); swapTimes=swapTimes[1:t]|swapTimes[(t+2):rows(swapTimes)]; 
+            elseif (t+2==rows(swapTimes));  swapTimes=swapTimes[1:t]|swapTimes[rows(swapTimes)]; 
+            else; swapTimes=swapTimes[1:t]; 
+            endif;
+            m=m-1;
+            t=t-1; //undo the increment that will happen. 
+        endif;
+        t=t+1;
+    endo;
+
+
+    for t (1, periods-1, 1);
+
+        ////////start swap code/////////
+        if (t==innovationTime);
+            currPath=innovationPath;
+            load path=^innovationPath bestCM_total=bestCM, bestIM_total=bestIM, 
+                    Astates, Sstates, PIstates, transitionM, R, wageHike, hikeStart, IncomeLevelAtHike, PIgrowthR, //loading new wageHike/hikeStart changes income, notice.
+                    fixedDurableCost, delta, downpaymentR, Cdec, Idec, AfloorFnVersion, PIgrowthChangeTime, gridscale;
+            Cfloor = Cdec[1];
+        endif;
+        swapToday = selif(swapTimes, (swapTimes.>=t));
+        if (scalmiss(swapToday)==0); //any swapping left to do
+            if (swapToday[1]==t); //today's the day! [no short-circ eval]
+                decIdxAdj=t-1;
+                if (rows(swapToday)*cols(swapToday)>1); //have a 2nd entry
+                    newEndTime=swapToday[2]-1;
+                else;
+                    newEndTime=periods-1;
+                endif;
+                bestCM = bestCM_total[.,.,.,t:newEndTime];
+                bestIM = bestIM_total[.,.,.,t:newEndTime];
+            endif;
+        endif; 
+        ///////end swap code//////
+
+
+
+            for sim (1, numsims, 1);
+        		Aprev=amat[t, sim];
+                Sprev = smat[t,sim];
+                y=getIncome(t, arraytomat(PIidxmat[t,sim]), PIstates, PIgrowthR, wageHike,  hikeStart, IncomeLevelAtHike, PIgrowthChangeTime, initialPI);
+                PImat[t, sim] = y;  //Record permanent income component of income:
+
+                /* shocks */ //start with at,st, get hit with TS and get income immediately; make decision with A+TS
+                rndnum = rndu(1,1);
+                cumulProbs = cumsumc(TSprobabilities);
+                probChooser = (rndnum .< cumulProbs);
+                tmp = selif(TSvals, probChooser);
+                TSmat[t,sim] = tmp[1];
+                COH = R*Aprev + y*TSmat[t,sim]; //calculate COH, which is maybe infeasible for now...
+                COHmat[t,sim] = COH; //record COH; note COH_t is the COH AFTER A_t & S_t & PI_t.
+                Ymat[t,sim] = y*TSmat[t,sim] + (R-1)*Aprev; //record actual total income
+                tempy2[t,sim] = y*TSmat[t,sim];
+/*
+if (TSmat[t,sim] != tmp[1]);
+    print "cumulprobs" cumuLProbs;
+print "probchooser " probChooser;
+print "tmp = selif(): " tmp;
+    print "error in new code. "; end; 
+endif;
+*/
+/*
+                cumulProb = 0;
+                for TSidx (1,numTSvals,1);
+                    cumulProb = cumulProb + TSprobabilities[TSidx];
+                    if (rndnum <= cumulProb);
+                        TSmat[t,sim] = TSvals[TSidx]; //record keeping
+                        COH = R*Aprev + y*TSvals[TSidx]; //calculate COH, which is maybe infeasible for now...
+                        COHmat[t,sim] = COH; //record COH; note COH_t is the COH AFTER A_t & S_t & PI_t.
+                        Ymat[t,sim] = y*TSvals[TSidx] + (R-1)*Aprev; //record actual total income
+                        break;
+                    endif;
+                endfor;
+*/
+                /* end shocks */ 
+                
+
+// //lowest val is winner.
+
+
+
+
+
+
+                FDC = getFDC(Sprev, fixedDurableCost);
+                
+                {AidxLow, AidxHigh, AwghtHigh} = binaryLocate(Astates, COH); //grids are indexed by COH
+                {SidxLow, SidxHigh, SwghtHigh} = binaryLocate(Sstates, Sprev);
+                //get closest point in grid
+                SidxTest = SwghtHigh>0.5;
+                Sidx = (1-SidxTest)*SidxLow + (SidxTest)*SidxHigh;
+                AidxTest = AwghtHigh>=0.5;
+                Aidx = (1-AidxTest)*AidxLow + (AidxTest)*AidxHigh;
+
+                consM[t,sim] = arraytomat(bestCM[Aidx,Sidx, arraytomat(PIidxmat[t,sim]), t-decIdxAdj]); 
+                investM[t,sim] = arraytomat(bestIM[Aidx,Sidx, arraytomat(PIidxmat[t,sim]),t-decIdxAdj]);
+                fixedCostTest = investM[t,sim] > 0;
+        		amat[t+1,  sim] = (COH - consM[t,  sim] - investM[t,  sim]) - fixedCostTest*FDC; 
+                smat[t+1,  sim] = (1-delta)*Sprev + investM[t,  sim];
+                //if (smat[t+1,  sim] < Sfloor); smat[t+1,  sim] = Sfloor; endif; //let govt pay _after_ do adjustment below.
+        
+                // Check for correctness:
+                // (Because we interpolate asset values, we don't know bounds hold exactly.)
+                // The adjustment procedure now is to drop as much consumption as is needed, then
+                // to drop investment down until the bounds hold or the consumption floor is hit
+                // and 'govt' takes over.
+
+
+//i am defining "consumption floor" to actually be an "expenditure floor", i.e. if you are at (Cfloor, Ifloor) then gov't pays! MAKE SURE C AGREES!
+//in particular, either order for fixing c and then i (or i then c) works, because they _both_ hav to be at floor. 
+                Afloor = getAfloor(arraytomat(smat[t+1,  sim]), downpaymentR, t+1, periods, AfloorFnVersion);
+                assetAdjustmentNeeded = Afloor-arraytomat(amat[t+1,  sim]);
+                govtPays = 0; //This is deprecated. should remove. //0==false; uif you don't enter assetAdjustmentNeeded if-block, govt shouldn't pay.
+
+                if (assetAdjustmentNeeded > 0); //the main bound
+
+                    AAdjCounter = AAdjCounter+1;
+                    tTracker = tTracker|(t~sim);
+
+                    if consM[t,  sim] > Cfloor or investM[t,  sim] > 0; //slight error somewhere, not at floor
+                        //print "Adjusting choices to make them feasible.";
+    
+                        //adjust consumption (and assets)
+                        maxConsAdjustment = arraytomat(consM[t,  sim]) - Cfloor;
+                        if maxConsAdjustment < assetAdjustmentNeeded;
+                            amat[t+1,  sim] = amat[t+1,  sim] + maxConsAdjustment;
+                            consM[t,  sim] = Cfloor; // hit consumption floor
+                            assetAdjustmentNeeded = assetAdjustmentNeeded - maxConsAdjustment;
+                            //don't set govt pays here; wait til investment to see if wwe're at the floor
+                        else;
+                            consM[t,  sim] = maxConsAdjustment - assetAdjustmentNeeded + Cfloor; //consM = consM -assetadjustmentneeded
+                            amat[t+1,  sim] = amat[t+1,  sim] + assetAdjustmentNeeded;
+                            assetAdjustmentNeeded = 0;
+                        endif;
+                        // Afloor hasns't changed
+
+                        //adjust investment (and assets and stock). If investment hits Ifloor, then we're at expenditure floor.
+                        //Note that adjusting I also adjusts Afloor!  see sheet of paper for simple algebra leading to "Ineeded" formula
+                        if (assetAdjustmentNeeded > 0);
+                            maxNonFCinvestAdjustment = arraytomat(investM[t,  sim]) - 0; //"maxNonFCinvestAdjustment" means Non Fixed Cost investment Adjustment possible
+                            if maxNonFCinvestAdjustment > 0; // then b/c Ifloor>=0, investM>0. So there is an adjustment possible and fixedDurCost applies 
+                                //Ineeded = ( Afloor - amat[t+1,  sim] - downpaymentR*investM[t,sim] ) / -downpaymentR; //Ineeded is the investment such that A[t+1]==Afloor[t+1] given todays stock, and the C fixed above (ie C==Cfloor)
+
+                                Ineeded = ( Afloor - arraytomat(amat[t+1,  sim]) - downpaymentR*arraytomat(investM[t,sim])) / -downpaymentR; //Ineeded is the investment such that A[t+1]==Afloor[t+1] given todays stock, and the C fixed above (ie C==Cfloor)
+                                if (Ineeded > 0); //If this condition is met, we can make changes to investment/assets/stock but still make sim pay the fixedDurCost
+                                    smat[t+1,  sim] = smat[t+1,  sim] - (investM[t,sim] - Ineeded);
+                                    amat[t+1,  sim] = amat[t+1,  sim] + (investM[t,sim] - Ineeded); // still pay fixedDurableCost
+                                    investM[t,  sim] = Ineeded; // > 0 so no fixedDurCost
+                                    assetAdjustmentNeeded = 0; //govt doesnt pay        
+                                else; //This is the Ifloor case; have to take costs as low as they can (and  will probably still be infeasible), including attempting to remove fixedDurcost.
+                                    smat[t+1,  sim] = smat[t+1,  sim] - maxNonFCinvestAdjustment; // smat[t,  sim+1] > investM[t,  sim] always.
+                                    amat[t+1,  sim] = amat[t+1,sim] + maxNonFCinvestAdjustment + FDC; //govt pays fixedDurCost
+                                    investM[t,  sim] = 0;
+                                    govtPays = 1;//assetadjustmentneeded >0 still 
+                                endif;
+                            else; //maxNonFCinvestAdj==0 and assetAdj>0; so you're in debt and can't pay it ==> govt pays it.
+                                govtPays = 1;
+                            endif;
+                        endif; //end 2nd assetAdjustment>0 test (for I); note if assetAdj==0, govt _doesnt_ pay anything, you can afford it, so go on your merry way.
+
+                    else; //started off at the floor _and_ needing adjustment, so govt pays
+                        govtPays = 1;
+                        maxNonFCinvestAdjustment = arraytomat(investM[t,  sim]) - 0; //need to set this variable everywhere govtPays==1, its used in "if govtPays==1" block
+                    endif;
+                endif; //end assetAdj>0; if assetAdjNeeded==0, do nothing needed to be done.
+
+                if (govtPays==1); //should have consM == cfloor and investM == 0
+                // I hope govtPays test is same as the following two-line test:
+                //Afloor = getAfloor(smat[t+1,  sim], downpaymentR, t+1, periods, AfloorFnVersion);
+                //if (amat[t+1,sim]<Afloor) and (investM[t,  sim]==Ifloor) and (consM[t,  sim]==Cfloor);
+                    
+                    
+                    /* //we no longer add on the exp floor; we just adjust you to get you up to Afloor.
+                    amat[t+1,sim] = amat[t+1,sim] + consM[t, sim] + investM[t,  sim];
+                    if ((Ifloor > 0) or (maxNonFCinvestAdjustment > 0)); //These are the two ways you could have paid the FixedCost previously, for which govt now reimburses you
+                        amat[t+1,sim] = amat[t+1,sim] + FDC; //can't use fixedCostTest because we've possibly changed investment since then
+                    endif;
+                    */
+
+                    //This is redundant, shouldn't govtPays shouldnt be 1 if amat >= Afloor.
+                    if (amat[t+1,sim] < getAfloor(smat[t+1,  sim], downpaymentR, t+1, periods, AfloorFnVersion));
+                        amat[t+1,sim] = getAfloor(smat[t+1,  sim], downpaymentR, t+1, periods, AfloorFnVersion);
+                        govtPaysTracker = govtPaysTracker|(t~sim);
+                    endif;
+                endif;
+                //Now the decision-making process is over
+                //So get hit with Tshocks and then govt looks at you and decides whether to pay or not.
+        
+
+
+
+    
+                /* shocks */      /* Let PI shocks hit at end of period, for next time */
+                rndnum = rndu(1,1); // not sure if it is more time efficient to generate a buncha random #s at once, but it's not space efficient
+                cumulProbs = cumsumc(transitionM[arraytomat(PIidxmat[t,sim]) ,.]');
+                probChooser = (rndnum .< cumulProbs);
+                tmp = selif(seqa(1,1,numPIstates), probChooser);
+                PIidxmat[t+1,sim] = tmp[1];
+/*
+if (PIidx[sim,] != tmp[1]);
+print "rndnum " rndnum;
+    print "cumulprobs" cumuLProbs;
+print "probchooser " probChooser;
+print "tmp = selif(): " tmp;
+    print "error in new code. "; end; 
+endif;
+*/
+/*
+tmp2 = PIidx[sim];
+                cumulProb = 0;
+                for PIidx2 (1,numPIstates,1);
+                    cumulProb = cumulProb + transitionM[PIidx[sim], PIidx2];
+                    if (rndnum <= cumulProb);
+                        PIidxmat[t,sim] = PIidx2;
+                        break;
+                    endif;
+                endfor;
+*/
+
+
+
+
+
+
+
+                /* end shocks */
+                
+                //Govt pays for "sfloor" (as well as "ifloor")
+                if (smat[t+1,  sim] < Sstates[1]); smat[t+1,  sim] = Sstates[1]; sfloorTracker = sfloorTracker|(t~sim); endif;
+
+            endfor; /* end loop through sims */
+    endfor; /* end loop through time */
+    
+    print "AAdjCounter is " AAdjCounter; 
+    //print "tTracker is " tTracker; // it's too long to always print 
+    print "govtPaysTracker (length: " rows(govtPaysTracker)-1 ") is ";
+    print govtPaysTracker; //should probably be zero always.
+    print "sfloorTracker (length: " rows(sfloorTracker)-1 ") is ";
+    print sfloorTracker;
+
+       
+    //calculate "runtime" ie avg time between positive investment; limit it to periods 10 to periods-30.
+    //calculate it in two diff ways; a)count # of invests; b) average the average of each sim
+    positiveInvestCount = 0;
+    totalTimeBetweenInvestments = 0;
+    sumAgentAvgs  = 0;
+    for sim (1, numsims,1);
+            t_prevInvest= 0;
+            positiveInvestCount_Agent = 0;
+            totalTimeBetweenInvests_Agent = 0;
+            for t (10, periods-30, 1); //dont want beginning and end of time fuzziness to mess up numbers
+                if (investM[t, sim] > 0); //IS THIS CORRECT? IS RUNTIMME FOR   I>0  OR FOR I!=0
+                    if (t_prevInvest > 0); 
+                        positiveInvestCount_Agent = positiveInvestCount_Agent + 1;
+                        positiveInvestCount = positiveInvestCount + 1;
+                        totalTimeBetweenInvestments = totalTimeBetweenInvestments + (t-t_prevInvest);
+                        totalTimeBetweenInvests_Agent = totalTimeBetweenInvests_Agent + (t-t_prevInvest);
+                    endif;
+                    t_prevInvest=t;
+                endif;
+            endfor;//endtime
+            if (totalTimeBetweenInvests_Agent != 0); sumAgentAvgs = sumAgentAvgs + (totalTimeBetweenInvests_Agent/positiveInvestCount_Agent); endif;
+    endfor;//end sim (so end agent) loop
+
+
+
+    timer[.,2] = time;
+    "Simulation took " timer[.,2]-timer[.,1];
+    print "end time " timer[.,2];
+
+
+    /*****************************************END SIM CODE *********************************/
+    
+    
+
+
+/*****************************************START GRAPH/LOGGING CODE *********************************/
+
+    //calculate buffer (do it here, not in diff func , cus you have to have downpaymentR and afloorfnversion to do this)
+    if (AfloorFnVersion != 1);
+        bufferM = amat - getAfloor(smat, downpaymentR, seqa(1,1,periods), periods, AfloorFnVersion);
+    else;
+        bufferM = arrayinit(getorders(amat),0);
+    endif;
+
+    if (positiveInvestCount != 0); //an odd thing ..
+        runtime = totalTimeBetweenInvestments/positiveInvestCount;// runtime is term for "avg time between positive investments"
+        runtime_agent = sumAgentAvgs/(numsims);
+    else;
+        runtime = -1;
+        runtime_agent = -1;
+    endif;
+
+
+
+    //Note on 'amean' usage: for 2nd argument, the scalar, 1 refers to the FASTEST moving index, ie x is 3x4x5 amean(x,1) takes mean across dim with _5 entries_!
+    //all consM, investM, etc are t|sim here.
+    CprofileM = amean(consM,   1);  //consM=0;
+    IprofileM = amean(investM, 1); //investM=0;
+    bufferProfileM = amean(bufferM,   1);  //bufferM=0;
+    AprofileM = amean(amat,    1);  //amat=0;
+    SprofileM = amean(smat,    1);  //smat=0;
+    PIprofileM = amean(PImat, 1); //PImat=0;    //perm income component; non-logged
+    TSprofileM = amean(TSmat,1); //TSmat=0;     // transitory shock component; multiplicative non-logged units
+    COHprofileM = amean(COHmat,1); //COHmat=0;
+    YprofileM = amean(Ymat,1); //Ymat=0;        //total income
+
+
+
+    "amat";
+    print amat[2,.];
+    print /flush;
+
+    print AprofileM;
+
+    print /flush;
+
+    //change types from arrays to matrices for easier handling
+    //CprofileM = atranspose(CprofileM, 2|1);
+    CprofileM = arraytomat(CprofileM);
+    //IprofileM = atranspose(IprofileM, 2|1); // sim|time ; recall sim has been averaged, so sim==1 is only idx
+    IprofileM = arraytomat(IprofileM);
+    //bufferProfileM = atranspose(bufferProfileM, 2|1); // sim|time ; recall sim has been averaged, so sim==1 is only idx
+    bufferProfileM = arraytomat(bufferProfileM);
+    //AprofileM = atranspose(AprofileM, 2|1);
+    AprofileM = arraytomat(AprofileM);
+    //SprofileM = atranspose(SprofileM, 2|1);
+    SprofileM = arraytomat(SprofileM);
+    //PIprofileM = atranspose(PIprofileM, 2|1);
+    PIprofileM = arraytomat(PIprofileM);
+    //TSprofileM = atranspose(TSprofileM,2|1);
+    TSprofileM = arraytomat(TSprofileM);
+    //COHprofileM = atranspose(COHprofileM,2|1);
+    COHprofileM = arraytomat(COHprofileM);
+    //YprofileM = atranspose(YprofileM,2|1);
+    YprofileM = arraytomat(YprofileM);
+    //PIIdxmat = atranspose(PIIdxmat, 2|1); // now its   sim|time; saved as time|sim
+    PIidx1M = arraytomat(PIidxmat[.,1]); //time|sim ; //grab first sim
+    
+    //Warning messages.
+    print /flush "Loadpath is " loadpath; " and if this isn't the same as where minwageDP is 
+     outputting, then minwageDP will create matrices fine but won't get correct sim output.";
+    
+    // could save 'consM, investM, ..." earlier.  
+    save path=^savepathsims CprofileM, IprofileM, AprofileM, SprofileM, PIprofileM, TSprofileM, COHprofileM, YprofileM, bufferM,   //PIprofileM is regenerated every time you run this file.. so save for other files.
+                 numsims, innovationTime, rndswitch, rndseedVal, gridScale, //gridscale is saved in DP and in sim dirs.
+                consM, investM, amat, smat, PImat, TSmat, COHmat, Ymat, PIIdxmat, bufferM, tempy2, R;//now saving whole matrices; eric mentionnoed wanting to do regressions; and this allows for perfect comparisons;
+         
+    
+
+
+
+
+
+    //I skip graph code if the values are weird; this keeps it from freezing a run [if GAUSS runs into +/-Infinite values, it doesn't error, it just hangs indefinitely]
+    if  (not (AprofileM > -100000)) or (not (AprofileM < 100000)) or
+        (not (SprofileM > -100000)) or (not (SprofileM < 100000)) or
+        (not (PIprofileM > -100000)) or (not (PIprofileM < 100000)) or
+        (not (CprofileM > -100000)) or (not (CprofileM < 100000)) or
+        (not (IprofileM > -100000)) or (not (IprofileM < 100000));
+        retp;
+    endif;
+
+
+    
+    fmt = "%*.*lf";
+    tmp2=ftos(numsims, fmt, 1,0);
+    subTitle = "numsims==" $+ tmp2;
+    //rootGraphOutDir = "C:\\Temp\\" $+ savetempdirgraphs $+ "\\";
+    rootGraphOutDir = innovationpath $+ savetempdirgraphs $+ "\\";
+
+
+    "numsims is " numsims;
+    "runtime (avg time between POSITIVE investments) is " runtime;
+    "runtime (second method of calculation, ie with n==numagents) is " runtime_agent;
+    "NOTE!: runtimme is currently calculated for I>0, so NOT I<0 ! ! ! ";
+    "Govt paid " rows(govtPaysTracker)-1 " times."; //-1 bc govtPays is initialized to have 1 row.
+    //Note: we computed according to the rules "A(t+1)= (1+r) A(t) + Y(t) -C(t) - I(t)   and   S(t+1)= (1-d)S(t)+I(t)" so c_t is between a_t and a_t+1.
+    outputProfiles(AprofileM, COHprofileM, SprofileM, CprofileM, IprofileM, PIprofileM, TSprofileM, YprofileM, PIidx1M, bufferProfileM);
+    setDefaultGraphSettings();
+    graphProfiles(subTitle, rootGraphOutDir, gridscale, YprofileM, PIprofileM, TSprofileM, CprofileM, IprofileM, AprofileM, COHprofileM, SprofileM, bufferProfileM, PIidx1M);
+    
+
+    //Save consumption data around wagehike for quantile regressions
+    //What should be done for diff initialPIstates? 
+    if (wageHike[1]>0);     logfilename = "quantRegData_Hike.txt"; 
+    else;                   logfilename = "quantRegData_NoHike.txt";
+    endif;
+    pathTmp = savepathsims $+ "\\" $+ logfilename;
+    output file= ^pathTmp reset;
+    format /ldt  0,10;
+    screen off;
+    consM = arraytomat(consM);
+    investM = arraytomat(investM);
+    numPeriodsOutput=7;
+    numPeriodsBeforeHikeStart=-3;
+    relativePeriodsVec = seqa(numPeriodsBeforeHikeStart,1,numPeriodsOutput)';
+    timeMat = ones(cols(consM),1)*relativePeriodsVec;
+    periodsVec = hikeStart + seqa(numPeriodsBeforeHikeStart,1,numPeriodsOutput);
+    print /flush periodsVec[1];
+    outMat=timeMat[.,1]~consM[periodsVec[1],.]'~investM[periodsVec[1],.]';
+    for i (2, numPeriodsOutput,1);
+        outMat = outMat|(timeMat[.,i]~consM[periodsVec[i],.]'~investM[periodsVec[i],.]');
+    endfor;
+    print outMat;
+
+
+    output off; //end logging of output.
+    screen on;
+
+    retp;
+endp; //end sim_graph()
+
+
+
+
+
+
+
+
+
+
+/*graphProfiles does all the standard profile graphs that might be useful.  Takes a _single_ profile
+[so, profile for only one piidx, for instance; this means each *profileM is a vector (1xN matrix).]
+Note that a "profile" for one sim is the same as its history, so this is used by reviewSimHistory()
+to see what a specific sim looks like.
+*/
+proc(0) = graphProfiles(subTitle, rootGraphOutDir, gridScale, YprofileM, PIprofileM, TSprofileM, CprofileM, IprofileM, AprofileM, COHprofileM, SprofileM, bufferProfileM, PIidxM);
+    local d, agevec, agevec2, rootdir,
+    periods,
+    tmp, tmp2,tmp3,tmp4, //vars for setting strings repeatedly
+    graphOutfile, 
+    ratioM;
+
+    //inits
+    periods = rows(AprofileM)*cols(AprofileM);
+    YprofileM=YprofileM*gridscale;
+    PIprofileM=PIprofileM*gridscale;
+    CprofileM=CprofileM*gridScale;
+    Iprofilem=IprofileM*gridScale;
+    AprofileM=AprofileM*gridScale;
+    COHprofileM=COHprofileM*gridScale;
+    Sprofilem=SprofileM*gridscale;
+    bufferProfileM=bufferProfilem*gridscale;
+    //TSprofileM piidx1m dont get multiplied
+    
+
+    library pgraph; //probably redundant ... maybe could cause problems. donno.
+    
+    
+    //d=ChangeDir "C:\\Documents and Settings\\g1crd01\\My Documents\\minwage\\results\\newResults_tmp\\";
+    d=ChangeDir "C:\\Documents and Settings\\g1psd00\\My Documents\\minwage\\results\\newResults_tmp_1\\";
+    "New Current Dir: " d;
+    agevec  = seqa(1,1,periods); //for graphing
+    agevec2 = seqa(1, 1, periods-1); //for dec rules
+    //format /ro 7,4;
+    //don't know how to use spaces with graphprt ...
+    rootdir = "-c=1 -po=L -cf=" $+ rootGraphOutDir; //options for graphprt. //landscape has no effect.
+    xlabel("Time"); //same for all.
+
+    
+  // (PIidx == " $+  tmp1 $+ ")
+    title("PIidx\L" $+ subTitle);
+    ylabel("PI index");
+    graphprt(rootdir $+ "PIidx.eps");
+    xy(agevec, PIidxM); // "1" is the only sim. // sim|time for piidxmat
+    pause(1.5); //problem: graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this pause is in jbj's code. fixes problem.
+
+
+
+     // (PIidx == " $+  tmp1 $+ ")
+    title("Yprofile\L" $+ subTitle);
+    ylabel("Total Income (=PI*TS");
+    graphprt(rootdir $+ "Yprofile.eps");
+    xy(agevec2, YprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+
+    // (PIidx == " $+  tmp1 $+ ")
+    title("PIprofile\L" $+ subTitle);
+    ylabel("PIshocks");
+    graphprt(rootdir $+ "PIprofile.eps");
+    xy(agevec2, PIprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code, fixes prob
+
+     // (PIidx == " $+  tmp1 $+ ")
+    //theTitle =  "  (numsims==" $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("TSprofile\L" $+ subTitle);
+    ylabel("TSshocks");
+    graphOutfile = rootdir $+ "TSprofile.eps";
+    graphprt(graphOutfile);
+    xy(agevec2, TSprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code, fixes prob
+
+    // (PIidx == " $+  tmp1 $+ ")    
+    //theTitle = "Cprofile (numsims==" $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("Cprofile\L" $+ subTitle);
+    ylabel("Consumption");
+    graphOutfile = rootdir $+ "Cprofile.eps";
+    graphprt(graphOutfile);
+    xy(agevec2, CprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+    
+    // (PIidx == " $+  tmp1 $+ ")
+    //theTitle = "Iprofile (numsims == " $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("Iprofile\L" $+ subTitle);
+    ylabel("Investment in Durables"); 
+    //scale(agevec2,IprofileM[.,fixedpiidx]); //xtics above
+    graphOutfile = rootdir $+ "Iprofile.eps";
+    graphprt(graphOutfile);
+    xy(agevec2, IprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+    
+    // (PIidx == " $+  tmp1 $+ ")
+    //theTitle = "Aprofile (numsims == " $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("Aprofile\L" $+ subTitle);
+    ylabel("Assets");
+    graphOutfile = rootdir $+ "Aprofile.eps";
+    graphprt(graphOutfile);
+    xy(agevec, AprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+    
+    // (PIidx == " $+  tmp1 $+ ")
+    //theTitle = "COHprofile (numsims == " $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("COHprofile\L" $+ subTitle);
+    ylabel("Cash-on-Hand (R*A+Y_total");
+    graphOutfile = rootdir $+ "COHprofile.eps";
+    graphprt(graphOutfile);
+    xy(agevec2, COHprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+
+
+    // (PIidx == " $+  tmp1 $+ ")
+    //theTitle = "Sprofile (numsims == " $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("Sprofile\L" $+ subTitle);
+    ylabel("Stock (i.e. Durables)");
+    graphOutfile = rootdir $+ "Sprofile.eps";
+    graphprt(graphOutfile);
+    xy(agevec, SprofileM);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+    
+   
+    //tmp graph
+    //(PIidx == " $+  tmp1 $+ ") 
+    //theTitle = "S/C (numsims == " $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("S/C\L" $+ subTitle);
+    ylabel("S/C");
+    ratioM = SprofileM./(1|CprofileM);  //Cprof is one shorter than Sprof so tack on an arbitrary 1.
+    if not (CprofileM != 0);
+        //ratioM = ones(rows(CprofileM[.,fixedpiidx])*cols(CprofileM[.,fixedpiidx]), 1);
+        ratioM = ones(rows(agevec),1);
+    endif;
+    graphOutfile = rootdir $+ "ratioSoverC.eps";
+    graphprt(graphOutFile);
+    xy(agevec, ratioM);
+    pause(1.5);
+
+    //tmp graph
+    //(PIidx==" $+  tmp1 $+ ") 
+    //theTitle = "Buffer (numsims==" $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title("Buffer\L" $+ subTitle);
+    ylabel("Buffer profile");
+    graphOutfile = rootdir $+ "bufferProfile.eps";
+    graphprt(graphOutFile);
+    xy(agevec, bufferProfileM);
+    pause(1.5);
+
+
+
+    retp;
+endp; //end graphProfiles()
+
+
+/* outputProfiles prints/logs all the standard profiles (data for the graphs). analagous to the graphProfiles fnc.
+Note that a "profile" for one sim is the same as its history, so this is used by reviewSimHistory()
+to see what a specific sim looks like.
+*/
+proc(0) = outputProfiles(AprofileM, COHprofileM, SprofileM, CprofileM, IprofileM, PIprofileM, TSprofileM, YprofileM, PIidx1M, bufferProfileM);
+    local Astate, COHstate, Sstate, PIavg, TSavg, detInc, inc_lastsim, consum, y, bufferState,
+        invest,
+        periods; // params to store grid sizes
+
+
+    periods = rows(AprofileM)*cols(AprofileM);
+    "Periods is " periods;
+    "Income in row i would be added to assets in row i-1, before consumption in row i.";
+    "assets/stock are _after_ consumption/investment in same row. ";
+    print "Printing the profiles: [note PIidx is printed for sim#1 only; most useful for individual histories]";
+    Astate = AprofileM[1];
+    Sstate = SprofileM[1];
+    bufferState = bufferProfileM[1];
+    print "time ~ Assets ~ Stocks ~ Buffer";
+    print 0~Astate~Sstate~bufferState;
+    print "time ~ PIIdx ~ PI ~ TS ~ Y ~ Consumption ~ Investment ~ Assets~ COH ~ Stocks ~ Buffer";
+    for t (1, periods-1, 1);          
+        PIavg = PIprofileM[t]; 
+        TSavg = TSprofileM[t];
+        //y = getIncome(t,  Sstate, permIncome, PIstates, PIgrowthR, wageHike, hikeStart, PIgrowthChangeTime); //use LAST peroid's a,s.
+        y = YprofileM[t];
+        consum = CprofileM[t];
+        invest = IprofileM[t];
+        Astate = AprofileM[t+1];
+        COHstate = COHprofileM[t]; //even tho its state ... it only has dec# as size of time-dimension
+        Sstate = SprofileM[t+1];
+        bufferState = bufferProfileM[t+1];
+        print t~PIidx1M[t]~PIavg~TSavg~y~consum~invest~Astate~COHstate~Sstate~bufferState;
+    endfor;
+    print /flush;
+
+
+
+    retp;
+endp;
+
+/*reviewSimHistory: presumes the existence of a simulation with full sim data for each sim-agent (not just profiles)
+in the matrix format in which its generated by sim_graph().  This fn opens up those matrices (names are hardcoded)
+at the path-address specified by "simpath" and does the graphs and printout for the sim specified by "agentidx" which
+should hold enough information to specify precisely which agent you want [note, time is first index for consM, etc.
+so time|agentidx should index consM, etc.
+*/
+//Of note: apparently if you save a 2dimensional array, it gets saved as a MATRIX.  who knew gauss was that annoying.
+proc(0) = reviewSimHistory(simpath, agentidx);
+    local fmt, tmp2, tmp3, tmp4, 
+        subTitle, rootGraphOutDir, //args to be passed to graphProfiles
+        periods, // vars computed from passed in vals
+        numsims, innovationTime, rndswitch, rndseedVal, gridScale,//params to be loaded in
+        consM, investM, bufferM, amat, smat, PImat, TSmat, COHmat, Ymat, PIIdxmat, //more params to be loaded in
+        CprofileM, IprofileM, AprofileM, SprofileM, PIprofileM, TSprofileM, COHprofileM, YprofileM, bufferProfileM, PIidx1M;
+
+    load path=^simpath numsims, innovationTime, rndswitch, rndseedVal, gridscale,
+                       consM, investM, amat, smat, PImat, TSmat, COHmat, Ymat, PIIdxmat, bufferM; //excepting piidxmat, all are indexed by t|sim
+/* CprofileM, IprofileM, AprofileM, SprofileM, PIprofileM, TSprofileM, COHprofileM, YprofileM; */   //PIprofileM is regenerated every time you run this file.. so save for other files.
+
+    tmp2 = rows(amat);
+    periods = tmp2; //time|sim
+"periods is " periods;
+
+    //Grab the asked-for sim's history
+    
+    CprofileM = consM[.,agentidx];
+    IprofileM = investM[.,agentidx];
+    SprofileM = smat[.,agentidx];
+    AprofileM = amat[.,agentidx];
+    PIprofileM = PImat[.,agentidx];
+    TSprofileM = TSmat[.,agentidx];
+    COHprofileM = COHmat[.,agentidx];
+    YprofileM = Ymat[.,agentidx];
+    PIidx1M = PIidxmat[.,agentidx];
+    bufferProfileM = bufferM[.,agentidx];
+
+/*
+    //change types from arrays to matrices for easier handling; need to transpose to use arraytomat.
+    //CprofileM = atranspose(CprofileM, 3|2|1);// sim|pi|time ; recall sim has been averaged, so sim==1 is only idx
+    CprofileM = arraytomat(CprofileM);
+    //IprofileM = atranspose(IprofileM, 3|2|1); // sim|pi|time ; recall sim has been averaged, so sim==1 is only idx
+    IprofileM = arraytomat(IprofileM);
+    //bufferProfileM = atranspose(bufferProfileM, 3|2|1); // sim|pi|time ; recall sim has been averaged, so sim==1 is only idx
+    bufferProfileM = arraytomat(bufferProfileM);
+    //AprofileM = atranspose(AprofileM, 3|2|1);
+    AprofileM = arraytomat(AprofileM);
+    //SprofileM = atranspose(SprofileM, 3|2|1);
+    SprofileM = arraytomat(SprofileM);
+    //PIprofileM = atranspose(PIprofileM, 3|2|1);
+    PIprofileM = arraytomat(PIprofileM);
+    //TSprofileM = atranspose(TSprofileM,3|2|1);
+    TSprofileM = arraytomat(TSprofileM);
+    //COHprofileM = atranspose(COHprofileM,3|2|1);
+    COHprofileM = arraytomat(COHprofileM);
+    //YprofileM = atranspose(YprofileM,3|2|1);
+    YprofileM = arraytomat(YprofileM);
+    //PIidx1M = atranspose(PIidx1M, 3|2|1); // now its   sim|pi|time; saved as timme|pi|sim
+    PIidx1M = arraytomat(PIidx1M);
+*/
+
+
+    fmt = "%*.*lf";
+    tmp2=ftos(agentidx, fmt, 1,0);
+    subTitle = "(sim# " $+ tmp2 $+ ")";
+
+    outputProfiles(AprofileM, COHprofileM, SprofileM, CprofileM, IprofileM, PIprofileM, TSprofileM, YprofileM, PIidx1M, bufferProfileM);
+    setDefaultGraphSettings();
+    graphProfiles(subTitle, "C:\\Temp\\graphsTmp\\simHistories\\", gridscale, YprofileM, PIprofileM, TSprofileM, CprofileM, IprofileM, AprofileM, COHprofileM, SprofileM, bufferProfileM, PIidx1M);//Does most of the work.
+
+/* dont want these right now, too slow.
+
+    // New decisioin graphs for calibrating Guesses.  drops points where I == 0.
+    _plctrl = 1; //Need to show symbols for points, since it is important to see for which time there are values and for which ones they are missing.    
+
+    isIpos = (IprofileM[.,fixedpiidx] .> 0);
+    IprofileM_Ipos = selif(IprofileM[.,fixedpiidx], isIpos);
+    agevec3 = selif(agevec2, isIpos);
+    CprofileM_Ipos = selif(CprofileM[.,fixedpiidx], isIpos);
+
+    // (PIidx == " $+  tmp1 $+ ")    
+    theTitle = "Cprofile_Ipos (numsims==" $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title(theTitle);
+    ylabel("Consumption at T in which I>0");
+    graphOutfile = rootdir $+ "Cprofile_Ipos_PI.eps";
+    graphprt(graphOutfile);
+    xy(agevec3, CprofileM_Ipos);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+    
+    // (PIidx == " $+  tmp1 $+ ")
+    theTitle = "Iprofile_Ipos (numsims == " $+ tmp2 $+ ") (initA,initS==" $+ tmp3 $+ "," $+ tmp4 $+ ")";
+    title(theTitle);
+    ylabel("Investment in Durables when it is Positive"); 
+    //scale(agevec2,IprofileM[.,fixedpiidx]); //xtics above
+    graphOutfile = rootdir $+ "Iprofile_Ipos_PI.eps";
+    graphprt(graphOutfile);
+    xy(agevec3, IprofileM_Ipos);
+    pause(1.5); //graphs randomly don't appear after code is run and everything otherwise goes seemingly fine.  this is in jbj's code.
+
+*/
+
+    retp;
+endp; //end reviewSimhistory
+
+
+
+
+
+
+/* reviewCrossSection: presumes the existence of a simulation with full sim data for each sim-agent (not just profiles)
+in the matrix format in which its generated by sim_graph().  This fn opens up those matrices (names are hardcoded)
+at the path-address specified by "simpath" and does the graphs and printout for the sim specified by "agentidx" which
+should hold enough information to specify precisely which agent you want [note, time is first index for consM, etc.
+so time|agentidx should index consM, etc.
+This is sort of the orthogonal to 'reviewSimHistory."  The latter grabs a longitudinal slice; this grabs a cross-sectional slice.
+*/
+//Of note: apparently if you save a 2dimensional array, it gets saved as a MATRIX.  who knew gauss was that annoying.
+proc(0) = reviewCrossSection(simpath, GAUSStimeIdx);
+    local b,m,freq, //grab vals from histp
+        subTitle, rootdir, rootGraphOutDir, //args to be passed to graphProfiles
+        periods, numbins,// vars computed from passed in vals
+        numsims, innovationTime, rndswitch, rndseedVal, gridScale,//params to be loaded in
+        consM, investM, bufferM, amat, smat, PImat, TSmat, COHmat, Ymat, PIIdxmat, //more params to be loaded in
+        CcsM, IcsM, AcsM, ScsM, PIcsM, TScsM, COHcsM, YcsM, buffercsM, PIidxCsM, //"CS" stands for "Cross-section"
+incVar, incMean; // extra vars for various calculations on crossection
+
+    load path=^simpath numsims, innovationTime, rndswitch, rndseedVal, gridscale,
+                       consM, investM, amat, smat, PImat, TSmat, COHmat, Ymat, PIIdxmat, bufferM; //excepting piidxmat, all are indexed by t|sim
+/* CprofileM, IprofileM, AprofileM, SprofileM, PIprofileM, TSprofileM, COHprofileM, YprofileM; */   //PIprofileM is regenerated every time you run this file.. so save for other files.
+
+    periods = rows(amat); //time|sim
+    rootGraphOutDir = "C:\\Temp\\graphsTmp\\crossSections\\";
+    numbins = 200; //numbins = minc(numsims|5000); //still playing with appropriate # of bins
+
+
+    //Grab the asked-for sim's history
+    //Don't think sorting is necessary ... oh well.
+    CcsM = sortc(consM[GAUSStimeIdx,.]', 1);
+    IcsM = sortc(investM[GAUSStimeIdx,.]', 1);
+    ScsM = sortc(smat[GAUSStimeIdx,.]', 1);
+    AcsM = sortc(amat[GAUSStimeIdx,.]', 1);
+    PIcsM = sortc(PImat[GAUSStimeIdx,.]', 1);
+    TScsM = sortc(TSmat[GAUSStimeIdx,.]', 1);
+    COHcsM = sortc(COHmat[GAUSStimeIdx,.]', 1);
+    YcsM = sortc(Ymat[GAUSStimeIdx,.]', 1);
+    PIidxCsM = sortc(PIidxmat[GAUSStimeIdx,.]', 1);
+    buffercsM = sortc(bufferM[GAUSStimeIdx,.]', 1);
+
+
+
+    library pgraph; //probably redundant ... maybe could cause problems. donno.
+    setDefaultGraphSettings(); //not sure if this is necessary
+    //Some notes on params: for the 2nd param, number of bins, numsims is as big as you can need, but you might want to modify it to have larger bins.
+/*
+    {b,m,freq} = doHistGraph(CcsM, numbins, "Consumption", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(IcsM, numbins, "Investment", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(ScsM, numbins, "Stock", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(AcsM, numbins, "Assets", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(PIcsM, numbins, "PI", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(TScsM, numbins, "Trans.Shock", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(COHcsM, numbins, "COH", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(YcsM, numbins, "Income", GAUSStimeIdx, rootGraphOutDir);
+    {b,m,freq} = doHistGraph(PIidxCsM, numbins, "PIidx", GAUSStimeIdx, rootGraphOutDir);
+*/
+    {b,m,freq} = doHistGraph(bufferCsM, numbins, "Buffer", GAUSStimeIdx, rootGraphOutDir);
+
+
+    /////////////calculations on the crosssection:////////////////////////////
+    /*
+    YcsM=ln(YcsM);
+    YcsM;
+    incMean = meanc(YcsM');
+    incVar = YcsM'-incMean;
+    incVar= (incVar'*incVar)./cols(YcsM); // rows==numsims
+    //incVar= (incVar'*incVar)./numsims;
+    print "mean: " incMean;
+    print "variance " incVar;
+    print "standarddev " incVar^(.5);
+    */
+    
+    //print /flush "buffercsM " buffercsM;
+    print /flush "mean buffercsM " meanc(buffercsM);
+    print /flush "median buffercsM " median(buffercsM);
+    //print /flush " b,m,freq" b~m~freq;
+
+    retp;
+endp; //end reviewcROSSSectionHistory
+
+
+//Sets titles etc and does the histogram on "data."
+//returns the returnvals from histp (b,m,freq).
+proc(3)=doHistGraph(data,maxNumBins, varName, GAUSStimeIdx, graphOutDir);
+    local timeIdxString, fmt, d,
+        b,m,freq; //returnvals
+
+    d=ChangeDir "C:\\Research\\minwage\\";
+    "New Current Dir: " d;
+    
+
+    fmt = "%*.*lf";
+    timeIdxString = ftos(GAUSStimeIdx, fmt,1,0);
+    ylabel("Percentage");    
+
+
+    title(varName $+ "\L" $+ "timeIdx==" $+ timeIdxString);
+    xlabel(varName);
+    graphprt("-C=1 -PO=L -CF=" $+ graphOutDir $+ varname $+ "_CS_time" $+ timeIdxString $+ ".eps"); //this only good for crossectoin
+    {b,m,freq} = histp(data, maxNumBins);
+    pause(1.5);
+
+    retp(b,m,freq);
+endp;
+
+
+
+/*setDefaultGraphSettings: only argument might the length of hte x-axis, in the form of "agevec"
+*/
+proc(0) = setDefaultGraphSettings();
+
+    library pgraph; //donno where this should be.
+
+    _pdate   = "";                @ date is not printed    @
+    _plctrl  = {0,0,0,0};     @ curves without symbols @
+    _pstype  = {0, 8, 11, 10};    @ symbol types           @
+    _pcolor  = {3, 6, 4, 0};      @ set white color        @
+    _plwidth = {8,8,8,8};
+    _pltype  = (6|6|3|6);
+    //_pmcolor = zeros(8,1)|15;       @set colors of axes, labels, etc; last color is background!(should be diff)@
+_pmcolor = zeros(8,1)|15;       @set colors of axes, labels, etc; last color is background!(should be diff)@
+    _ptitlht = 0.18;
+    //_protate = 1; //apparently need to rotate for eps. landscape option not working
+
+//might want to uncomment this and pass in 'agevec'
+    //xtics(0,rows(agevec),10,miss(0,0)); //scale below is other option for axis control
+    
+
+/*IMPORTANT: The way the graph is output to EPS is (very!) affected by the "scale" setting. 
+    I only  know how to access this setting by opening up the GAUSS graph viewer (TKF File viewer)
+    and going to Convert->EPS.  Setting it around 
+    0.14
+    gives pretty good results.
+    */
+    margin(0,0,0,1.5);
+
+
+    retp;
+endp;
+
+/*****************************************END GRAPH CODE *********************************/
+
+
+
+
+
+
+
+//////////////////////////////////////BEGIN FUNCTIONS //////////////////////////////////////
+
+//#include C:\\Documents and Settings\g1crd01\\My Documents\minwage\minwage_functions.gau; //Need to be able to change gauss.cfg to change path ...
+#include "C:\Research\minwage\minwage_functions.gau";
+///////////////////////////////////// END FUNCTIONS //////////////////////////////////////
