@@ -1,0 +1,36 @@
+\begin{table}[htbp]
+\centering
+\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}
+\label{tab:besley_twfe}
+\begin{tabular}{lcc}
+\toprule
+ & FE (feTR) & FD (fdTR) \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: Specification}} \\[3pt]
+Regression type & Fixed Effects & First Differences \\
+Dependent variable & \multicolumn{2}{c}{ln(house price)} \\
+Treatment variable & \multicolumn{2}{c}{Killings/SD (lagged)} \\
+Panel & \multicolumn{2}{c}{11 regions $\times$ $\sim$95 quarters} \\[6pt]
+\multicolumn{3}{l}{\textit{Panel B: Weight Decomposition}} \\[3pt]
+$\hat{\beta}_{TWFE}$ & -0.013303 & --- \\
+\# positive weights & 184 & --- \\
+\# negative weights & 125 & --- \\
+\% negative weights &  40.5\% & ---\% \\[6pt]
+\multicolumn{3}{l}{\textit{Panel C: Classification (dCDH Web Appendix)}} \\[3pt]
+Design & \multicolumn{2}{c}{Sharp (continuous treatment)} \\
+Stable groups & \multicolumn{2}{c}{Not satisfied} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\textit{Notes:} Panel B reports the weight decomposition of the TWFE estimator 
+following de Chaisemartin \& D'Haultf\oe uille (2020). 
+The treatment variable (killings normalized by SD) is continuous. 
+Negative weights indicate that the TWFE coefficient may not recover 
+a convex combination of causal effects under heterogeneous treatment effects. 
+The dCDH web appendix classifies this paper as having a sharp design 
+where the stable groups assumption is not satisfied.
+\end{minipage}
+\end{table}

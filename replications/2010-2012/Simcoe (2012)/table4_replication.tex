@@ -1,0 +1,27 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Table 4---Conflict, Concessions, and Coordination Delay (Simcoe, 2012)}
+\begin{tabular}{l*{3}{c}}
+\toprule
+            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}\\
+            &  Full OLS  & Matched OLS & Matched FE \\
+\midrule
+Suit-share $\times$ S-track &      7.8**** &      6.8**** &      5.4** \\
+            &  (     1.9)  &  (     1.9)  &  (     2.1)  \\
+\midrule
+R-squared   &  0.18 &  0.20 &  0.09 \\
+Observations& 1166 & 952 & 952 \\
+WG FEs      &  No  &  No  & 151 \\
+Tech area FEs& Yes & Yes  &  No  \\
+Cohort FEs  & Yes  & Yes  & Yes  \\
+Matched sample& No & Yes  & Yes  \\
+\bottomrule
+\multicolumn{4}{p{0.9\textwidth}}{\footnotesize 
+Dependent variable: total days from submission to disposal. 
+Panel: Internet Drafts submitted to IETF Working Groups, 1993--2003. 
+Only Suit-share $\times$ S-track interaction shown; 
+additional controls as in original paper. 
+Standard errors clustered by WG in parentheses. 
+**** p$<$0.001, *** p$<$0.01, ** p$<$0.05, * p$<$0.1.}\\
+\end{tabular}
+\end{table}

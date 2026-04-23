@@ -1,0 +1,409 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Dinkelman (2011)/run_twowayfe.log
+  log type:  text
+ opened on:  23 Apr 2026, 00:14:44
+
+. set more off
+
+. 
+. use "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Dinkelman (
+> 2011)/20080791_dataset/data/matched_censusdata.dta", clear
+
+. keep if largearea == 1
+(176 observations deleted)
+
+. di "Sample N = " _N
+Sample N = 1816
+
+. 
+. global x1 "kms_to_subs0 baseline_hhdens0 base_hhpovrate0 prop_head_f_a0 sexra
+> tio0 prop_indianwhite0 kms_to_road0 kms_to_town0 prop_matric_m0 prop_matric_f
+> 0"
+
+. 
+. di "============================================="
+=============================================
+
+. di "TABLE 4 REPLICATION"
+TABLE 4 REPLICATION
+
+. di "============================================="
+=============================================
+
+. 
+. di _n "--- Col 1: OLS, no controls ---"
+
+--- Col 1: OLS, no controls ---
+
+. reg d_prop_emp_f T, robust cluster(placecode0)
+
+Linear regression                               Number of obs     =      1,816
+                                                F(1, 273)         =       0.71
+                                                Prob > F          =     0.4011
+                                                R-squared         =     0.0006
+                                                Root MSE          =     .06714
+
+                           (Std. err. adjusted for 274 clusters in placecode0)
+------------------------------------------------------------------------------
+             |               Robust
+d_prop_emp_f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+           T |  -.0041982   .0049924    -0.84   0.401    -.0140267    .0056303
+       _cons |    .000735   .0024238     0.30   0.762    -.0040366    .0055067
+------------------------------------------------------------------------------
+
+. local b_ols1 = _b[T]
+
+. local se_ols1 = _se[T]
+
+. local n_ols1 = e(N)
+
+. 
+. di _n "--- Col 3: OLS, controls + district FE ---"
+
+--- Col 3: OLS, controls + district FE ---
+
+. xi: reg d_prop_emp_f T $x1 i.dccode0, robust cluster(placecode0)
+i.dccode0         _Idccode0_21-43     (naturally coded; _Idccode0_21 omitted)
+
+Linear regression                               Number of obs     =      1,816
+                                                F(20, 273)        =       7.55
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0725
+                                                Root MSE          =     .06502
+
+                           (Std. err. adjusted for 274 clusters in placecode0)
+------------------------------------------------------------------------------
+             |               Robust
+d_prop_emp_f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+           T |   .0000609   .0047338     0.01   0.990    -.0092584    .0093802
+kms_to_subs0 |   5.06e-06   .0002465     0.02   0.984    -.0004803    .0004904
+baseline_h~0 |  -.0000125   .0000889    -0.14   0.889    -.0001876    .0001626
+base_hhpov~0 |   .0327814   .0101066     3.24   0.001     .0128845    .0526783
+prop_head_~0 |   .0505074   .0193283     2.61   0.009      .012456    .0885589
+ sexratio0_a |   .0166639   .0083944     1.99   0.048      .000138    .0331899
+prop_india~0 |   -.527622   .4464978    -1.18   0.238    -1.406639    .3513944
+kms_to_road0 |  -1.45e-06   .0001163    -0.01   0.990    -.0002305    .0002276
+kms_to_town0 |  -.0001435   .0001759    -0.82   0.415    -.0004898    .0002028
+prop_matr~m0 |   .0541943   .0655614     0.83   0.409    -.0748759    .1832645
+prop_matr~f0 |  -.0798436   .0969308    -0.82   0.411    -.2706705    .1109832
+_Idccode0_22 |   .0104934    .013559     0.77   0.440    -.0162001    .0371868
+_Idccode0_23 |  -.0014198   .0078077    -0.18   0.856    -.0167907    .0139512
+_Idccode0_24 |  -.0016061   .0081767    -0.20   0.844    -.0177036    .0144913
+_Idccode0_25 |  -.0133762   .0071635    -1.87   0.063     -.027479    .0007266
+_Idccode0_26 |   .0069045   .0074253     0.93   0.353    -.0077135    .0215226
+_Idccode0_27 |   .0122863   .0084536     1.45   0.147    -.0043563    .0289288
+_Idccode0_28 |   .0113051   .0074277     1.52   0.129    -.0033178     .025928
+_Idccode0_29 |  -.0164755   .0127013    -1.30   0.196    -.0414804    .0085295
+_Idccode0_43 |   .0043777   .0094123     0.47   0.642    -.0141523    .0229076
+       _cons |  -.0681334   .0179506    -3.80   0.000    -.1034726   -.0327942
+------------------------------------------------------------------------------
+
+. local b_ols3 = _b[T]
+
+. local se_ols3 = _se[T]
+
+. local n_ols3 = e(N)
+
+. 
+. di _n "--- Col 5: IV, no controls ---"
+
+--- Col 5: IV, no controls ---
+
+. ivregress 2sls d_prop_emp_f (T = mean_grad_new), robust cluster(placecode0) f
+> irst
+
+First-stage regressions
+-----------------------
+
+                                                      Number of obs   =  1,816
+                                                      No. of clusters =    274
+                                                      F(1, 1814)      =   4.20
+                                                      Prob > F        = 0.0405
+                                                      R-squared       = 0.0102
+                                                      Adj R-squared   = 0.0097
+                                                      Root MSE        = 0.3989
+
+------------------------------------------------------------------------------
+             |               Robust
+           T | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+mean_grad_~w |  -.0082859   .0040424    -2.05   0.041    -.0162141   -.0003577
+       _cons |   .2846809   .0520707     5.47   0.000     .1825561    .3868057
+------------------------------------------------------------------------------
+
+
+Instrumental variables 2SLS regression            Number of obs   =      1,816
+                                                  Wald chi2(1)    =       0.30
+                                                  Prob > chi2     =     0.5834
+                                                  R-squared       =          .
+                                                  Root MSE        =     .06809
+
+                           (Std. err. adjusted for 274 clusters in placecode0)
+------------------------------------------------------------------------------
+             |               Robust
+d_prop_emp_f | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+           T |   .0246098    .044878     0.55   0.583    -.0633494    .1125691
+       _cons |  -.0050551   .0093708    -0.54   0.590    -.0234216    .0133113
+------------------------------------------------------------------------------
+Instrumented: T
+ Instruments: mean_grad_new
+
+. local b_iv5 = _b[T]
+
+. local se_iv5 = _se[T]
+
+. local n_iv5 = e(N)
+
+. 
+. di _n "--- Col 7: IV, controls + district FE ---"
+
+--- Col 7: IV, controls + district FE ---
+
+. xi: ivregress 2sls d_prop_emp_f (T = mean_grad_new) $x1 i.dccode0, robust clu
+> ster(placecode0) first
+i.dccode0         _Idccode0_21-43     (naturally coded; _Idccode0_21 omitted)
+
+First-stage regressions
+-----------------------
+
+                                                      Number of obs   =  1,816
+                                                      No. of clusters =    274
+                                                      F(20, 1795)     =  10.33
+                                                      Prob > F        = 0.0000
+                                                      R-squared       = 0.1765
+                                                      Adj R-squared   = 0.1674
+                                                      Root MSE        = 0.3658
+
+------------------------------------------------------------------------------
+             |               Robust
+           T | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+kms_to_subs0 |  -.0011913   .0022681    -0.53   0.599    -.0056396    .0032571
+baseline_h~0 |   .0012413   .0005615     2.21   0.027     .0001401    .0023425
+base_hhpov~0 |   .0189425   .0698679     0.27   0.786    -.1180884    .1559734
+prop_head_~0 |   .1654583   .1066804     1.55   0.121    -.0437725    .3746891
+ sexratio0_a |  -.1295337   .0415091    -3.12   0.002     -.210945   -.0481224
+prop_india~0 |  -1.115588   .4588263    -2.43   0.015    -2.015478   -.2156983
+kms_to_road0 |  -.0010144    .000961    -1.06   0.291    -.0028991    .0008703
+kms_to_town0 |   .0008383   .0015404     0.54   0.586    -.0021829    .0038595
+prop_matr~m0 |  -.1845325   .4114009    -0.45   0.654    -.9914074    .6223425
+prop_matr~f0 |   .9653491   .4126836     2.34   0.019     .1559585     1.77474
+_Idccode0_22 |   .1910596   .1100161     1.74   0.083    -.0247135    .4068327
+_Idccode0_23 |  -.1350753   .0753419    -1.79   0.073    -.2828424    .0126918
+_Idccode0_24 |   .1645628   .0754392     2.18   0.029     .0166049    .3125207
+_Idccode0_25 |   .2250413   .1049633     2.14   0.032     .0191782    .4309044
+_Idccode0_26 |  -.0017633    .070032    -0.03   0.980    -.1391161    .1355895
+_Idccode0_27 |  -.1987157   .0829807    -2.39   0.017    -.3614646   -.0359669
+_Idccode0_28 |  -.1820952   .0639442    -2.85   0.004     -.307508   -.0566823
+_Idccode0_29 |  -.1955955   .0704373    -2.78   0.006    -.3337433   -.0574478
+_Idccode0_43 |  -.0443944   .1060237    -0.42   0.675    -.2523372    .1635484
+mean_grad_~w |  -.0077881   .0026975    -2.89   0.004    -.0130786   -.0024976
+       _cons |   .3675184     .11065     3.32   0.001      .150502    .5845349
+------------------------------------------------------------------------------
+
+
+Instrumental variables 2SLS regression            Number of obs   =      1,816
+                                                  Wald chi2(20)   =      86.45
+                                                  Prob > chi2     =     0.0000
+                                                  R-squared       =          .
+                                                  Root MSE        =     .07254
+
+                           (Std. err. adjusted for 274 clusters in placecode0)
+------------------------------------------------------------------------------
+             |               Robust
+d_prop_emp_f | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+           T |   .0902512   .0543786     1.66   0.097    -.0163289    .1968314
+kms_to_subs0 |   .0001191   .0003386     0.35   0.725    -.0005445    .0007828
+baseline_h~0 |   -.000139   .0001207    -1.15   0.249    -.0003755    .0000975
+base_hhpov~0 |   .0317511   .0126412     2.51   0.012     .0069748    .0565274
+prop_head_~0 |    .036481   .0257697     1.42   0.157    -.0140266    .0869886
+ sexratio0_a |   .0294892   .0121609     2.42   0.015     .0056543     .053324
+prop_india~0 |   -.428642   .4325196    -0.99   0.322    -1.276365    .4190808
+kms_to_road0 |   .0000813   .0001584     0.51   0.608    -.0002291    .0003916
+kms_to_town0 |  -.0002005   .0002336    -0.86   0.391    -.0006584    .0002574
+prop_matr~m0 |   .0642816   .0773448     0.83   0.406    -.0873114    .2158747
+prop_matr~f0 |  -.1661045   .1125247    -1.48   0.140    -.3866489    .0544399
+_Idccode0_22 |   -.005921   .0217618    -0.27   0.786    -.0485734    .0367314
+_Idccode0_23 |   .0083587   .0126314     0.66   0.508    -.0163983    .0331157
+_Idccode0_24 |  -.0192159   .0154807    -1.24   0.215    -.0495576    .0111258
+_Idccode0_25 |   -.039962   .0199669    -2.00   0.045    -.0790965   -.0008276
+_Idccode0_26 |   .0048006   .0109576     0.44   0.661    -.0166759    .0262771
+_Idccode0_27 |   .0251372   .0124455     2.02   0.043     .0007445    .0495298
+_Idccode0_28 |   .0265477   .0139498     1.90   0.057    -.0007934    .0538888
+_Idccode0_29 |   .0010858   .0174304     0.06   0.950    -.0330771    .0352488
+_Idccode0_43 |   .0079559   .0138669     0.57   0.566    -.0192227    .0351346
+       _cons |  -.0948435   .0238939    -3.97   0.000    -.1416747   -.0480122
+------------------------------------------------------------------------------
+Instrumented: T
+ Instruments: kms_to_subs0 baseline_hhdens0 base_hhpovrate0 prop_head_f_a0
+              sexratio0_a prop_indianwhite0 kms_to_road0 kms_to_town0
+              prop_matric_m0 prop_matric_f0 _Idccode0_22 _Idccode0_23
+              _Idccode0_24 _Idccode0_25 _Idccode0_26 _Idccode0_27
+              _Idccode0_28 _Idccode0_29 _Idccode0_43 mean_grad_new
+
+. local b_iv7 = _b[T]
+
+. local se_iv7 = _se[T]
+
+. local n_iv7 = e(N)
+
+. 
+. di _n "--- Male: OLS+FE ---"
+
+--- Male: OLS+FE ---
+
+. xi: reg d_prop_emp_m T $x1 i.dccode0, robust cluster(placecode0)
+i.dccode0         _Idccode0_21-43     (naturally coded; _Idccode0_21 omitted)
+
+Linear regression                               Number of obs     =      1,816
+                                                F(20, 273)        =      26.35
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1813
+                                                Root MSE          =     .08567
+
+                           (Std. err. adjusted for 274 clusters in placecode0)
+------------------------------------------------------------------------------
+             |               Robust
+d_prop_emp_m | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+           T |  -.0091047   .0058565    -1.55   0.121    -.0206344     .002425
+kms_to_subs0 |   .0000162   .0003192     0.05   0.960    -.0006123    .0006447
+baseline_h~0 |    .000191   .0001773     1.08   0.282     -.000158      .00054
+base_hhpov~0 |   .0642795   .0179292     3.59   0.000     .0289824    .0995766
+prop_head_~0 |   .2333007   .0301298     7.74   0.000     .1739844     .292617
+ sexratio0_a |   .0117612   .0106849     1.10   0.272    -.0092739    .0327964
+prop_india~0 |   .0748892   .5471145     0.14   0.891     -1.00221    1.151989
+kms_to_road0 |  -.0001483   .0001468    -1.01   0.313    -.0004373    .0001407
+kms_to_town0 |   .0000819   .0002259     0.36   0.717    -.0003628    .0005266
+prop_matr~m0 |  -.0685066   .0879364    -0.78   0.437    -.2416263    .1046131
+prop_matr~f0 |   .0458096   .1105521     0.41   0.679    -.1718334    .2634526
+_Idccode0_22 |  -.0105993   .0184272    -0.58   0.566    -.0468768    .0256782
+_Idccode0_23 |   .0102766   .0120666     0.85   0.395    -.0134787     .034032
+_Idccode0_24 |    .005051   .0125464     0.40   0.688    -.0196489    .0297509
+_Idccode0_25 |  -.0135459   .0094026    -1.44   0.151    -.0320567    .0049649
+_Idccode0_26 |   .0245598   .0103151     2.38   0.018     .0042527     .044867
+_Idccode0_27 |   .0224571   .0122477     1.83   0.068    -.0016548    .0465691
+_Idccode0_28 |   .0332275   .0123088     2.70   0.007     .0089952    .0574598
+_Idccode0_29 |  -.0215697   .0134158    -1.61   0.109    -.0479813     .004842
+_Idccode0_43 |  -.0074538   .0131575    -0.57   0.572    -.0333569    .0184492
+       _cons |  -.2326768   .0232252   -10.02   0.000       -.2784   -.1869535
+------------------------------------------------------------------------------
+
+. local b_ols3m = _b[T]
+
+. local se_ols3m = _se[T]
+
+. 
+. di _n "--- Male: IV+FE ---"
+
+--- Male: IV+FE ---
+
+. xi: ivregress 2sls d_prop_emp_m (T = mean_grad_new) $x1 i.dccode0, robust clu
+> ster(placecode0)
+i.dccode0         _Idccode0_21-43     (naturally coded; _Idccode0_21 omitted)
+
+Instrumental variables 2SLS regression            Number of obs   =      1,816
+                                                  Wald chi2(20)   =     736.40
+                                                  Prob > chi2     =     0.0000
+                                                  R-squared       =     0.1542
+                                                  Root MSE        =     .08657
+
+                           (Std. err. adjusted for 274 clusters in placecode0)
+------------------------------------------------------------------------------
+             |               Robust
+d_prop_emp_m | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+           T |   .0333001   .0638896     0.52   0.602    -.0919213    .1585214
+kms_to_subs0 |   .0000698    .000355     0.20   0.844     -.000626    .0007656
+baseline_h~0 |   .0001315   .0001982     0.66   0.507     -.000257      .00052
+base_hhpov~0 |   .0637951   .0185724     3.43   0.001     .0273938    .1001964
+prop_head_~0 |   .2267059   .0340654     6.66   0.000      .159939    .2934728
+ sexratio0_a |   .0177913   .0147442     1.21   0.228    -.0111069    .0466894
+prop_india~0 |   .1214267   .5394246     0.23   0.822    -.9358261    1.178679
+kms_to_road0 |  -.0001094   .0001632    -0.67   0.503    -.0004292    .0002104
+kms_to_town0 |    .000055   .0002489     0.22   0.825    -.0004327    .0005428
+prop_matr~m0 |  -.0637639   .0909789    -0.70   0.483    -.2420793    .1145515
+prop_matr~f0 |   .0052523   .1233739     0.04   0.966    -.2365561    .2470607
+_Idccode0_22 |  -.0183169   .0240406    -0.76   0.446    -.0654355    .0288018
+_Idccode0_23 |   .0148742    .013967     1.06   0.287    -.0125007     .042249
+_Idccode0_24 |  -.0032285    .018681    -0.17   0.863    -.0398426    .0333856
+_Idccode0_25 |  -.0260457   .0222907    -1.17   0.243    -.0697346    .0176431
+_Idccode0_26 |   .0235706   .0113646     2.07   0.038     .0012965    .0458448
+_Idccode0_27 |   .0284992   .0143256     1.99   0.047     .0004216    .0565769
+_Idccode0_28 |   .0403941   .0159478     2.53   0.011     .0091371    .0716512
+_Idccode0_29 |  -.0133129   .0173937    -0.77   0.444    -.0474039    .0207781
+_Idccode0_43 |  -.0057714   .0141267    -0.41   0.683    -.0334593    .0219165
+       _cons |   -.245235   .0289452    -8.47   0.000    -.3019666   -.1885035
+------------------------------------------------------------------------------
+Instrumented: T
+ Instruments: kms_to_subs0 baseline_hhdens0 base_hhpovrate0 prop_head_f_a0
+              sexratio0_a prop_indianwhite0 kms_to_road0 kms_to_town0
+              prop_matric_m0 prop_matric_f0 _Idccode0_22 _Idccode0_23
+              _Idccode0_24 _Idccode0_25 _Idccode0_26 _Idccode0_27
+              _Idccode0_28 _Idccode0_29 _Idccode0_43 mean_grad_new
+
+. local b_iv7m = _b[T]
+
+. local se_iv7m = _se[T]
+
+. 
+. * --- Reshape to 2-period panel ---
+. di _n "============================================="
+
+=============================================
+
+. di "RESHAPING TO 2-PERIOD PANEL"
+RESHAPING TO 2-PERIOD PANEL
+
+. di "============================================="
+=============================================
+
+. 
+. use "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Dinkelman (
+> 2011)/20080791_dataset/data/matched_censusdata.dta", clear
+
+. keep if largearea == 1
+(176 observations deleted)
+
+. keep placecode0 dccode0 T mean_grad_new prop_emp_f0 prop_emp_f1 prop_emp_m0 p
+> rop_emp_m1 $x1
+
+. 
+. gen comm_id = _n
+
+. local N_comm = _N
+
+. 
+. expand 2
+(1,816 observations created)
+
+. sort comm_id
+
+. by comm_id: gen year = cond(_n == 1, 1996, 2001)
+
+. 
+. gen prop_emp_f = cond(year == 1996, prop_emp_f0, prop_emp_f1)
+
+. gen prop_emp_m = cond(year == 1996, prop_emp_m0, prop_emp_m1)
+
+. gen D = cond(year == 2001, T, 0)
+
+. 
+. xtset comm_id year, delta(5)
+
+Panel variable: comm_id (strongly balanced)
+ Time variable: year, 1996 to 2001
+         Delta: 5 units
+
+. di "Panel: " _N " obs = " `N_comm` " communities x 2 periods"
+Panel: 3632 obs = `N_comm` invalid name
+r(198);
+
+end of do-file
+r(198);

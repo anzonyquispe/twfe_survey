@@ -1,0 +1,106 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Dahl and Lochner (2012)/check_vars.log
+  log type:  text
+ opened on:  23 Apr 2026, 00:02:05
+
+. 
+. use "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Dahl and Lo
+> chner (2012)/MS20050400_data/main.dta", clear
+
+. 
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Dahl and Lochner (2012)/MS20050400_data/main.dta
+ Observations:        91,867                  
+    Variables:           162                  17 Jun 2011 10:32
+Sorted by: 
+
+. di "N obs = " _N
+N obs = 91867
+
+. 
+. foreach v in d02mathread d02inc012nontax d02eitcsim411new x0 x1 x2 x3 x4 x5 m
+> ale yrsbirth ddd1 ddd3 black hispanic momid esamp0 estsamp year idchild {
+  2.     cap confirm variable `v'
+  3.     if _rc == 0 {
+  4.         di "`v': EXISTS"
+  5.         qui sum `v'
+  6.         di "  N=" r(N) " mean=" r(mean) " min=" r(min) " max=" r(max)
+  7.     }
+  8.     else {
+  9.         di "`v': MISSING"
+ 10.     }
+ 11. }
+d02mathread: MISSING
+d02inc012nontax: MISSING
+d02eitcsim411new: MISSING
+x0: MISSING
+x1: MISSING
+x2: MISSING
+x3: MISSING
+x4: MISSING
+x5: MISSING
+male: EXISTS
+  N=91867 mean=.50764692 min=0 max=1
+yrsbirth: EXISTS
+  N=91867 mean=6.1984499 min=0 max=18
+ddd1: EXISTS
+  N=91867 mean=.19305082 min=0 max=1
+ddd3: EXISTS
+  N=91867 mean=.41493681 min=0 max=1
+black: EXISTS
+  N=91867 mean=.32553583 min=0 max=1
+hispanic: EXISTS
+  N=91867 mean=.20286937 min=0 max=1
+momid: EXISTS
+  N=91867 mean=5572.5302 min=2 max=12667
+esamp0: MISSING
+estsamp: MISSING
+year: EXISTS
+  N=91867 mean=1989.1992 min=1978 max=1999
+idchild: EXISTS
+  N=91867 mean=557254.86 min=201 max=1266703
+
+. 
+. di "=== EITC variables ==="
+=== EITC variables ===
+
+. cap ds *eitc*
+
+. di "=== D02 variables ==="
+=== D02 variables ===
+
+. cap ds *d02*
+
+. di "=== DDD variables ==="
+=== DDD variables ===
+
+. cap ds *ddd*
+
+. di "=== SAMP variables ==="
+=== SAMP variables ===
+
+. cap ds *samp*
+
+. di "=== MATH/READ variables ==="
+=== MATH/READ variables ===
+
+. cap ds *math* *read* *rer* *rec* *piat* *pia*
+
+. 
+. cap xtset
+
+. di "Panel xtset rc = " _rc
+Panel xtset rc = 459
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Dahl and Lochner (2012)/check_vars.log
+  log type:  text
+ closed on:  23 Apr 2026, 00:02:05
+-------------------------------------------------------------------------------

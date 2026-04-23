@@ -8,15 +8,16 @@ Apply the `twowayfeweights` diagnostic (Stata/R) to published AER papers that us
 
 ## Two Waves of Replication
 
-### Wave 1 — AER 2010-2012 (COMPLETED)
+### Wave 1 — AER 2010-2012 (IN PROGRESS)
 
 33 candidate papers evaluated from AER volumes 2010-2012:
 
-- **10 fully replicated**: TWFE specification identified, `twowayfeweights` (feTR/fdTR) applied, LaTeX tables generated
-- **17 with data available**: replication packages downloaded but TWFE analysis not yet run
-- **6 without data**: restricted or proprietary data (code only)
+- **12 fully replicated**: TWFE specification identified, `twowayfeweights` (feTR/fdTR) applied, LaTeX tables generated
+- **3 with data (pending)**: data confirmed available, replication scripts prepared but not yet completed
+- **8 without data**: restricted or proprietary data not included in replication packages
+- **10 not yet attempted**: replication packages downloaded, awaiting evaluation
 
-### Wave 2 — AER 2015-2019 (IN PROGRESS)
+### Wave 2 — AER 2015-2019 (NOT STARTED)
 
 26 papers from Table 1 of the de Chaisemartin & D'Haultfoeuille web appendix:
 
@@ -37,12 +38,13 @@ twfe_survey/
 │   ├── 2010-2012/               33 folders (one per paper)
 │   └── 2015-2019/               23 folders (one per paper)
 ├── replications/                TWFE replication scripts and logs (my work)
-│   ├── 2010-2012/               10 completed papers (run_twowayfe.do + .log)
+│   ├── 2010-2012/               12 completed + 2 in progress (run_twowayfe.do + .log)
 │   └── 2015-2019/               (empty, pending)
 ├── latex/                       Generated LaTeX tables and compiled PDFs (my work)
 │   ├── 2010-2012/               10 completed papers (.tex + .pdf)
 │   └── 2015-2019/               (empty, pending)
 ├── reports/
+│   ├── tracker_master_consolidado.xlsx    Master tracker (all papers, both waves)
 │   ├── AER_2011-2012_Feasibility_Report.xlsx
 │   └── tracker_papers_tabla1_2015-2019.xlsx
 ├── scripts/
@@ -70,8 +72,30 @@ twfe_survey/
 | Forman et al. (2012) | 27.1% | Internet and wage inequality |
 | Acemoglu et al. (2011) | 0-12.5% | Trade and war (specification-dependent) |
 | Hornbeck (2012) | 21.0% | Dust Bowl long-run effects |
+| Besley & Mueller (2012) | 40.5% | Conflict and investment in Northern Ireland |
+| Simcoe (2012) | 54.2% / 48.7% | Standard-setting committees (techarea FE / WG FE) |
 
-**Key finding**: 8 out of 10 replicated papers exhibit significant negative weights in their TWFE specifications (range: 12.5% to 52.6%). Two papers serve as clean controls with 0% negative weights.
+**Key finding**: 10 out of 12 replicated papers exhibit significant negative weights in their TWFE specifications (range: 12.5% to 54.2%). Two papers serve as clean controls with 0% negative weights.
+
+## Wave 1 — Papers with Restricted/Proprietary Data
+
+| Paper | Missing Data |
+|-------|-------------|
+| Anderson & Sallee (2011) | transactions1.dta (proprietary) |
+| Bloom et al. (2012) | UK census data at VML/ONS London |
+| Aizer (2010) | Hospital data from OSHPD |
+| Bajari et al. (2012) | DataQuick housing data |
+| Duggan & Morton (2010) | IMS Health pharmaceutical data |
+| Chaney et al. (2012) | COMPUSTAT + commercial price data |
+| Brambilla et al. (2012) | Argentine firm survey (EIA/INDEC, restricted by law) |
+| Dahl & Lochner (2012) | Requires TAXSIM software + restricted NLSY state identifiers |
+
+## Wave 1 — Papers with Data (Pending Execution)
+
+| Paper | Status |
+|-------|--------|
+| Dinkelman (2011) | Table 4 replicated (IV coef matches paper). twowayfeweights pending |
+| Gentzkow et al. (2011) | Data confirmed (32 MB). Do file prepared, not yet executed |
 
 ## Reference
 

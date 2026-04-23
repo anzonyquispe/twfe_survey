@@ -1,0 +1,171 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Dinkelman (2011)/check_vars.log
+  log type:  text
+ opened on:  23 Apr 2026, 00:02:08
+
+. 
+. use "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Dinkelman (
+> 2011)/20080791_dataset/data/matched_censusdata.dta", clear
+
+. 
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Dinkelman (2011)/20080791_dataset/data/matched_censusdata.dta
+ Observations:         1,992                  
+    Variables:           120                  21 Jan 2011 01:17
+Sorted by: spcode
+
+. di "N obs = " _N
+N obs = 1992
+
+. 
+. foreach v in T mean_grad_new d_prop_emp_f d_prop_emp_m placecode0 dccode0 lar
+> gearea {
+  2.     cap confirm variable `v'
+  3.     if _rc == 0 {
+  4.         di "`v': EXISTS"
+  5.         qui sum `v'
+  6.         di "  N=" r(N) " mean=" r(mean) " min=" r(min) " max=" r(max)
+  7.     }
+  8.     else {
+  9.         di "`v': MISSING"
+ 10.     }
+ 11. }
+T: EXISTS
+  N=1992 mean=.19628514 min=0 max=1
+mean_grad_new: EXISTS
+  N=1992 mean=10.20032 min=.59208798 max=25.1894
+d_prop_emp_f: EXISTS
+  N=1992 mean=-.00108499 min=-.904791 max=.659042
+d_prop_emp_m: EXISTS
+  N=1992 mean=-.03674339 min=-.74408209 max=.62009609
+placecode0: EXISTS
+  N=1992 mean=52832.994 min=50101 max=59307
+dccode0: EXISTS
+  N=1992 mean=26.60743 min=21 max=43
+largearea: EXISTS
+  N=1816 mean=1 min=1 max=1
+
+. 
+. foreach v in kms_to_subs0 baseline_hhdens0 base_hhpovrate0 prop_head_f_a0 sex
+> ratio0 prop_indianwhite0 kms_to_road0 kms_to_town0 prop_matric_m0 prop_matric
+> _f0 d_prop_waterclose d_prop_flush {
+  2.     cap confirm variable `v'
+  3.     if _rc == 0 {
+  4.         di "`v': EXISTS"
+  5.         qui sum `v'
+  6.         di "  N=" r(N) " mean=" r(mean)
+  7.     }
+  8.     else {
+  9.         di "`v': MISSING"
+ 10.     }
+ 11. }
+kms_to_subs0: EXISTS
+  N=1992 mean=19.321747
+baseline_hhdens0: EXISTS
+  N=1992 mean=20.670701
+base_hhpovrate0: EXISTS
+  N=1992 mean=.60668265
+prop_head_f_a0: EXISTS
+  N=1992 mean=.5499878
+sexratio0: EXISTS
+  N=1992 mean=1.4753786
+prop_indianwhite0: EXISTS
+  N=1992 mean=.00191684
+kms_to_road0: EXISTS
+  N=1992 mean=38.306759
+kms_to_town0: EXISTS
+  N=1992 mean=39.007648
+prop_matric_m0: EXISTS
+  N=1992 mean=.06290835
+prop_matric_f0: EXISTS
+  N=1992 mean=.06829966
+d_prop_waterclose: EXISTS
+  N=1992 mean=.00511938
+d_prop_flush: EXISTS
+  N=1992 mean=.02778928
+
+. 
+. di "=== All d_ variables ==="
+=== All d_ variables ===
+
+. cap ds d_*
+
+. di "=== All prop_emp variables ==="
+=== All prop_emp variables ===
+
+. cap ds *prop_emp*
+
+. 
+. foreach v in prop_emp_f_96 prop_emp_m_96 prop_emp_f_01 prop_emp_m_01 prop_emp
+> _f0 prop_emp_m0 prop_emp_f1 prop_emp_m1 {
+  2.     cap confirm variable `v'
+  3.     if _rc == 0 {
+  4.         di "`v': EXISTS"
+  5.         qui sum `v'
+  6.         di "  N=" r(N) " mean=" r(mean)
+  7.     }
+  8.     else {
+  9.         di "`v': MISSING"
+ 10.     }
+ 11. }
+prop_emp_f_96: MISSING
+prop_emp_m_96: MISSING
+prop_emp_f_01: MISSING
+prop_emp_m_01: MISSING
+prop_emp_f0: EXISTS
+  N=1992 mean=.06964716
+prop_emp_m0: EXISTS
+  N=1992 mean=.13677498
+prop_emp_f1: EXISTS
+  N=1992 mean=.06856217
+prop_emp_m1: EXISTS
+  N=1992 mean=.10003158
+
+. 
+. tab T if largearea==1
+
+ =1 if area |
+    treated |
+  btwn 1996 |
+and 2001, 0 |
+     if not |
+  (excludes |
+      early |
+   treated) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      1,451       79.90       79.90
+          1 |        365       20.10      100.00
+------------+-----------------------------------
+      Total |      1,816      100.00
+
+. tab dccode0 if largearea==1
+
+   code for |
+district of |
+  residence |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         21 |        254       13.99       13.99
+         22 |        106        5.84       19.82
+         23 |         94        5.18       25.00
+         24 |        186       10.24       35.24
+         25 |         41        2.26       37.50
+         26 |        311       17.13       54.63
+         27 |        213       11.73       66.35
+         28 |        373       20.54       86.89
+         29 |        119        6.55       93.45
+         43 |        119        6.55      100.00
+------------+-----------------------------------
+      Total |      1,816      100.00
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Dinkelman (2011)/check_vars.log
+  log type:  text
+ closed on:  23 Apr 2026, 00:02:08
+-------------------------------------------------------------------------------

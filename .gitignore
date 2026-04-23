@@ -16,40 +16,9 @@ Thumbs.db
 ~$*
 
 # =============================================================================
-# EXCLUSIONES TEMPORALES (pendiente resolver cuota LFS con Anzony)
-# Todo el contenido binario pesado de data/ se subirá en una
-# segunda etapa cuando se confirme cuota LFS pagada.
+# Archivos temporales de LaTeX (solo en latex/, NO en replications/)
 # =============================================================================
-data/**/*.dta
-data/**/*.csv
-data/**/*.rds
-data/**/*.sas7bdat
-data/**/*.mat
-data/**/*.zip
-data/**/*.gz
-data/**/*.raw
-data/**/*.xlsx
-data/**/*.xls
-data/**/*.png
-data/**/*.eps
-data/**/*.dll
-data/**/*.mexw64
-data/**/*.mexw32
-data/**/*.mexmaci64
-data/**/*.DTA
-data/**/*.doc
-data/**/*.docx
-data/**/*.xlsm
-data/**/*.odt
-data/**/*.gph
-data/**/*.mexmaci
-data/**/*.mexmac
-data/**/*.mexglx
-data/**/*.mexa64
-data/**/*.pdf
-
-# Archivos .txt que en realidad son datos (>100 MB)
-data/2010-2012/Baum-SnowandLutz(2011)/MS20080918_data_programs/data/district80/03518-0001-Data.txt
-
-# Literatura (PDFs pesados) - subir en 2da etapa
-literatura/**/*.pdf
+latex/**/*.aux
+latex/**/*.synctex.gz
+latex/**/*.out
+latex/**/*.toc
