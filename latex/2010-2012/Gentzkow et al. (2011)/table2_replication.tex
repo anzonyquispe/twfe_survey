@@ -1,0 +1,19 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Table 2---Effect of Newspapers on Electoral Politics (Gentzkow et al., 2011)}
+\begin{tabular}{l*{3}{c}}
+\toprule
+            &\multicolumn{1}{c}{Pres.~Turnout}&\multicolumn{1}{c}{Pres.~Turnout}&\multicolumn{1}{c}{Cong.~Turnout}\\
+            &        b/se   &        b/se   &        b/se   \\
+\midrule
+Newspaper entry/exit&      0.0026***&      0.0034***&      0.0031***\\
+            &    (0.0009)   &    (0.0009)   &    (0.0011)   \\
+\midrule
+Observations&       15627   &       15627   &       14634   \\
+Clusters    &        1195   &        1195   &        1195   \\
+State $\times$ Year FE&         Yes   &         Yes   &         Yes   \\
+Demographics&          No   &         Yes   &         Yes   \\
+\bottomrule
+\multicolumn{4}{l}{\footnotesize Dependent variable: first difference of turnout.  Panel: U.S. counties, 4-year election cycle intervals.  Standard errors clustered by county in parentheses.  *** p$<$0.01, ** p$<$0.05, * p$<$0.1.}\\
+\end{tabular}
+\end{table}

@@ -1,0 +1,32 @@
+\begin{table}[htbp]
+\centering
+\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}
+\label{tab:dinkelman_twfe}
+\begin{tabular}{lcc}
+\toprule
+ & Female & Male \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: Specification}} \\[3pt]
+Regression type & \multicolumn{2}{c}{Fixed Effects (feTR)} \\
+Dependent variable & Employment rate (F) & Employment rate (M) \\
+Treatment variable & \multicolumn{2}{c}{Electrification (T)} \\
+Panel & \multicolumn{2}{c}{1{,}816 communities $\times$ 2 periods} \\[6pt]
+\multicolumn{3}{l}{\textit{Panel B: Weight Decomposition}} \\[3pt]
+$\hat{\beta}_{TWFE}$ & -0.004198 & -0.017246 \\
+\# positive weights & 365 & 365 \\
+\# negative weights & 0 & 0 \\
+\% negative weights &   0.0\% &   0.0\% \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\textit{Notes:} Panel B reports the weight decomposition of the TWFE estimator 
+following de Chaisemartin \& D'Haultf\oe uille (2020). 
+The original paper uses cross-sectional first differences; we reshape 
+the data to a 2-period panel (1996, 2001) for the decomposition. 
+With two periods and a binary treatment, the TWFE estimator mechanically 
+assigns negative weights to the pre-treatment period observations.
+\end{minipage}
+\end{table}
