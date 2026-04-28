@@ -1,0 +1,1504 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do run_twowayfe.do 
+
+. /*===========================================================================
+> ===
+>   BURGESS, JEDWAB, MIGUEL, MORJARIA & PADRÓ I MIQUEL (2015)
+>   "The Value of Democracy: Evidence from Road Building in Kenya"
+>   American Economic Review, 105(6), 1817-1851
+> 
+>   Pipeline:
+>     STEP 1: Data exploration & verification
+>     STEP 2: Replicate Table 1 Col 1 (baseline TWFE)
+>     STEP 3: twowayfeweights decomposition (feTR + fdTR)
+>     STEP 4: Export LaTeX tables
+> 
+>   dCDH REStat Web Appendix:
+>     Not binary and/or not staggered design. No dynamic effects.
+>     Treatment: president (coethnic of president indicator)
+>     Panel: ~41 districts x ~49 years (1963-2011)
+>     Y = exp_dens_share (road expenditure density share)
+>     D = president (president's coethnic dummy, non-binary/time-varying)
+>     G = distnum (district identifier)
+>     T = year
+> =============================================================================
+> =*/
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. * --- Paths ---
+. global datadir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Burgess et al. (2015)/AER_2013_1031_replication/main-tables-figures"
+
+. global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2
+> 015-2019/Burgess et al. (2015)"
+
+. global texdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2015-201
+> 9/Burgess et al. (2015)"
+
+. 
+. cap mkdir "$texdir"
+
+. 
+. cap log using "$outdir/run_twowayfe.log", text replace name(detail)
+
+. 
+. * --- Install packages ---
+. cap which estout
+
+. if _rc ssc install estout, replace
+
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 1: DATA EXPLORATION
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 1: DATA EXPLORATION"
+  STEP 1: DATA EXPLORATION
+
+. di "============================================================"
+============================================================
+
+. 
+. use "$datadir/kenya_roads_exp", clear
+
+. 
+. di _n "--- Dataset dimensions ---"
+
+--- Dataset dimensions ---
+
+. di "Observations: " _N
+Observations: 2009
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Burgess et al. (2015)/AER_2013_1031_replication/main-tables-figures/kenya_ro
+> ads_exp.dta
+ Observations:         2,009                  
+    Variables:            83                  20 Dec 2014 23:53
+Sorted by: 
+
+. 
+. di _n "--- Panel structure ---"
+
+--- Panel structure ---
+
+. qui tab distnum
+
+. di "Districts (G): " r(r)
+Districts (G): 41
+
+. qui tab year
+
+. di "Years (T): " r(r)
+Years (T): 49
+
+. 
+. di _n "--- Treatment variable: president ---"
+
+--- Treatment variable: president ---
+
+. tab president, missing
+
+   Coethnic |
+   district |
+dummy [d,t] |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      1,690       84.12       84.12
+          1 |        319       15.88      100.00
+------------+-----------------------------------
+      Total |      2,009      100.00
+
+. summarize president, detail
+
+                Coethnic district dummy [d,t]
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               2,009
+25%            0              0       Sum of wgt.       2,009
+
+50%            0                      Mean           .1587855
+                        Largest       Std. dev.      .3655669
+75%            0              1
+90%            1              1       Variance       .1336392
+95%            1              1       Skewness       1.867234
+99%            1              1       Kurtosis       4.486563
+
+. 
+. di _n "--- Outcome variable: exp_dens_share ---"
+
+--- Outcome variable: exp_dens_share ---
+
+. summarize exp_dens_share, detail
+
+        Share of road development expenditure [d,t] /
+                  population share [d,1962]
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               2,009
+25%            0              0       Sum of wgt.       2,009
+
+50%     .3915299                      Mean           1.252368
+                        Largest       Std. dev.      2.799603
+75%     1.274037       33.29207
+90%     2.994761       33.84617       Variance       7.837778
+95%     5.346719       35.26738       Skewness       6.169526
+99%     12.49417       40.02331       Kurtosis       59.62201
+
+. 
+. di _n "--- Year range ---"
+
+--- Year range ---
+
+. summarize year, detail
+
+                            Year
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         1963           1963
+ 5%         1965           1963
+10%         1967           1963       Obs               2,009
+25%         1975           1963       Sum of wgt.       2,009
+
+50%         1987                      Mean               1987
+                        Largest       Std. dev.      14.14566
+75%         1999           2011
+90%         2007           2011       Variance       200.0996
+95%         2009           2011       Skewness              0
+99%         2011           2011       Kurtosis          1.799
+
+. 
+. di _n "--- Treatment variation over time ---"
+
+--- Treatment variation over time ---
+
+. * Check how treatment varies across districts and years
+. preserve
+
+. collapse (mean) president, by(distnum)
+
+. summarize president
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+   president |         41    .1587855    .2359996          0   .5102041
+
+. di _n "  Mean president share across districts: " %6.4f r(mean)
+
+  Mean president share across districts: 0.1588
+
+. di "  SD: " %6.4f r(sd)
+  SD: 0.2360
+
+. di "  Min: " r(min) " Max: " r(max)
+  Min: 0 Max: .51020408
+
+. restore
+
+. 
+. di _n "--- Treatment changes over time ---"
+
+--- Treatment changes over time ---
+
+. preserve
+
+. collapse (mean) president, by(year)
+
+. di "  Treatment mean by year (first and last 5):"
+  Treatment mean by year (first and last 5):
+
+. list year president in 1/5
+
+     +-----------------+
+     | year   presid~t |
+     |-----------------|
+  1. | 1963   .1707317 |
+  2. | 1964   .1707317 |
+  3. | 1965   .1707317 |
+  4. | 1966   .1707317 |
+  5. | 1967   .1707317 |
+     +-----------------+
+
+. di "..."
+...
+
+. local N = _N
+
+. list year president in `=`N'-4'/`N'
+
+     +-----------------+
+     | year   presid~t |
+     |-----------------|
+ 45. | 2007   .1707317 |
+ 46. | 2008   .1707317 |
+ 47. | 2009   .1707317 |
+ 48. | 2010   .1707317 |
+ 49. | 2011   .1707317 |
+     +-----------------+
+
+. restore
+
+. 
+. di _n "--- Key control variables ---"
+
+--- Key control variables ---
+
+. cap summarize presidentMP multiparty pop1962_t area_t urbrate1962_t, detail
+
+. 
+. di _n "--- multiparty indicator ---"
+
+--- multiparty indicator ---
+
+. tab multiparty year if year >= 1990 & year <= 1995
+
+ Democracy |
+     dummy |                          Year
+     [d,t] |      1990       1991       1992       1993       1994 |     Total
+-----------+-------------------------------------------------------+----------
+         0 |        41         41         41          0          0 |       123 
+         1 |         0          0          0         41         41 |       123 
+-----------+-------------------------------------------------------+----------
+     Total |        41         41         41         41         41 |       246 
+
+
+ Democracy |
+     dummy |    Year
+     [d,t] |      1995 |     Total
+-----------+-----------+----------
+         0 |         0 |       123 
+         1 |        41 |       123 
+-----------+-----------+----------
+     Total |        41 |       246 
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 2: REPLICATE TABLE 1 — Baseline TWFE
+>   Table 1 Col (1) Panel A: areg exp_dens_share president i.year, absorb(distn
+> um)
+>   Table 1 Col (1) Panel B: areg exp_dens_share president presidentMP multipar
+> ty i.year, absorb(distnum)
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 2: REPLICATE TABLE 1"
+  STEP 2: REPLICATE TABLE 1
+
+. di "============================================================"
+============================================================
+
+. 
+. * === Column (1) Panel A: No interaction ===
+. di _n "--- Table 1, Column 1, Panel A (baseline TWFE) ---"
+
+--- Table 1, Column 1, Panel A (baseline TWFE) ---
+
+. xi: areg exp_dens_share president i.year, absorb(distnum) robust cluster(dist
+> num)
+i.year            _Iyear_1963-2011    (naturally coded; _Iyear_1963 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =  2,009
+Absorbed variable: distnum                          No. of categories =     41
+                                                    F(40, 40)         =      .
+                                                    Prob > F          =      .
+                                                    R-squared         = 0.1434
+                                                    Adj R-squared     = 0.1037
+                                                    Root MSE          = 2.6443
+
+                               (Std. err. adjusted for 41 clusters in distnum)
+------------------------------------------------------------------------------
+             |               Robust
+exp_dens_s~e | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   president |   .9746193   .3582901     2.72   0.010     .2504879    1.698751
+ _Iyear_1964 |  -.0333582   .1413676    -0.24   0.815    -.3190727    .2523564
+ _Iyear_1965 |   .0101271   .1726053     0.06   0.954    -.3387213    .3589755
+ _Iyear_1966 |   .0609963   .1941305     0.31   0.755    -.3313562    .4533488
+ _Iyear_1967 |   .1667082   .2530609     0.66   0.514     -.344747    .6781634
+ _Iyear_1968 |   .7509997   .5926377     1.27   0.212    -.4467659    1.948765
+ _Iyear_1969 |   .7134488   .5928933     1.20   0.236    -.4848332    1.911731
+ _Iyear_1970 |   .3118916   .2417431     1.29   0.204    -.1766895    .8004727
+ _Iyear_1971 |   .4601209   .3748869     1.23   0.227    -.2975539    1.217796
+ _Iyear_1972 |   .4549047   .3506994     1.30   0.202    -.2538852    1.163695
+ _Iyear_1973 |   .4556578   .2683297     1.70   0.097    -.0866567    .9979723
+ _Iyear_1974 |   .3767429   .3336503     1.13   0.266    -.2975894    1.051075
+ _Iyear_1975 |   .1398749   .1620865     0.86   0.393    -.1877142    .4674639
+ _Iyear_1976 |   .1686448   .2282617     0.74   0.464    -.2926892    .6299789
+ _Iyear_1977 |   .3373909   .3037799     1.11   0.273    -.2765712    .9513531
+ _Iyear_1978 |   .4399434   .3869031     1.14   0.262     -.342017    1.221904
+ _Iyear_1979 |   .7754737   .5666442     1.37   0.179    -.3697569    1.920704
+ _Iyear_1980 |   .5323124   .4502191     1.18   0.244    -.3776143    1.442239
+ _Iyear_1981 |    .543062   .4448329     1.22   0.229    -.3559788    1.442103
+ _Iyear_1982 |   .3709621   .3154759     1.18   0.247    -.2666384    1.008563
+ _Iyear_1983 |   .2742422   .3131912     0.88   0.386    -.3587409    .9072252
+ _Iyear_1984 |   .2264296   .2442297     0.93   0.359    -.2671769    .7200362
+ _Iyear_1985 |   .4024997   .3254682     1.24   0.223    -.2552961    1.060296
+ _Iyear_1986 |   .4057612   .3221365     1.26   0.215    -.2453011    1.056823
+ _Iyear_1987 |   .4830409   .4422328     1.09   0.281    -.4107449    1.376827
+ _Iyear_1988 |   .4738721   .3588793     1.32   0.194      -.25145    1.199194
+ _Iyear_1989 |   .8318007   .6012325     1.38   0.174    -.3833354    2.046937
+ _Iyear_1990 |   .7286946   .4922193     1.48   0.147    -.2661178    1.723507
+ _Iyear_1991 |   .8874963   .6414305     1.38   0.174    -.4088832    2.183876
+ _Iyear_1992 |   .6260915    .457005     1.37   0.178    -.2975501    1.549733
+ _Iyear_1993 |    .539606   .4288457     1.26   0.216    -.3271234    1.406335
+ _Iyear_1994 |   .5063016   .3750761     1.35   0.185    -.2517555    1.264359
+ _Iyear_1995 |   .3853702   .3731292     1.03   0.308     -.368752    1.139492
+ _Iyear_1996 |   .4161039   .3637049     1.14   0.259    -.3189712    1.151179
+ _Iyear_1997 |   .4084934   .3206372     1.27   0.210    -.2395386    1.056525
+ _Iyear_1998 |   .7390942   .4919429     1.50   0.141    -.2551595    1.733348
+ _Iyear_1999 |   .7146329   .7212222     0.99   0.328    -.7430115    2.172277
+ _Iyear_2000 |   1.635726   1.332331     1.23   0.227    -1.057014    4.328467
+ _Iyear_2001 |   .7207178   .8799653     0.82   0.418    -1.057758    2.499194
+ _Iyear_2002 |   .7154137   .5822166     1.23   0.226    -.4612899    1.892117
+ _Iyear_2003 |   .4217874   .6100458     0.69   0.493    -.8111612    1.654736
+ _Iyear_2004 |   1.142754   .9508271     1.20   0.236    -.7789388    3.064448
+ _Iyear_2005 |   .7142215   .5974987     1.20   0.239    -.4933685    1.921811
+ _Iyear_2006 |   .1808394   .3551077     0.51   0.613      -.53686    .8985389
+ _Iyear_2007 |    .354883   .6124284     0.58   0.566     -.882881    1.592647
+ _Iyear_2008 |   .5541846   .3740821     1.48   0.146    -.2018635    1.310233
+ _Iyear_2009 |   .1902928   .2176819     0.87   0.387    -.2496587    .6302443
+ _Iyear_2010 |   .2280748   .2125661     1.07   0.290    -.2015373    .6576869
+ _Iyear_2011 |   .6640328   .3182365     2.09   0.043      .020853    1.307213
+       _cons |   .6158093   .2500479     2.46   0.018     .1104436    1.121175
+------------------------------------------------------------------------------
+
+. est store t1c1a
+
+. local b_pres_a = _b[president]
+
+. local se_pres_a = _se[president]
+
+. local N_a = e(N)
+
+. local r2_a = e(r2_a)
+
+. 
+. di _n "  COEFF president (Panel A): " %8.4f `b_pres_a' " (" %6.4f `se_pres_a'
+>  ")"
+
+  COEFF president (Panel A):   0.9746 (0.3583)
+
+. di "  N = " `N_a' ", adj R2 = " %6.4f `r2_a'
+  N = 2009, adj R2 = 0.1037
+
+. 
+. * === Column (1) Panel B: With interaction ===
+. di _n "--- Table 1, Column 1, Panel B (interaction with multiparty) ---"
+
+--- Table 1, Column 1, Panel B (interaction with multiparty) ---
+
+. xi: areg exp_dens_share president presidentMP multiparty i.year, absorb(distn
+> um) robust cluster(distnum)
+i.year            _Iyear_1963-2011    (naturally coded; _Iyear_1963 omitted)
+note: _Iyear_1992 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  2,009
+Absorbed variable: distnum                          No. of categories =     41
+                                                    F(40, 40)         =      .
+                                                    Prob > F          =      .
+                                                    R-squared         = 0.1485
+                                                    Adj R-squared     = 0.1085
+                                                    Root MSE          = 2.6364
+
+                               (Std. err. adjusted for 41 clusters in distnum)
+------------------------------------------------------------------------------
+             |               Robust
+exp_dens_s~e | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   president |   1.570221   .4864154     3.23   0.002     .5871387    2.553303
+ presidentMP |  -1.114919   .6106268    -1.83   0.075    -2.349042    .1192035
+  multiparty |  -.4502663   .4817552    -0.93   0.356     -1.42393    .5233972
+ _Iyear_1964 |  -.0333582   .1414044    -0.24   0.815    -.3191472    .2524308
+ _Iyear_1965 |   .0101271   .1726503     0.06   0.954    -.3388122    .3590664
+ _Iyear_1966 |   .0609963   .1941811     0.31   0.755    -.3314584     .453451
+ _Iyear_1967 |   .1667082   .2531269     0.66   0.514    -.3448803    .6782967
+ _Iyear_1968 |   .7509997   .5927922     1.27   0.213    -.4470781    1.949077
+ _Iyear_1969 |   .7134488   .5930478     1.20   0.236    -.4851455    1.912043
+ _Iyear_1970 |  -.3287268   .4451095    -0.74   0.465    -1.228327    .5708731
+ _Iyear_1971 |  -.1804975   .5105826    -0.35   0.726    -1.212424    .8514285
+ _Iyear_1972 |  -.1857137   .4999732    -0.37   0.712    -1.196197    .8247698
+ _Iyear_1973 |  -.1849606   .4546526    -0.41   0.686    -1.103848    .7339266
+ _Iyear_1974 |  -.2638755   .4887676    -0.54   0.592    -1.251712    .7239607
+ _Iyear_1975 |  -.5007435    .397672    -1.26   0.215    -1.304469    .3029816
+ _Iyear_1976 |  -.4719735   .3994734    -1.18   0.244    -1.279339    .3353922
+ _Iyear_1977 |  -.3032274   .4485166    -0.68   0.503    -1.209713    .6032584
+ _Iyear_1978 |  -.2006749   .4768706    -0.42   0.676    -1.164466    .7631166
+ _Iyear_1979 |   .1493822   .6395205     0.23   0.816    -1.143137    1.441901
+ _Iyear_1980 |  -.0937791   .5246529    -0.18   0.859    -1.154142    .9665839
+ _Iyear_1981 |  -.0830295   .5559904    -0.15   0.882    -1.206728    1.040669
+ _Iyear_1982 |  -.2551294    .417264    -0.61   0.544    -1.098451    .5881925
+ _Iyear_1983 |  -.3518493   .4460618    -0.79   0.435    -1.253374    .5496751
+ _Iyear_1984 |  -.3996619   .4138018    -0.97   0.340    -1.235986    .4366627
+ _Iyear_1985 |  -.2235918   .3215871    -0.70   0.491    -.8735435    .4263599
+ _Iyear_1986 |  -.2203303   .3685164    -0.60   0.553    -.9651297    .5244691
+ _Iyear_1987 |  -.1430506    .420135    -0.34   0.735    -.9921751    .7060739
+ _Iyear_1988 |  -.1522194   .3492529    -0.44   0.665    -.8580858    .5536469
+ _Iyear_1989 |   .2057092    .300974     0.68   0.498     -.402582    .8140004
+ _Iyear_1990 |   .1026031   .2255074     0.45   0.652    -.3531643    .5583705
+ _Iyear_1991 |   .2614048   .2502422     1.04   0.302    -.2443535    .7671631
+ _Iyear_1992 |          0  (omitted)
+ _Iyear_1993 |   .5269397   .4309189     1.22   0.229    -.3439798    1.397859
+ _Iyear_1994 |   .4936354   .3819864     1.29   0.204    -.2783879    1.265659
+ _Iyear_1995 |   .3727039   .3788449     0.98   0.331    -.3929702    1.138378
+ _Iyear_1996 |   .4034376   .3717142     1.09   0.284    -.3478248      1.1547
+ _Iyear_1997 |   .3958271   .3140401     1.26   0.215    -.2388715    1.030526
+ _Iyear_1998 |   .7264279   .5001827     1.45   0.154     -.284479    1.737335
+ _Iyear_1999 |   .7019666   .7230617     0.97   0.337    -.7593957    2.163329
+ _Iyear_2000 |    1.62306   1.331007     1.22   0.230    -1.067006    4.313126
+ _Iyear_2001 |   .7080515   .8813996     0.80   0.427    -1.073324    2.489427
+ _Iyear_2002 |   .7027474   .5827306     1.21   0.235    -.4749951     1.88049
+ _Iyear_2003 |   .4217874   .6102048     0.69   0.493    -.8114825    1.655057
+ _Iyear_2004 |   1.142754    .951075     1.20   0.237    -.7794397    3.064949
+ _Iyear_2005 |   .7142215   .5976545     1.20   0.239    -.4936832    1.922126
+ _Iyear_2006 |   .1808394   .3552003     0.51   0.613    -.5370471    .8987259
+ _Iyear_2007 |    .354883    .612588     0.58   0.566    -.8832036     1.59297
+ _Iyear_2008 |   .5541846   .3741796     1.48   0.146    -.2020605     1.31043
+ _Iyear_2009 |   .1902928   .2177386     0.87   0.387    -.2497734     .630359
+ _Iyear_2010 |   .2280748   .2126215     1.07   0.290    -.2016493    .6577988
+ _Iyear_2011 |   .6640328   .3183194     2.09   0.043     .0206853     1.30738
+       _cons |    1.15474   .3429302     3.37   0.002     .4616517    1.847827
+------------------------------------------------------------------------------
+
+. est store t1c1b
+
+. local b_pres_b = _b[president]
+
+. local se_pres_b = _se[president]
+
+. local b_presMP = _b[presidentMP]
+
+. local se_presMP = _se[presidentMP]
+
+. local N_b = e(N)
+
+. local r2_b = e(r2_a)
+
+. 
+. di _n "  COEFF president (Panel B): " %8.4f `b_pres_b' " (" %6.4f `se_pres_b'
+>  ")"
+
+  COEFF president (Panel B):   1.5702 (0.4864)
+
+. di "  COEFF presidentMP: " %8.4f `b_presMP' " (" %6.4f `se_presMP' ")"
+  COEFF presidentMP:  -1.1149 (0.6106)
+
+. di "  N = " `N_b' ", adj R2 = " %6.4f `r2_b'
+  N = 2009, adj R2 = 0.1085
+
+. 
+. * Test president + presidentMP = 0
+. test president + presidentMP = 0
+
+ ( 1)  president + presidentMP = 0
+
+       F(  1,    40) =    1.07
+            Prob > F =    0.3078
+
+. local p_sum = r(p)
+
+. di "  p-value (president + presidentMP = 0): " %6.4f `p_sum'
+  p-value (president + presidentMP = 0): 0.3078
+
+. 
+. * === Column (4) Panel A: Full controls ===
+. di _n "--- Table 1, Column 4, Panel A (full controls) ---"
+
+--- Table 1, Column 4, Panel A (full controls) ---
+
+. xi: areg exp_dens_share president pop1962_t area_t urbrate1962_t earnings_t /
+> //
+>     wage_employment_t value_cashcrops_t i.MomKam|year i.border|year ///
+>     dist2nairobi_t i.year, absorb(distnum) robust cluster(distnum)
+i.MomKam          _IMomKam_0-1        (naturally coded; _IMomKam_0 omitted)
+i.MomKam|year     _IMomXyear_#        (coded as above)
+i.border          _Iborder_0-1        (naturally coded; _Iborder_0 omitted)
+i.border|year     _IborXyear_#        (coded as above)
+i.year            _Iyear_1963-2011    (naturally coded; _Iyear_1963 omitted)
+note: _Iyear_2011 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  2,009
+Absorbed variable: distnum                          No. of categories =     41
+                                                    F(40, 40)         =      .
+                                                    Prob > F          =      .
+                                                    R-squared         = 0.1556
+                                                    Adj R-squared     = 0.1123
+                                                    Root MSE          = 2.6254
+
+                               (Std. err. adjusted for 41 clusters in distnum)
+------------------------------------------------------------------------------
+             |               Robust
+exp_dens_s~e | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   president |   1.003483   .3502057     2.87   0.007     .2956912    1.711275
+   pop1962_t |  -8.32e-08   4.77e-08    -1.74   0.089    -1.80e-07    1.32e-08
+      area_t |  -3.17e-07   8.76e-07    -0.36   0.720    -2.09e-06    1.45e-06
+urbrate196~t |   .0006958   .0007447     0.93   0.356    -.0008093    .0022009
+  earnings_t |  -.0002749   .0016552    -0.17   0.869    -.0036202    .0030705
+wage_empl~_t |  -.0001704   .0004941    -0.34   0.732     -.001169    .0008283
+value_cash~t |  -.0000157   .0003445    -0.05   0.964    -.0007118    .0006805
+        year |   .0634253   .0240045     2.64   0.012     .0149104    .1119401
+_IMomXyear_1 |   .0149213   .0188152     0.79   0.432    -.0231056    .0529481
+_IborXyear_1 |   .0109586   .0199294     0.55   0.585    -.0293202    .0512374
+dist2nairo~t |  -.0001153   .0000924    -1.25   0.219    -.0003021    .0000715
+ _Iyear_1964 |  -.0471921   .1432832    -0.33   0.744    -.3367782     .242394
+ _Iyear_1965 |  -.0175414   .1729509    -0.10   0.920    -.3670883    .3320054
+ _Iyear_1966 |   .0194944   .1845506     0.11   0.916    -.3534962     .392485
+ _Iyear_1967 |   .1113721   .2378075     0.47   0.642    -.3692548     .591999
+ _Iyear_1968 |   .6818298   .5676221     1.20   0.237    -.4653772    1.829037
+ _Iyear_1969 |    .630445   .5631299     1.12   0.270     -.507683    1.768573
+ _Iyear_1970 |   .2150537   .2093595     1.03   0.310    -.2080777    .6381851
+ _Iyear_1971 |   .3494491   .3357314     1.04   0.304    -.3290893    1.027987
+ _Iyear_1972 |   .3303981    .311565     1.06   0.295    -.2992982    .9600943
+ _Iyear_1973 |    .317318   .2329353     1.36   0.181    -.1534618    .7880978
+ _Iyear_1974 |   .2245681   .3053623     0.74   0.466    -.3925921    .8417283
+ _Iyear_1975 |  -.0261338   .1399333    -0.19   0.853    -.3089495    .2566819
+ _Iyear_1976 |  -.0111971   .2169752    -0.05   0.959    -.4497203    .4273261
+ _Iyear_1977 |   .1437149   .2879591     0.50   0.620    -.4382721    .7257019
+ _Iyear_1978 |   .2324329   .3750187     0.62   0.539    -.5255082    .9903739
+ _Iyear_1979 |   .5548336   .5506821     1.01   0.320    -.5581363    1.667804
+ _Iyear_1980 |   .2978376   .4327852     0.69   0.495    -.5768538    1.172529
+ _Iyear_1981 |   .2947534   .4335425     0.68   0.501    -.5814688    1.170976
+ _Iyear_1982 |     .10882   .3132506     0.35   0.730    -.5242831     .741923
+ _Iyear_1983 |  -.0017342   .3156423    -0.01   0.996    -.6396711    .6362026
+ _Iyear_1984 |  -.0633813   .2487064    -0.25   0.800    -.5660358    .4392731
+ _Iyear_1985 |   .0988559   .3185521     0.31   0.758    -.5449619    .7426736
+ _Iyear_1986 |   .0882822   .3120383     0.28   0.779    -.5423707    .7189351
+ _Iyear_1987 |   .1517292   .4299808     0.35   0.726    -.7172944    1.020753
+ _Iyear_1988 |   .1287253   .3402302     0.38   0.707    -.5589057    .8163563
+ _Iyear_1989 |   .4728201   .5524296     0.86   0.397    -.6436817    1.589322
+ _Iyear_1990 |   .3558797     .42269     0.84   0.405    -.4984087    1.210168
+ _Iyear_1991 |    .500848   .5951278     0.84   0.405    -.7019502    1.703646
+ _Iyear_1992 |   .2256091   .4075787     0.55   0.583    -.5981381    1.049356
+ _Iyear_1993 |   .1252901   .3673468     0.34   0.735    -.6171455    .8677256
+ _Iyear_1994 |   .0781507   .3221976     0.24   0.810     -.573035    .7293365
+ _Iyear_1995 |  -.0566141   .3364103    -0.17   0.867    -.7365248    .6232966
+ _Iyear_1996 |  -.0397144   .3436317    -0.12   0.909      -.73422    .6547912
+ _Iyear_1997 |  -.0611588   .2635582    -0.23   0.818    -.5938299    .4715122
+ _Iyear_1998 |   .2556074    .458747     0.56   0.581     -.671555     1.18277
+ _Iyear_1999 |    .217312   .7134809     0.30   0.762    -1.224687    1.659311
+ _Iyear_2000 |   1.124571   1.300398     0.86   0.392    -1.503631    3.752773
+ _Iyear_2001 |   .1957287   .8865043     0.22   0.826    -1.595963    1.987421
+ _Iyear_2002 |   .1765907   .5179424     0.34   0.735    -.8702099    1.223391
+ _Iyear_2003 |  -.1315735   .5407432    -0.24   0.809    -1.224456    .9613094
+ _Iyear_2004 |   .5755597   .8836731     0.65   0.519     -1.21041     2.36153
+ _Iyear_2005 |   .1331929   .4966836     0.27   0.790     -.870642    1.137028
+ _Iyear_2006 |  -.4140236   .4145746    -1.00   0.324     -1.25191    .4238629
+ _Iyear_2007 |  -.2538143   .5362594    -0.47   0.639    -1.337635    .8300064
+ _Iyear_2008 |   -.068346    .313953    -0.22   0.829    -.7028687    .5661768
+ _Iyear_2009 |  -.4460718   .2323301    -1.92   0.062    -.9156284    .0234848
+ _Iyear_2010 |  -.4221235    .192243    -2.20   0.034    -.8106611    -.033586
+ _Iyear_2011 |          0  (omitted)
+       _cons |  -26.54529   13.83592    -1.92   0.062    -54.50873    1.418146
+------------------------------------------------------------------------------
+
+. est store t1c4a
+
+. local b_pres_c4a = _b[president]
+
+. local se_pres_c4a = _se[president]
+
+. 
+. di _n "  COEFF president (Col 4, Panel A): " %8.4f `b_pres_c4a' " (" %6.4f `s
+> e_pres_c4a' ")"
+
+  COEFF president (Col 4, Panel A):   1.0035 (0.3502)
+
+. 
+. * === Column (4) Panel B: Full controls + interaction ===
+. di _n "--- Table 1, Column 4, Panel B (full controls + interaction) ---"
+
+--- Table 1, Column 4, Panel B (full controls + interaction) ---
+
+. xi: areg exp_dens_share president presidentMP multiparty pop1962_t area_t ///
+>     urbrate1962_t earnings_t wage_employment_t value_cashcrops_t ///
+>     i.MomKam|year i.border|year dist2nairobi_t i.year, ///
+>     absorb(distnum) robust cluster(distnum)
+i.MomKam          _IMomKam_0-1        (naturally coded; _IMomKam_0 omitted)
+i.MomKam|year     _IMomXyear_#        (coded as above)
+i.border          _Iborder_0-1        (naturally coded; _Iborder_0 omitted)
+i.border|year     _IborXyear_#        (coded as above)
+i.year            _Iyear_1963-2011    (naturally coded; _Iyear_1963 omitted)
+note: _Iyear_1992 omitted because of collinearity.
+note: _Iyear_2011 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  2,009
+Absorbed variable: distnum                          No. of categories =     41
+                                                    F(40, 40)         =      .
+                                                    Prob > F          =      .
+                                                    R-squared         = 0.1625
+                                                    Adj R-squared     = 0.1190
+                                                    Root MSE          = 2.6147
+
+                               (Std. err. adjusted for 41 clusters in distnum)
+------------------------------------------------------------------------------
+             |               Robust
+exp_dens_s~e | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   president |   1.722397   .4894928     3.52   0.001      .733095    2.711699
+ presidentMP |  -1.322362    .622501    -2.12   0.040    -2.580484   -.0642407
+  multiparty |  -.0173742   .4513286    -0.04   0.969    -.9295433    .8947948
+   pop1962_t |  -9.36e-08   4.70e-08    -1.99   0.053    -1.89e-07    1.40e-09
+      area_t |  -3.84e-07   8.67e-07    -0.44   0.660    -2.14e-06    1.37e-06
+urbrate196~t |   .0006705   .0007319     0.92   0.365    -.0008087    .0021498
+  earnings_t |  -.0007503   .0016037    -0.47   0.642    -.0039916    .0024909
+wage_empl~_t |  -.0000449   .0004777    -0.09   0.926    -.0010104    .0009205
+value_cash~t |   .0000109   .0003379     0.03   0.974    -.0006721    .0006939
+        year |    .069898   .0241855     2.89   0.006     .0210173    .1187787
+_IMomXyear_1 |   .0146839   .0184726     0.79   0.431    -.0226506    .0520184
+_IborXyear_1 |   .0077656   .0193757     0.40   0.691    -.0313941    .0469253
+dist2nairo~t |  -.0001257   .0000902    -1.39   0.171    -.0003079    .0000566
+ _Iyear_1964 |  -.0471923   .1433207    -0.33   0.744    -.3368542    .2424696
+ _Iyear_1965 |  -.0175415   .1729962    -0.10   0.920    -.3671799    .3320969
+ _Iyear_1966 |   .0194943   .1845989     0.11   0.916     -.353594    .3925826
+ _Iyear_1967 |    .111372   .2378698     0.47   0.642    -.3693808    .5921247
+ _Iyear_1968 |     .68183   .5677707     1.20   0.237    -.4656774    1.829337
+ _Iyear_1969 |    .630445   .5632774     1.12   0.270     -.507981    1.768871
+ _Iyear_1970 |  -.0280898    .460979    -0.06   0.952    -.9597632    .9035836
+ _Iyear_1971 |   .1063058   .5516352     0.19   0.848    -1.008591    1.221202
+ _Iyear_1972 |   .0872547   .5280313     0.17   0.870    -.9799364    1.154446
+ _Iyear_1973 |   .0741745   .4610058     0.16   0.873     -.857553    1.005902
+ _Iyear_1974 |  -.0185753    .491996    -0.04   0.970    -1.012936    .9757857
+ _Iyear_1975 |  -.2692773   .3775324    -0.71   0.480    -1.032299    .4937442
+ _Iyear_1976 |  -.2543406   .3747627    -0.68   0.501    -1.011764    .5030832
+ _Iyear_1977 |  -.0994282   .4324248    -0.23   0.819    -.9733914     .774535
+ _Iyear_1978 |  -.0107104   .4623075    -0.02   0.982    -.9450688    .9236479
+ _Iyear_1979 |   .3292247   .6383641     0.52   0.609    -.9609572    1.619407
+ _Iyear_1980 |   .0722288    .519877     0.14   0.890    -.9784819    1.122939
+ _Iyear_1981 |   .0691444   .5484944     0.13   0.900    -1.039404    1.177693
+ _Iyear_1982 |  -.1167889   .4008211    -0.29   0.772    -.9268786    .6933007
+ _Iyear_1983 |  -.2273432   .4311379    -0.53   0.601    -1.098705    .6440191
+ _Iyear_1984 |  -.2889903   .3990934    -0.72   0.473    -1.095588    .5176075
+ _Iyear_1985 |  -.1267532   .3082008    -0.41   0.683    -.7496503    .4961439
+ _Iyear_1986 |  -.1373266   .3594977    -0.38   0.704    -.8638985    .5892453
+ _Iyear_1987 |  -.0738795   .4149942    -0.18   0.860    -.9126141    .7648551
+ _Iyear_1988 |  -.0968838   .3445761    -0.28   0.780     -.793298    .5995304
+ _Iyear_1989 |   .2472111   .3052899     0.81   0.423    -.3698029     .864225
+ _Iyear_1990 |   .1302709   .2299572     0.57   0.574      -.33449    .5950317
+ _Iyear_1991 |   .2752391    .252021     1.09   0.281    -.2341144    .7845926
+ _Iyear_1992 |          0  (omitted)
+ _Iyear_1993 |   .1105718   .3729267     0.30   0.768    -.6431412    .8642849
+ _Iyear_1994 |   .0634323   .3346641     0.19   0.851    -.6129491    .7398137
+ _Iyear_1995 |  -.0713324   .3471308    -0.21   0.838      -.77291    .6302451
+ _Iyear_1996 |  -.0544325   .3567216    -0.15   0.879    -.7753938    .6665288
+ _Iyear_1997 |  -.0758771   .2593976    -0.29   0.771    -.6001392     .448385
+ _Iyear_1998 |   .2408891   .4713335     0.51   0.612    -.7117114     1.19349
+ _Iyear_1999 |   .2025937    .717771     0.28   0.779    -1.248076    1.653263
+ _Iyear_2000 |   1.109853   1.300256     0.85   0.398    -1.518062    3.737768
+ _Iyear_2001 |   .1810104   .8900801     0.20   0.840    -1.617909    1.979929
+ _Iyear_2002 |   .1618724   .5218563     0.31   0.758    -.8928385    1.216583
+ _Iyear_2003 |  -.1315736   .5408848    -0.24   0.809    -1.224743    .9615955
+ _Iyear_2004 |   .5755597   .8839045     0.65   0.519    -1.210878    2.361997
+ _Iyear_2005 |   .1331931   .4968136     0.27   0.790    -.8709047    1.137291
+ _Iyear_2006 |  -.4140237   .4146832    -1.00   0.324     -1.25213    .4240822
+ _Iyear_2007 |  -.2538144   .5363998    -0.47   0.639    -1.337919    .8302902
+ _Iyear_2008 |   -.068346   .3140352    -0.22   0.829    -.7030349    .5663428
+ _Iyear_2009 |  -.4460718   .2323909    -1.92   0.062    -.9157513    .0236078
+ _Iyear_2010 |  -.4221234   .1922933    -2.20   0.034    -.8107626   -.0334841
+ _Iyear_2011 |          0  (omitted)
+       _cons |  -26.42489   14.21361    -1.86   0.070    -55.15166    2.301883
+------------------------------------------------------------------------------
+
+. est store t1c4b
+
+. local b_pres_c4b = _b[president]
+
+. local se_pres_c4b = _se[president]
+
+. local b_presMP_c4 = _b[presidentMP]
+
+. local se_presMP_c4 = _se[presidentMP]
+
+. 
+. di _n "  COEFF president (Col 4, Panel B): " %8.4f `b_pres_c4b' " (" %6.4f `s
+> e_pres_c4b' ")"
+
+  COEFF president (Col 4, Panel B):   1.7224 (0.4895)
+
+. di "  COEFF presidentMP (Col 4): " %8.4f `b_presMP_c4' " (" %6.4f `se_presMP_
+> c4' ")"
+  COEFF presidentMP (Col 4):  -1.3224 (0.6225)
+
+. 
+. test president + presidentMP = 0
+
+ ( 1)  president + presidentMP = 0
+
+       F(  1,    40) =    0.88
+            Prob > F =    0.3550
+
+. local p_sum_c4 = r(p)
+
+. 
+. di _n "  ==============================="
+
+  ===============================
+
+. di "  VERIFICATION Table 1:"
+  VERIFICATION Table 1:
+
+. di "  Col 1 Panel A: president = " %8.4f `b_pres_a' " (" %6.4f `se_pres_a' ")
+> "
+  Col 1 Panel A: president =   0.9746 (0.3583)
+
+. di "  Col 1 Panel B: president = " %8.4f `b_pres_b' " (" %6.4f `se_pres_b' ")
+> "
+  Col 1 Panel B: president =   1.5702 (0.4864)
+
+. di "                 presidentMP = " %8.4f `b_presMP' " (" %6.4f `se_presMP' 
+> ")"
+                 presidentMP =  -1.1149 (0.6106)
+
+. di "  Col 4 Panel A: president = " %8.4f `b_pres_c4a' " (" %6.4f `se_pres_c4a
+> ' ")"
+  Col 4 Panel A: president =   1.0035 (0.3502)
+
+. di "  Col 4 Panel B: president = " %8.4f `b_pres_c4b' " (" %6.4f `se_pres_c4b
+> ' ")"
+  Col 4 Panel B: president =   1.7224 (0.4895)
+
+. di "                 presidentMP = " %8.4f `b_presMP_c4' " (" %6.4f `se_presM
+> P_c4' ")"
+                 presidentMP =  -1.3224 (0.6225)
+
+. di "  ==============================="
+  ===============================
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+> 
+>   For twowayfeweights:
+>   Y = exp_dens_share, G = distnum, T = year, D = president
+>   president is non-binary (it varies by district and changes over time
+>   as different presidents from different ethnic groups take power)
+> 
+>   We use feTR since this is a FE regression (areg with absorb).
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION"
+  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di "============================================================"
+============================================================
+
+. 
+. * Data is already at district-year level, no need to collapse
+. di "  Data at district x year level: " _N " obs"
+  Data at district x year level: 2009 obs
+
+. qui tab distnum
+
+. di "  Districts (G): " r(r)
+  Districts (G): 41
+
+. qui tab year
+
+. di "  Years (T): " r(r)
+  Years (T): 49
+
+. 
+. di _n "  Treatment distribution:"
+
+  Treatment distribution:
+
+. tab president, missing
+
+   Coethnic |
+   district |
+dummy [d,t] |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      1,690       84.12       84.12
+          1 |        319       15.88      100.00
+------------+-----------------------------------
+      Total |      2,009      100.00
+
+. 
+. * Initialize locals
+. local tw_beta_fe  = .
+
+. local tw_npos_fe  = .
+
+. local tw_nneg_fe  = .
+
+. local tw_pct_fe   = "0.0"
+
+. 
+. * --- feTR ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  feTR (Fixed Effects — Regression 1)"
+  feTR (Fixed Effects — Regression 1)
+
+. di "============================================================"
+============================================================
+
+. cap noisily twowayfeweights exp_dens_share distnum year president, type(feTR)
+>  summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.9746, estimates a weighted sum of 319 ATT
+> s. 
+319 ATTs receive a positive weight, and 0 receive a negative weight.
+------------------------------------------------
+Treat. var: president   # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        319         1.0000      
+Negative weights        0           0.0000      
+------------------------------------------------
+Total                   319         1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    0.9746
+min σ(Δ) compatible with β_fe and Δ_TR = 0:   21.7407
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
+
+. local tw_rc_fe = _rc
+
+. 
+. if `tw_rc_fe' == 0 | `tw_rc_fe' == 402 {
+.     local tw_beta_fe  = e(beta)
+.     mat _M = e(M)
+.     local tw_npos_fe  = _M[1,1]
+.     local tw_nneg_fe  = _M[2,1]
+.     local tw_sumpos   : di %8.4f _M[1,2]
+.     local tw_sumneg   : di %8.4f _M[2,2]
+. 
+.     di _n "  feTR results:"
+
+  feTR results:
+.     di "  beta     = " %10.6f `tw_beta_fe'
+  beta     =   0.974619
+.     di "  pos wgts = " `tw_npos_fe' " (sum = `tw_sumpos')"
+  pos wgts = 319 (sum =   1.0000)
+.     di "  neg wgts = " `tw_nneg_fe' " (sum = `tw_sumneg')"
+  neg wgts = 0 (sum =   0.0000)
+.     if `tw_npos_fe' + `tw_nneg_fe' > 0 {
+.         local tw_pct_fe : di %5.1f 100*`tw_nneg_fe'/(`tw_npos_fe'+`tw_nneg_fe
+> ')
+.         di "  % neg    = `tw_pct_fe'%"
+  % neg    =   0.0%
+.     }
+. }
+
+. else {
+.     di as error "  feTR failed with rc=`tw_rc_fe'. Using manual fallback."
+. 
+.     * Manual feTR decomposition
+.     qui reg exp_dens_share president i.distnum i.year
+.     local tw_beta_fe = _b[president]
+. 
+.     * Compute weights manually via FE residual
+.     qui reg president i.distnum i.year
+.     predict eps_D, residual
+. 
+.     gen w_gt = eps_D
+. 
+.     qui count if w_gt > 1e-10 & !missing(w_gt)
+.     local tw_npos_fe = r(N)
+.     qui count if w_gt < -1e-10 & !missing(w_gt)
+.     local tw_nneg_fe = r(N)
+. 
+.     if `tw_npos_fe' + `tw_nneg_fe' > 0 {
+.         local tw_pct_fe : di %5.1f 100*`tw_nneg_fe'/(`tw_npos_fe'+`tw_nneg_fe
+> ')
+.     }
+.     else {
+.         local tw_pct_fe = "0.0"
+.     }
+. 
+.     di "  beta_fe      = " %10.6f `tw_beta_fe'
+.     di "  Positive wgts: `tw_npos_fe'"
+.     di "  Negative wgts: `tw_nneg_fe'"
+.     di "  % negative   = `tw_pct_fe'%"
+. 
+.     drop eps_D w_gt
+. }
+
+. 
+. * --- fdTR ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  fdTR (First Differences — Regression 2)"
+  fdTR (First Differences — Regression 2)
+
+. di "============================================================"
+============================================================
+
+. cap noisily twowayfeweights exp_dens_share distnum year president, type(fdTR)
+>  summary_measures
+invalid syntax
+
+. local tw_rc_fd = _rc
+
+. 
+. local tw_beta_fd = .
+
+. local tw_npos_fd = .
+
+. local tw_nneg_fd = .
+
+. local tw_pct_fd = "n/a"
+
+. 
+. if `tw_rc_fd' == 0 | `tw_rc_fd' == 402 {
+.     local tw_beta_fd  = e(beta)
+.     mat _Mfd = e(M)
+.     local tw_npos_fd  = _Mfd[1,1]
+.     local tw_nneg_fd  = _Mfd[2,1]
+.     di _n "  fdTR results:"
+.     di "  beta     = " %10.6f `tw_beta_fd'
+.     di "  pos wgts = " `tw_npos_fd'
+.     di "  neg wgts = " `tw_nneg_fd'
+.     if `tw_npos_fd' + `tw_nneg_fd' > 0 {
+.         local tw_pct_fd : di %5.1f 100*`tw_nneg_fd'/(`tw_npos_fd'+`tw_nneg_fd
+> ')
+.         di "  % neg    = `tw_pct_fd'%"
+.     }
+. }
+
+. else {
+.     di as error "  fdTR failed with rc=`tw_rc_fd'"
+  fdTR failed with rc=198
+. }
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 4: SUMMARY
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  SUMMARY"
+  SUMMARY
+
+. di "============================================================"
+============================================================
+
+. di "  # pos weights (feTR) = " `tw_npos_fe'
+  # pos weights (feTR) = 319
+
+. di "  # neg weights (feTR) = " `tw_nneg_fe'
+  # neg weights (feTR) = 0
+
+. di "  % neg weights (feTR) = `tw_pct_fe'%"
+  % neg weights (feTR) =   0.0%
+
+. di "  beta (feTR)          = " %10.6f `tw_beta_fe'
+  beta (feTR)          =   0.974619
+
+. if `tw_beta_fd' != . {
+.     di "  beta (fdTR)          = " %10.6f `tw_beta_fd'
+.     di "  # pos weights (fdTR) = " `tw_npos_fd'
+.     di "  # neg weights (fdTR) = " `tw_nneg_fd'
+.     di "  % neg weights (fdTR) = `tw_pct_fd'%"
+. }
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 5: EXPORT LATEX TABLES
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 5: LaTeX EXPORT"
+  STEP 5: LaTeX EXPORT
+
+. di "============================================================"
+============================================================
+
+. 
+. * ===================================================================
+. * TABLE A: Table 1 replication (key coefficients)
+. * ===================================================================
+. 
+. local b_pres_a_s : di %8.2f `b_pres_a'
+
+. local se_pres_a_s : di %8.2f `se_pres_a'
+
+. local b_pres_b_s : di %8.2f `b_pres_b'
+
+. local se_pres_b_s : di %8.2f `se_pres_b'
+
+. local b_presMP_s : di %8.2f `b_presMP'
+
+. local se_presMP_s : di %8.2f `se_presMP'
+
+. local b_pres_c4a_s : di %8.2f `b_pres_c4a'
+
+. local se_pres_c4a_s : di %8.2f `se_pres_c4a'
+
+. local b_pres_c4b_s : di %8.2f `b_pres_c4b'
+
+. local se_pres_c4b_s : di %8.2f `se_pres_c4b'
+
+. local b_presMP_c4_s : di %8.2f `b_presMP_c4'
+
+. local se_presMP_c4_s : di %8.2f `se_presMP_c4'
+
+. local N_a_s : di %8.0fc `N_a'
+
+. local r2_a_s : di %5.2f `r2_a'
+
+. 
+. cap file close texfile
+
+. file open texfile using "$outdir/table1_replication.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burg
+    > ess et al. (2015)/table1_replication.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Table 1---Road Expenditure, Ethnicity and Democr
+> atic Change (Burgess et al., 2015)}" _n
+
+. file write texfile "\label{tab:burgess_table1}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & Column (1) & Column (4) \\" _n
+
+. file write texfile " & Baseline & Full controls \\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel A: No interaction}} \\[3
+> pt]" _n
+
+. file write texfile "President's coethnic & `b_pres_a_s' & `b_pres_c4a_s' \\" 
+> _n
+
+. file write texfile " & [`se_pres_a_s'] & [`se_pres_c4a_s'] \\[6pt]" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel B: Interaction with mult
+> iparty era}} \\[3pt]" _n
+
+. file write texfile "President's coethnic & `b_pres_b_s' & `b_pres_c4b_s' \\" 
+> _n
+
+. file write texfile " & [`se_pres_b_s'] & [`se_pres_c4b_s'] \\" _n
+
+. file write texfile "President $\times$ Multiparty & `b_presMP_s' & `b_presMP_
+> c4_s' \\" _n
+
+. file write texfile " & [`se_presMP_s'] & [`se_presMP_c4_s'] \\[6pt]" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "District FE & \multicolumn{2}{c}{Yes} \\" _n
+
+. file write texfile "Year FE & \multicolumn{2}{c}{Yes} \\" _n
+
+. file write texfile "Observations & \multicolumn{2}{c}{`N_a_s'} \\" _n
+
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile _n
+
+. file write texfile "\vspace{6pt}" _n
+
+. file write texfile "\begin{minipage}{0.85\textwidth}" _n
+
+. file write texfile "\footnotesize" _n
+
+. file write texfile "\textit{Notes:} Dependent variable: road expenditure dens
+> ity share. " _n
+
+. file write texfile "``President's coethnic'' is a dummy equal to one if a dis
+> trict's " _n
+
+. file write texfile "plurality ethnic group is the same as the president's eth
+> nic group. " _n
+
+. file write texfile "Column (4) adds controls interacted with time trends " _n
+
+. file write texfile "(population, area, urbanization rate, earnings, employmen
+> t, cash crops, " _n
+
+. file write texfile "main highway, border, distance to Nairobi). " _n
+
+. file write texfile "Robust standard errors clustered at the district level in
+>  brackets." _n
+
+. file write texfile "\end{minipage}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table1_replication.tex created"
+  -> table1_replication.tex created
+
+. 
+. * ===================================================================
+. * TABLE B: twowayfeweights summary
+. * ===================================================================
+. 
+. local tw_beta_fe_s : di %10.6f `tw_beta_fe'
+
+. local tw_beta_fe_s = strtrim("`tw_beta_fe_s'")
+
+. local tw_npos_fe_s : di %4.0f `tw_npos_fe'
+
+. local tw_npos_fe_s = strtrim("`tw_npos_fe_s'")
+
+. local tw_nneg_fe_s : di %4.0f `tw_nneg_fe'
+
+. local tw_nneg_fe_s = strtrim("`tw_nneg_fe_s'")
+
+. 
+. if "`tw_pct_fe'" == "" local tw_pct_fe = "0.0"
+
+. 
+. if `tw_beta_fd' != . {
+.     local tw_beta_fd_s : di %10.6f `tw_beta_fd'
+.     local tw_beta_fd_s = strtrim("`tw_beta_fd_s'")
+.     local tw_npos_fd_s : di %4.0f `tw_npos_fd'
+.     local tw_npos_fd_s = strtrim("`tw_npos_fd_s'")
+.     local tw_nneg_fd_s : di %4.0f `tw_nneg_fd'
+.     local tw_nneg_fd_s = strtrim("`tw_nneg_fd_s'")
+.     if "`tw_pct_fd'" == "" local tw_pct_fd = "n/a"
+. }
+
+. else {
+.     local tw_beta_fd_s = "---"
+.     local tw_npos_fd_s = "---"
+.     local tw_nneg_fd_s = "---"
+.     local tw_pct_fd    = "---"
+. }
+
+. 
+. cap file close texfile
+
+. file open texfile using "$outdir/table_twowayfeweights.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burg
+    > ess et al. (2015)/table_twowayfeweights.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisema
+> rtin \& D'Haultf\oe uille, 2020)}" _n
+
+. file write texfile "\label{tab:burgess_twfe}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & FE (feTR) & FD (fdTR) \\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel A: Specification}} \\[3p
+> t]" _n
+
+. file write texfile "Regression type & Fixed Effects & First Differences \\" _
+> n
+
+. file write texfile "Dependent variable & \multicolumn{2}{c}{Road expenditure 
+> density share} \\" _n
+
+. file write texfile "Treatment variable & \multicolumn{2}{c}{President's coeth
+> nic (non-binary)} \\" _n
+
+. file write texfile "Panel & \multicolumn{2}{c}{Districts $\times$ years (1963
+> --2011)} \\[6pt]" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel B: Weight Decomposition}
+> } \\[3pt]" _n
+
+. file write texfile "$\hat{\beta}_{TWFE}$ & `tw_beta_fe_s' & `tw_beta_fd_s' \\
+> " _n
+
+. file write texfile "\# positive weights & `tw_npos_fe_s' & `tw_npos_fd_s' \\"
+>  _n
+
+. file write texfile "\# negative weights & `tw_nneg_fe_s' & `tw_nneg_fd_s' \\"
+>  _n
+
+. file write texfile "\% negative weights & `tw_pct_fe'\% & `tw_pct_fd'\% \\[6p
+> t]" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel C: Classification (dCDH 
+> Web Appendix)}} \\[3pt]" _n
+
+. file write texfile "Design & \multicolumn{2}{c}{Not binary and/or not stagger
+> ed} \\" _n
+
+. file write texfile "Dynamic effects & \multicolumn{2}{c}{No} \\" _n
+
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile _n
+
+. file write texfile "\vspace{6pt}" _n
+
+. file write texfile "\begin{minipage}{0.92\textwidth}" _n
+
+. file write texfile "\footnotesize" _n
+
+. file write texfile "\textit{Notes:} Panel B reports the weight decomposition 
+> of the TWFE estimator " _n
+
+. file write texfile "following de Chaisemartin \& D'Haultf\oe uille (2020). " 
+> _n
+
+. file write texfile "The treatment variable is a dummy equal to one if a distr
+> ict's plurality " _n
+
+. file write texfile "ethnic group matches the president's ethnic group. Treatm
+> ent varies as " _n
+
+. file write texfile "different presidents from different ethnic groups take po
+> wer. " _n
+
+. file write texfile "Negative weights indicate that the TWFE coefficient may n
+> ot recover " _n
+
+. file write texfile "a convex combination of causal effects under heterogeneou
+> s treatment effects." _n
+
+. file write texfile "\end{minipage}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table_twowayfeweights.tex created"
+  -> table_twowayfeweights.tex created
+
+. 
+. * ===================================================================
+. * MASTER DOCUMENT
+. * ===================================================================
+. 
+. cap file close fulltex
+
+. file open fulltex using "$outdir/burgess_tables.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burg
+    > ess et al. (2015)/burgess_tables.tex not found)
+
+. 
+. file write fulltex "\documentclass[12pt]{article}" _n
+
+. file write fulltex "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write fulltex "\geometry{margin=1in}" _n
+
+. file write fulltex "\captionsetup{labelsep=endash, font=normalsize, justifica
+> tion=centering}" _n
+
+. file write fulltex "\begin{document}" _n _n
+
+. 
+. file write fulltex "\begin{center}" _n
+
+. file write fulltex "{\Large\bfseries Burgess, Jedwab, Miguel, Morjaria \& Pad
+> r\'o i Miquel (2015)}\\" _n
+
+. file write fulltex "{\large The Value of Democracy: Evidence from}\\" _n
+
+. file write fulltex "{\large Road Building in Kenya}\\" _n
+
+. file write fulltex "\vspace{0.5em}" _n
+
+. file write fulltex "{\normalsize \textit{American Economic Review}, 105(6), 1
+> 817--1851}" _n
+
+. file write fulltex "\end{center}" _n _n
+
+. file write fulltex "\vspace{1em}" _n _n
+
+. 
+. file write fulltex "\section*{1. Table 1 Replication}" _n _n
+
+. file write fulltex "We replicate the main results from Table 1, which estimat
+> es the effect " _n
+
+. file write fulltex "of being the president's coethnic on a district's share o
+> f road " _n
+
+. file write fulltex "development expenditure in Kenya (1963--2011). " _n
+
+. file write fulltex "The regression includes district fixed effects and year f
+> ixed effects, " _n
+
+. file write fulltex "with standard errors clustered at the district level. " _
+> n
+
+. file write fulltex "Panel B adds an interaction between the president's coeth
+> nic " _n
+
+. file write fulltex "indicator and the multiparty era (post-1992)." _n _n
+
+. 
+. file write fulltex "\input{table1_replication}" _n _n
+
+. file write fulltex "\clearpage" _n _n
+
+. 
+. file write fulltex "\section*{2. Two-Way FE Weights Analysis}" _n _n
+
+. file write fulltex "We apply the decomposition of de Chaisemartin \& D'Haultf
+> \oe uille (2020) " _n
+
+. file write fulltex "to the president's coethnic treatment variable. The treat
+> ment is non-binary " _n
+
+. file write fulltex "(it switches on and off as different presidents take offi
+> ce) and varies " _n
+
+. file write fulltex "across 41 districts over 49 years." _n _n
+
+. 
+. file write fulltex "\input{table_twowayfeweights}" _n _n
+
+. 
+. file write fulltex "\end{document}" _n
+
+. 
+. file close fulltex
+
+. di "  -> burgess_tables.tex created"
+  -> burgess_tables.tex created
+
+. 
+. * Copy files to texdir
+. cap copy "$outdir/table1_replication.tex" "$texdir/table1_replication.tex", r
+> eplace
+
+. cap copy "$outdir/table_twowayfeweights.tex" "$texdir/table_twowayfeweights.t
+> ex", replace
+
+. cap copy "$outdir/burgess_tables.tex" "$texdir/burgess_tables.tex", replace
+
+. 
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  ALL DONE - Burgess et al. (2015)"
+  ALL DONE - Burgess et al. (2015)
+
+. di "============================================================"
+============================================================
+
+. di "Output files:"
+Output files:
+
+. di "  1. $outdir/table1_replication.tex"
+  1. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burge
+> ss et al. (2015)/table1_replication.tex
+
+. di "  2. $outdir/table_twowayfeweights.tex"
+  2. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burge
+> ss et al. (2015)/table_twowayfeweights.tex
+
+. di "  3. $outdir/burgess_tables.tex (compilable master)"
+  3. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burge
+> ss et al. (2015)/burgess_tables.tex (compilable master)
+
+. di "  4. $outdir/run_twowayfe.log"
+  4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burge
+> ss et al. (2015)/run_twowayfe.log
+
+. di "============================================================"
+============================================================
+
+. 
+. cap log close detail
+
+. 
+end of do-file

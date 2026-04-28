@@ -1,0 +1,413 @@
+/*=============================================================================
+  TWFE Weight Decomposition: Donaldson (2018)
+  "Railroads of the Raj: Estimating the Impact of Transportation Infrastructure"
+  AER 108(4-5), 899-934
+
+  Main TWFE spec: Table 4, Column 1
+  reghdfe ln_realincome RAIL, absorb(distid year) vce(cluster distid)
+
+  Treatment: RAIL (binary: district has railroad access)
+  Unit FE: distid (district)
+  Time FE: year
+  Outcome: ln_realincome (log real agricultural income)
+  Clustering: distid
+=============================================================================*/
+
+clear all
+set more off
+cap log close _all
+
+* --- STEP 1: Load and merge data ---
+di _n "============================================================"
+di "  STEP 1: DATA PREPARATION"
+di "============================================================"
+
+global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Donaldson (2018)/web_materials"
+
+use "$datadir/Data/income/income.dta", clear
+sort distid year
+
+merge 1:1 distid year using "$datadir/Data/maps/RAIL-dummies.dta"
+tab _merge
+keep if _merge == 3
+drop _merge
+
+gen ln_realincome = log(realincome)
+
+di "Observations: " _N
+
+* Panel structure
+qui tab distid
+local n_districts = r(r)
+qui tab year
+local n_years = r(r)
+di "Districts: " `n_districts'
+di "Years:     " `n_years'
+
+di _n "--- Treatment: RAIL ---"
+tab RAIL, missing
+
+di _n "--- Treatment variation ---"
+bys distid: egen ever_rail = max(RAIL)
+bys distid: egen never_rail = min(RAIL)
+gen switcher = (ever_rail == 1 & never_rail == 0)
+qui tab distid if ever_rail == 0
+di "Never-treated districts: " r(r)
+cap qui tab distid if ever_rail == 1 & never_rail == 1
+if _rc == 0 di "Always-treated districts: " r(r)
+else di "Always-treated districts: 0"
+qui tab distid if switcher == 1
+di "Switcher districts: " r(r)
+
+drop ever_rail never_rail switcher
+
+* --- STEP 2: Replicate Table 4, Col 1 ---
+di _n "============================================================"
+di "  STEP 2: TABLE 4, COL 1 REPLICATION"
+di "  reghdfe ln_realincome RAIL, absorb(distid year) vce(cl distid)"
+di "============================================================"
+
+reghdfe ln_realincome RAIL, absorb(distid year) vce(cluster distid)
+
+local beta_t4c1 = _b[RAIL]
+local se_t4c1   = _se[RAIL]
+local n_t4c1    = e(N)
+local r2_t4c1   = e(r2)
+
+di _n "--- Table 4 Col 1 Results ---"
+di "  beta(RAIL) = " %12.6f `beta_t4c1'
+di "  se(RAIL)   = " %12.6f `se_t4c1'
+di "  N          = " `n_t4c1'
+
+* --- STEP 3: twowayfeweights ---
+di _n "============================================================"
+di "  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION"
+di "  G = distid, T = year, D = RAIL"
+di "============================================================"
+
+* --- 3a. feTR ---
+di _n "--- feTR decomposition ---"
+cap scalar drop nplus nminus beta sumplus summinus
+cap noisily twowayfeweights ln_realincome distid year RAIL, type(feTR) summary_measures
+local twfe_rc = _rc
+
+local fetr_ok = 0
+local fetr_beta = .
+local fetr_npos = .
+local fetr_nneg = .
+local fetr_sumpos = .
+local fetr_sumneg = .
+local fetr_sens1 = .
+local fetr_sens2 = .
+
+if `twfe_rc' == 0 {
+    local fetr_ok = 1
+    cap local fetr_beta    = e(beta)
+    cap local fetr_npos    = el(e(M),1,1)
+    cap local fetr_nneg    = el(e(M),2,1)
+    cap local fetr_sumpos  = el(e(M),1,2)
+    cap local fetr_sumneg  = el(e(M),2,2)
+    cap local fetr_sens1   = e(lb_se_te)
+    cap local fetr_sens2   = e(lb_se_te2)
+}
+else {
+    di "  twowayfeweights returned rc=`twfe_rc', trying fallback..."
+    cap local fetr_beta    = scalar(beta)
+    cap local fetr_npos    = scalar(nplus)
+    cap local fetr_nneg    = scalar(nminus)
+    cap local fetr_sumpos  = scalar(sumplus)
+    cap local fetr_sumneg  = scalar(summinus)
+    if `fetr_npos' != . & `fetr_nneg' != . {
+        local fetr_ok = 1
+        di "  Fallback OK"
+    }
+    else {
+        di "  Fallback FAILED"
+    }
+}
+
+if `fetr_ok' == 1 {
+    local fetr_ntot = `fetr_npos' + `fetr_nneg'
+    if `fetr_ntot' > 0 {
+        local fetr_pneg = 100 * `fetr_nneg' / `fetr_ntot'
+    }
+    else {
+        local fetr_pneg = 0
+    }
+    di _n "--- feTR Summary ---"
+    di "  beta       = " %12.6f `fetr_beta'
+    di "  Pos weights: " %9.0f `fetr_npos'
+    di "  Neg weights: " %9.0f `fetr_nneg'
+    di "  % Negative:  " %5.1f `fetr_pneg' "%"
+    di "  Sum pos w:   " %9.4f `fetr_sumpos'
+    di "  Sum neg w:   " %9.4f `fetr_sumneg'
+    if `fetr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fetr_sens1'
+    if `fetr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fetr_sens2'
+}
+else {
+    di "feTR FAILED completely with rc=`twfe_rc'"
+}
+
+* --- 3b. fdTR ---
+di _n "--- fdTR decomposition ---"
+cap scalar drop nplus nminus beta sumplus summinus
+cap noisily twowayfeweights ln_realincome distid year RAIL, type(fdTR) summary_measures
+local twfe_rc = _rc
+
+local fdtr_ok = 0
+local fdtr_beta = .
+local fdtr_npos = .
+local fdtr_nneg = .
+local fdtr_sumpos = .
+local fdtr_sumneg = .
+local fdtr_sens1 = .
+local fdtr_sens2 = .
+
+if `twfe_rc' == 0 {
+    local fdtr_ok = 1
+    cap local fdtr_beta    = e(beta)
+    cap local fdtr_npos    = el(e(M),1,1)
+    cap local fdtr_nneg    = el(e(M),2,1)
+    cap local fdtr_sumpos  = el(e(M),1,2)
+    cap local fdtr_sumneg  = el(e(M),2,2)
+    cap local fdtr_sens1   = e(lb_se_te)
+    cap local fdtr_sens2   = e(lb_se_te2)
+}
+else {
+    di "  twowayfeweights fdTR returned rc=`twfe_rc', trying fallback..."
+    cap local fdtr_beta    = scalar(beta)
+    cap local fdtr_npos    = scalar(nplus)
+    cap local fdtr_nneg    = scalar(nminus)
+    cap local fdtr_sumpos  = scalar(sumplus)
+    cap local fdtr_sumneg  = scalar(summinus)
+    if `fdtr_npos' != . & `fdtr_nneg' != . {
+        local fdtr_ok = 1
+        di "  Fallback OK"
+    }
+    else {
+        di "  Fallback FAILED"
+    }
+}
+
+if `fdtr_ok' == 1 {
+    local fdtr_ntot = `fdtr_npos' + `fdtr_nneg'
+    if `fdtr_ntot' > 0 {
+        local fdtr_pneg = 100 * `fdtr_nneg' / `fdtr_ntot'
+    }
+    else {
+        local fdtr_pneg = 0
+    }
+    di _n "--- fdTR Summary ---"
+    di "  beta       = " %12.6f `fdtr_beta'
+    di "  Pos weights: " %9.0f `fdtr_npos'
+    di "  Neg weights: " %9.0f `fdtr_nneg'
+    di "  % Negative:  " %5.1f `fdtr_pneg' "%"
+    di "  Sum pos w:   " %9.4f `fdtr_sumpos'
+    di "  Sum neg w:   " %9.4f `fdtr_sumneg'
+    if `fdtr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fdtr_sens1'
+    if `fdtr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fdtr_sens2'
+}
+else {
+    di "fdTR FAILED completely with rc=`twfe_rc'"
+}
+
+* --- STEP 4: LaTeX output ---
+di _n "============================================================"
+di "  STEP 4: LaTeX OUTPUT"
+di "============================================================"
+
+local texdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Donaldson (2018)"
+
+* --- Table replication ---
+cap file close texfile
+file open texfile using "`texdir'/table4_replication.tex", write replace
+
+file write texfile "\begin{table}[htbp]" _n
+file write texfile "\centering" _n
+file write texfile "\caption{Replication of Donaldson (2018), Table 4, Column 1}" _n
+file write texfile "\label{tab:donaldson_t4c1}" _n
+file write texfile "\begin{tabular}{lc}" _n
+file write texfile "\hline\hline" _n
+file write texfile " & Log real income \\" _n
+file write texfile "\hline" _n
+file write texfile "Railroad access (RAIL) & " %12.6f (`beta_t4c1') " \\" _n
+file write texfile " & (" %12.6f (`se_t4c1') ") \\" _n
+file write texfile "\hline" _n
+file write texfile "District FE & Yes \\" _n
+file write texfile "Year FE & Yes \\" _n
+file write texfile "Clustering & District \\" _n
+file write texfile "N & " %9.0fc (`n_t4c1') " \\" _n
+file write texfile "\hline\hline" _n
+file write texfile "\end{tabular}" _n
+file write texfile "\end{table}" _n
+
+file close texfile
+di "  Saved: table4_replication.tex"
+
+* --- twowayfeweights table ---
+cap file close texfile
+file open texfile using "`texdir'/table_twowayfeweights.tex", write replace
+
+file write texfile "\begin{table}[htbp]" _n
+file write texfile "\centering" _n
+file write texfile "\caption{TWFE Weight Decomposition: Donaldson (2018)}" _n
+file write texfile "\label{tab:donaldson_weights}" _n
+file write texfile "\begin{tabular}{lcc}" _n
+file write texfile "\hline\hline" _n
+file write texfile " & feTR & fdTR \\" _n
+file write texfile "\hline" _n
+
+* beta row
+if `fetr_ok' == 1 {
+    file write texfile "$\hat{\beta}_{TWFE}$ & " %12.6f (`fetr_beta') " & "
+}
+else {
+    file write texfile "$\hat{\beta}_{TWFE}$ & --- & "
+}
+if `fdtr_ok' == 1 {
+    file write texfile %12.6f (`fdtr_beta') " \\" _n
+}
+else {
+    file write texfile "--- \\" _n
+}
+
+* Positive weights
+if `fetr_ok' == 1 {
+    file write texfile "Positive weights & " %9.0f (`fetr_npos') " & "
+}
+else {
+    file write texfile "Positive weights & --- & "
+}
+if `fdtr_ok' == 1 {
+    file write texfile %9.0f (`fdtr_npos') " \\" _n
+}
+else {
+    file write texfile "--- \\" _n
+}
+
+* Negative weights
+if `fetr_ok' == 1 {
+    file write texfile "Negative weights & " %9.0f (`fetr_nneg') " & "
+}
+else {
+    file write texfile "Negative weights & --- & "
+}
+if `fdtr_ok' == 1 {
+    file write texfile %9.0f (`fdtr_nneg') " \\" _n
+}
+else {
+    file write texfile "--- \\" _n
+}
+
+* % Negative
+if `fetr_ok' == 1 {
+    file write texfile "\% Negative & " %5.1f (`fetr_pneg') "\% & "
+}
+else {
+    file write texfile "\% Negative & --- & "
+}
+if `fdtr_ok' == 1 {
+    file write texfile %5.1f (`fdtr_pneg') "\% \\" _n
+}
+else {
+    file write texfile "--- \\" _n
+}
+
+* Sum weights
+if `fetr_ok' == 1 {
+    file write texfile "$\Sigma$ positive & " %9.4f (`fetr_sumpos') " & "
+}
+else {
+    file write texfile "$\Sigma$ positive & --- & "
+}
+if `fdtr_ok' == 1 {
+    file write texfile %9.4f (`fdtr_sumpos') " \\" _n
+}
+else {
+    file write texfile "--- \\" _n
+}
+
+if `fetr_ok' == 1 & `fetr_sumneg' != . {
+    file write texfile "$\Sigma$ negative & $-$" %9.4f (abs(`fetr_sumneg')) " & "
+}
+else {
+    file write texfile "$\Sigma$ negative & --- & "
+}
+if `fdtr_ok' == 1 & `fdtr_sumneg' != . {
+    file write texfile "$-$" %9.4f (abs(`fdtr_sumneg')) " \\" _n
+}
+else {
+    file write texfile "--- \\" _n
+}
+
+file write texfile "\hline" _n
+
+* Summary measures
+if `fetr_sens1' != . {
+    file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for $\beta_{fe}$ and $\Delta_{TR}=0$: " %9.4f (`fetr_sens1') "} \\" _n
+}
+if `fetr_sens2' != . {
+    file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for opposite sign: " %9.4f (`fetr_sens2') "} \\" _n
+}
+if `fetr_sens1' == . & `fetr_ok' == 1 {
+    file write texfile "\multicolumn{3}{l}{\footnotesize Sensitivity measures unavailable.} \\" _n
+}
+
+file write texfile "\hline" _n
+file write texfile "\multicolumn{3}{l}{\footnotesize Spec: \texttt{reghdfe ln\_realincome RAIL, absorb(distid year) vce(cl distid)}} \\" _n
+file write texfile "\multicolumn{3}{l}{\footnotesize Panel: district $\times$ year. Treatment: railroad access (binary).} \\" _n
+file write texfile "\hline\hline" _n
+file write texfile "\end{tabular}" _n
+file write texfile "\end{table}" _n
+
+file close texfile
+di "  Saved: table_twowayfeweights.tex"
+
+* --- Master LaTeX document ---
+cap file close texfile
+file open texfile using "`texdir'/donaldson_tables.tex", write replace
+
+file write texfile "\documentclass[12pt]{article}" _n
+file write texfile "\usepackage[margin=1in]{geometry}" _n
+file write texfile "\usepackage{booktabs,caption,amsfonts}" _n
+file write texfile "\begin{document}" _n
+file write texfile "\section*{Donaldson (2018): TWFE Weight Decomposition}" _n
+file write texfile "\subsection*{Paper: ``Railroads of the Raj'', AER 108(4-5)}" _n
+file write texfile _n
+file write texfile "\input{table4_replication}" _n
+file write texfile _n
+file write texfile "\input{table_twowayfeweights}" _n
+file write texfile _n
+file write texfile "\end{document}" _n
+
+file close texfile
+di "  Saved: donaldson_tables.tex"
+
+* --- STEP 5: Summary ---
+di _n "============================================================"
+di "  FINAL SUMMARY: Donaldson (2018)"
+di "============================================================"
+di "  Table 4, Col 1"
+di "  Spec: reghdfe ln_realincome RAIL, absorb(distid year) vce(cl distid)"
+di "  beta(RAIL) = " %12.6f `beta_t4c1'
+di "  se(RAIL)   = " %12.6f `se_t4c1'
+di "  N          = " `n_t4c1'
+di "  Panel: " `n_districts' " districts x " `n_years' " years"
+di "------------------------------------------------------------"
+if `fetr_ok' {
+    di "  feTR: " %9.0f `fetr_npos' " pos, " %9.0f `fetr_nneg' " neg (" %5.1f `fetr_pneg' "% negative)"
+    di "        Sum pos: " %9.4f `fetr_sumpos' "  Sum neg: " %9.4f `fetr_sumneg'
+}
+else {
+    di "  feTR: FAILED"
+}
+if `fdtr_ok' {
+    di "  fdTR: " %9.0f `fdtr_npos' " pos, " %9.0f `fdtr_nneg' " neg (" %5.1f `fdtr_pneg' "% negative)"
+    di "        Sum pos: " %9.4f `fdtr_sumpos' "  Sum neg: " %9.4f `fdtr_sumneg'
+}
+else {
+    di "  fdTR: FAILED"
+}
+di "============================================================"
+
+* Done

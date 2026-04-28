@@ -1,0 +1,36 @@
+\begin{table}[htbp]
+\centering
+\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}
+\label{tab:antecol_twfe}
+\begin{tabular}{lcc}
+\toprule
+ & FE (feTR) & FD (fdTR) \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: Specification}} \\[3pt]
+Regression type & Fixed Effects & First Differences \\
+Dependent variable & \multicolumn{2}{c}{Tenure at policy university} \\
+Treatment variable & \multicolumn{2}{c}{GNCS policy (binary)} \\
+Panel & \multicolumn{2}{c}{Universities $\times$ cohort years} \\[6pt]
+\multicolumn{3}{l}{\textit{Panel B: Weight Decomposition}} \\[3pt]
+$\hat{\beta}_{TWFE}$ & 0.054535 & --- \\
+\# positive weights & 182 & --- \\
+\# negative weights & 14 & --- \\
+\% negative weights &   7.1\% & ---\% \\[6pt]
+\multicolumn{3}{l}{\textit{Panel C: Classification (dCDH Web Appendix)}} \\[3pt]
+Design & \multicolumn{2}{c}{Sharp (binary, staggered)} \\
+Dynamic effects & \multicolumn{2}{c}{Yes} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\textit{Notes:} Panel B reports the weight decomposition of the TWFE estimator 
+following de Chaisemartin \& D'Haultf\oe uille (2020). 
+The treatment variable is a binary indicator for adoption of a gender-neutral 
+clock stopping policy (GNCS). Data collapsed to university $\times$ year cells 
+for the decomposition. 
+Negative weights indicate that the TWFE coefficient may not recover 
+a convex combination of causal effects under heterogeneous treatment effects.
+\end{minipage}
+\end{table}

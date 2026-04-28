@@ -1,0 +1,132 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do check_vars.do 
+
+. /*===========================================================================
+> ==
+>   CHECK_VARS: Donaldson (2018)
+>   "Railroads of the Raj: Estimating the Impact of Transportation Infrastructu
+> re"
+>   AER 108(4-5), 899-934
+> 
+>   Purpose: Verify data structure and key variables for TWFE decomposition
+>   Main TWFE spec: Table 4, Column 1
+>   reghdfe ln_realincome RAIL, absorb(distid year) vce(cluster distid)
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Donaldson (2018)/web_materials"
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  DATASET 1: income.dta"
+  DATASET 1: income.dta
+
+. di "============================================================"
+============================================================
+
+. cap use "$datadir/Data/income/income.dta", clear
+
+. if _rc == 0 {
+.     di "Loaded OK. Obs: " _N
+Loaded OK. Obs: 7086
+.     desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Donaldson (2018)/web_materials/Data/income/income.dta
+ Observations:         7,086                  
+    Variables:             7                  28 Dec 2017 17:41
+Sorted by: distid  year
+.     ds
+province    distid      nomincome   realincome
+district    year        area_total
+.     di _n "--- Panel structure ---"
+
+--- Panel structure ---
+.     cap qui tab distid
+.     di "Districts: " r(r)
+Districts: 192
+.     cap qui tab year
+.     di "Years: " r(r)
+Years: 60
+.     cap tab year
+.     cap sum realincome, detail
+. }
+
+. else {
+.     di "FAILED to load income.dta"
+. }
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  DATASET 2: RAIL dummies.dta"
+  DATASET 2: RAIL dummies.dta
+
+. di "============================================================"
+============================================================
+
+. cap use "$datadir/Data/maps/RAIL dummies.dta", clear
+
+. if _rc == 0 {
+.     di "Loaded OK. Obs: " _N
+.     desc, short
+.     ds
+.     cap tab RAIL, missing
+. }
+
+. else {
+.     di "FAILED to load RAIL dummies.dta"
+FAILED to load RAIL dummies.dta
+. }
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  MERGED DATASET"
+  MERGED DATASET
+
+. di "============================================================"
+============================================================
+
+. use "$datadir/Data/income/income.dta", clear
+
+. sort distid year
+
+. merge 1:1 distid year using "$datadir/Data/maps/RAIL dummies.dta"

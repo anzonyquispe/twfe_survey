@@ -1,0 +1,39 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath}
+\geometry{margin=1in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Antecol, Bedard \& Stearns (2018)}\\
+{\large Equal but Inequitable: Who Benefits from}\\
+{\large Gender-Neutral Tenure Clock Stopping Policies?}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 108(9), 2420--2441}
+\end{center}
+
+\vspace{1em}
+
+\section*{1. Table 2 Replication}
+
+We replicate the main results from Table 2, which estimates the effect 
+of gender-neutral (GNCS) and female-only (FOCS) tenure clock stopping 
+policies on the probability of receiving tenure at the policy university. 
+The regression includes university fixed effects interacted with gender 
+and cohort year fixed effects interacted with gender, with standard errors 
+clustered at the university level.
+
+\input{table2_replication}
+
+\clearpage
+
+\section*{2. Two-Way FE Weights Analysis}
+
+We apply the decomposition of de Chaisemartin \& D'Haultf\oe uille (2020) 
+to the GNCS treatment variable. The treatment is binary (policy adopted or not) 
+and staggered (universities adopt at different times). 
+Data is collapsed to university $\times$ cohort year cells for the decomposition.
+
+\input{table_twowayfeweights}
+
+\end{document}

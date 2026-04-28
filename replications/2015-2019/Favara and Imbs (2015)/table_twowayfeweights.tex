@@ -1,0 +1,24 @@
+\begin{table}[htbp]
+\centering
+\caption{TWFE Weight Decomposition: Favara and Imbs (2015)}
+\label{tab:favara_weights}
+\begin{tabular}{lcc}
+\hline\hline
+ & feTR & fdTR \\
+\hline
+$\hat{\beta}_{TWFE}$ & 0.0103 & --- \\
+Positive weights & 4406 & --- \\
+Negative weights & 2067 & --- \\
+\% Negative & 31.9\% & --- \\
+$\Sigma$ positive & 1.1244 & --- \\
+$\Sigma$ negative & $-$0.1244 & --- \\
+\hline
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for $\beta_{fe}$ and $\Delta_{TR}=0$: 0.0085} \\
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for opposite sign: 0.0296} \\
+\hline
+\multicolumn{3}{l}{\footnotesize Spec: \texttt{xtreg Dl\_hpi Linter\_bra yr* [aw=w1], fe cl(state\_n)}} \\
+\multicolumn{3}{l}{\footnotesize Panel: county $\times$ year. Treatment: lagged interstate branch deregulation.} \\
+\multicolumn{3}{l}{\footnotesize fdTR: invalid syntax (treatment switches on/off).} \\
+\hline\hline
+\end{tabular}
+\end{table}

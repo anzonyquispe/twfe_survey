@@ -1,0 +1,36 @@
+\begin{table}[htbp]
+\centering
+\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}
+\label{tab:burgess_twfe}
+\begin{tabular}{lcc}
+\toprule
+ & FE (feTR) & FD (fdTR) \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: Specification}} \\[3pt]
+Regression type & Fixed Effects & First Differences \\
+Dependent variable & \multicolumn{2}{c}{Road expenditure density share} \\
+Treatment variable & \multicolumn{2}{c}{President's coethnic (non-binary)} \\
+Panel & \multicolumn{2}{c}{Districts $\times$ years (1963--2011)} \\[6pt]
+\multicolumn{3}{l}{\textit{Panel B: Weight Decomposition}} \\[3pt]
+$\hat{\beta}_{TWFE}$ & 0.974619 & --- \\
+\# positive weights & 319 & --- \\
+\# negative weights & 0 & --- \\
+\% negative weights &   0.0\% & ---\% \\[6pt]
+\multicolumn{3}{l}{\textit{Panel C: Classification (dCDH Web Appendix)}} \\[3pt]
+Design & \multicolumn{2}{c}{Not binary and/or not staggered} \\
+Dynamic effects & \multicolumn{2}{c}{No} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\textit{Notes:} Panel B reports the weight decomposition of the TWFE estimator 
+following de Chaisemartin \& D'Haultf\oe uille (2020). 
+The treatment variable is a dummy equal to one if a district's plurality 
+ethnic group matches the president's ethnic group. Treatment varies as 
+different presidents from different ethnic groups take power. 
+Negative weights indicate that the TWFE coefficient may not recover 
+a convex combination of causal effects under heterogeneous treatment effects.
+\end{minipage}
+\end{table}

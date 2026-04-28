@@ -1,0 +1,40 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath}
+\geometry{margin=1in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Burgess, Jedwab, Miguel, Morjaria \& Padr\'o i Miquel (2015)}\\
+{\large The Value of Democracy: Evidence from}\\
+{\large Road Building in Kenya}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 105(6), 1817--1851}
+\end{center}
+
+\vspace{1em}
+
+\section*{1. Table 1 Replication}
+
+We replicate the main results from Table 1, which estimates the effect 
+of being the president's coethnic on a district's share of road 
+development expenditure in Kenya (1963--2011). 
+The regression includes district fixed effects and year fixed effects, 
+with standard errors clustered at the district level. 
+Panel B adds an interaction between the president's coethnic 
+indicator and the multiparty era (post-1992).
+
+\input{table1_replication}
+
+\clearpage
+
+\section*{2. Two-Way FE Weights Analysis}
+
+We apply the decomposition of de Chaisemartin \& D'Haultf\oe uille (2020) 
+to the president's coethnic treatment variable. The treatment is non-binary 
+(it switches on and off as different presidents take office) and varies 
+across 41 districts over 49 years.
+
+\input{table_twowayfeweights}
+
+\end{document}

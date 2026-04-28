@@ -1,0 +1,760 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do run_twowayfe.do 
+
+. /*===========================================================================
+> ==
+>   TWFE Weight Decomposition: Fetzer (2019)
+>   "Did Austerity Cause Brexit?"
+>   AER 109(11), 3849-3886
+> 
+>   Main TWFE spec: Table 1, Panel A, Column 1
+>   reghdfe pct_votes_UKIP temp, absorb(id ryr) vce(cl id) nocons
+>   where temp = post2010 * totalimpact_finlosswap
+> 
+>   Treatment: temp (post-austerity × fiscal impact per capita, continuous)
+>   Unit FE: id (local authority district)
+>   Time FE: ryr (region × year)
+>   Outcome: pct_votes_UKIP (local election UKIP vote share)
+>   Clustering: id
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. * ─── STEP 1: Load data ─────────────────────────────────────────────────────
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Fetzer (2019)/data-files"
+
+. 
+. use "$datadir/DISTRICT.dta", clear
+(Written by R.              )
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 1: DATA EXPLORATION"
+  STEP 1: DATA EXPLORATION
+
+. di "============================================================"
+============================================================
+
+. di "Observations: " _N
+Observations: 6091
+
+. 
+. * Panel structure
+. qui tab id
+
+. local n_districts = r(r)
+
+. qui tab year
+
+. local n_years = r(r)
+
+. qui tab ryr
+
+. local n_ryr = r(r)
+
+. di "Districts (id): " `n_districts'
+Districts (id): 380
+
+. di "Years:          " `n_years'
+Years:          16
+
+. di "Region-year:    " `n_ryr'
+Region-year:    176
+
+. 
+. * Create treatment variable
+. gen temp = post2010 * totalimpact_finlosswap
+(43 missing values generated)
+
+. 
+. * Check treatment
+. di _n "--- Treatment: temp = post2010 * totalimpact_finlosswap ---"
+
+--- Treatment: temp = post2010 * totalimpact_finlosswap ---
+
+. sum temp, detail
+
+                            temp
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               6,048
+25%            0              0       Sum of wgt.       6,048
+
+50%            0                      Mean           139.7255
+                        Largest       Std. dev.      218.0147
+75%          329            914
+90%          505            914       Variance       47530.43
+95%          568            914       Skewness       1.128113
+99%          678            914       Kurtosis        2.73085
+
+. 
+. * ─── STEP 2: Replicate Table 1, Panel A, Column 1 ──────────────────────────
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 2: TABLE 1, PANEL A, COL 1 REPLICATION"
+  STEP 2: TABLE 1, PANEL A, COL 1 REPLICATION
+
+. di "  reghdfe pct_votes_UKIP temp, absorb(id ryr) vce(cl id) nocons"
+  reghdfe pct_votes_UKIP temp, absorb(id ryr) vce(cl id) nocons
+
+. di "============================================================"
+============================================================
+
+. 
+. reghdfe pct_votes_UKIP temp, absorb(id ryr) vce(cl id) nocons
+(dropped 27 singleton observations)
+(MWFE estimator converged in 11 iterations)
+
+HDFE Linear regression                            Number of obs   =      3,260
+Absorbing 2 HDFE groups                           F(   1,    344) =      28.90
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8255
+                                                  Adj R-squared   =     0.7955
+                                                  Within R-sq.    =     0.0414
+Number of clusters (id)      =        345         Root MSE        =     3.4335
+
+                                   (Std. err. adjusted for 345 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+pct_votes~IP | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        temp |   .0144484   .0026875     5.38   0.000     .0091624    .0197344
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+          id |       345         345           0    *|
+         ryr |       134           1         133     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. local beta_t1c1 = _b[temp]
+
+. local se_t1c1   = _se[temp]
+
+. local n_t1c1    = e(N)
+
+. local r2_t1c1   = e(r2)
+
+. 
+. di _n "--- Table 1 Panel A Col 1 Results ---"
+
+--- Table 1 Panel A Col 1 Results ---
+
+. di "  beta(temp)  = " %12.6f `beta_t1c1'
+  beta(temp)  =     0.014448
+
+. di "  se(temp)    = " %12.6f `se_t1c1'
+  se(temp)    =     0.002687
+
+. di "  N           = " `n_t1c1'
+  N           = 3260
+
+. 
+. * ─── STEP 3: twowayfeweights decomposition ─────────────────────────────────
+> ─
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION"
+  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di "  G = id, T = ryr, D = temp"
+  G = id, T = ryr, D = temp
+
+. di "============================================================"
+============================================================
+
+. 
+. * --- 3a. feTR ---
+. di _n "--- feTR decomposition ---"
+
+--- feTR decomposition ---
+
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights pct_votes_UKIP id ryr temp, type(feTR) summary_me
+> asures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.0144, estimates a weighted sum of 1075 AT
+> Ts. 
+483 ATTs receive a positive weight, and 592 receive a negative weight.
+1076 (g,t) cells receive the treatment, but the ATTs of 1 cells receive a weigh
+> t equal to zero.
+------------------------------------------------
+Treat. var: temp        # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        483         2.4188      
+Negative weights        592         -1.4188     
+------------------------------------------------
+Total                   1075        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    0.0144
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.0031
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,
+> t) cells:    0.0044
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
+
+. local twfe_rc = _rc
+
+. 
+. local fetr_ok = 0
+
+. local fetr_beta = .
+
+. local fetr_npos = .
+
+. local fetr_nneg = .
+
+. local fetr_sumpos = .
+
+. local fetr_sumneg = .
+
+. local fetr_sens1 = .
+
+. local fetr_sens2 = .
+
+. 
+. if `twfe_rc' == 0 {
+.     local fetr_ok = 1
+.     cap local fetr_beta    = e(beta)
+.     cap local fetr_npos    = el(e(M),1,1)
+.     cap local fetr_nneg    = el(e(M),2,1)
+.     cap local fetr_sumpos  = el(e(M),1,2)
+.     cap local fetr_sumneg  = el(e(M),2,2)
+.     cap local fetr_sens1   = e(lb_se_te)
+.     cap local fetr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     di "  twowayfeweights returned rc=`twfe_rc', trying fallback scalars..."
+.     cap local fetr_beta    = scalar(beta)
+.     cap local fetr_npos    = scalar(nplus)
+.     cap local fetr_nneg    = scalar(nminus)
+.     cap local fetr_sumpos  = scalar(sumplus)
+.     cap local fetr_sumneg  = scalar(summinus)
+.     if `fetr_npos' != . & `fetr_nneg' != . {
+.         local fetr_ok = 1
+.         di "  Fallback OK: captured from global scalars"
+.     }
+.     else {
+.         di "  Fallback FAILED"
+.     }
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     local fetr_ntot = `fetr_npos' + `fetr_nneg'
+.     if `fetr_ntot' > 0 {
+.         local fetr_pneg = 100 * `fetr_nneg' / `fetr_ntot'
+.     }
+.     else {
+.         local fetr_pneg = 0
+.     }
+.     di _n "--- feTR Summary ---"
+
+--- feTR Summary ---
+.     di "  beta       = " %12.6f `fetr_beta'
+  beta       =     0.014448
+.     di "  Pos weights: " %9.0f `fetr_npos'
+  Pos weights:       483
+.     di "  Neg weights: " %9.0f `fetr_nneg'
+  Neg weights:       592
+.     di "  % Negative:  " %5.1f `fetr_pneg' "%"
+  % Negative:   55.1%
+.     di "  Sum pos w:   " %9.4f `fetr_sumpos'
+  Sum pos w:      2.4188
+.     di "  Sum neg w:   " %9.4f `fetr_sumneg'
+  Sum neg w:     -1.4188
+.     if `fetr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fetr_sens1'
+  min sigma(D) for zero:     0.0031
+.     if `fetr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fetr_sens2'
+  min sigma(D) for opp:      0.0044
+. }
+
+. else {
+.     di "feTR FAILED completely with rc=`twfe_rc'"
+. }
+
+. 
+. * --- 3b. fdTR ---
+. di _n "--- fdTR decomposition ---"
+
+--- fdTR decomposition ---
+
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights pct_votes_UKIP id ryr temp, type(fdTR) summary_me
+> asures
+invalid syntax
+
+. local twfe_rc = _rc
+
+. 
+. local fdtr_ok = 0
+
+. local fdtr_beta = .
+
+. local fdtr_npos = .
+
+. local fdtr_nneg = .
+
+. local fdtr_sumpos = .
+
+. local fdtr_sumneg = .
+
+. local fdtr_sens1 = .
+
+. local fdtr_sens2 = .
+
+. 
+. if `twfe_rc' == 0 {
+.     local fdtr_ok = 1
+.     cap local fdtr_beta    = e(beta)
+.     cap local fdtr_npos    = el(e(M),1,1)
+.     cap local fdtr_nneg    = el(e(M),2,1)
+.     cap local fdtr_sumpos  = el(e(M),1,2)
+.     cap local fdtr_sumneg  = el(e(M),2,2)
+.     cap local fdtr_sens1   = e(lb_se_te)
+.     cap local fdtr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     di "  twowayfeweights fdTR returned rc=`twfe_rc', trying fallback..."
+  twowayfeweights fdTR returned rc=198, trying fallback...
+.     cap local fdtr_beta    = scalar(beta)
+.     cap local fdtr_npos    = scalar(nplus)
+.     cap local fdtr_nneg    = scalar(nminus)
+.     cap local fdtr_sumpos  = scalar(sumplus)
+.     cap local fdtr_sumneg  = scalar(summinus)
+.     if `fdtr_npos' != . & `fdtr_nneg' != . {
+.         local fdtr_ok = 1
+.         di "  Fallback OK"
+.     }
+.     else {
+.         di "  Fallback FAILED"
+  Fallback FAILED
+.     }
+. }
+
+. 
+. if `fdtr_ok' == 1 {
+.     local fdtr_ntot = `fdtr_npos' + `fdtr_nneg'
+.     if `fdtr_ntot' > 0 {
+.         local fdtr_pneg = 100 * `fdtr_nneg' / `fdtr_ntot'
+.     }
+.     else {
+.         local fdtr_pneg = 0
+.     }
+.     di _n "--- fdTR Summary ---"
+.     di "  beta       = " %12.6f `fdtr_beta'
+.     di "  Pos weights: " %9.0f `fdtr_npos'
+.     di "  Neg weights: " %9.0f `fdtr_nneg'
+.     di "  % Negative:  " %5.1f `fdtr_pneg' "%"
+.     di "  Sum pos w:   " %9.4f `fdtr_sumpos'
+.     di "  Sum neg w:   " %9.4f `fdtr_sumneg'
+.     if `fdtr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fdtr_sens1'
+.     if `fdtr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fdtr_sens2'
+. }
+
+. else {
+.     di "fdTR FAILED completely with rc=`twfe_rc'"
+fdTR FAILED completely with rc=198
+. }
+
+. 
+. * ─── STEP 4: LaTeX output ──────────────────────────────────────────────────
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 4: LaTeX OUTPUT"
+  STEP 4: LaTeX OUTPUT
+
+. di "============================================================"
+============================================================
+
+. 
+. local texdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015
+> -2019/Fetzer (2019)"
+
+. 
+. * --- Table replication ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table1_replication.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Fetz
+    > er (2019)/table1_replication.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Replication of Fetzer (2019), Table 1, Panel A, 
+> Column 1}" _n
+
+. file write texfile "\label{tab:fetzer_t1c1}" _n
+
+. file write texfile "\begin{tabular}{lc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & \% UKIP (local) \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "$\mathbb{1}$(Year$>$2010) $\times$ Austerity & " %12.6f (
+> `beta_t1c1') " \\" _n
+
+. file write texfile " & (" %12.6f (`se_t1c1') ") \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "District FE & Yes \\" _n
+
+. file write texfile "Region $\times$ Year FE & Yes \\" _n
+
+. file write texfile "Clustering & District \\" _n
+
+. file write texfile "N & " %9.0fc (`n_t1c1') " \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table1_replication.tex"
+  Saved: table1_replication.tex
+
+. 
+. * --- twowayfeweights table ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table_twowayfeweights.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Fetz
+    > er (2019)/table_twowayfeweights.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{TWFE Weight Decomposition: Fetzer (2019)}" _n
+
+. file write texfile "\label{tab:fetzer_weights}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & feTR & fdTR \\" _n
+
+. file write texfile "\hline" _n
+
+. 
+. * beta row
+. if `fetr_ok' == 1 {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & " %12.6f (`fetr_beta') " & "
+. }
+
+. else {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %12.6f (`fdtr_beta') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Positive weights
+. if `fetr_ok' == 1 {
+.     file write texfile "Positive weights & " %9.0f (`fetr_npos') " & "
+. }
+
+. else {
+.     file write texfile "Positive weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.0f (`fdtr_npos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Negative weights
+. if `fetr_ok' == 1 {
+.     file write texfile "Negative weights & " %9.0f (`fetr_nneg') " & "
+. }
+
+. else {
+.     file write texfile "Negative weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.0f (`fdtr_nneg') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * % Negative
+. if `fetr_ok' == 1 {
+.     file write texfile "\% Negative & " %5.1f (`fetr_pneg') "\% & "
+. }
+
+. else {
+.     file write texfile "\% Negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %5.1f (`fdtr_pneg') "\% \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Sum weights
+. if `fetr_ok' == 1 {
+.     file write texfile "$\Sigma$ positive & " %9.4f (`fetr_sumpos') " & "
+. }
+
+. else {
+.     file write texfile "$\Sigma$ positive & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.4f (`fdtr_sumpos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 & `fetr_sumneg' != . {
+.     file write texfile "$\Sigma$ negative & $-$" %9.4f (abs(`fetr_sumneg')) "
+>  & "
+. }
+
+. else {
+.     file write texfile "$\Sigma$ negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 & `fdtr_sumneg' != . {
+.     file write texfile "$-$" %9.4f (abs(`fdtr_sumneg')) " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. file write texfile "\hline" _n
+
+. 
+. * Summary measures
+. if `fetr_sens1' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$
+>  for $\beta_{fe}$ and $\Delta_{TR}=0$: " %9.4f (`fetr_sens1') "} \\" _n
+. }
+
+. if `fetr_sens2' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$
+>  for opposite sign: " %9.4f (`fetr_sens2') "} \\" _n
+. }
+
+. if `fetr_sens1' == . & `fetr_ok' == 1 {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize Sensitivity measures
+>  unavailable.} \\" _n
+. }
+
+. file write texfile "\hline" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Spec: \texttt{reghdfe pc
+> t\_votes\_UKIP temp, absorb(id ryr) vce(cl id)}} \\" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Panel: district $\times$
+>  year. Treatment: post-2010 $\times$ austerity impact (continuous).} \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table_twowayfeweights.tex"
+  Saved: table_twowayfeweights.tex
+
+. 
+. * --- Master LaTeX document ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/fetzer_tables.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Fetz
+    > er (2019)/fetzer_tables.tex not found)
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage[margin=1in]{geometry}" _n
+
+. file write texfile "\usepackage{booktabs,caption,amsfonts}" _n
+
+. file write texfile "\begin{document}" _n
+
+. file write texfile "\section*{Fetzer (2019): TWFE Weight Decomposition}" _n
+
+. file write texfile "\subsection*{Paper: ``Did Austerity Cause Brexit?'', AER 
+> 109(11)}" _n
+
+. file write texfile _n
+
+. file write texfile "\input{table1_replication}" _n
+
+. file write texfile _n
+
+. file write texfile "\input{table_twowayfeweights}" _n
+
+. file write texfile _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: fetzer_tables.tex"
+  Saved: fetzer_tables.tex
+
+. 
+. * ─── STEP 5: Summary ─────────────────────────────────────────────────────
+. di _n "============================================================"
+
+============================================================
+
+. di "  FINAL SUMMARY: Fetzer (2019)"
+  FINAL SUMMARY: Fetzer (2019)
+
+. di "============================================================"
+============================================================
+
+. di "  Table 1, Panel A, Col 1"
+  Table 1, Panel A, Col 1
+
+. di "  Spec: reghdfe pct_votes_UKIP temp, absorb(id ryr) vce(cl id)"
+  Spec: reghdfe pct_votes_UKIP temp, absorb(id ryr) vce(cl id)
+
+. di "  beta(temp) = " %12.6f `beta_t1c1'
+  beta(temp) =     0.014448
+
+. di "  se(temp)   = " %12.6f `se_t1c1'
+  se(temp)   =     0.002687
+
+. di "  N          = " `n_t1c1'
+  N          = 3260
+
+. di "  Panel: " `n_districts' " districts x " `n_years' " years (" `n_ryr' " r
+> egion-year groups)"
+  Panel: 380 districts x 16 years (176 region-year groups)
+
+. di "------------------------------------------------------------"
+------------------------------------------------------------
+
+. if `fetr_ok' {
+.     di "  feTR: " %9.0f `fetr_npos' " pos, " %9.0f `fetr_nneg' " neg (" %5.1f
+>  `fetr_pneg' "% negative)"
+  feTR:       483 pos,       592 neg ( 55.1% negative)
+.     di "        Sum pos: " %9.4f `fetr_sumpos' "  Sum neg: " %9.4f `fetr_sumn
+> eg'
+        Sum pos:    2.4188  Sum neg:   -1.4188
+. }
+
+. else {
+.     di "  feTR: FAILED"
+. }
+
+. if `fdtr_ok' {
+.     di "  fdTR: " %9.0f `fdtr_npos' " pos, " %9.0f `fdtr_nneg' " neg (" %5.1f
+>  `fdtr_pneg' "% negative)"
+.     di "        Sum pos: " %9.4f `fdtr_sumpos' "  Sum neg: " %9.4f `fdtr_sumn
+> eg'
+. }
+
+. else {
+.     di "  fdTR: FAILED"
+  fdTR: FAILED
+. }
+
+. di "============================================================"
+============================================================
+
+. 
+. * Done

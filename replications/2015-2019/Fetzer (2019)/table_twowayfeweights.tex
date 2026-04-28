@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\centering
+\caption{TWFE Weight Decomposition: Fetzer (2019)}
+\label{tab:fetzer_weights}
+\begin{tabular}{lcc}
+\hline\hline
+ & feTR & fdTR \\
+\hline
+$\hat{\beta}_{TWFE}$ &     0.014448 & --- \\
+Positive weights &       483 & --- \\
+Negative weights &       592 & --- \\
+\% Negative &  55.1\% & --- \\
+$\Sigma$ positive &    2.4188 & --- \\
+$\Sigma$ negative & $-$   1.4188 & --- \\
+\hline
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for $\beta_{fe}$ and $\Delta_{TR}=0$:    0.0031} \\
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for opposite sign:    0.0044} \\
+\hline
+\multicolumn{3}{l}{\footnotesize Spec: \texttt{reghdfe pct\_votes\_UKIP temp, absorb(id ryr) vce(cl id)}} \\
+\multicolumn{3}{l}{\footnotesize Panel: district $\times$ year. Treatment: post-2010 $\times$ austerity impact (continuous).} \\
+\hline\hline
+\end{tabular}
+\end{table}

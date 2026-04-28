@@ -1,0 +1,253 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do check_vars.do 
+
+. /*===========================================================================
+> ==
+>   CHECK_VARS: Pierce and Schott (2016)
+>   "The Surprisingly Swift Decline of US Manufacturing Employment"
+>   AER 106(7), 1632-1662
+> 
+>   Purpose: Check available public data for TWFE decomposition
+>   Main TWFE spec: Table 1, Col 1
+>   areg lempfam501999 s1999_post d???? [aw=emp1990], a(fam50) cl(fam50) robust
+> 
+>   NOTE: Main data file uses restricted Census LBD microdata
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Pierce and Schott (2016)/data_files_aer_2013-1578"
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  CHECKING PUBLIC DATA FILES"
+  CHECKING PUBLIC DATA FILES
+
+. di "============================================================"
+============================================================
+
+. 
+. * --- Check temp_50_n6.dta (likely main panel) ---
+. di _n "=== temp_50_n6.dta ==="
+
+=== temp_50_n6.dta ===
+
+. cap use "$datadir/temp_50_n6.dta", clear
+
+. if _rc == 0 {
+.     di "Loaded OK. Obs: " _N
+Loaded OK. Obs: 1052
+.     desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Pierce and Schott (2016)/data_files_aer_2013-1578/temp_50_n6.dta
+ Observations:         1,052                  
+    Variables:             4                  11 Oct 2013 15:38
+Sorted by: n6
+.     ds
+n6     con50  lib50  fam50
+.     cap ds *emp* *s1999* *post* *fam* *year* *gap*
+. }
+
+. else {
+.     di "Failed to load"
+. }
+
+. 
+. * --- Check gaps dataset ---
+. di _n "=== gaps_by_naics6_20150722_fam50.dta ==="
+
+=== gaps_by_naics6_20150722_fam50.dta ===
+
+. cap use "$datadir/gaps_by_naics6_20150722_fam50.dta", clear
+
+. if _rc == 0 {
+.     di "Loaded OK. Obs: " _N
+Loaded OK. Obs: 772
+.     desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Pierce and Schott (2016)/data_files_aer_2013-1578/gaps_by_naics6_20150722_fa
+> m50.dta
+ Observations:           772                  
+    Variables:           233                  3 Feb 2016 17:51
+Sorted by: fam50
+.     ds
+fam50         wgap_offdi..  wgap_o~31999  iodown31991   iod~_ntr2000
+wgap1989      wgap_o~g1994  w~3_nntr1999  i~3_nntr1991  iodown2001
+wgap1990      wgap_offdi..  wga~_ntr1999  iod~_ntr1991  iodown_~2001
+wgap1991      wgap_o~g1995  wgap_o~32000  iodown1992    iodown32001
+wgap1992      wgap_offdi..  w~3_nntr2000  iodown_~1992  i~3_nntr2001
+wgap1993      wgap_o~g1996  wga~_ntr2000  iodown31992   iod~_ntr2001
+wgap1994      wgap_offdi..  wgap_o~32001  iodown3_nn~2  s1989
+wgap1995      wgap_o~g1997  w~3_nntr2001  iodown3_nt~2  s1990
+wgap1996      wgap_offdi..  wga~_ntr2001  iodown1993    s1991
+wgap1997      wgap_o~g1998  wgap_nn~1989  iodown_~1993  s1992
+wgap1998      wgap_offdi..  wgap_nn~1990  iodown31993   s1993
+wgap1999      wgap_o~g1999  wgap_nn~1991  iodown3_nn~3  s1994
+wgap_d~g1989  wgap_offdi..  wgap_nn~1992  iodown3_nt~3  s1995
+wgap_d~r1989  wgap_o~g2000  wgap_nn~1993  iodown1994    s1996
+wgap_diag1~0  wgap_offdi..  wgap_nn~1994  iodown_~1994  s1997
+wgap_d~r1990  wgap_o~g2001  wgap_nn~1995  iodown31994   s1998
+wgap_diag1~1  wgap_offdi..  wgap_nn~1996  iodown3_nn~4  s1999
+wgap_d~r1991  wgap_o~31989  wgap_nn~1997  iodown3_nt~4  s2000
+wgap_diag1~2  w~3_nntr1989  wgap_nn~1998  iodown1995    s2001
+wgap_diag_~2  wga~_ntr1989  wgap_nn~1999  iodown_~1995  ntr1989
+wgap_diag1~3  wgap_o~31990  wgap_nn~2000  iodown31995   ntr1990
+wgap_diag_~3  w~3_nntr1990  wgap_nn~2001  iodown3_nn~5  ntr1991
+wgap_diag1~4  wga~_ntr1990  iogap1989     iodown3_nt~5  ntr1992
+wgap_diag_~4  wgap_o~31991  iogap1990     iodown1996    ntr1993
+wgap_diag1~5  w~3_nntr1991  iogap1991     iodown_~1996  ntr1994
+wgap_diag_~5  wga~_ntr1991  iogap1992     iodown31996   ntr1995
+wgap_diag1~6  wgap_o~31992  iogap1993     iodown3_nn~6  ntr1996
+wgap_diag_~6  w~3_nntr1992  iogap1994     iodown3_nt~6  ntr1997
+wgap_diag1~7  wga~_ntr1992  iogap1995     iodown1997    ntr1998
+wgap_diag_~7  wgap_o~31993  iogap1996     iodown_~1997  ntr1999
+wgap_diag1~8  w~3_nntr1993  iogap1997     iodown31997   ntr2000
+wgap_diag_~8  wga~_ntr1993  iogap1998     iodown3_nn~7  ntr2001
+wgap_d~g1999  wgap_o~31994  iogap1999     iodown3_nt~7  nntr1989
+wgap_d~r1999  w~3_nntr1994  iogap2000     iodown1998    nntr1990
+wgap_diag2~0  wga~_ntr1994  iogap2001     iodown_~1998  nntr1991
+wgap_d~r2000  wgap_o~31995  iodown1989    iodown31998   nntr1992
+wgap_diag2~1  w~3_nntr1995  iodown_~1989  iodown3_nn~8  nntr1993
+wgap_d~r2001  wga~_ntr1995  iodown31989   iodown3_nt~8  nntr1994
+wgap_o~g1989  wgap_o~31996  i~3_nntr1989  iodown1999    nntr1995
+wgap_offdi..  w~3_nntr1996  iod~_ntr1989  iodown_~1999  nntr1996
+wgap_o~g1990  wga~_ntr1996  iodown1990    iodown31999   nntr1997
+wgap_offdi..  wgap_o~31997  iodown_~1990  i~3_nntr1999  nntr1998
+wgap_o~g1991  w~3_nntr1997  iodown31990   iod~_ntr1999  nntr1999
+wgap_offdi..  wga~_ntr1997  i~3_nntr1990  iodown2000    nntr2000
+wgap_o~g1992  wgap_o~31998  iod~_ntr1990  iodown_~2000  nntr2001
+wgap_offdi..  w~3_nntr1998  iodown1991    iodown32000
+wgap_o~g1993  wga~_ntr1998  iodown_~1991  i~3_nntr2000
+.     cap ds *emp* *s1999* *post* *fam* *year* *gap*
+. }
+
+. else {
+.     di "Failed to load"
+. }
+
+. 
+. * --- Check bbg_fam_drop files ---
+. di _n "=== bbg_fam_drop_50_n6_2.dta ==="
+
+=== bbg_fam_drop_50_n6_2.dta ===
+
+. cap use "$datadir/bbg_fam_drop_50_n6_2.dta", clear
+
+. if _rc == 0 {
+.     di "Loaded OK. Obs: " _N
+Loaded OK. Obs: 1052
+.     desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Pierce and Schott (2016)/data_files_aer_2013-1578/bbg_fam_drop_50_n6_2.dta
+ Observations:         1,052                  
+    Variables:             4                  10 Sep 2014 12:07
+Sorted by: 
+.     ds
+n6     con50  lib50  fam50
+. }
+
+. else {
+.     di "Failed to load"
+. }
+
+. 
+. * --- Check robustness files for panel structure ---
+. di _n "=== robustness_ntr_fam50_true_adj.dta ==="
+
+=== robustness_ntr_fam50_true_adj.dta ===
+
+. cap use "$datadir/robustness_ntr_fam50_true_adj.dta", clear
+
+. if _rc == 0 {
+.     di "Loaded OK. Obs: " _N
+Loaded OK. Obs: 14839
+.     desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Pierce and Schott (2016)/data_files_aer_2013-1578/robustness_ntr_fam50_true_
+> adj.dta
+ Observations:        14,839                  
+    Variables:             8                  11 Jun 2015 19:25
+Sorted by: fam50  year
+.     ds
+fam50  year   s      ntr    nntr   ntr89  ntr07  dntr
+.     cap ds *emp* *s1999* *post* *fam* *year* *gap* *ntr*
+. }
+
+. else {
+.     di "Failed to load"
+. }
+
+. 
+. di _n "=== robustness_union_fam50.dta ==="
+
+=== robustness_union_fam50.dta ===
+
+. cap use "$datadir/robustness_union_fam50.dta", clear
+
+. if _rc == 0 {
+.     di "Loaded OK. Obs: " _N
+Loaded OK. Obs: 28141
+.     desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Pierce and Schott (2016)/data_files_aer_2013-1578/robustness_union_fam50.dta
+ Observations:        28,141                  
+    Variables:             4                  15 Oct 2013 18:40
+Sorted by: fam50  year
+.     ds
+fam50  year   mem    cov
+. }
+
+. else {
+.     di "Failed to load"
+. }
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  CONCLUSION"
+  CONCLUSION
+
+. di "============================================================"
+============================================================
+
+. 
+. * Done

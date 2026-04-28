@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\centering
+\caption{TWFE Weight Decomposition: Donaldson (2018)}
+\label{tab:donaldson_weights}
+\begin{tabular}{lcc}
+\hline\hline
+ & feTR & fdTR \\
+\hline
+$\hat{\beta}_{TWFE}$ &     0.163557 & --- \\
+Positive weights &      3169 & --- \\
+Negative weights &      3293 & --- \\
+\% Negative &  51.0\% & --- \\
+$\Sigma$ positive &    1.6941 & --- \\
+$\Sigma$ negative & $-$   0.6941 & --- \\
+\hline
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for $\beta_{fe}$ and $\Delta_{TR}=0$:    0.0421} \\
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for opposite sign:    0.1005} \\
+\hline
+\multicolumn{3}{l}{\footnotesize Spec: \texttt{reghdfe ln\_realincome RAIL, absorb(distid year) vce(cl distid)}} \\
+\multicolumn{3}{l}{\footnotesize Panel: district $\times$ year. Treatment: railroad access (binary).} \\
+\hline\hline
+\end{tabular}
+\end{table}

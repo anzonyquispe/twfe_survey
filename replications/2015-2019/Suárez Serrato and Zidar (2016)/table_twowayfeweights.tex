@@ -1,0 +1,24 @@
+\begin{table}[htbp]
+\centering
+\caption{TWFE Weight Decomposition: Su\'{a}rez Serrato and Zidar (2016)}
+\label{tab:ssz_weights}
+\begin{tabular}{lcc}
+\hline\hline
+ & feTR & fdTR \\
+\hline
+$\hat{\beta}_{TWFE}$ &    0.0000 & --- \\
+Positive weights & 4 & --- \\
+Negative weights & 4 & --- \\
+\% Negative &  50.0\% & --- \\
+$\Sigma$ positive &    2.1767 & --- \\
+$\Sigma$ negative & $-$   1.1767 & --- \\
+\hline
+\multicolumn{3}{l}{\footnotesize Sensitivity measures unavailable (continuous treatment with negative values).} \\
+\hline
+\multicolumn{3}{l}{\footnotesize Spec: \texttt{reg E d\_keeprate i.year i.fe\_group [aw=epop]}} \\
+\multicolumn{3}{l}{\footnotesize Panel: state-group $\times$ decade. Treatment: $\Delta\ln$(net-of-tax rate).} \\
+\multicolumn{3}{l}{\footnotesize $\hat\beta$ from cell-mean regression (treatment varies within cells). Original $\beta=4.07$.} \\
+\multicolumn{3}{l}{\footnotesize fdTR: invalid syntax (requires level treatment variable, only first-difference available).} \\
+\hline\hline
+\end{tabular}
+\end{table}
