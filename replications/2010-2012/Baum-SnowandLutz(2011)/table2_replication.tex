@@ -1,0 +1,27 @@
+\begin{table}[htbp]
+\centering
+\caption{Replication of Tables 2 and 4 --- Baum-Snow and Lutz (2011)}
+\label{tab:baumsnow_replication}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{White Public (Table 2)} & \multicolumn{2}{c}{Black Public (Table 4)} \\
+ & Original & Simplified & Original & Simplified \\
+ & (1) & (2) & (3) & (4) \\
+\midrule
+Post-desegregation (imp\_post)
+ & -0.1163** & -0.1233*** & 0.0240 & -0.0267 \\
+ & (0.0467) & (0.0448) & (0.0322) & (0.0351) \\
+\addlinespace
+District FE & Y & Y & Y & Y \\
+Year FE & Y & Y & Y & Y \\
+Year $\times$ South FE & Y & & Y & \\
+Observations & 368 & 368 & 368 & 368 \\
+Districts & 92 & 92 & 92 & 92 \\
+\bottomrule
+\multicolumn{5}{p{0.95\linewidth}}{\footnotesize
+ \textit{Notes:} Cols (1) and (3) replicate the original paper specification
+ with year$\times$South interactions. Cols (2) and (4) use simplified
+ TWFE (district + year FE only) for weight decomposition.
+ Robust SE clustered by district. *** p<0.01, ** p<0.05, * p<0.10.}
+\end{tabular}
+\end{table}

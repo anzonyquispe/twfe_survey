@@ -1,0 +1,1023 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do run_twowayfe.do 
+
+. /*===========================================================================
+> ===
+>   FAYE AND NIEHAUS (2012) - "Political Aid Cycles"
+>   American Economic Review, 102(7), 3516-3530
+> 
+>   Pipeline: STEP 1 Data -> STEP 2 Replicate Table 2 -> STEP 3 twowayfeweights
+>  -> STEP 4 LaTeX
+> 
+>   Original analysis in R (analysis_allR_v3.r):
+>     data.base <- demean(data.base, "p")  # within-pair demeaning
+>     fm.main.I <- ols(oda ~ i_elecex + yeardums, data=data.base)
+>   This is equivalent to pair FE + year FE = TWFE.
+> 
+>   Stata equivalent:
+>     xtreg oda i_elecex i.year, fe i(pair_id) cluster(pair_id)
+> 
+>   Treatment: i_elecex = 1 if executive election year in recipient
+>   Unit FE: pair_id (donor x recipient pair)
+>   Time FE: year (1975-2003)
+>   Outcome: oda (ODA commitments, 2004 USD)
+> =============================================================================
+> =*/
+. 
+. clear all
+
+. set more off
+
+. set matsize 5000
+set matsize ignored.
+    Matrix sizes are no longer limited by c(matsize) in modern Statas.
+    Matrix sizes are now limited by edition of Stata.  See limits for more
+    details.
+
+. cap log close _all
+
+. 
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/
+> Faye and Niehaus (2012)/data_analysis/data"
+
+. global outdir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/20
+> 10-2012/Faye and Niehaus (2012)"
+
+. global latexdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2010-201
+> 2/Faye and Niehaus (2012)"
+
+. 
+. * NOTE: log is auto-created by Stata -b mode (run_twowayfe.log)
+. 
+. * Install packages if needed
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. cap which reghdfe
+
+. if _rc ssc install reghdfe, replace
+
+. 
+. * Helper program: significance stars
+. cap program drop _stars
+
+. program define _stars, rclass
+  1.     args b se
+  2.     local s ""
+  3.     if `se' > 0 & `se' < . {
+  4.         local t = abs(`b'/`se')
+  5.         if `t' > 2.576      local s "***"
+  6.         else if `t' > 1.960 local s "**"
+  7.         else if `t' > 1.645 local s "*"
+  8.     }
+  9.     return local s "`s'"
+ 10. end
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 1: DATA PREPARATION
+>   Replicate the R estsample() function:
+>   1. Drop missing on key vars
+>   2. Drop pairs with gaps in time series
+> =============================================================================
+> =*/
+. 
+. * Try DTA first, fall back to CSV
+. cap use "$datadir/111102_oda_final_data_big5_commit_080107_unvotes_term.dta",
+>  clear
+
+. if _rc != 0 {
+.     di "DTA load failed, trying CSV..."
+.     insheet using "$datadir/111102_oda_final_data_big5_commit_080107_unvotes_
+> term.csv", clear
+. }
+
+. 
+. di _n "=== RAW DATA ==="
+
+=== RAW DATA ===
+
+. di "Observations: " _N
+Observations: 15315
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Faye and Niehaus (2012)/data_analysis/data/111102_oda_final_data_big5_commit
+> _080107_unvotes_term.dta
+ Observations:        15,315                  
+    Variables:           337                  2 Nov 2011 13:08
+Sorted by: wbcode_recipient  year
+
+. 
+. * Identify variable names (may differ by case)
+. * The R code uses: oda, i_elecex, unvotes, p_unvotes_elecex, year, wbcode_don
+> or, wbcode_recipient
+. * Check what we have
+. cap confirm variable oda
+
+. if _rc != 0 {
+.     cap confirm variable odaPair_commit
+.     if _rc == 0 {
+.         gen oda = odaPair_commit
+.         di "Created oda from odaPair_commit"
+.     }
+.     else {
+.         cap confirm variable odapair_commit
+.         if _rc == 0 {
+.             gen oda = odapair_commit
+.             di "Created oda from odapair_commit"
+.         }
+.     }
+. }
+
+. 
+. * Create pair ID
+. cap confirm variable wbcode_donor
+
+. if _rc == 0 {
+.     egen pair_id = group(wbcode_donor wbcode_recipient)
+.     local dvar "wbcode_donor"
+.     local rvar "wbcode_recipient"
+. }
+
+. else {
+.     cap confirm variable d
+.     if _rc == 0 {
+.         * Variables might be named d and r from CSV
+.         egen pair_id = group(d r)
+.         local dvar "d"
+.         local rvar "r"
+.     }
+. }
+
+. 
+. di "Created pair_id from `dvar' x `rvar'"
+Created pair_id from wbcode_donor x wbcode_recipient
+
+. qui tab pair_id
+
+. di "Total pairs: " r(r)
+Total pairs: 580
+
+. 
+. * --- Sample construction following R estsample() ---
+. * Step 1: Drop missing on key variables
+. * R code line 174: estsample(data, c("unvotes","i_elecex","p_unvotes_elecex",
+. *   "unvotes_rt","unvotes_resid","p_unvotes_rt_elecex",
+. *   "p_unvotes_resid_elecex","oda","p","d","r","year"))
+. local keyvars "oda i_elecex unvotes p_unvotes_elecex"
+
+. local before = _N
+
+. foreach v of local keyvars {
+  2.     cap confirm variable `v'
+  3.     if _rc == 0 {
+  4.         drop if missing(`v')
+  5.     }
+  6.     else {
+  7.         di "WARNING: variable `v' not found"
+  8.     }
+  9. }
+(0 observations deleted)
+(0 observations deleted)
+(0 observations deleted)
+(0 observations deleted)
+
+. di "Dropped " `before' - _N " obs with missing key vars. N = " _N
+Dropped 0 obs with missing key vars. N = 15315
+
+. 
+. * Step 2: Drop pairs with gaps (R estsample logic)
+. * maxyear - minyear + 1 == nobs per pair
+. bys pair_id: egen minyear = min(year)
+
+. bys pair_id: egen maxyear = max(year)
+
+. bys pair_id: gen pobs = _N
+
+. gen nogap = (maxyear - minyear + 1 == pobs)
+
+. local before2 = _N
+
+. keep if nogap == 1
+(0 observations deleted)
+
+. di "Dropped " `before2' - _N " obs from pairs with gaps. N = " _N
+Dropped 0 obs from pairs with gaps. N = 15315
+
+. drop minyear maxyear pobs nogap
+
+. 
+. * Panel structure
+. di _n "--- Panel structure ---"
+
+--- Panel structure ---
+
+. qui tab pair_id
+
+. local n_pairs = r(r)
+
+. di "Donor-Recipient pairs (G): " `n_pairs'
+Donor-Recipient pairs (G): 580
+
+. qui tab year
+
+. local n_years = r(r)
+
+. di "Years (T): " `n_years'
+Years (T): 30
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1975 |        435        2.84        2.84
+       1976 |        455        2.97        5.81
+       1977 |        465        3.04        8.85
+       1978 |        470        3.07       11.92
+       1979 |        480        3.13       15.05
+       1980 |        490        3.20       18.25
+       1981 |        490        3.20       21.45
+       1982 |        495        3.23       24.68
+       1983 |        495        3.23       27.91
+       1984 |        500        3.26       31.18
+       1985 |        505        3.30       34.48
+       1986 |        505        3.30       37.77
+       1987 |        505        3.30       41.07
+       1988 |        510        3.33       44.40
+       1989 |        510        3.33       47.73
+       1990 |        510        3.33       51.06
+       1991 |        525        3.43       54.49
+       1992 |        540        3.53       58.02
+       1993 |        560        3.66       61.67
+       1994 |        570        3.72       65.39
+       1995 |        570        3.72       69.12
+       1996 |        540        3.53       72.64
+       1997 |        535        3.49       76.13
+       1998 |        535        3.49       79.63
+       1999 |        535        3.49       83.12
+       2000 |        525        3.43       86.55
+       2001 |        520        3.40       89.94
+       2002 |        520        3.40       93.34
+       2003 |        510        3.33       96.67
+       2004 |        510        3.33      100.00
+------------+-----------------------------------
+      Total |     15,315      100.00
+
+. di "N = " _N
+N = 15315
+
+. 
+. * Treatment variation
+. di _n "--- Treatment: i_elecex ---"
+
+--- Treatment: i_elecex ---
+
+. tab i_elecex
+
+      Exec. |
+   Election |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     13,945       91.05       91.05
+          1 |      1,370        8.95      100.00
+------------+-----------------------------------
+      Total |     15,315      100.00
+
+. bys pair_id: egen ever_elec = max(i_elecex)
+
+. qui tab pair_id if ever_elec == 1
+
+. di "Pairs with at least one election: " r(r)
+Pairs with at least one election: 355
+
+. qui tab pair_id if ever_elec == 0
+
+. di "Pairs with no elections: " r(r)
+Pairs with no elections: 225
+
+. drop ever_elec
+
+. 
+. di _n "--- Outcome: oda ---"
+
+--- Outcome: oda ---
+
+. sum oda, detail
+
+                        Bilateral ODA
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0      -26.48778
+ 5%            0      -15.63649
+10%            0      -8.803981       Obs              15,315
+25%      .812015       -5.94081       Sum of wgt.      15,315
+
+50%     8.623673                      Mean           57.19083
+                        Largest       Std. dev.      232.5591
+75%     40.65847       3954.951
+90%     117.7801       4607.265       Variance       54083.76
+95%     230.0875        7600.68       Skewness       29.82775
+99%     837.3515       16564.61       Kurtosis       1774.366
+
+. 
+. * Set panel
+. xtset pair_id year
+
+Panel variable: pair_id (unbalanced)
+ Time variable: year, 1975 to 2004
+         Delta: 1 unit
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 2: REPLICATE TABLE 2
+>   R code line 188: fm.main.I <- ols(oda ~ i_elecex + yeardums, data=data.base
+> )
+>   After within-pair demeaning = pair FE + year FE
+>   R uses 3-way clustered SE (donor, recipient, year) via mwc_3way
+>   We use pair_id clustering for twowayfeweights compatibility
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 2 REPLICATION"
+TABLE 2 REPLICATION
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- Col I: Pair FE + Year FE ---
+. di _n "--- Col I: Pair FE + Year FE (TWFE) ---"
+
+--- Col I: Pair FE + Year FE (TWFE) ---
+
+. xtreg oda i_elecex i.year, fe i(pair_id) cluster(pair_id)
+
+Fixed-effects (within) regression               Number of obs     =     15,315
+Group variable: pair_id                         Number of groups  =        580
+
+R-squared:                                      Obs per group:
+     Within  = 0.0033                                         min =          8
+     Between = 0.0000                                         avg =       26.4
+     Overall = 0.0016                                         max =         30
+
+                                                F(30,579)         =       2.17
+corr(u_i, Xb) = -0.0011                         Prob > F          =     0.0004
+
+                              (Std. err. adjusted for 580 clusters in pair_id)
+------------------------------------------------------------------------------
+             |               Robust
+         oda | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    i_elecex |   2.182684   2.685389     0.81   0.417    -3.091608    7.456976
+             |
+        year |
+       1976  |   2.094496    7.66986     0.27   0.785    -12.96964    17.15863
+       1977  |  -2.583515   4.568336    -0.57   0.572    -11.55605    6.389015
+       1978  |    1.49191   4.375013     0.34   0.733    -7.100921    10.08474
+       1979  |    6.07277   6.333223     0.96   0.338    -6.366121    18.51166
+       1980  |   6.852092    5.61351     1.22   0.223    -4.173231    17.87742
+       1981  |   .9623837   5.507079     0.17   0.861    -9.853902    11.77867
+       1982  |   3.882953   5.015122     0.77   0.439    -5.967095      13.733
+       1983  |   1.702913   4.825534     0.35   0.724    -7.774773     11.1806
+       1984  |   10.66487    5.04571     2.11   0.035     .7547436    20.57499
+       1985  |   8.394073   6.963985     1.21   0.229    -5.283679    22.07183
+       1986  |   3.891671   5.913328     0.66   0.511    -7.722517    15.50586
+       1987  |   5.936487   5.309387     1.12   0.264    -4.491518    16.36449
+       1988  |   16.83507   6.662265     2.53   0.012     3.749915    29.92022
+       1989  |   8.080363   5.686313     1.42   0.156    -3.087951    19.24868
+       1990  |   45.32392   30.65293     1.48   0.140    -14.88056    105.5284
+       1991  |   29.95688   13.85539     2.16   0.031     2.743931    57.16983
+       1992  |   7.557949   6.283142     1.20   0.230    -4.782578    19.89848
+       1993  |   9.141111   7.016653     1.30   0.193    -4.640083    22.92231
+       1994  |   7.952902   6.780975     1.17   0.241    -5.365405    21.27121
+       1995  |   3.792188   6.652176     0.57   0.569     -9.27315    16.85753
+       1996  |    7.18998   7.003072     1.03   0.305    -6.564542     20.9445
+       1997  |   5.823488   7.062402     0.82   0.410    -8.047561    19.69454
+       1998  |    5.51791   8.174583     0.68   0.500    -10.53754    21.57336
+       1999  |   4.823003   7.291299     0.66   0.509    -9.497614    19.14362
+       2000  |   2.851073   6.886524     0.41   0.679    -10.67454    16.37669
+       2001  |   1.953568   6.668415     0.29   0.770    -11.14366     15.0508
+       2002  |   3.690262   5.820387     0.63   0.526    -7.741383    15.12191
+       2003  |   21.15483   12.02091     1.76   0.079    -2.455074    44.76473
+       2004  |   9.237382   6.385254     1.45   0.149    -3.303702    21.77847
+             |
+       _cons |   48.87261   4.850985    10.07   0.000     39.34494    58.40028
+-------------+----------------------------------------------------------------
+     sigma_u |  162.73751
+     sigma_e |  166.04741
+         rho |  .48993397   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. local b_c1  = _b[i_elecex]
+
+. local se_c1 = _se[i_elecex]
+
+. local n_c1  = e(N)
+
+. local ng_c1 = e(N_g)
+
+. di "  beta(i_elecex) = " %9.4f `b_c1' " (" %7.4f `se_c1' ")"
+  beta(i_elecex) =    2.1827 ( 2.6854)
+
+. di "  N = " `n_c1' ", pairs = " `ng_c1'
+  N = 15315, pairs = 580
+
+. estimates store c1
+
+. 
+. * --- Col IV: Add UN votes interaction ---
+. di _n "--- Col IV: Pair FE + Year FE + unvotes + interaction ---"
+
+--- Col IV: Pair FE + Year FE + unvotes + interaction ---
+
+. cap xtreg oda i_elecex unvotes p_unvotes_elecex i.year, fe i(pair_id) cluster
+> (pair_id)
+
+. if _rc == 0 {
+.     local b_c4  = _b[i_elecex]
+.     local se_c4 = _se[i_elecex]
+.     local b_c4_uv = _b[p_unvotes_elecex]
+.     local se_c4_uv = _se[p_unvotes_elecex]
+.     local n_c4  = e(N)
+.     di "  beta(i_elecex) = " %9.4f `b_c4' " (" %7.4f `se_c4' ")"
+  beta(i_elecex) =  -27.3458 (15.5442)
+.     di "  beta(UN*elec)  = " %9.4f `b_c4_uv' " (" %7.4f `se_c4_uv' ")"
+  beta(UN*elec)  =   45.4578 (22.5180)
+.     local c4_ok = 1
+.     estimates store c4
+. }
+
+. else {
+.     di "  Col IV regression failed"
+.     local c4_ok = 0
+. }
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TWOWAYFEWEIGHTS DECOMPOSITION"
+TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- feTR ---
+. di _n "=== feTR: oda ~ i_elecex ==="
+
+=== feTR: oda ~ i_elecex ===
+
+. cap scalar drop nplus nminus beta sumpositive sumnegative
+
+. cap noisily twowayfeweights oda pair_id year i_elecex, type(feTR) summary_mea
+> sures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 2.1827, estimates a weighted sum of 1370 AT
+> Ts. 
+1370 ATTs receive a positive weight, and 0 receive a negative weight.
+------------------------------------------------
+Treat. var: i_elecex    # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        1370        1.0000      
+Negative weights        0           0.0000      
+------------------------------------------------
+Total                   1370        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    2.1827
+min σ(Δ) compatible with β_fe and Δ_TR = 0:   31.7941
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
+
+. local rc_fetr = _rc
+
+. 
+. local fetr_ok = 0
+
+. if `rc_fetr' == 0 | `rc_fetr' == 402 {
+.     cap local fetr_beta = e(beta)
+.     cap mat M = e(M)
+.     if _rc == 0 {
+.         local fetr_npos = el(M,1,1)
+.         local fetr_nneg = el(M,2,1)
+.         local fetr_ok = 1
+.     }
+.     else {
+.         cap local fetr_npos = scalar(nplus)
+.         cap local fetr_nneg = scalar(nminus)
+.         if `fetr_npos' != . & `fetr_nneg' != . {
+.             local fetr_ok = 1
+.         }
+.     }
+. }
+
+. else {
+.     cap local fetr_beta = scalar(beta)
+.     cap local fetr_npos = scalar(nplus)
+.     cap local fetr_nneg = scalar(nminus)
+.     if `fetr_npos' != . & `fetr_nneg' != . {
+.         local fetr_ok = 1
+.     }
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     local fetr_pneg = 100 * `fetr_nneg' / (`fetr_npos' + `fetr_nneg')
+.     di _n "feTR: beta=" %9.4f `fetr_beta' " npos=" %6.0f `fetr_npos' " nneg="
+>  %6.0f `fetr_nneg' " %neg=" %5.1f `fetr_pneg' "%"
+
+feTR: beta=   2.1827 npos=  1370 nneg=     0 %neg=  0.0%
+. }
+
+. else {
+.     di "feTR: FAILED (rc=`rc_fetr')"
+. }
+
+. 
+. * --- fdTR ---
+. di _n "=== fdTR: oda ~ i_elecex ==="
+
+=== fdTR: oda ~ i_elecex ===
+
+. cap scalar drop nplus nminus beta sumpositive sumnegative
+
+. cap noisily twowayfeweights oda pair_id year i_elecex, type(fdTR) summary_mea
+> sures
+invalid syntax
+
+. local rc_fdtr = _rc
+
+. 
+. local fdtr_ok = 0
+
+. if `rc_fdtr' == 0 | `rc_fdtr' == 402 {
+.     cap local fdtr_beta = e(beta)
+.     cap mat M = e(M)
+.     if _rc == 0 {
+.         local fdtr_npos = el(M,1,1)
+.         local fdtr_nneg = el(M,2,1)
+.         local fdtr_ok = 1
+.     }
+.     else {
+.         cap local fdtr_npos = scalar(nplus)
+.         cap local fdtr_nneg = scalar(nminus)
+.         if `fdtr_npos' != . & `fdtr_nneg' != . {
+.             local fdtr_ok = 1
+.         }
+.     }
+. }
+
+. else {
+.     cap local fdtr_beta = scalar(beta)
+.     cap local fdtr_npos = scalar(nplus)
+.     cap local fdtr_nneg = scalar(nminus)
+.     if `fdtr_npos' != . & `fdtr_nneg' != . {
+.         local fdtr_ok = 1
+.     }
+. }
+
+. 
+. if `fdtr_ok' == 1 {
+.     local fdtr_pneg = 100 * `fdtr_nneg' / (`fdtr_npos' + `fdtr_nneg')
+.     di _n "fdTR: beta=" %9.4f `fdtr_beta' " npos=" %6.0f `fdtr_npos' " nneg="
+>  %6.0f `fdtr_nneg' " %neg=" %5.1f `fdtr_pneg' "%"
+
+fdTR: beta=   2.1827 npos=  1370 nneg=     0 %neg=  0.0%
+. }
+
+. else {
+.     di "fdTR: FAILED (rc=`rc_fdtr')"
+. }
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 4: LATEX TABLES
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "LaTeX TABLE EXPORT"
+LaTeX TABLE EXPORT
+
+. di    "=============================================="
+==============================================
+
+. 
+. * ===== TABLE: Replication =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table2_replication.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Faye
+    and Niehaus (2012)/table2_replication.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Replication of Table 2 --- Faye and Niehaus (201
+> 2)}" _n
+
+. file write texfile "\label{tab:fayeniehaus_replication}" _n
+
+. 
+. if `c4_ok' == 1 {
+.     file write texfile "\begin{tabular}{lcc}" _n
+.     file write texfile "\toprule" _n
+.     file write texfile " & Col I & Col IV \\" _n
+.     file write texfile " & (Baseline) & (UN alignment) \\" _n
+.     file write texfile "\midrule" _n
+.     file write texfile "\multicolumn{3}{l}{\textit{Dep.\ var.: ODA commitment
+> s (2004 USD)}} \\" _n
+. }
+
+. else {
+.     file write texfile "\begin{tabular}{lc}" _n
+.     file write texfile "\toprule" _n
+.     file write texfile " & Col I \\" _n
+.     file write texfile " & (Baseline) \\" _n
+.     file write texfile "\midrule" _n
+.     file write texfile "\multicolumn{2}{l}{\textit{Dep.\ var.: ODA commitment
+> s (2004 USD)}} \\" _n
+. }
+
+. file write texfile "\addlinespace" _n
+
+. 
+. * Election row
+. local b1 : di %9.4f `b_c1'
+
+. local b1 = strtrim("`b1'")
+
+. _stars `b_c1' `se_c1'
+
+. local s1 "`r(s)'"
+
+. local sse1 : di %7.4f `se_c1'
+
+. local sse1 = strtrim("`sse1'")
+
+. 
+. if `c4_ok' == 1 {
+.     local b4 : di %9.4f `b_c4'
+.     local b4 = strtrim("`b4'")
+.     _stars `b_c4' `se_c4'
+.     local s4 "`r(s)'"
+.     local sse4 : di %7.4f `se_c4'
+.     local sse4 = strtrim("`sse4'")
+. 
+.     file write texfile "Executive Election & `b1'`s1' & `b4'`s4' \\" _n
+.     file write texfile " & (`sse1') & (`sse4') \\" _n
+. 
+.     * UN interaction
+.     local buv : di %9.4f `b_c4_uv'
+.     local buv = strtrim("`buv'")
+.     _stars `b_c4_uv' `se_c4_uv'
+.     local suv "`r(s)'"
+.     local seuv : di %7.4f `se_c4_uv'
+.     local seuv = strtrim("`seuv'")
+. 
+.     file write texfile "\addlinespace" _n
+.     file write texfile "UN Alignment \$\times\$ Election & & `buv'`suv' \\" _
+> n
+.     file write texfile " & & (`seuv') \\" _n
+. }
+
+. else {
+.     file write texfile "Executive Election & `b1'`s1' \\" _n
+.     file write texfile " & (`sse1') \\" _n
+. }
+
+. 
+. file write texfile "\addlinespace" _n
+
+. 
+. if `c4_ok' == 1 {
+.     file write texfile "Pair FE & Y & Y \\" _n
+.     file write texfile "Year FE & Y & Y \\" _n
+.     local nfmt : di %9.0fc `n_c1'
+.     local nfmt = strtrim("`nfmt'")
+.     local gfmt : di %6.0fc `ng_c1'
+.     local gfmt = strtrim("`gfmt'")
+.     file write texfile "Observations & `nfmt' & `nfmt' \\" _n
+.     file write texfile "Pairs & `gfmt' & `gfmt' \\" _n
+.     file write texfile "\bottomrule" _n
+.     file write texfile "\multicolumn{3}{p{0.85\linewidth}}{\footnotesize" _n
+. }
+
+. else {
+.     file write texfile "Pair FE & Y \\" _n
+.     file write texfile "Year FE & Y \\" _n
+.     local nfmt : di %9.0fc `n_c1'
+.     local nfmt = strtrim("`nfmt'")
+.     local gfmt : di %6.0fc `ng_c1'
+.     local gfmt = strtrim("`gfmt'")
+.     file write texfile "Observations & `nfmt' \\" _n
+.     file write texfile "Pairs & `gfmt' \\" _n
+.     file write texfile "\bottomrule" _n
+.     file write texfile "\multicolumn{2}{p{0.85\linewidth}}{\footnotesize" _n
+. }
+
+. 
+. file write texfile " \textit{Notes:} Pair = donor\$\times\$recipient. Origina
+> l analysis" _n
+
+. file write texfile " in R with 3-way clustered SE (donor, recipient, year)." 
+> _n
+
+. file write texfile " Here: SE clustered by pair. *** p<0.01, ** p<0.05, * p<0
+> .10.}" _n
+
+. 
+. if `c4_ok' == 1 {
+.     file write texfile "\end{tabular}" _n
+. }
+
+. else {
+.     file write texfile "\end{tabular}" _n
+. }
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table2_replication.tex created"
+  -> table2_replication.tex created
+
+. 
+. 
+. * ===== TWOWAYFEWEIGHTS TABLE =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table_twowayfeweights.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Faye
+    and Niehaus (2012)/table_twowayfeweights.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{TWFE Weight Decomposition --- Faye and Niehaus (
+> 2012)}" _n
+
+. file write texfile "\label{tab:fayeniehaus_twowayfe}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & feTR & fdTR \\" _n
+
+. file write texfile "\midrule" _n
+
+. 
+. * feTR column
+. if `fetr_ok' == 1 {
+.     local bf : di %9.4f `fetr_beta'
+.     local bf = strtrim("`bf'")
+.     local npf : di %6.0f `fetr_npos'
+.     local npf = strtrim("`npf'")
+.     local nnf : di %6.0f `fetr_nneg'
+.     local nnf = strtrim("`nnf'")
+.     local pnf : di %5.1f `fetr_pneg'
+.     local pnf = strtrim("`pnf'")
+. }
+
+. else {
+.     local bf "--"
+.     local npf "--"
+.     local nnf "--"
+.     local pnf "--"
+. }
+
+. 
+. * fdTR column
+. if `fdtr_ok' == 1 {
+.     local bd : di %9.4f `fdtr_beta'
+.     local bd = strtrim("`bd'")
+.     local npd : di %6.0f `fdtr_npos'
+.     local npd = strtrim("`npd'")
+.     local nnd : di %6.0f `fdtr_nneg'
+.     local nnd = strtrim("`nnd'")
+.     local pnd : di %5.1f `fdtr_pneg'
+.     local pnd = strtrim("`pnd'")
+. }
+
+. else {
+.     local bd "--"
+.     local npd "--"
+.     local nnd "--"
+.     local pnd "--"
+. }
+
+. 
+. file write texfile "\$\hat{\beta}_{TWFE}\$ & `bf' & `bd' \\" _n
+
+. file write texfile "Positive weights & `npf' & `npd' \\" _n
+
+. file write texfile "Negative weights & `nnf' & `nnd' \\" _n
+
+. file write texfile "\% Negative & `pnf'\% & `pnd'\% \\" _n
+
+. file write texfile "\addlinespace" _n
+
+. file write texfile "Treatment & \multicolumn{2}{c}{Executive election (binary
+> )} \\" _n
+
+. file write texfile "Unit (G) & \multicolumn{2}{c}{Donor\$\times\$Recipient pa
+> ir} \\" _n
+
+. file write texfile "Time (T) & \multicolumn{2}{c}{Year (1975--2003)} \\" _n
+
+. file write texfile "Design & \multicolumn{2}{c}{Staggered (elections in diffe
+> rent years)} \\" _n
+
+. 
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\multicolumn{3}{p{0.85\linewidth}}{\footnotesize" _n
+
+. file write texfile " \textit{Notes:} Decomposition following de Chaisemartin 
+> and" _n
+
+. file write texfile " D'Haultf\oe uille (2020). Pair FE + Year FE.}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table_twowayfeweights.tex created"
+  -> table_twowayfeweights.tex created
+
+. 
+. 
+. * ===== MASTER DOCUMENT =====
+. cap file close texfile
+
+. file open texfile using "$outdir/fayeniehaus_tables.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Faye
+    and Niehaus (2012)/fayeniehaus_tables.tex not found)
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write texfile "\geometry{margin=1in}" _n
+
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justifica
+> tion=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Faye and Niehaus (2012)}\\" _n
+
+. file write texfile "{\large Political Aid Cycles}\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}, 102(7), 3
+> 516--3530}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. file write texfile "\vspace{1em}" _n _n
+
+. file write texfile "\input{table2_replication}" _n _n
+
+. file write texfile "\input{table_twowayfeweights}" _n _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  -> fayeniehaus_tables.tex created"
+  -> fayeniehaus_tables.tex created
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 5: SUMMARY
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "  FINAL SUMMARY: Faye and Niehaus (2012)"
+  FINAL SUMMARY: Faye and Niehaus (2012)
+
+. di    "=============================================="
+==============================================
+
+. di ""
+
+
+. di "Table 2, Col I (baseline): beta(i_elecex) = " %9.4f `b_c1' " (" %7.4f `se
+> _c1' ")"
+Table 2, Col I (baseline): beta(i_elecex) =    2.1827 ( 2.6854)
+
+. if `c4_ok' == 1 {
+.     di "Table 2, Col IV (UN align): beta(i_elecex) = " %9.4f `b_c4' " (" %7.4
+> f `se_c4' ")"
+Table 2, Col IV (UN align): beta(i_elecex) =  -27.3458 (15.5442)
+.     di "                            beta(UN*elec)  = " %9.4f `b_c4_uv' " (" %
+> 7.4f `se_c4_uv' ")"
+                            beta(UN*elec)  =   45.4578 (22.5180)
+. }
+
+. di ""
+
+
+. if `fetr_ok' == 1 {
+.     di "feTR: npos=" %6.0f `fetr_npos' " nneg=" %6.0f `fetr_nneg' " %neg=" %5
+> .1f `fetr_pneg' "%"
+feTR: npos=  1370 nneg=     0 %neg=  0.0%
+. }
+
+. if `fdtr_ok' == 1 {
+.     di "fdTR: npos=" %6.0f `fdtr_npos' " nneg=" %6.0f `fdtr_nneg' " %neg=" %5
+> .1f `fdtr_pneg' "%"
+fdTR: npos=  1370 nneg=     0 %neg=  0.0%
+. }
+
+. di ""
+
+
+. di "Output: table2_replication.tex, table_twowayfeweights.tex, fayeniehaus_ta
+> bles.tex"
+Output: table2_replication.tex, table_twowayfeweights.tex, fayeniehaus_tables.t
+> ex
+
+. di "=============================================="
+==============================================
+
+. 
+. * log close _all
+. 
+end of do-file

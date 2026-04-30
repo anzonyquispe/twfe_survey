@@ -6,17 +6,17 @@ Systematic replication of AER papers to document the prevalence of negative weig
 
 Apply the `twowayfeweights` diagnostic (Stata/R) to published AER papers that use TWFE specifications with staggered adoption or heterogeneous treatment effects designs. The goal is to quantify how many published results are affected by negative weighting of treatment effects, as documented in the web appendix (Table 1) of de Chaisemartin & D'Haultfoeuille (2020).
 
-## Summary — 21 / 59 papers replicated (36%)
+## Summary — 24 / 59 papers replicated (41%)
 
 | Wave | Replicated | Total | Rate |
 |------|-----------|-------|------|
-| Wave 1 (AER 2010-2012) | 14 | 33 | 42% |
-| Wave 2 (AER 2015-2019) | 7 | 26 | 27% |
-| **Total** | **21** | **59** | **36%** |
+| Wave 1 (AER 2010-2012) | 16 | 33 | 48% |
+| Wave 2 (AER 2015-2019) | 8 | 26 | 31% |
+| **Total** | **24** | **59** | **41%** |
 
-Additionally, **8 papers** were identified as **No TWFE** (not amenable to `twowayfeweights` due to cross-sectional Bartik designs, RDD, or non-TWFE identification strategies) or **Sin data** (restricted/proprietary microdata that cannot be accessed).
+Additionally, **10 papers** were identified as **No TWFE** (not amenable to `twowayfeweights` due to cross-sectional Bartik designs, RDD, or non-TWFE identification strategies) or **Sin data** (restricted/proprietary microdata that cannot be accessed).
 
-## All 21 Replicated Papers
+## All 24 Replicated Papers
 
 | # | Paper | Negative Weights (%) | Wave | Notes |
 |---|-------|---------------------|------|-------|
@@ -34,13 +34,16 @@ Additionally, **8 papers** were identified as **No TWFE** (not amenable to `twow
 | 12 | Simcoe (2012) | 54.2% / 48.7% | 1 | Standard-setting committees (techarea FE / WG FE) |
 | 13 | Dinkelman (2011) | 0.0% | 1 | Binary treatment x 2 periods |
 | 14 | Gentzkow et al. (2011) | 41.1% | 1 | 5919 pos / 4137 neg weights |
-| 15 | Antecol et al. (2018) | 7.1% | 2 | Table 2. 182 pos / 14 neg weights |
-| 16 | Burgess et al. (2015) | 0.0% | 2 | Table 1 Col 1. 319 pos / 0 neg weights |
-| 17 | Favara & Imbs (2015) | 31.9% | 2 | Table 4 Col 1. 4406 pos / 2067 neg weights |
-| 18 | Suarez Serrato & Zidar (2016) | 50.0% | 2 | Table 4 Panel A Col 1. 4 pos / 4 neg weights |
-| 19 | Fetzer (2019) | 55.1% | 2 | Table 1 Panel A Col 1. 483 pos / 592 neg weights |
-| 20 | Donaldson (2018) | 51.0% | 2 | Table 4 Col 1. 3169 pos / 3293 neg weights |
-| 21 | Berman et al. (2017) | 60.9% | 2 | Table 2 Col 2. 416 pos / 648 neg weights |
+| 15 | Baum-Snow & Lutz (2011) | 26.9% | 1 | 152 pos / 56 neg weights. Desegregation staggered adoption |
+| 16 | Faye & Niehaus (2012) | 0.0% | 1 | 1370 pos / 0 neg weights. Clean — no negative weights |
+| 17 | Antecol et al. (2018) | 7.1% | 2 | Table 2. 182 pos / 14 neg weights |
+| 18 | Burgess et al. (2015) | 0.0% | 2 | Table 1 Col 1. 319 pos / 0 neg weights |
+| 19 | Favara & Imbs (2015) | 31.9% | 2 | Table 4 Col 1. 4406 pos / 2067 neg weights |
+| 20 | Suarez Serrato & Zidar (2016) | 50.0% | 2 | Table 4 Panel A Col 1. 4 pos / 4 neg weights |
+| 21 | Fetzer (2019) | 55.1% | 2 | Table 1 Panel A Col 1. 483 pos / 592 neg weights |
+| 22 | Donaldson (2018) | 51.0% | 2 | Table 4 Col 1. 3169 pos / 3293 neg weights |
+| 23 | Berman et al. (2017) | 60.9% | 2 | Table 2 Col 2. 416 pos / 648 neg weights |
+| 24 | Kaur (2019) | 1.2% | 2 | 1712 pos / 20 neg weights. Rainfall shock binary treatment |
 
 ### Top 5 papers by negative weight share
 
@@ -54,20 +57,22 @@ Additionally, **8 papers** were identified as **No TWFE** (not amenable to `twow
 
 All top 5 involve continuous or multi-valued treatments with complex panel structures — precisely the settings where TWFE heterogeneity bias is expected to be most severe.
 
-## Papers Identified as No TWFE or Sin Data (Wave 2)
+## Papers Identified as No TWFE or Sin Data
 
-| Paper | Category | Reason |
-|-------|----------|--------|
-| Hershbein & Kahn (2018) | No TWFE | Cross-sectional Bartik design |
-| Handley & Limao (2017) | No TWFE | Trade policy uncertainty, not standard TWFE |
-| Dell (2015) | No TWFE | RDD, not panel TWFE |
-| Munshi & Rosenzweig (2016) | No TWFE | Cross-sectional caste networks |
-| Atkin (2016) | Sin data | IMSS proprietary microdata |
-| Pierce & Schott (2016) | Sin data | Census Bureau LBD restricted |
-| Allcott et al. (2016) | Sin data | ASI microdata India (must be purchased) |
-| Hoynes et al. (2016) | Sin data | Restricted-use vital statistics |
+| Paper | Category | Wave | Reason |
+|-------|----------|------|--------|
+| Aaronson et al. (2012) | No TWFE | 1 | Reduced-form not standard TWFE; structural model |
+| Fang & Gavazza (2011) | No TWFE | 1 | Dynamic structural model, not standard TWFE |
+| Hershbein & Kahn (2018) | No TWFE | 2 | Cross-sectional Bartik design |
+| Handley & Limao (2017) | No TWFE | 2 | Trade policy uncertainty, not standard TWFE |
+| Dell (2015) | No TWFE | 2 | RDD, not panel TWFE |
+| Munshi & Rosenzweig (2016) | No TWFE | 2 | Cross-sectional caste networks |
+| Atkin (2016) | Sin data | 2 | IMSS proprietary microdata |
+| Pierce & Schott (2016) | Sin data | 2 | Census Bureau LBD restricted |
+| Allcott et al. (2016) | Sin data | 2 | ASI microdata India (must be purchased) |
+| Hoynes et al. (2016) | Sin data | 2 | Restricted-use vital statistics |
 
-Additional Wave 2 papers without data or not yet replicated: Di Maggio et al. (2017), Brandt et al. (2017), Dix-Carneiro & Kovak (2017), Besley et al. (2017), Fuest et al. (2018), Monte et al. (2018), Huber (2018), Naritomi (2019), Bloom et al. (2019), Diamond et al. (2019), Kaur (2019).
+Additional Wave 2 papers without data or not yet replicated: Di Maggio et al. (2017), Brandt et al. (2017), Dix-Carneiro & Kovak (2017), Besley et al. (2017), Fuest et al. (2018), Monte et al. (2018), Huber (2018), Naritomi (2019), Bloom et al. (2019), Diamond et al. (2019).
 
 ## Technical Notes
 
@@ -94,15 +99,11 @@ Additional Wave 2 papers without data or not yet replicated: Di Maggio et al. (2
 | Imberman (2011) | Missing main dataset |
 | Mian & Sufi (2012) | Missing main dataset |
 
-## Wave 1 — Papers with Data (Pending, 5)
+## Wave 1 — Papers with Data (Pending, 1)
 
 | Paper | Status |
 |-------|--------|
-| Aaronson et al. (2012) | Data available, large replication package |
-| Baum-Snow & Lutz (2011) | Data available |
 | Dahl & Lochner (2012) | Requires TAXSIM software |
-| Fang & Gavazza (2011) | Data available |
-| Faye & Niehaus (2012) | Data available |
 
 ## Repository Structure
 
@@ -116,11 +117,11 @@ twfe_survey/
 │   ├── 2010-2012/               33 folders (one per paper)
 │   └── 2015-2019/               23 folders (one per paper)
 ├── replications/                TWFE replication scripts and logs
-│   ├── 2010-2012/               14 completed (run_twowayfe.do + .log)
-│   └── 2015-2019/               7 completed
+│   ├── 2010-2012/               16 completed (run_twowayfe.do + .log)
+│   └── 2015-2019/               8 completed
 ├── latex/                       Generated LaTeX tables and compiled PDFs
-│   ├── 2010-2012/               14 completed papers (.tex + .pdf)
-│   └── 2015-2019/               7 completed
+│   ├── 2010-2012/               16 completed papers (.tex + .pdf)
+│   └── 2015-2019/               8 completed
 ├── reports/
 │   ├── tracker_master_consolidado.xlsx    Master tracker (all papers, both waves)
 │   ├── AER_2011-2012_Feasibility_Report.xlsx

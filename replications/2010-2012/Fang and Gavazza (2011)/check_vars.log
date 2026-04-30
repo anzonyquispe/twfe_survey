@@ -1,0 +1,147 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do check_vars.do 
+
+. /*===========================================================================
+> ===
+>   CHECK_VARS: Fang and Gavazza (2011)
+>   "Dynamic Inefficiencies in an Employment-Based Health Insurance System"
+>   AER 101(7), 3047-3077
+> 
+>   FINDING: NOT TWFE
+>   - Tables 2, 3, 5: Pooled OLS + IV (ivreg2 cue/gmm2s) on MEPS
+>     repeated cross-sections. Year x region FE only, no unit FE.
+>   - Table 4: Panel IV with RANDOM effects (xtivreg, re ec2sls)
+>     on HRS data. NOT fixed effects.
+>   - Table 6 Col 3: Panel FE with IV (xtivreg2, fe robust) on
+>     BHPS data. FE present but treatment is endogenous (instrumented).
+>     NOT simple TWFE.
+>   - Table 6 Col 4: Dynamic panel GMM (xtabond2).
+>   - NO table uses simple two-way FE OLS.
+> 
+>   STATUS: No TWFE — skip run_twowayfe.do
+> =============================================================================
+> =*/
+. 
+. clear all
+
+. set more off
+
+. cap * log close _all
+
+. 
+. * NOTE: log auto-created by Stata -b mode
+. 
+. di "=============================================="
+==============================================
+
+. di "  Fang and Gavazza (2011) - NOT TWFE"
+  Fang and Gavazza (2011) - NOT TWFE
+
+. di "=============================================="
+==============================================
+
+. di ""
+
+
+. di "Paper: Dynamic Inefficiencies in an Employment-Based"
+Paper: Dynamic Inefficiencies in an Employment-Based
+
+. di "       Health Insurance System"
+       Health Insurance System
+
+. di "AER 101(7), 3047-3077"
+AER 101(7), 3047-3077
+
+. di ""
+
+
+. di "REASON: All empirical specifications use IV/GMM:"
+REASON: All empirical specifications use IV/GMM:
+
+. di ""
+
+
+. di "  Tables 2,3,5 (MEPS data):"
+  Tables 2,3,5 (MEPS data):
+
+. di "    Spec 1: reg lmexp ltenu ... i.y_r, robust (pooled OLS, no unit FE)"
+    Spec 1: reg lmexp ltenu ... i.y_r, robust (pooled OLS, no unit FE)
+
+. di "    Spec 2: ivreg2 lmexp (ltenu=iv*) i.y_r, cue robust (IV)"
+    Spec 2: ivreg2 lmexp (ltenu=iv*) i.y_r, cue robust (IV)
+
+. di "    Spec 3: ivreg2 d.lmexp (d.ltenu=iv*) i.y_r, gmm2s (FD-IV)"
+    Spec 3: ivreg2 d.lmexp (d.ltenu=iv*) i.y_r, gmm2s (FD-IV)
+
+. di ""
+
+
+. di "  Table 4 (HRS data):"
+  Table 4 (HRS data):
+
+. di "    xtivreg logmd (ljlten=*death_r int*), re ec2sls (RE-IV)"
+    xtivreg logmd (ljlten=*death_r int*), re ec2sls (RE-IV)
+
+. di ""
+
+
+. di "  Table 6 (BHPS data):"
+  Table 6 (BHPS data):
+
+. di "    Col 1: reg md2 logt ..., robust (pooled OLS, no unit FE)"
+    Col 1: reg md2 logt ..., robust (pooled OLS, no unit FE)
+
+. di "    Col 2: ivreg md2 (logt=logt_ins) ..., cluster (pooled IV)"
+    Col 2: ivreg md2 (logt=logt_ins) ..., cluster (pooled IV)
+
+. di "    Col 3: xtivreg2 md2 (logt=logt_ins) ..., fe robust (FE-IV)"
+    Col 3: xtivreg2 md2 (logt=logt_ins) ..., fe robust (FE-IV)
+
+. di "    Col 4: xtabond2 md2 l.md2 ... (dynamic panel GMM)"
+    Col 4: xtabond2 md2 l.md2 ... (dynamic panel GMM)
+
+. di ""
+
+
+. di "Key issue: Treatment (log tenure) is always endogenous,"
+Key issue: Treatment (log tenure) is always endogenous,
+
+. di "instrumented by group-mean tenure or firm death rates."
+instrumented by group-mean tenure or firm death rates.
+
+. di "No table has simple Y = a_i + g_t + b*D + e structure."
+No table has simple Y = a_i + g_t + b*D + e structure.
+
+. di ""
+
+
+. di "STATUS: No TWFE"
+STATUS: No TWFE
+
+. di "=============================================="
+==============================================
+
+. 
+. * log close _all

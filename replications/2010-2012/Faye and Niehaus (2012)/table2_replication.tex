@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Replication of Table 2 --- Faye and Niehaus (2012)}
+\label{tab:fayeniehaus_replication}
+\begin{tabular}{lcc}
+\toprule
+ & Col I & Col IV \\
+ & (Baseline) & (UN alignment) \\
+\midrule
+\multicolumn{3}{l}{\textit{Dep.\ var.: ODA commitments (2004 USD)}} \\
+\addlinespace
+Executive Election & 2.1827 & -27.3458* \\
+ & (2.6854) & (15.5442) \\
+\addlinespace
+UN Alignment $\times$ Election & & 45.4578** \\
+ & & (22.5180) \\
+\addlinespace
+Pair FE & Y & Y \\
+Year FE & Y & Y \\
+Observations & 15,315 & 15,315 \\
+Pairs & 580 & 580 \\
+\bottomrule
+\multicolumn{3}{p{0.85\linewidth}}{\footnotesize
+ \textit{Notes:} Pair = donor$\times$recipient. Original analysis
+ in R with 3-way clustered SE (donor, recipient, year).
+ Here: SE clustered by pair. *** p<0.01, ** p<0.05, * p<0.10.}
+\end{tabular}
+\end{table}
