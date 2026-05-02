@@ -1,0 +1,50 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,longtable,verbatim}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Anderson \& Sallee (2011)}\\
+{\large Using Loopholes to Reveal the Marginal Cost of Regulation:}\\
+{\large The Case of Fuel-Economy Standards}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 101(4), 1375--1409}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Partial replication (CAFE compliance module only).
+The proprietary transactions dataset (\texttt{transactions1.dta}) needed for
+Tables 3--7 is unavailable. Tables 1, 2, and 8 plus Figures 1--5 are replicated
+from the \texttt{cafe\_compliance.dta} dataset.
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 1 -- Fuel Economy Performance and Flexible-Fuel Production}
+
+Sales-weighted gallons-per-mile (GPM) averages by manufacturer and fleet type:
+CAFE standard, AMFA-adjusted, and actual. Also reports total sales and FFV sales
+by manufacturer and fleet. Output below is the raw Stata log; final table values
+require additional calculations in Excel as noted by the authors.
+
+\begin{scriptsize}
+\verbatiminput{cafe_compliance_behavior.txt}
+\end{scriptsize}
+
+%% ====================================================================
+\clearpage
+\section{Table 8 -- Marginal Compliance Costs Per Vehicle}
+
+Sales-weighted GPM for FFV vehicles and all vehicles by manufacturer, fleet, and year.
+Corner-solution years are zeroed out. Final marginal cost calculations require
+additional computations in Excel.
+
+\begin{scriptsize}
+\verbatiminput{cafe_compliance_costs.txt}
+\end{scriptsize}
+
+\end{document}

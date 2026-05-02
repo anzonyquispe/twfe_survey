@@ -1,0 +1,24 @@
+	(1)	(2)	(3)	(4)	(5)
+	constrained	constrained	constrained	unconstrained	constrained
+	CHINA	CHINA	CHINA	CHINA	CHINA
+					
+			sections		sections
+VARIABLES	robust SE	robust SE	robust SE	robust SE	robust SE
+					
+unc_pre	0.564***	0.706***	0.659***	0.655***	0.624***
+	[0.173]	[0.191]	[0.205]	[0.188]	[0.201]
+dif_advalorem_mfn_5	-4.998***	-4.945***	-4.865***	-4.944***	-4.854***
+	[0.697]	[0.695]	[0.696]	[0.696]	[0.697]
+dif_ln_tcost_5	-3.332***	-3.297***	-3.243***	-3.296***	-3.236***
+	[0.465]	[0.463]	[0.464]	[0.464]	[0.465]
+ln_mean_kl_00		0.0744*	0.0772	-0.0759	-0.0276
+		[0.0383]	[0.0534]	[0.0975]	[0.115]
+unc_pre_Xcenter_ln_mean_kl				0.287*	0.193
+				[0.171]	[0.186]
+Constant	0.970***	0.553**	-0.327	1.288***	0.151
+	[0.0994]	[0.232]	[0.458]	[0.481]	[0.636]
+					
+Observations	3,055	3,055	3,055	3,055	3,055
+TC/TAR constr (pval)	0.307	0.381	0.825	0.348	0.829
+Robust standard errors in brackets					
+*** p<0.01, ** p<0.05, * p<0.1					

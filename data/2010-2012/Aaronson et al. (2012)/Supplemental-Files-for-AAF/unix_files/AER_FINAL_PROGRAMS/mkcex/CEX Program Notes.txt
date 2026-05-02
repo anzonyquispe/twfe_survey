@@ -1,0 +1,20 @@
+*------ 1991-2008 portion (D1) ------*
+
+D1_MM_minwage.do organizes the programs (the D1 series of programs) that create the 
+1991-2008 portion of the data from scratch using the raw CEX data and dictionary files.
+
+*------ 1982-1990 portion (D2) ------*
+
+D2_MM_pull_pre91.do organizes the programs that format the 1982-1990 portion of the data.
+Rather than creating the programs from scratch, these programs used a pre-existing CEX
+dataset that was created in house at the Federal Reserve Bank of Chicago.
+
+*------ Other notes (D3) ------*
+
+D3_MM_add_heqdetail.do organizes a set of programs that bring in additional household 
+equity variables that were not included in the original programs.
+
+*------ Bringing it all together ------*
+
+collage_aug10_update.do combines all of the datasets to create the data that is used 
+by cex.do: ces_int_82_08.dta.

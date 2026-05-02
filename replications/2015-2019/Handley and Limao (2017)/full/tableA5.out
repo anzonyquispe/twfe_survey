@@ -1,0 +1,33 @@
+	(1)	(2)	(3)	(4)
+				COMBINED PANEL
+	USA ONLY	EU ONLY	JPN ONLY	hs6 FE
+	section FE	section FE	section FE	cluster(hs )
+	ROBUST SE	ROBUST SE	ROBUST SE	MATCHED
+	MATCHED	MATCHED	MATCHED	consrt tar
+	Flex Tariff	Flex Tariff	Flex Tariff	ctry*section FE
+VARIABLES	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5
+				
+USA_dif_advalorem_mfn_5	-6.042			
+	[5.120]			
+USA_post_unc_pre	0.554***			0.428**
+	[0.193]			[0.210]
+EU_dif_advalorem_mfn_5		-7.970***		
+		[2.949]		
+EU_post_unc_pre		0.0174		
+		[0.186]		
+JPN_dif_advalorem_mfn_5			-8.306	
+			[5.678]	
+JPN_post_unc_pre			0.208	
+			[0.176]	
+dif_advalorem_mfn_5				-5.080*
+				[2.640]
+Constant	0.984***	1.430***	0.904***	1.076***
+	[0.106]	[0.106]	[0.0991]	[0.0900]
+				
+Observations	3,100	3,004	2,723	8,827
+R-squared	0.031	0.037	0.079	0.051
+Number of hs6				3,100
+TarCoeff Equal (p-val)				0.122
+omitted unc coefs equal (p-val)				0.261
+Robust standard errors in brackets				
+*** p<0.01, ** p<0.05, * p<0.1				

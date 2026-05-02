@@ -1,0 +1,25 @@
+	(1)	(2)	(3)	(4)
+	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs6_total	dif_ln_num_prod_	dif_ln_num_prod_
+				
+		section FE		section FE
+				
+	PRICE trim 0.025 tails	PRICE trim 0.025 tails	PRICE trim 0.025 tails	PRICE trim 0.025 tails
+VARIABLES	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs6_total	dif_ln_num_prod_5	dif_ln_num_prod_5
+				
+dif_advalorem_mfn_5	4.429***	0.332	-4.710***	-3.788***
+	[1.610]	[1.687]	[0.950]	[1.012]
+dif_ln_tcost_5	-0.446*	-0.465*	-0.217**	-0.196**
+	[0.253]	[0.248]	[0.0896]	[0.0888]
+0b.hi_sunk_t#c.unc_pre	-0.00888	-0.0619	0.0194	0.0295
+	[0.118]	[0.130]	[0.0396]	[0.0471]
+1.hi_sunk_t#c.unc_pre	-0.449***	-0.320***	0.0962**	0.0819*
+	[0.0816]	[0.0923]	[0.0423]	[0.0485]
+1.hi_sunk_t	0.165**	0.103	0.0291	0.0290
+	[0.0793]	[0.0810]	[0.0324]	[0.0345]
+Constant	-0.0465	-0.0565	0.0549**	0.0618**
+	[0.0658]	[0.0733]	[0.0230]	[0.0267]
+				
+Observations	2,579	2,579	2,579	2,579
+R-squared	0.023	0.064	0.041	0.067
+Robust standard errors in brackets				
+*** p<0.01, ** p<0.05, * p<0.1				

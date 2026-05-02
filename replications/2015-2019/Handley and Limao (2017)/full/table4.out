@@ -1,0 +1,23 @@
+	(1)	(2)	(3)	(4)	(5)	(6)	(7)	(8)
+	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs6_total	HS4 ldif_ln_pindex_hs4_total	HS4 ldif_ln_pindex_hs4_total	dif_ln_num_prod_	dif_ln_num_prod_	dif_ln_num_prod_	dif_ln_num_prod_
+								
+		section FE		section FE		section FE		section FE
+			robust SE	robust SE				
+	PRICE trim 0.025 tails	PRICE trim 0.025 tails			PRICE trim 0.025 tails	PRICE trim 0.025 tails	PRICE trim 0.025 tails	PRICE trim 0.025 tails
+VARIABLES	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs4_total	ldif_ln_pindex_hs4_total	dif_ln_num_prod_5	dif_ln_num_prod_5	dif_ln_num_prod_5	dif_ln_num_prod_5
+								
+unc_pre	-0.284***	-0.217***	-0.418**	-0.483**	0.0736**	0.0606	0.243***	0.200**
+	[0.0689]	[0.0828]	[0.173]	[0.223]	[0.0309]	[0.0380]	[0.0722]	[0.0907]
+dif_advalorem_mfn_5	5.137***	0.560	9.839**	6.829	-5.170***	-4.066***	-3.196***	-2.792**
+	[1.608]	[1.682]	[4.313]	[4.497]	[0.957]	[1.024]	[1.179]	[1.185]
+dif_ln_tcost_5	-0.435*	-0.460*	-0.477	-0.465	-0.227**	-0.200**	-0.514***	-0.504***
+	[0.254]	[0.248]	[0.626]	[0.620]	[0.0909]	[0.0897]	[0.165]	[0.160]
+Constant	0.0542	0.00228	0.148*	0.171	0.0715***	0.0824***	0.172***	0.196***
+	[0.0375]	[0.0454]	[0.0892]	[0.116]	[0.0166]	[0.0203]	[0.0402]	[0.0495]
+								
+Observations	2,579	2,579	907	907	2,579	2,579	1,051	1,051
+R-squared	0.017	0.063	0.019	0.061	0.031	0.061	0.032	0.067
+mfx unwt	-0.150	-0.110	-0.220	-0.250				
+mfx ideal wts	-0.170	-0.130	-0.250	-0.280				
+Robust standard errors in brackets								
+*** p<0.01, ** p<0.05, * p<0.1								

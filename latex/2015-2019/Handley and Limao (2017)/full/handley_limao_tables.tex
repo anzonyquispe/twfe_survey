@@ -1,0 +1,174 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,longtable,verbatim}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Handley \& Lima\~{o} (2017)}\\
+{\large Policy Uncertainty, Trade, and Welfare:}\\
+{\large Theory and Evidence for China and the United States}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 107(9), 2731--2783}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Full replication. All data available.
+6 main tables, 9 appendix tables, and 8 figures successfully replicated using Stata.
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 1 -- Summary Statistics}
+
+Summary statistics for key variables, split by low/high trade policy uncertainty.
+
+\begin{small}
+\verbatiminput{table1.csv}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table 2 -- Baseline Import Growth Regressions}
+
+OLS regressions of changes in log imports (2005--2000) on uncertainty, tariff changes,
+and transport cost changes. Columns (1)--(2) without section dummies; (3)--(4) with section dummies.
+Constrained specification restricts the uncertainty coefficient to match the NLS estimate.
+
+\begin{small}
+\verbatiminput{table2.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table 3 -- Heterogeneity by Sunk Cost (Panel A)}
+
+Import growth regressions split by terciles of sunk cost measures.
+Panel A reports results for China and Taiwan separately, plus pooled specifications.
+
+\begin{small}
+\verbatiminput{table3_panelA.out}
+\end{small}
+
+\subsection*{Table 3 -- Panel B}
+
+\begin{small}
+\verbatiminput{table3_panelB.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table 4 -- Price and Variety Decomposition}
+
+Decomposition of import growth into price index changes and variety growth.
+Columns (1)--(4) for prices, (5)--(8) for number of products.
+
+\begin{small}
+\verbatiminput{table4.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table 5 -- Prices and Variety by Sunk Cost}
+
+Price and variety regressions interacted with high/low sunk cost indicator.
+
+\begin{small}
+\verbatiminput{table5.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table 6 -- NLS Structural Estimation}
+
+Nonlinear least squares estimation of the structural model with the uncertainty
+parameter $\alpha$ (sunk cost elasticity of trade). Compared with OLS reduced form.
+
+\begin{small}
+\verbatiminput{table6.out}
+\end{small}
+
+%% ====================================================================
+%% APPENDIX TABLES
+%% ====================================================================
+\clearpage
+\section{Appendix Table A1 -- Detailed Summary Statistics}
+
+\begin{small}
+\verbatiminput{tableA1.csv}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A2}
+
+\begin{small}
+\verbatiminput{tableA2.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A3 -- Panel A}
+
+\begin{small}
+\verbatiminput{tableA3_panelA.out}
+\end{small}
+
+\subsection*{Appendix Table A3 -- Panel B}
+
+\begin{small}
+\verbatiminput{tableA3_panelB.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A4}
+
+\begin{small}
+\verbatiminput{tableA4.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A5}
+
+\begin{small}
+\verbatiminput{tableA5.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A6}
+
+\begin{small}
+\verbatiminput{tableA6.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A7}
+
+\begin{small}
+\verbatiminput{tableA7.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A8}
+
+\begin{small}
+\verbatiminput{tableA8.out}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Appendix Table A9}
+
+\begin{small}
+\verbatiminput{tableA9.out}
+\end{small}
+
+\end{document}

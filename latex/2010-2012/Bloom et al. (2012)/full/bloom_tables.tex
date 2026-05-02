@@ -1,0 +1,72 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,longtable,verbatim}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Bloom, Sadun \& Van Reenen (2012)}\\
+{\large The Organization of Firms Across Countries}\\
+\vspace{0.5em}
+{\normalsize \textit{Quarterly Journal of Economics}, 127(4), 1663--1705}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Partial replication (European data only).
+The UK establishment-level data required for Tables 1--5 and Table C1 is unavailable
+(restricted access). Tables 6, C2, A5, and A6 are replicated from the European
+cross-country survey data (\texttt{replicate.dta}).
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 6 -- Decentralization and Firm Characteristics (European Data)}
+
+OLS regressions of decentralization on firm characteristics across European countries.
+Dependent variable: log of plant-level autonomy index (\texttt{ly}) in columns (1)--(6),
+log of PCs per employee (\texttt{lpcemp}) in columns (7)--(8).
+Key regressors include log capital (\texttt{lcap}), log employment (\texttt{lemp}),
+US and other multinational dummies, log PCs per employee and interactions,
+trust (\texttt{ldegree\_t}), and people skills (\texttt{peeps}).
+
+\begin{small}
+\verbatiminput{Table6.csv}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table C2 -- Management Practices and Decentralization}
+
+Robustness checks replacing the aggregate people skills variable with specific
+management practice sub-indices: operations, monitoring, targets, and overall management.
+
+\begin{small}
+\verbatiminput{tablec2.csv}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table A5 -- Selection into Interview (All Firms)}
+
+Probit/OLS regressions testing whether observable firm characteristics predict
+interview completion. Dependent variable: indicator for completing the survey interview.
+
+\begin{small}
+\verbatiminput{TableA5.csv}
+\end{small}
+
+%% ====================================================================
+\clearpage
+\section{Table A6 -- Selection into Matching (Matched Sample)}
+
+Regressions testing whether observable characteristics predict successful matching
+to accounting data among interviewed firms.
+
+\begin{small}
+\verbatiminput{TableA6.csv}
+\end{small}
+
+\end{document}

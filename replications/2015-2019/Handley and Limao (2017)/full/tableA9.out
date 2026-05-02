@@ -1,0 +1,25 @@
+	(1)	(2)	(3)	(4)
+	China & ROW	China & ROW	China & Taiwan	China & Taiwan
+		hs6 FE		hs6 FE
+	ctry*section FE	ctry*section FE	ctry*section FE	ctry*section FE
+	cluster(hs )	cluster(hs )	cluster(hs )	cluster(hs )
+	MATCHED	MATCHED	MATCHED	MATCHED
+	trim025 tails	trim025 tails	trim025 tails	trim025 tails
+VARIABLES	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs6_total	ldif_ln_pindex_hs6_total
+				
+CHINA_fixunc2000	-0.287***	-0.217**	-0.201**	-0.404***
+	[0.0835]	[0.0943]	[0.0909]	[0.149]
+nonCH_fixunc2000	-0.0738		0.205*	
+	[0.0527]		[0.117]	
+dif_advalorem_mfn_5	-0.460		0.264	
+	[0.991]		[1.534]	
+dif_ln_tcost_5	-0.537**	-0.399	-0.279	-0.138
+	[0.259]	[0.282]	[0.237]	[0.321]
+Constant	0.113***	0.148***	-0.0376	0.0463***
+	[0.0284]	[0.00745]	[0.0419]	[0.0111]
+				
+Observations	4,872	4,872	3,356	3,356
+R-squared	0.105	0.147	0.084	0.066
+Number of hs		2,436		1,678
+Robust standard errors in brackets				
+*** p<0.01, ** p<0.05, * p<0.1				

@@ -1,0 +1,31 @@
+	(1)	(2)	(3)	(4)
+	unconstrained	unconstrained	pre unconstrained rreg	pre unconstrained rreg
+	rreg 2005 5 lag	rreg 2005 5 lag	1999	1999
+	pre-period sample	pre-period sample	lag 3	lag 3
+VARIABLES	dd_5	dd_5	dif_ln_imp_3	dif_ln_imp_3
+				
+unc_2000	0.506**	0.415*		
+	[0.224]	[0.225]		
+dd_adv5	-5.699***	-5.157***		
+	[1.954]	[1.960]		
+dd_tc5	-3.354***	-3.424***		
+	[0.309]	[0.308]		
+dd_TTB5		-0.230		
+		[0.219]		
+dd_MFA5		-0.408***		
+		[0.112]		
+unc_1996			-0.00501	0.0303
+			[0.109]	[0.109]
+dif_advalorem_mfn_3			-4.506***	-4.311***
+			[1.594]	[1.587]
+dif_ln_tcost_3			-3.437***	-3.444***
+			[0.290]	[0.289]
+dif_MFA_3				0.469***
+				[0.160]
+dif_TTB_3				-0.510*
+				[0.302]
+				
+Observations	2,571	2,571	2,571	2,571
+R-squared	0.047	0.054	0.055	0.060
+Standard errors in brackets				
+*** p<0.01, ** p<0.05, * p<0.1				

@@ -1,0 +1,3697 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do replication_appx_only.do 
+
+. version 13
+
+. cd "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Hand
+> ley and Limao (2017)/full"
+C:\Users\Usuario\Documents\GitHub\twfe_survey\replications\2015-2019\Handley an
+> d Limao (2017)\full
+
+. adopath + "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Handley and Limao (2017)/full"
+  [1]  (BASE)      "D:\era_data2\ado\base/"
+  [2]  (SITE)      "D:\era_data2\ado\site/"
+  [3]              "."
+  [4]  (PERSONAL)  "C:\Users\Usuario\ado\personal/"
+  [5]  (PLUS)      "C:\Users\Usuario\ado\plus/"
+  [6]  (OLDPLACE)  "c:\ado/"
+  [7]              "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/
+> 2015-2019/Handley and Limao (2017)/full"
+
+. 
+. drop _all
+
+. set more off
+
+. set matsize 800
+
+. 
+. /**** REPLICATION OF APPENDIX *****/
+. do replication_appendix.do
+
+. 
+. 
+. 
+. /*appendix tables*/
+. 
+. do tables_appx_replicate1.do
+
+. 
+. clear *
+
+. clear all
+
+. set more off
+
+. 
+. 
+.         
+. local x=5
+
+.         
+.         
+. /*** Robustness Across Sigma=2,3,4 Assumption Table A3, top panel ***/
+.         
+.         use replication_appxdata1, clear
+
+.         
+.         
+.         local outregfile "tableA3_panelA.out"
+
+.         local replace replace
+
+.         foreach s in 3 2 4{
+  2.         
+.         
+.         local difX unc_pre_sig`s' dif_advalorem_mfn_`x' dif_ln_tcost_`x'
+  3.                 
+.         local restrict "UNCONSTRAINED"  
+  4.         
+.         reg dif_ln_imp_`x' `difX' /*
+>                 */ if year==2005  , r  
+  5.         
+.                 test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+  6. 
+.         
+.         
+.         
+.         outreg2    using `outregfile',  `replace' keep(unc_pre_sig`s') /*
+>                                 */cttop(`restrict', `year', sigma=`s',) bfmt(
+> fc) coefastr level(95) se br nocons  /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+  7.                                 
+.         local replace
+  8.         
+.         reg dif_ln_imp_`x' `difX' i.section/*
+>                 */ if year==2005  , r  
+  9.         
+.                 test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+ 10. 
+.         
+.         
+.         
+.         outreg2   using `outregfile',  `replace' keep(unc_pre_sig`s') /*
+>                                 */cttop(`restrict', `year', sigma=`s',section
+>  dummies) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+ 11.                                 
+.         
+.         }
+
+Linear regression                               Number of obs     =      3,211
+                                                F(3, 3207)        =      22.84
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0326
+                                                Root MSE          =     1.6485
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_sig3 |   .7425948   .1541156     4.82   0.000     .4404197     1.04477
+dif_advalo~5 |  -9.966953   4.477521    -2.23   0.026    -18.74605   -1.187859
+dif_ln_t~t_5 |  -2.806473   .4554168    -6.16   0.000     -3.69941   -1.913535
+       _cons |   .8509455   .0852997     9.98   0.000     .6836981    1.018193
+------------------------------------------------------------------------------
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3207) =    1.62
+            Prob > F =    0.2036
+dir : seeout
+
+Linear regression                               Number of obs     =      3,211
+                                                F(23, 3187)       =       8.42
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0529
+                                                Root MSE          =     1.6361
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_sig3 |   .7162617   .1859081     3.85   0.000       .35175    1.080773
+dif_advalo~5 |    -7.3558   5.059781    -1.45   0.146    -17.27656    2.564957
+dif_ln_t~t_5 |  -2.794889   .4555669    -6.13   0.000    -3.688123   -1.901655
+             |
+     section |
+          2  |   .3507215   .2475969     1.42   0.157    -.1347439    .8361869
+          3  |   .0304845   .4402034     0.07   0.945    -.8326261    .8935951
+          4  |   .8130212   .2805277     2.90   0.004     .2629881    1.363054
+          5  |   .4490534   .3408534     1.32   0.188    -.2192608    1.117368
+          6  |   .5492058   .2215046     2.48   0.013     .1148997    .9835118
+          7  |   1.035055   .2542211     4.07   0.000     .5366017    1.533509
+          8  |   .2439786   .2801526     0.87   0.384     -.305319    .7932762
+          9  |   1.270332   .3380668     3.76   0.000     .6074814    1.933182
+         10  |   .6391524   .2805443     2.28   0.023     .0890868    1.189218
+         11  |   .6464523   .2327206     2.78   0.006      .190155     1.10275
+         12  |  -.1325989   .2349323    -0.56   0.573    -.5932327     .328035
+         13  |   .6919287   .2627226     2.63   0.008     .1768063    1.207051
+         14  |   .2878207    .332962     0.86   0.387    -.3650207    .9406621
+         15  |   .6449876    .234669     2.75   0.006       .18487    1.105105
+         16  |   .6190268   .2216692     2.79   0.005     .1843981    1.053656
+         17  |   .9121303   .2960515     3.08   0.002     .3316596    1.492601
+         18  |   .2096682   .2473759     0.85   0.397    -.2753639    .6947002
+         19  |   .8603028     .53545     1.61   0.108    -.1895586    1.910164
+         20  |   .0681752   .2382918     0.29   0.775    -.3990455    .5353959
+         21  |   .4972915   .2746895     1.81   0.070    -.0412946    1.035878
+             |
+       _cons |   .2960474    .201149     1.47   0.141    -.0983472     .690442
+------------------------------------------------------------------------------
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3187) =    0.38
+            Prob > F =    0.5357
+dir : seeout
+
+Linear regression                               Number of obs     =      3,211
+                                                F(3, 3207)        =      22.13
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0319
+                                                Root MSE          =      1.649
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_sig2 |    .868581   .1890844     4.59   0.000     .4978425     1.23932
+dif_advalo~5 |  -9.984473   4.484569    -2.23   0.026    -18.77738   -1.191561
+dif_ln_t~t_5 |  -2.803061   .4557652    -6.15   0.000    -3.696682   -1.909441
+       _cons |   .8912414   .0806331    11.05   0.000     .7331437    1.049339
+------------------------------------------------------------------------------
+
+ ( 1)  dif_advalorem_mfn_5 - 2*dif_ln_tcost_5 = 0
+
+       F(  1,  3207) =    0.92
+            Prob > F =    0.3386
+dir : seeout
+
+Linear regression                               Number of obs     =      3,211
+                                                F(23, 3187)       =       8.31
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0525
+                                                Root MSE          =     1.6365
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_sig2 |   .8377703   .2264883     3.70   0.000     .3936928    1.281848
+dif_advalo~5 |  -7.446929   5.059859    -1.47   0.141    -17.36784     2.47398
+dif_ln_t~t_5 |   -2.79258   .4559421    -6.12   0.000     -3.68655    -1.89861
+             |
+     section |
+          2  |   .3577063   .2481456     1.44   0.150    -.1288349    .8442475
+          3  |    .042819   .4370895     0.10   0.922    -.8141861    .8998241
+          4  |    .835235   .2801468     2.98   0.003     .2859487    1.384521
+          5  |     .44923    .340946     1.32   0.188    -.2192658    1.117726
+          6  |   .5707229    .220883     2.58   0.010     .1376356     1.00381
+          7  |   1.058277   .2536479     4.17   0.000     .5609476    1.555607
+          8  |   .2656442   .2800761     0.95   0.343    -.2835034    .8147918
+          9  |   1.293107   .3379309     3.83   0.000     .6305232    1.955691
+         10  |   .6613907   .2802107     2.36   0.018     .1119792    1.210802
+         11  |   .6640631   .2323896     2.86   0.004     .2084149    1.119711
+         12  |  -.1068611   .2340316    -0.46   0.648    -.5657289    .3520066
+         13  |   .7165646   .2618972     2.74   0.006     .2030606    1.230069
+         14  |   .2976076   .3338699     0.89   0.373    -.3570139    .9522291
+         15  |    .669262   .2336103     2.86   0.004     .2112204    1.127304
+         16  |   .6474288    .220347     2.94   0.003     .2153925    1.079465
+         17  |   .9351336    .294728     3.17   0.002     .3572579    1.513009
+         18  |   .2361048   .2462605     0.96   0.338    -.2467402    .7189499
+         19  |   .8790876   .5384307     1.63   0.103    -.1766181    1.934793
+         20  |   .0905711   .2378041     0.38   0.703    -.3756935    .5568357
+         21  |   .4805418   .2746027     1.75   0.080    -.0578741    1.018958
+             |
+       _cons |   .3127738   .2010401     1.56   0.120    -.0814073    .7069549
+------------------------------------------------------------------------------
+
+ ( 1)  dif_advalorem_mfn_5 - 2*dif_ln_tcost_5 = 0
+
+       F(  1,  3187) =    0.13
+            Prob > F =    0.7174
+dir : seeout
+
+Linear regression                               Number of obs     =      3,211
+                                                F(3, 3207)        =      23.43
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0331
+                                                Root MSE          =      1.648
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_sig4 |   .6924206   .1383818     5.00   0.000     .4210948    .9637463
+dif_advalo~5 |  -9.987898   4.470484    -2.23   0.026    -18.75319   -1.222602
+dif_ln_t~t_5 |  -2.808892   .4551716    -6.17   0.000    -3.701348   -1.916435
+       _cons |   .8145557   .0894434     9.11   0.000     .6391836    .9899279
+------------------------------------------------------------------------------
+
+ ( 1)  dif_advalorem_mfn_5 - 1.333333*dif_ln_tcost_5 = 0
+
+       F(  1,  3207) =    1.92
+            Prob > F =    0.1664
+dir : seeout
+
+Linear regression                               Number of obs     =      3,211
+                                                F(23, 3187)       =       8.51
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0532
+                                                Root MSE          =     1.6359
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_sig4 |   .6657391   .1677982     3.97   0.000     .3367357    .9947424
+dif_advalo~5 |  -7.293476    5.05921    -1.44   0.150    -17.21311    2.626162
+dif_ln_t~t_5 |  -2.796197   .4552892    -6.14   0.000    -3.688886   -1.903508
+             |
+     section |
+          2  |   .3446702   .2471273     1.39   0.163    -.1398743    .8292148
+          3  |   .0184675   .4431934     0.04   0.967    -.8505057    .8874407
+          4  |   .7924675   .2809137     2.82   0.005     .2416775    1.343257
+          5  |   .4500118    .340812     1.32   0.187    -.2182213    1.118245
+          6  |   .5302238   .2221277     2.39   0.017     .0946962    .9657514
+          7  |    1.01588   .2547542     3.99   0.000     .5163808    1.515378
+          8  |    .226081   .2801471     0.81   0.420    -.3232059    .7753678
+          9  |   1.251309   .3382335     3.70   0.000      .588132    1.914487
+         10  |   .6202091   .2808734     2.21   0.027     .0694982     1.17092
+         11  |   .6343667   .2329167     2.72   0.006      .177685    1.091048
+         12  |   -.153763   .2357253    -0.65   0.514    -.6159517    .3084256
+         13  |   .6732642   .2632973     2.56   0.011     .1570149    1.189513
+         14  |   .2811405   .3321032     0.85   0.397    -.3700171     .932298
+         15  |    .625013   .2354902     2.65   0.008     .1632854    1.086741
+         16  |   .5960946   .2227995     2.68   0.008     .1592498    1.032939
+         17  |   .8918099    .297316     3.00   0.003     .3088597     1.47476
+         18  |    .189399   .2482233     0.76   0.446    -.2972946    .6760925
+         19  |   .8478997   .5328872     1.59   0.112    -.1969369    1.892736
+         20  |   .0519883   .2385155     0.22   0.827    -.4156712    .5196477
+         21  |   .5133448   .2748287     1.87   0.062    -.0255142    1.052204
+             |
+       _cons |   .2800073   .2013333     1.39   0.164    -.1147486    .6747631
+------------------------------------------------------------------------------
+
+ ( 1)  dif_advalorem_mfn_5 - 1.333333*dif_ln_tcost_5 = 0
+
+       F(  1,  3187) =    0.49
+            Prob > F =    0.4843
+dir : seeout
+
+.         
+.         
+.         *** now use Broda Weinstein median sigmas ***
+.         
+.         *create transformed tariff measure and then test equaility of coeffs*
+.         gen dif_advalorem_mfn_bwsig_5=(median_sig/(median_sig-1))*dif_advalor
+> em_mfn_5
+(1,220 missing values generated)
+
+.         
+.         local difXsig2 unc_pre_bwsig dif_advalorem_mfn_bwsig_5 dif_ln_tcost_5
+
+.         
+.         
+.         
+.         
+.         reg dif_ln_imp_5 `difXsig2' /*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      2,733
+                                                F(3, 2729)        =      20.89
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0345
+                                                Root MSE          =     1.6914
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_bw~g |    .647596   .1379589     4.69   0.000     .3770816    .9181104
+dif_adva~g_5 |  -6.601155   2.589198    -2.55   0.011    -11.67814   -1.524168
+dif_ln_t~t_5 |  -2.813294   .4830989    -5.82   0.000     -3.76057   -1.866017
+       _cons |   .9189032   .0791785    11.61   0.000     .7636474    1.074159
+------------------------------------------------------------------------------
+
+.         
+.         test dif_advalorem_mfn_bwsig_5=dif_ln_tcost_5
+
+ ( 1)  dif_advalorem_mfn_bwsig_5 - dif_ln_tcost_5 = 0
+
+       F(  1,  2729) =    2.08
+            Prob > F =    0.1491
+
+.         outreg2     using `outregfile',  `replace' keep(unc_pre_bwsig)/*
+>                                 */cttop(Variable Sigma, `year', sigma from Br
+> oda-Weinstein, ) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+dir : seeout
+
+.                                 
+. 
+.         
+.         reg dif_ln_imp_5 `difXsig2' i.section/*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      2,733
+                                                F(21, 2710)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0554
+                                                Root MSE          =     1.6788
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+unc_pre_bw~g |   .5946979   .1485594     4.00   0.000     .3033966    .8859992
+dif_adva~g_5 |  -6.049134   2.825878    -2.14   0.032    -11.59023    -.508041
+dif_ln_t~t_5 |  -2.799711   .4844437    -5.78   0.000    -3.749628   -1.849795
+             |
+     section |
+          3  |   .0604066   .4769243     0.13   0.899    -.8747655    .9955788
+          4  |   .7788655   .3089658     2.52   0.012     .1730331    1.384698
+          5  |   .3633565   .3653827     0.99   0.320    -.3531005    1.079813
+          6  |   .6086769   .2528559     2.41   0.016     .1128669    1.104487
+          7  |   1.184515   .2846928     4.16   0.000     .6262779    1.742752
+          8  |   .3905755   .3289538     1.19   0.235    -.2544502    1.035601
+          9  |   1.560969   .4020655     3.88   0.000     .7725829    2.349355
+         10  |   .6280418    .306205     2.05   0.040      .027623    1.228461
+         11  |   .6612825   .2624087     2.52   0.012      .146741    1.175824
+         12  |  -.0354843   .2716867    -0.13   0.896    -.5682185    .4972499
+         13  |   .8864691   .2956407     3.00   0.003     .3067651    1.466173
+         14  |    .228561   .6267926     0.36   0.715    -1.000479    1.457601
+         15  |    .704188   .2610562     2.70   0.007     .1922986    1.216077
+         16  |   .6468491   .2506947     2.58   0.010     .1552769    1.138421
+         17  |   1.078755    .317863     3.39   0.001     .4554761    1.702033
+         18  |   .2203644   .2837349     0.78   0.437    -.3359943     .776723
+         19  |   .5917424   .5799868     1.02   0.308    -.5455188    1.729004
+         20  |   .1813193   .2662119     0.68   0.496    -.3406795    .7033181
+         21  |   1.026523   .2357844     4.35   0.000     .5641873    1.488858
+             |
+       _cons |   .3028343   .2357908     1.28   0.199    -.1595137    .7651824
+------------------------------------------------------------------------------
+
+.         test dif_advalorem_mfn_bwsig_5=dif_ln_tcost_5
+
+ ( 1)  dif_advalorem_mfn_bwsig_5 - dif_ln_tcost_5 = 0
+
+       F(  1,  2710) =    1.29
+            Prob > F =    0.2560
+
+.         
+.         outreg2     using `outregfile',  `replace' keep(unc_pre_bwsig)/*
+>                                 */cttop(Variable Sigma, `year', sigma from Br
+> oda-Weinstein, section dummies ) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+dir : seeout
+
+.                                 
+.         
+.         
+.         
+.         
+.         /*** Table A2, Robustness to NTBs  ***/
+.         
+.         local outregfile "tableA2.out"
+
+.         local restrict "UNCONSTRAINED"
+
+.         local replace replace 
+
+. 
+. local s=3
+
+.         
+.         
+. /*ADVALOREM*/
+. 
+. 
+. *ADV base
+. 
+. local difX unc_pre dif_advalorem_mfn_5  dif_ln_tcost_5
+
+.         
+.         xi: reg dif_ln_imp_5 `difX' /*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      3,211
+                                                F(3, 3207)        =      22.84
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0326
+                                                Root MSE          =     1.6485
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .7425948   .1541156     4.82   0.000     .4404197     1.04477
+dif_adva~n_5 |  -9.966953   4.477521    -2.23   0.026    -18.74605   -1.187859
+dif_ln_t~t_5 |  -2.806473   .4554168    -6.16   0.000     -3.69941   -1.913535
+       _cons |   .8509455   .0852997     9.98   0.000     .6836981    1.018193
+------------------------------------------------------------------------------
+
+.                 
+.                 test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3207) =    1.62
+            Prob > F =    0.2036
+
+.         
+.         outreg2   `difX'  using `outregfile', nolabel `replace' /*
+>                                 */cttop(`restrict', `year', sigma=`s',) bfmt(
+> fc) coefastr level(95) se br  cons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+dir : seeout
+
+.                                 
+.         local replace
+
+.                                         
+. *ADV base + TTB, MFA
+.         local difX unc_pre dif_advalorem_mfn_5 dif_MFA_5 dif_TTB_5 dif_ln_tco
+> st_5
+
+.         
+.         xi: reg dif_ln_imp_`x' `difX' /*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      3,211
+                                                F(5, 3205)        =      16.19
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0389
+                                                Root MSE          =     1.6435
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |     .67856   .1518637     4.47   0.000     .3808002    .9763199
+dif_adva~n_5 |  -8.978688   4.559033    -1.97   0.049     -17.9176   -.0397714
+   dif_MFA_5 |  -.1882052   .1006817    -1.87   0.062    -.3856123     .009202
+   dif_TTB_5 |  -.9437784   .3172723    -2.97   0.003    -1.565856   -.3217012
+dif_ln_t~t_5 |  -2.797377   .4515762    -6.19   0.000    -3.682785    -1.91197
+       _cons |   .8706169   .0844619    10.31   0.000     .7050122    1.036222
+------------------------------------------------------------------------------
+
+. 
+.         test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3205) =    1.08
+            Prob > F =    0.2997
+
+.         
+.         outreg2   `difX'  using `outregfile', nolabel `replace' /*
+>                                 */cttop(`restrict', `year', sigma=`s',) bfmt(
+> fc) coefastr level(95) se br  cons /*
+>                                 */addstat("Restriction (p-val)", `r(p)')
+dir : seeout
+
+.                                 
+. * ADV base + TTB, MFA + SECTION
+. 
+. reg dif_ln_imp_5 `difX' /*
+>                 */ i.section /*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      3,211
+                                                F(25, 3185)       =       8.42
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0595
+                                                Root MSE          =     1.6309
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .7201201   .1852362     3.89   0.000     .3569258    1.083314
+dif_adva~n_5 |   -8.27162   5.057776    -1.64   0.102    -18.18845    1.645207
+   dif_MFA_5 |  -.3132081   .1363976    -2.30   0.022     -.580644   -.0457722
+   dif_TTB_5 |  -.9738231   .3301406    -2.95   0.003    -1.621133   -.3265134
+dif_ln_t~t_5 |  -2.818243   .4521598    -6.23   0.000    -3.704797    -1.93169
+             |
+     section |
+          2  |   .3197514   .2469869     1.29   0.196    -.1645181    .8040208
+          3  |   .0097842    .439704     0.02   0.982    -.8523475    .8719158
+          4  |   .8202061   .2829708     2.90   0.004     .2653827    1.375029
+          5  |   .4479518   .3407583     1.31   0.189    -.2201762     1.11608
+          6  |   .5256161   .2200296     2.39   0.017     .0942021    .9570302
+          7  |   .9996932   .2532897     3.95   0.000     .5030659    1.496321
+          8  |   .2147361   .2797223     0.77   0.443    -.3337179    .7631901
+          9  |   1.248433   .3375066     3.70   0.000     .5866811    1.910186
+         10  |   .7591937   .2846671     2.67   0.008     .2010443    1.317343
+         11  |   .4065431   .2475302     1.64   0.101    -.0787916    .8918779
+         12  |  -.1666644   .2336543    -0.71   0.476    -.6247925    .2914637
+         13  |   .6667517   .2617067     2.55   0.011      .153621    1.179882
+         14  |   .2662404   .3322033     0.80   0.423    -.3851136    .9175943
+         15  |   .6313401   .2329776     2.71   0.007     .1745389    1.088141
+         16  |   .5986594   .2205372     2.71   0.007       .16625    1.031069
+         17  |   .9024285    .294087     3.07   0.002     .3258094    1.479047
+         18  |   .1877001    .246374     0.76   0.446    -.2953676    .6707678
+         19  |   .8380839   .5349074     1.57   0.117    -.2107139    1.886882
+         20  |   .0761099   .2374581     0.32   0.749    -.3894764    .5416961
+         21  |   .4779258   .2736053     1.75   0.081    -.0585345    1.014386
+             |
+       _cons |   .3156484   .1995124     1.58   0.114    -.0755374    .7068342
+------------------------------------------------------------------------------
+
+. 
+.         test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3185) =    0.63
+            Prob > F =    0.4281
+
+.         
+.         outreg2   `difX'  using `outregfile', nolabel `replace' /*
+>                                 */cttop(`restrict', `year', sigma=`s',section
+> s) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+dir : seeout
+
+.                                 
+. /*ADV base + TTB, MFA + SECTION: IV TTB W/ 2 LEVEL LAGS (L6, L7):*/
+. 
+. local difX unc_pre dif_advalorem_mfn_5 dif_MFA_5 dif_ln_tcost_5
+
+. 
+.         
+. xi: ivreg2 dif_ln_imp_5 `difX' (dif_TTB_5=lag6_TTB lag7_TTB) /*
+>                 */ i.section /*
+>                 */ if year==2005 , r  first endog(dif_TTB_5)
+i.section         _Isection_1-21      (naturally coded; _Isection_1 omitted)
+
+First-stage regressions
+-----------------------
+
+
+First-stage regression of dif_TTB_5:
+
+Statistics robust to heteroskedasticity
+Number of obs =                   3211
+------------------------------------------------------------------------------
+             |               Robust
+   dif_TTB_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    lag6_TTB |  -.7764367   .2145344    -3.62   0.000    -1.197076    -.355797
+    lag7_TTB |   .7194227    .218521     3.29   0.001     .2909665    1.147879
+     unc_pre |   .0094479   .0127789     0.74   0.460    -.0156079    .0345036
+dif_adva~n_5 |   -.478942   .3067405    -1.56   0.119    -1.080371     .122487
+   dif_MFA_5 |  -.0012688   .0011771    -1.08   0.281    -.0035767    .0010391
+dif_ln_t~t_5 |  -.0253838   .0204225    -1.24   0.214    -.0654264    .0146588
+ _Isection_2 |  -.0332348   .0237251    -1.40   0.161    -.0797529    .0132833
+ _Isection_3 |  -.0242426   .0206833    -1.17   0.241    -.0647965    .0163113
+ _Isection_4 |   .0065506    .029821     0.22   0.826    -.0519197    .0650208
+ _Isection_5 |  -.0037173   .0288184    -0.13   0.897    -.0602218    .0527872
+ _Isection_6 |  -.0189101    .021716    -0.87   0.384    -.0614888    .0236686
+ _Isection_7 |  -.0322639   .0230096    -1.40   0.161     -.077379    .0128512
+ _Isection_8 |  -.0263171   .0207143    -1.27   0.204    -.0669319    .0142976
+ _Isection_9 |  -.0264603    .020691    -1.28   0.201    -.0670294    .0141087
+_Isection_10 |    .123962   .0453944     2.73   0.006     .0349569    .2129672
+_Isection_11 |  -.0330604    .021344    -1.55   0.121    -.0749098    .0087889
+_Isection_12 |  -.0272855    .020796    -1.31   0.190    -.0680604    .0134895
+_Isection_13 |  -.0194288   .0224684    -0.86   0.387    -.0634827    .0246251
+_Isection_14 |  -.0262915   .0207282    -1.27   0.205    -.0669336    .0143506
+_Isection_15 |  -.0083192   .0229201    -0.36   0.717    -.0532589    .0366205
+_Isection_16 |  -.0244129   .0208642    -1.17   0.242    -.0653216    .0164958
+_Isection_17 |  -.0016772   .0244684    -0.07   0.945    -.0496527    .0462983
+_Isection_18 |  -.0273801   .0209347    -1.31   0.191    -.0684269    .0136668
+_Isection_19 |  -.0275817   .0208979    -1.32   0.187    -.0685564    .0133929
+_Isection_20 |   .0072804   .0267348     0.27   0.785    -.0451388    .0596996
+_Isection_21 |  -.0213565   .0211507    -1.01   0.313     -.062827     .020114
+       _cons |   .0216124   .0211326     1.02   0.307    -.0198225    .0630473
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  2,  3184) =    10.21
+  Prob > F      =   0.0000
+Sanderson-Windmeijer multivariate F test of excluded instruments:
+  F(  2,  3184) =    10.21
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  2,  3184)  P-val | SW Chi-sq(  2) P-val | SW F(  2,  3184)
+dif_TTB_5    |      10.21    0.0000 |       20.59   0.0000 |       10.21
+
+NB: first-stage test statistics heteroskedasticity-robust
+
+Stock-Yogo weak ID F test critical values for single endogenous regressor:
+                                   10% maximal IV size             19.93
+                                   15% maximal IV size             11.59
+                                   20% maximal IV size              8.75
+                                   25% maximal IV size              7.25
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for i.i.d. errors only.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(2)=7.39     P-val=0.0248
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                      94.38
+Kleibergen-Paap Wald rk F statistic                                10.21
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=2:
+                                   10% maximal IV size             19.93
+                                   15% maximal IV size             11.59
+                                   20% maximal IV size              8.75
+                                   25% maximal IV size              7.25
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(2,3184)=      0.79     P-val=0.4527
+Anderson-Rubin Wald test           Chi-sq(2)=      1.60     P-val=0.4496
+Stock-Wright LM S statistic        Chi-sq(2)=      1.17     P-val=0.5584
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics heteroskedasticity-robust
+
+Number of observations               N  =       3211
+Number of regressors                 K  =         26
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =         27
+Number of excluded instruments       L1 =          2
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity
+
+                                                      Number of obs =     3211
+                                                      F( 25,  3185) =     7.95
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =    9008.2874                Centered R2   =   0.0589
+Total (uncentered) SS   =  14293.51442                Uncentered R2 =   0.4069
+Residual SS             =  8477.284888                Root MSE      =    1.625
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   dif_TTB_5 |  -1.308566   .9037721    -1.45   0.148    -3.079927    .4627947
+     unc_pre |   .7260398   .1849014     3.93   0.000     .3636396     1.08844
+dif_adva~n_5 |   -8.39667   5.047588    -1.66   0.096    -18.28976    1.496422
+   dif_MFA_5 |  -.3132868   .1358473    -2.31   0.021    -.5795426    -.047031
+dif_ln_t~t_5 |  -2.824523   .4496771    -6.28   0.000    -3.705874   -1.943172
+ _Isection_2 |   .3084199   .2481357     1.24   0.214    -.1779171     .794757
+ _Isection_3 |   .0021875   .4385686     0.00   0.996    -.8573912    .8617661
+ _Isection_4 |    .821746   .2833492     2.90   0.004     .2663917      1.3771
+ _Isection_5 |   .4473641   .3398441     1.32   0.188    -.2187181    1.113446
+ _Isection_6 |   .5167621   .2206957     2.34   0.019     .0842066    .9493176
+ _Isection_7 |   .9881818   .2541641     3.89   0.000     .4900294    1.486334
+ _Isection_8 |     .20588   .2796215     0.74   0.462     -.342168    .7539281
+ _Isection_9 |   1.239539   .3370295     3.68   0.000     .5789736    1.900105
+_Isection_10 |   .8009552   .3005606     2.66   0.008     .2118674    1.390043
+_Isection_11 |   .3953283   .2484646     1.59   0.112    -.0916534      .88231
+_Isection_12 |  -.1760656   .2340859    -0.75   0.452    -.6348655    .2827344
+_Isection_13 |   .6597741   .2614345     2.52   0.012     .1473718    1.172176
+_Isection_14 |   .2573006   .3317052     0.78   0.438    -.3928296    .9074308
+_Isection_15 |   .6260218   .2317706     2.70   0.007     .1717597    1.080284
+_Isection_16 |   .5897772   .2210345     2.67   0.008     .1565576    1.022997
+_Isection_17 |   .8979259   .2934724     3.06   0.002     .3227306    1.473121
+_Isection_18 |   .1780174   .2467764     0.72   0.471    -.3056556    .6616903
+_Isection_19 |   .8284184   .5331361     1.55   0.120    -.2165091    1.873346
+_Isection_20 |   .0774635   .2368023     0.33   0.744    -.3866605    .5415876
+_Isection_21 |   .4719304   .2730113     1.73   0.084    -.0631619    1.007023
+       _cons |   .3217071   .1993923     1.61   0.107    -.0690946    .7125089
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              7.392
+                                                   Chi-sq(2) P-val =    0.0248
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):               94.385
+                         (Kleibergen-Paap rk Wald F statistic):         10.209
+Stock-Yogo weak ID test critical values: 10% maximal IV size             19.93
+                                         15% maximal IV size             11.59
+                                         20% maximal IV size              8.75
+                                         25% maximal IV size              7.25
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.287
+                                                   Chi-sq(1) P-val =    0.5923
+-endog- option:
+Endogeneity test of endogenous regressors:                               0.120
+                                                   Chi-sq(1) P-val =    0.7295
+Regressors tested:    dif_TTB_5
+------------------------------------------------------------------------------
+Instrumented:         dif_TTB_5
+Included instruments: unc_pre dif_advalorem_mfn_5 dif_MFA_5 dif_ln_tcost_5
+                      _Isection_2 _Isection_3 _Isection_4 _Isection_5
+                      _Isection_6 _Isection_7 _Isection_8 _Isection_9
+                      _Isection_10 _Isection_11 _Isection_12 _Isection_13
+                      _Isection_14 _Isection_15 _Isection_16 _Isection_17
+                      _Isection_18 _Isection_19 _Isection_20 _Isection_21
+Excluded instruments: lag6_TTB lag7_TTB
+------------------------------------------------------------------------------
+
+.         
+.         test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+           chi2(  1) =    0.67
+         Prob > chi2 =    0.4138
+
+.         
+.         outreg2   `difX' dif_TTB_`x' using `outregfile', nolabel `replace' /*
+>                                 */cttop(`restrict', `year', sigma=`s',IV TTB 
+> w sections) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' ,/*  
+>                            
+>                                 */ "F-Stat 1st Stage", e(widstat), "Over ID R
+> estrict(p-val)",e(jp))
+dir : seeout
+
+. 
+. * ADV base + TTB, MFA + SECTION constrained**
+. constraint 1 dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+. local difX unc_pre dif_advalorem_mfn_`x' dif_MFA_`x' dif_TTB_`x' dif_ln_tcost
+> _`x'
+
+. 
+. 
+. xi: cnsreg dif_ln_imp_`x' `difX' /*
+>                 */ i.section /*
+>                 */ if year==2005  , r  constraint(1)
+i.section         _Isection_1-21      (naturally coded; _Isection_1 omitted)
+
+Constrained linear regression                           Number of obs =  3,211
+                                                        F(24, 3186)   =   8.78
+                                                        Prob > F      = 0.0000
+                                                        Root MSE      = 1.6310
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |    .743569   .1837742     4.05   0.000     .3832414    1.103897
+dif_adva~n_5 |  -4.299973   .6722527    -6.40   0.000    -5.618064   -2.981881
+   dif_MFA_5 |  -.3039415   .1352611    -2.25   0.025    -.5691491   -.0387338
+   dif_TTB_5 |  -.9682054   .3298068    -2.94   0.003     -1.61486   -.3215503
+dif_ln_t~t_5 |  -2.866649   .4481684    -6.40   0.000    -3.745376   -1.987921
+ _Isection_2 |   .3120705   .2467845     1.26   0.206    -.1718021    .7959431
+ _Isection_3 |   .0069356   .4401168     0.02   0.987    -.8560054    .8698765
+ _Isection_4 |   .8173265   .2829168     2.89   0.004      .262609    1.372044
+ _Isection_5 |   .4474091   .3409997     1.31   0.190    -.2211921     1.11601
+ _Isection_6 |   .5303221   .2199117     2.41   0.016     .0991393     .961505
+ _Isection_7 |   .9951218   .2532887     3.93   0.000     .4984964    1.491747
+ _Isection_8 |   .2110181   .2795762     0.75   0.450    -.3371494    .7591857
+ _Isection_9 |    1.24192    .337593     3.68   0.000     .5799987    1.903842
+_Isection_10 |   .7930681   .2813213     2.82   0.005     .2414789    1.344657
+_Isection_11 |   .4418258   .2427988     1.82   0.069     -.034232    .9178836
+_Isection_12 |  -.1742409   .2335955    -0.75   0.456    -.6322537    .2837719
+_Isection_13 |   .6654172   .2620576     2.54   0.011     .1515985    1.179236
+_Isection_14 |   .2594642   .3319158     0.78   0.434    -.3913261    .9102544
+_Isection_15 |   .6447312   .2332311     2.76   0.006     .1874329     1.10203
+_Isection_16 |   .5900381   .2204317     2.68   0.007     .1578357     1.02224
+_Isection_17 |   .8976463   .2939834     3.05   0.002     .3212305    1.474062
+_Isection_18 |   .1783859   .2462345     0.72   0.469    -.3044082      .66118
+_Isection_19 |   .8282309   .5335705     1.55   0.121    -.2179454    1.874407
+_Isection_20 |   .0654206   .2373221     0.28   0.783    -.3998991    .5307402
+_Isection_21 |   .4831739   .2736637     1.77   0.078     -.053401    1.019749
+       _cons |   .3108883   .1994274     1.56   0.119    -.0801308    .7019073
+------------------------------------------------------------------------------
+
+. 
+. 
+.         
+.         outreg2   `difX'  using `outregfile', nolabel `replace' /*
+>                                 */cttop(CONSTRAINED, `year', sigma=`s',sectio
+> ns) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", 1 )
+dir : seeout
+
+. 
+. 
+. 
+. /*** Table A3 Panel B ****/
+.                                 
+.                                 
+. /*PANEL B*/
+. 
+. /* AD VALOREM EQUIVALENT */
+. local outregfile tableA3_panelB.out
+
+.         local restrict "UNCONSTRAINED"
+
+.         local replace replace 
+
+. 
+.         local s=3
+
+.         
+.         
+. *ADV baseline
+. local difX unc_pre dif_advalorem_mfn_`x' dif_ln_tcost_`x'
+
+.         
+.         
+.         
+.         local restrict "UNCONSTRAINED"  
+
+.         
+.         reg dif_ln_imp_`x' `difX' /*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      3,211
+                                                F(3, 3207)        =      22.84
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0326
+                                                Root MSE          =     1.6485
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .7425948   .1541156     4.82   0.000     .4404197     1.04477
+dif_adva~n_5 |  -9.966953   4.477521    -2.23   0.026    -18.74605   -1.187859
+dif_ln_t~t_5 |  -2.806473   .4554168    -6.16   0.000     -3.69941   -1.913535
+       _cons |   .8509455   .0852997     9.98   0.000     .6836981    1.018193
+------------------------------------------------------------------------------
+
+.         
+.         test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3207) =    1.62
+            Prob > F =    0.2036
+
+. 
+.         
+.         outreg2   `difX'  using `outregfile',  `replace' keep(unc_pre)/*
+>                                 */cttop(`restrict', `year', sigma=`s',) bfmt(
+> fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+. 
+.         local replace           
+
+.         reg dif_ln_imp_`x' `difX' i.section/*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      3,211
+                                                F(23, 3187)       =       8.42
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0529
+                                                Root MSE          =     1.6361
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .7162617   .1859081     3.85   0.000       .35175    1.080773
+dif_adva~n_5 |    -7.3558   5.059781    -1.45   0.146    -17.27656    2.564957
+dif_ln_t~t_5 |  -2.794889   .4555669    -6.13   0.000    -3.688123   -1.901655
+             |
+     section |
+          2  |   .3507215   .2475969     1.42   0.157    -.1347439    .8361869
+          3  |   .0304845   .4402034     0.07   0.945    -.8326261    .8935951
+          4  |   .8130212   .2805277     2.90   0.004     .2629881    1.363054
+          5  |   .4490534   .3408534     1.32   0.188    -.2192608    1.117368
+          6  |   .5492058   .2215046     2.48   0.013     .1148997    .9835118
+          7  |   1.035055   .2542211     4.07   0.000     .5366017    1.533509
+          8  |   .2439786   .2801526     0.87   0.384     -.305319    .7932762
+          9  |   1.270332   .3380668     3.76   0.000     .6074814    1.933182
+         10  |   .6391524   .2805443     2.28   0.023     .0890868    1.189218
+         11  |   .6464523   .2327206     2.78   0.006      .190155     1.10275
+         12  |  -.1325989   .2349323    -0.56   0.573    -.5932327     .328035
+         13  |   .6919287   .2627226     2.63   0.008     .1768063    1.207051
+         14  |   .2878207    .332962     0.86   0.387    -.3650207    .9406621
+         15  |   .6449876    .234669     2.75   0.006       .18487    1.105105
+         16  |   .6190268   .2216692     2.79   0.005     .1843981    1.053656
+         17  |   .9121303   .2960515     3.08   0.002     .3316596    1.492601
+         18  |   .2096682   .2473759     0.85   0.397    -.2753639    .6947002
+         19  |   .8603028     .53545     1.61   0.108    -.1895586    1.910164
+         20  |   .0681752   .2382918     0.29   0.775    -.3990455    .5353959
+         21  |   .4972915   .2746895     1.81   0.070    -.0412946    1.035878
+             |
+       _cons |   .2960474    .201149     1.47   0.141    -.0983472     .690442
+------------------------------------------------------------------------------
+
+.         
+.                 test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3187) =    0.38
+            Prob > F =    0.5357
+
+. 
+.         
+.         outreg2   `difX'  using `outregfile',  `replace' keep(unc_pre)/*
+>                                 */cttop(`restrict', `year', sigma=`s',section
+>  dummies) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+. 
+.         
+. *Outlier Robust Reg*
+. 
+. *ADV base rreg
+. 
+.         rreg dif_ln_imp_`x' `difX' /*
+>                 */ if year==2005 
+
+   Huber iteration 1:  maximum difference in weights = .82012084
+   Huber iteration 2:  maximum difference in weights = .07275575
+   Huber iteration 3:  maximum difference in weights = .01721924
+Biweight iteration 4:  maximum difference in weights = .29401779
+Biweight iteration 5:  maximum difference in weights = .02717317
+Biweight iteration 6:  maximum difference in weights = .00454736
+
+Robust regression                               Number of obs     =      3,211
+                                                F(  3,      3207) =      45.28
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+dif_ln_imp_5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .5207468   .1238037     4.21   0.000     .2780044    .7634892
+dif_adva~n_5 |  -12.86567   2.841478    -4.53   0.000    -18.43697   -7.294375
+dif_ln_t~t_5 |  -2.724175   .2827167    -9.64   0.000    -3.278498   -2.169851
+       _cons |   .8420908   .0679754    12.39   0.000     .7088112    .9753703
+------------------------------------------------------------------------------
+
+.                 
+.                 
+.         test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3207) =    9.32
+            Prob > F =    0.0023
+
+. 
+.                 outreg2     using `outregfile', nolabel `replace' keep(unc_pr
+> e) /*
+>                                 */cttop(RobustREG , `year', sigma=`s',) bfmt(
+> fc) coefastr level(95) se br  nocons /*
+>                                 */addstat( "Restriction (p-val)", `r(p)')
+dir : seeout
+
+.                                 
+.         local replace
+
+.         
+. *ADV base RREG + sections
+. 
+.         rreg dif_ln_imp_`x' `difX' /*
+>                 */ i.section /*
+>                 */ if year==2005 
+
+   Huber iteration 1:  maximum difference in weights = .82051778
+   Huber iteration 2:  maximum difference in weights = .09748438
+   Huber iteration 3:  maximum difference in weights = .021161
+Biweight iteration 4:  maximum difference in weights = .29374575
+Biweight iteration 5:  maximum difference in weights = .04017032
+Biweight iteration 6:  maximum difference in weights = .0140799
+Biweight iteration 7:  maximum difference in weights = .00351928
+
+Robust regression                               Number of obs     =      3,211
+                                                F( 23,      3187) =       9.66
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+dif_ln_imp_5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |    .510075   .1487843     3.43   0.001     .2183523    .8017977
+dif_adva~n_5 |  -11.40646   3.114819    -3.66   0.000    -17.51371   -5.299209
+dif_ln_t~t_5 |  -2.757698   .2814268    -9.80   0.000    -3.309494   -2.205902
+             |
+     section |
+          2  |   .1942074   .2518188     0.77   0.441    -.2995359    .6879507
+          3  |   -.069418   .5016851    -0.14   0.890    -1.053076    .9142403
+          4  |   .5310357   .2622924     2.02   0.043     .0167568    1.045315
+          5  |   .2997743   .2790584     1.07   0.283    -.2473779    .8469266
+          6  |   .3807776   .2141598     1.78   0.075    -.0391274    .8006825
+          7  |   .8684924   .2357412     3.68   0.000     .4062727    1.330712
+          8  |   .0386913    .293492     0.13   0.895    -.5367609    .6141436
+          9  |   .9055158   .2953404     3.07   0.002     .3264393    1.484592
+         10  |   .4488636   .2583299     1.74   0.082    -.0576461    .9553733
+         11  |   .4021621   .2207705     1.82   0.069    -.0307046    .8350287
+         12  |  -.1662299   .2813496    -0.59   0.555    -.7178745    .3854146
+         13  |    .431398   .2446015     1.76   0.078    -.0481942    .9109902
+         14  |   .1545408   .3320318     0.47   0.642    -.4964768    .8055584
+         15  |   .6269427   .2186563     2.87   0.004     .1982214    1.055664
+         16  |   .5090815   .2154883     2.36   0.018     .0865717    .9315913
+         17  |     .80387   .2546528     3.16   0.002       .30457     1.30317
+         18  |   .1001224   .2345016     0.43   0.669    -.3596668    .5599117
+         19  |   .7776837   .5313943     1.46   0.143    -.2642258    1.819593
+         20  |   .0085108   .2480605     0.03   0.973    -.4778636    .4948853
+         21  |   .3599963   .5589938     0.64   0.520    -.7360276     1.45602
+             |
+       _cons |   .4345612   .2004828     2.17   0.030     .0414729    .8276495
+------------------------------------------------------------------------------
+
+.                 
+.         
+.         test dif_advalorem_mfn_`x'=((`s')/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3187) =    5.35
+            Prob > F =    0.0208
+
+. 
+.         
+.         outreg2     using `outregfile', nolabel `replace' keep(unc_pre)/*
+>                                 */cttop(RobustREG , `year', sigma=`s', sectio
+> n dummies) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)')
+dir : seeout
+
+.                                 
+. ** Selection (ln growth) OLS in midpoint growth measure **
+. 
+. local difX unc_pre dif_advalorem_mfn_5  dif_ln_tcost_hybrid_5
+
+.         
+.         reg dif_imports0_5 `difX' /*
+>                 */ if year==2005 , r  
+
+Linear regression                               Number of obs     =      3,841
+                                                F(3, 3837)        =      16.98
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0193
+                                                Root MSE          =     1.0368
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_import~5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .4298934   .0901046     4.77   0.000     .2532359    .6065509
+dif_adva~n_5 |  -3.188687   1.969936    -1.62   0.106    -7.050909     .673534
+dif_ln_t~d_5 |   1.067152   .2202463     4.85   0.000     .6353407    1.498963
+       _cons |   .6771608   .0511879    13.23   0.000     .5768028    .7775189
+------------------------------------------------------------------------------
+
+.         
+.         test dif_advalorem_mfn_`x' = `s'/(`s'-1)*dif_ln_tcost_hybrid_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_hybrid_5 = 0
+
+       F(  1,  3837) =    5.83
+            Prob > F =    0.0158
+
+.         outreg2   `difX'  using `outregfile', nolabel `replace' keep(unc_pre)
+>  /*
+>                                 */cttop(midpoint growth, `year', sigma=`s',) 
+> bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat( "Restriction (p-val)", `r(p)')
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+.                                 
+.                                 
+.         reg dif_imports0_5 `difX' i.section/*
+>                 */ if year==2005 , r  
+
+Linear regression                               Number of obs     =      3,841
+                                                F(23, 3817)       =       7.06
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0393
+                                                Root MSE          =     1.0289
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_import~5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |    .434426   .1076087     4.04   0.000       .22345    .6454021
+dif_adva~n_5 |  -1.187828   2.109654    -0.56   0.573    -5.323985     2.94833
+dif_ln_t~d_5 |   1.021237   .2193298     4.66   0.000      .591222    1.451252
+             |
+     section |
+          2  |   .4859103   .1921924     2.53   0.012     .1091006      .86272
+          3  |   .5363031   .3443533     1.56   0.119     -.138831    1.211437
+          4  |   .4390796   .2075108     2.12   0.034     .0322369    .8459224
+          5  |   .5542436   .2235456     2.48   0.013     .1159633     .992524
+          6  |    .506757   .1734131     2.92   0.003     .1667658    .8467482
+          7  |   .7407481   .1820986     4.07   0.000     .3837282    1.097768
+          8  |   .1861397   .2177514     0.85   0.393    -.2407806    .6130599
+          9  |   .9519707   .1921136     4.96   0.000     .5753154    1.328626
+         10  |   .6160719   .1957846     3.15   0.002     .2322196    .9999243
+         11  |   .5535002   .1770382     3.13   0.002     .2064017    .9005986
+         12  |   .1079983   .1896329     0.57   0.569    -.2637932    .4797898
+         13  |   .4501258   .1883726     2.39   0.017     .0808051    .8194464
+         14  |    .057036   .2696288     0.21   0.832    -.4715944    .5856664
+         15  |   .5217402   .1764456     2.96   0.003     .1758034     .867677
+         16  |   .4958852   .1732907     2.86   0.004     .1561338    .8356365
+         17  |   .6661099   .1972444     3.38   0.001     .2793955    1.052824
+         18  |   .2512873   .1839355     1.37   0.172    -.1093341    .6119087
+         19  |   .6904348   .3476882     1.99   0.047     .0087623    1.372107
+         20  |   .2212871   .1827207     1.21   0.226    -.1369524    .5795267
+         21  |   .4983533   .2244993     2.22   0.026     .0582031    .9385034
+             |
+       _cons |   .1888157   .1645667     1.15   0.251    -.1338313    .5114628
+------------------------------------------------------------------------------
+
+.         
+.         test dif_advalorem_mfn_`x' = `s'/(`s'-1)*dif_ln_tcost_hybrid_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_hybrid_5 = 0
+
+       F(  1,  3817) =    1.64
+            Prob > F =    0.2004
+
+.         outreg2   `difX'  using `outregfile', nolabel `replace' keep(unc_pre)
+>  /*
+>                                 */cttop(midpoint growth, `year', sigma=`s', s
+> ection dummies) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat( "Restriction (p-val)", `r(p)')
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+.         
+. *AVE included on baseline
+. 
+.         
+. 
+. 
+. local difX unc_pre_ave dif_ave_total_mfn_`x'  dif_ln_tcost_`x'
+
+.         
+.         reg dif_ln_imp_`x' `difX' /*
+>                 */ if year==2005  , r  
+
+Linear regression                               Number of obs     =      3,565
+                                                F(3, 3561)        =      31.99
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0359
+                                                Root MSE          =     1.6556
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ unc_pre_ave |   .9556545   .1307791     7.31   0.000     .6992451    1.212064
+dif_ave_to~5 |  -.8781513   1.429734    -0.61   0.539    -3.681331    1.925028
+dif_ln_t~t_5 |  -2.730919   .4148957    -6.58   0.000    -3.544377   -1.917462
+       _cons |   .7231907   .0734336     9.85   0.000     .5792146    .8671668
+------------------------------------------------------------------------------
+
+.                 
+.         test dif_ave_total_mfn_`x' =((`s')/(`s'-1))*dif_ln_tcost_`x'    
+
+ ( 1)  dif_ave_total_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3561) =    4.18
+            Prob > F =    0.0409
+
+.         
+.         outreg2   `difX'  using `outregfile', nolabel `replace' keep(unc_pre_
+> ave) /*
+>                                 */cttop(`restrict', `year', sigma=`s',) bfmt(
+> fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)", `r(p)' )
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+.         
+.         
+.                                 
+. * AVE base + SECTION
+. 
+.         reg dif_ln_imp_`x' `difX' i.section /*
+>                 */ if year==2005 , r  
+
+Linear regression                               Number of obs     =      3,565
+                                                F(23, 3541)       =      10.17
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0604
+                                                Root MSE          =     1.6391
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ unc_pre_ave |   .8766423   .1537354     5.70   0.000     .5752234    1.178061
+dif_ave_to~5 |  -.5102171   1.533496    -0.33   0.739    -3.516842    2.496408
+dif_ln_t~t_5 |  -2.714231   .4165482    -6.52   0.000    -3.530929   -1.897532
+             |
+     section |
+          2  |   .2689898    .222554     1.21   0.227    -.1673571    .7053367
+          3  |  -.0913953   .3234577    -0.28   0.778    -.7255775    .5427869
+          4  |   .6055781   .2513298     2.41   0.016     .1128123    1.098344
+          5  |   .1541899   .2978947     0.52   0.605    -.4298727    .7382524
+          6  |   .3243914   .2043698     1.59   0.113     -.076303    .7250859
+          7  |   .9844883   .2332838     4.22   0.000     .5271041    1.441873
+          8  |   .1240566   .2655169     0.47   0.640    -.3965249    .6446382
+          9  |   1.211063   .3032608     3.99   0.000     .6164796    1.805647
+         10  |   .5184638   .2583231     2.01   0.045     .0119867    1.024941
+         11  |   .5526071   .2080026     2.66   0.008     .1447902    .9604241
+         12  |  -.3283747   .2182168    -1.50   0.132     -.756218    .0994686
+         13  |   .5045414   .2454345     2.06   0.040     .0233342    .9857486
+         14  |   .1822266   .3124114     0.58   0.560    -.4302979    .7947511
+         15  |   .5066688   .2097158     2.42   0.016      .095493    .9178447
+         16  |   .4759598   .1999646     2.38   0.017     .0839025    .8680171
+         17  |   .8024674   .2825133     2.84   0.005     .2485621    1.356373
+         18  |   .0046353    .219342     0.02   0.983     -.425414    .4346847
+         19  |    .720566    .518714     1.39   0.165    -.2964425    1.737574
+         20  |  -.0748238   .2160572    -0.35   0.729    -.4984329    .3487852
+         21  |    .450982   .2594214     1.74   0.082    -.0576484    .9596124
+             |
+       _cons |   .3415439   .1802681     1.89   0.058     -.011896    .6949837
+------------------------------------------------------------------------------
+
+.                 
+.         test dif_ave_total_mfn_`x' =((`s')/(`s'-1))*dif_ln_tcost_`x'    
+
+ ( 1)  dif_ave_total_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3541) =    4.54
+            Prob > F =    0.0332
+
+. 
+.                 
+.         outreg2   `difX'  using `outregfile', nolabel `replace' keep(unc_pre_
+> ave) /*
+>                                 */cttop(`restrict', `year', sigma=`s',section
+>  dummies) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat( "Restriction (p-val)", `r(p)')
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+.                                 
+.                 
+. 
+.                 
+.                 
+. /** Processing  Trade Robust, drop HS2==84,85**/
+. 
+. gen hs2=real(substr(hs6hs1,1,2) )
+
+.                 
+. local difX unc_pre dif_advalorem_mfn_`x'  dif_ln_tcost_`x'
+
+.         
+. *ADV base + drop processing (hs84,85)
+.         
+.         
+.         reg dif_ln_imp_`x' `difX' /*
+>                 */ if year==2005  & hs2!=84 & hs2!=85 , r  
+
+Linear regression                               Number of obs     =      2,567
+                                                F(3, 2563)        =      19.74
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0336
+                                                Root MSE          =     1.6769
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |    .786645   .1617701     4.86   0.000     .4694316    1.103858
+dif_adva~n_5 |  -10.24833   4.594791    -2.23   0.026    -19.25821    -1.23845
+dif_ln_t~t_5 |  -2.522261   .4789374    -5.27   0.000    -3.461404   -1.583117
+       _cons |   .8164248   .0886695     9.21   0.000     .6425537    .9902959
+------------------------------------------------------------------------------
+
+. 
+.         test dif_advalorem_mfn_`x'=(`s'/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  2563) =    1.93
+            Prob > F =    0.1648
+
+.         
+.         outreg2   `difX'  using `outregfile', nolabel `replace' keep(unc_pre)
+>  /*
+>                                 */cttop(drop hs2=84-85, `year', sigma=`s',) b
+> fmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)",`r(p)')
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+.         local replace           
+
+.         
+. * ADV base + section+drop processing (hs84,85)
+. 
+.  reg dif_ln_imp_`x' `difX' /*
+>                 */ i.section /*
+>                 */ if year==2005  & hs2!=84 & hs2!=85, r  
+
+Linear regression                               Number of obs     =      2,567
+                                                F(22, 2544)       =       8.09
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0580
+                                                Root MSE          =     1.6618
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .8077067   .1975889     4.09   0.000     .4202552    1.195158
+dif_adva~n_5 |  -7.095865   5.076862    -1.40   0.162    -17.05107    2.859338
+dif_ln_t~t_5 |  -2.512308    .478868    -5.25   0.000    -3.451319   -1.573297
+             |
+     section |
+          2  |     .34078   .2470432     1.38   0.168    -.1436463    .8252062
+          3  |   .0222622    .444234     0.05   0.960    -.8488348    .8933593
+          4  |   .7910798   .2813045     2.81   0.005     .2394707    1.342689
+          5  |   .4439991   .3396103     1.31   0.191    -.2219416     1.10994
+          6  |   .5232232   .2222225     2.35   0.019     .0874678    .9589787
+          7  |   1.000251   .2554734     3.92   0.000     .4992942    1.501208
+          8  |   .2134591   .2816988     0.76   0.449    -.3389232    .7658414
+          9  |   1.244066   .3369535     3.69   0.000     .5833345    1.904797
+         10  |   .6052166   .2807284     2.16   0.031     .0547372    1.155696
+         11  |    .602677    .234483     2.57   0.010     .1428801    1.062474
+         12  |  -.1678491   .2365146    -0.71   0.478    -.6316298    .2959315
+         13  |   .6402775   .2643977     2.42   0.016     .1218209    1.158734
+         14  |   .2553099   .3333114     0.77   0.444    -.3982793    .9088992
+         15  |   .6129592   .2362698     2.59   0.010     .1496586     1.07626
+         17  |   .8877647   .2974447     2.98   0.003     .3045064    1.471023
+         18  |   .1630326   .2493051     0.65   0.513     -.325829    .6518942
+         19  |   .8198436     .53333     1.54   0.124    -.2259616    1.865649
+         20  |   .0210016   .2408179     0.09   0.931    -.4512175    .4932207
+         21  |   .5044378   .2742125     1.84   0.066    -.0332646     1.04214
+             |
+       _cons |   .2860528   .2014876     1.42   0.156    -.1090436    .6811491
+------------------------------------------------------------------------------
+
+. 
+.         test dif_advalorem_mfn_`x'=(`s'/(`s'-1))*dif_ln_tcost_`x'
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  2544) =    0.42
+            Prob > F =    0.5167
+
+.         
+.         outreg2   `difX'  using `outregfile', nolabel `replace' keep(unc_pre)
+> /*
+>                                 */cttop(drop hs2=84-85, `year', sigma=`s', se
+> ction dummies) bfmt(fc) coefastr level(95) se br  nocons /*
+>                                 */addstat("Restriction (p-val)",`r(p)')
+keep( ) supersedes varlist when both specified
+dir : seeout
+
+.                 
+.                 
+. 
+. 
+. exit
+
+end of do-file
+
+. 
+. do cap_labor_regs_replicate.do
+
+. 
+. 
+. 
+. use replication_appxdata2,clear
+
+. 
+. 
+.                 local outregfile tableA4
+
+. 
+.                 
+.                  
+. xtset hs6
+
+Panel variable: hs6 (balanced)
+
+. 
+. local keepvars "unc_pre dif_ln_tcost_5 dif_advalorem_mfn_5  ln_mean_kl_00  " 
+>            
+
+. 
+. 
+. local var " ln_mean_kl" 
+
+. 
+. 
+.         *set sample to obs where KL measure available
+.         
+.         qui reg dif_ln_imp_5  unc_pre dif_ln_tcost_5 dif_advalorem_mfn_5   `v
+> ar'_00  
+
+.         keep if e(sample)
+(1,978 observations deleted)
+
+. 
+. 
+. local replace replace
+
+. 
+. 
+.         *baseline on sample with KL measure*
+.                 *w/o sections*
+.                 reg dif_ln_imp_5  unc_pre dif_ln_tcost_5 dif_advalorem_mfn_5 
+>   , r      
+
+Linear regression                               Number of obs     =      3,055
+                                                F(3, 3051)        =      21.35
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0323
+                                                Root MSE          =     1.6404
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .5239228   .1766333     2.97   0.003     .1775905     .870255
+dif_ln_tco~5 |  -3.251851   .4709163    -6.91   0.000    -4.175197   -2.328506
+dif_advalo~5 |  -9.475763   4.451546    -2.13   0.033     -18.2041   -.7474307
+       _cons |   .9771568    .099753     9.80   0.000     .7815669    1.172747
+------------------------------------------------------------------------------
+
+.                 
+. 
+.         *test tc/tar constraint*
+.         test dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+ ( 1)  - 1.5*dif_ln_tcost_5 + dif_advalorem_mfn_5 = 0
+
+       F(  1,  3051) =    1.04
+            Prob > F =    0.3073
+
+.         local tctar=`r(p)'              
+
+.                                                 
+.                 
+.                                         
+. *baseline constrained*
+.                 
+.                 constraint 1 dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+. 
+. 
+.                 *w/o sections - no capital control to check*
+.                 cnsreg dif_ln_imp_5 unc_pre dif_ln_tcost_5 dif_advalorem_mfn_
+> 5  , r     constraint(1)
+
+Constrained linear regression                           Number of obs =  3,055
+                                                        F(2, 3052)    =  31.77
+                                                        Prob > F      = 0.0000
+                                                        Root MSE      = 1.6406
+
+ ( 1)  - 1.5*dif_ln_tcost_5 + dif_advalorem_mfn_5 = 0
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .5643551   .1727167     3.27   0.001     .2257022     .903008
+dif_ln_tco~5 |  -3.332057   .4647693    -7.17   0.000     -4.24335   -2.420765
+dif_advalo~5 |  -4.998086   .6971539    -7.17   0.000    -6.365024   -3.631147
+       _cons |   .9698333    .099358     9.76   0.000      .775018    1.164649
+------------------------------------------------------------------------------
+
+.                 
+. 
+.                                 outreg2 using  `outregfile'.out,  `replace' k
+> eep(`keepvars' ) /*
+>                                         */ bfmt(fc) coefastr level(95) se br 
+>  cons   ctitle(constrained, CHINA , , , robust SE)/*
+>                                         */ addstat( "TC/TAR constr (pval)", `
+> tctar' )
+dir : seeout
+
+.                                 
+.                 local replace
+
+.                 
+.                 
+.                 *w/o sections*
+.                 reg dif_ln_imp_5  unc_pre dif_ln_tcost_5 dif_advalorem_mfn_5 
+>   `var'_00  , r    
+
+Linear regression                               Number of obs     =      3,055
+                                                F(4, 3050)        =      16.66
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0334
+                                                Root MSE          =     1.6396
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .6637397   .1946651     3.41   0.001     .2820517    1.045428
+dif_ln_tco~5 |  -3.230309   .4691232    -6.89   0.000    -4.150139    -2.31048
+dif_advalo~5 |  -8.773119   4.430727    -1.98   0.048    -17.46063   -.0856071
+ln_mean_k~00 |   .0701079   .0380325     1.84   0.065    -.0044639    .1446797
+       _cons |    .583029   .2317452     2.52   0.012     .1286365    1.037422
+------------------------------------------------------------------------------
+
+.                 
+. 
+.                 *test tc/tar constraint*
+.                 test dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+ ( 1)  - 1.5*dif_ln_tcost_5 + dif_advalorem_mfn_5 = 0
+
+       F(  1,  3050) =    0.77
+            Prob > F =    0.3808
+
+.                 local tctar=`r(p)'              
+
+.                                                 
+.                 cnsreg dif_ln_imp_5  unc_pre dif_ln_tcost_5 dif_advalorem_mfn
+> _5   `var'_00  , r         constraint(1)
+
+Constrained linear regression                           Number of obs =  3,055
+                                                        F(3, 3051)    =  22.19
+                                                        Prob > F      = 0.0000
+                                                        Root MSE      = 1.6397
+
+ ( 1)  - 1.5*dif_ln_tcost_5 + dif_advalorem_mfn_5 = 0
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .7064745     .19109     3.70   0.000     .3317963    1.081153
+dif_ln_tco~5 |  -3.296788   .4631301    -7.12   0.000    -4.204866   -2.388709
+dif_advalo~5 |  -4.945181   .6946951    -7.12   0.000    -6.307299   -3.583064
+ln_mean_k~00 |    .074399   .0382732     1.94   0.052    -.0006449     .149443
+       _cons |    .552715   .2324805     2.38   0.017     .0968808    1.008549
+------------------------------------------------------------------------------
+
+.                 
+. 
+.                                 outreg2 using  `outregfile'.out,  `replace' k
+> eep(`keepvars' ) /*
+>                                         */ bfmt(fc) coefastr level(95) se br 
+>  cons   ctitle(constrained, CHINA , , , robust SE)/*
+>                                         */ addstat( "TC/TAR constr (pval)", `
+> tctar' )
+dir : seeout
+
+.                                         
+.                 local replace
+
+.                 
+.                 *w/ section dummies*
+. 
+.         
+.                 reg dif_ln_imp_5  unc_pre dif_ln_tcost_5 dif_advalorem_mfn_5 
+>   `var'_00  i.section, r   
+
+Linear regression                               Number of obs     =      3,055
+                                                F(23, 3031)       =       7.96
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0535
+                                                Root MSE          =     1.6276
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .6503007   .2076579     3.13   0.002     .2431362    1.057465
+dif_ln_tco~5 |  -3.228995   .4683855    -6.89   0.000    -4.147381    -2.31061
+dif_advalo~5 |  -5.977915   5.070975    -1.18   0.239    -15.92081    3.964985
+ln_mean_k~00 |   .0751272   .0538135     1.40   0.163    -.0303875    .1806419
+             |
+     section |
+          2  |   .6717214    .439857     1.53   0.127    -.1907269     1.53417
+          3  |  -.0618973   .5262333    -0.12   0.906    -1.093708    .9699132
+          4  |   1.085022     .44112     2.46   0.014     .2200979    1.949947
+          5  |   .7610636   .5739395     1.33   0.185    -.3642866    1.886414
+          6  |   .7665122   .4062521     1.89   0.059    -.0300454     1.56307
+          7  |   1.330343   .4168731     3.19   0.001     .5129599    2.147725
+          8  |   .6462682   .4395757     1.47   0.142    -.2156285    1.508165
+          9  |   1.661328   .4844439     3.43   0.001     .7114563      2.6112
+         10  |   .9202207   .4357968     2.11   0.035     .0657334    1.774708
+         11  |    .984439   .4044525     2.43   0.015     .1914101    1.777468
+         12  |   .2389922   .4050771     0.59   0.555    -.5552614    1.033246
+         13  |   1.011587   .4219126     2.40   0.017     .1843233    1.838851
+         14  |   .6528061   .4759439     1.37   0.170    -.2803995    1.586012
+         15  |   .9523227   .4029688     2.36   0.018     .1622028    1.742443
+         16  |   .9282354   .3971075     2.34   0.019     .1496082    1.706863
+         17  |   1.218891   .4423335     2.76   0.006     .3515865    2.086195
+         18  |    .534295   .4112408     1.30   0.194    -.2720442    1.340634
+         19  |   1.176174   .6306556     1.87   0.062    -.0603817     2.41273
+         20  |    .429801   .4056074     1.06   0.289    -.3654926    1.225095
+             |
+       _cons |  -.3139874   .4607351    -0.68   0.496    -1.217372    .5893976
+------------------------------------------------------------------------------
+
+.                 
+.                 *test tc/tar constraint*
+.                 test dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+ ( 1)  - 1.5*dif_ln_tcost_5 + dif_advalorem_mfn_5 = 0
+
+       F(  1,  3031) =    0.05
+            Prob > F =    0.8246
+
+.                 local tctar=`r(p)'      
+
+.                 
+.                 cnsreg dif_ln_imp_5  unc_pre dif_ln_tcost_5 dif_advalorem_mfn
+> _5   `var'_00  i.section , r  constraint(1)
+
+Constrained linear regression                           Number of obs =  3,055
+                                                        F(22, 3032)   =   8.32
+                                                        Prob > F      = 0.0000
+                                                        Root MSE      = 1.6274
+
+ ( 1)  - 1.5*dif_ln_tcost_5 + dif_advalorem_mfn_5 = 0
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |    .658825   .2049449     3.21   0.001     .2569799     1.06067
+dif_ln_tco~5 |  -3.243434   .4639083    -6.99   0.000     -4.15304   -2.333827
+dif_advalo~5 |  -4.865151   .6958624    -6.99   0.000     -6.22956   -3.500741
+ln_mean_k~00 |   .0772295   .0534043     1.45   0.148    -.0274827    .1819417
+             |
+     section |
+          2  |   .6688307    .439534     1.52   0.128    -.1929842    1.530646
+          3  |  -.0642994   .5261905    -0.12   0.903    -1.096026    .9674269
+          4  |   1.084939   .4410079     2.46   0.014     .2202343    1.949644
+          5  |   .7594672   .5738029     1.32   0.186     -.365615    1.884549
+          6  |   .7668216    .406124     1.89   0.059    -.0294846    1.563128
+          7  |   1.329679   .4167731     3.19   0.001     .5124924    2.146865
+          8  |   .6485327   .4392787     1.48   0.140    -.2127816    1.509847
+          9  |   1.662478   .4842193     3.43   0.001      .713047     2.61191
+         10  |   .9309106    .432568     2.15   0.031     .0827544    1.779067
+         11  |   .9948005   .4013511     2.48   0.013     .2078526    1.781748
+         12  |   .2400977   .4049323     0.59   0.553     -.553872    1.034067
+         13  |   1.012279   .4218829     2.40   0.016     .1850735    1.839484
+         14  |   .6539704   .4757116     1.37   0.169    -.2787796     1.58672
+         15  |   .9569225   .4027246     2.38   0.018     .1672815    1.746563
+         16  |   .9272359   .3970075     2.34   0.020     .1488048    1.705667
+         17  |   1.219534   .4422279     2.76   0.006     .3524374    2.086631
+         18  |     .53324   .4111628     1.30   0.195    -.2729461    1.339426
+         19  |   1.174975   .6301602     1.86   0.062    -.0606095     2.41056
+         20  |   .4293974   .4055076     1.06   0.290    -.3657003    1.224495
+             |
+       _cons |  -.3272173   .4581535    -0.71   0.475     -1.22554    .5711056
+------------------------------------------------------------------------------
+
+. 
+.                 
+.                 outreg2 using  `outregfile'.out,  `replace' keep(`keepvars' )
+>  /*
+>                                         */ bfmt(fc) coefastr level(95) se br 
+>  cons   ctitle(constrained, CHINA , ,sections , robust SE)/*
+>                                         */ addstat( "TC/TAR constr (pval)", `
+> tctar' )
+dir : seeout
+
+. 
+.                                         
+.         *continuous demeaned interaction*
+.                 
+.                 sum ln_mean_kl_00 if e(sample)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+ln_mean_k~00 |      3,055    4.583987    .8891479   2.563533    7.37193
+
+.         
+.                 capture drop center_ln_mean_kl
+
+.         
+.                 gen double center_ln_mean_kl=ln_mean_kl_00-`r(mean)'
+
+.                 
+.                 gen unc_pre_Xcenter_ln_mean_kl=unc_pre*center_ln_mean_kl
+
+.                 
+.                 *w/o sections*
+.                 reg dif_ln_imp_5  unc_pre dif_ln_tcost_5 dif_advalorem_mfn_5 
+>   `var'_00  unc_pre_Xcent , r      
+
+Linear regression                               Number of obs     =      3,055
+                                                F(5, 3049)        =      13.54
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0344
+                                                Root MSE          =     1.6391
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .6076447     .19138     3.18   0.002     .2323977    .9828916
+dif_ln_tco~5 |  -3.224631   .4698141    -6.86   0.000    -4.145816   -2.303447
+dif_advalo~5 |  -9.051566   4.441888    -2.04   0.042    -17.76096   -.3421681
+ln_mean_k~00 |   -.086022   .0976804    -0.88   0.379     -.277548    .1055041
+unc_pre_Xc~l |   .2969796   .1720648     1.73   0.084    -.0403951    .6343544
+       _cons |   1.347107   .4818988     2.80   0.005     .4022272    2.291986
+------------------------------------------------------------------------------
+
+.                 
+. 
+.                 *test tc/tar constraint*
+.                 test dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+ ( 1)  - 1.5*dif_ln_tcost_5 + dif_advalorem_mfn_5 = 0
+
+       F(  1,  3049) =    0.88
+            Prob > F =    0.3482
+
+.                 local tctar=`r(p)'              
+
+. 
+.                 
+.                 constraint 1 dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+.                 
+.                 
+.                 cnsreg dif_ln_imp_5  unc_pre dif_advalorem_mfn_5 dif_ln_tcost
+> _5  `var'_00 unc_pre_Xcent , r     constraint(1)
+
+Constrained linear regression                           Number of obs =  3,055
+                                                        F(4, 3050)    =  16.92
+                                                        Prob > F      = 0.0000
+                                                        Root MSE      = 1.6393
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .6553625   .1878094     3.49   0.000     .2871166    1.023608
+dif_advalo~5 |  -4.943994   .6956592    -7.11   0.000    -6.308002   -3.579985
+dif_ln_tco~5 |  -3.295996   .4637728    -7.11   0.000    -4.205335   -2.386657
+ln_mean_k~00 |  -.0759443   .0975122    -0.78   0.436    -.2671406     .115252
+unc_pre_Xc~l |   .2865483   .1714363     1.67   0.095    -.0495941    .6226906
+       _cons |   1.287817   .4807061     2.68   0.007     .3452767    2.230358
+------------------------------------------------------------------------------
+
+.                 
+.                 
+. 
+.                                 
+.                 outreg2 using  `outregfile'.out,  `replace' keep(`keepvars' u
+> nc_pre_Xcent) /*
+>                                         */ bfmt(fc) coefastr level(95) se br 
+>  cons   ctitle(unconstrained, CHINA , , , robust SE) /*
+>                                         */addstat("TC/TAR constr (pval)", `tc
+> tar' )
+dir : seeout
+
+.                 
+.                 
+.                 *w/ section dummies*
+.                 reg dif_ln_imp_5 unc_pre dif_advalorem_mfn_5 dif_ln_tcost_5  
+> `var'_00 unc_pre_Xcent    i.section , r    
+
+Linear regression                               Number of obs     =      3,055
+                                                F(24, 3030)       =       7.63
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0538
+                                                Root MSE          =     1.6276
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |   .6158517   .2035105     3.03   0.002      .216819    1.014884
+dif_advalo~5 |  -5.939373   5.075151    -1.17   0.242    -15.89046    4.011715
+dif_ln_tco~5 |  -3.222005   .4689907    -6.87   0.000    -4.141577   -2.302433
+ln_mean_k~00 |   -.029442    .114997    -0.26   0.798     -.254922    .1960379
+unc_pre_Xc~l |   .1923536   .1865101     1.03   0.302    -.1733455    .5580528
+             |
+     section |
+          2  |   .7194612   .4410345     1.63   0.103    -.1452961    1.584218
+          3  |   .0247416   .5351541     0.05   0.963     -1.02456    1.074044
+          4  |   1.116477   .4405559     2.53   0.011     .2526584    1.980296
+          5  |   .8831469   .5802496     1.52   0.128    -.2545758     2.02087
+          6  |   .8135342   .4068485     2.00   0.046     .0158072    1.611261
+          7  |   1.358303   .4155899     3.27   0.001     .5434357    2.173169
+          8  |   .6649044   .4380582     1.52   0.129    -.1940171    1.523826
+          9  |   1.676352    .483103     3.47   0.001      .729109    2.623595
+         10  |   .9417255   .4341702     2.17   0.030     .0904274    1.793024
+         11  |    1.02688   .4047184     2.54   0.011     .2333294    1.820431
+         12  |   .2645329   .4034557     0.66   0.512    -.5265417    1.055608
+         13  |   1.034092    .420205     2.46   0.014     .2101767    1.858008
+         14  |   .6833609   .4741071     1.44   0.150    -.2462432    1.612965
+         15  |   .9853647    .400819     2.46   0.014     .1994599    1.771269
+         16  |   .9504561   .3952962     2.40   0.016     .1753803    1.725532
+         17  |   1.235418   .4405593     2.80   0.005     .3715929    2.099244
+         18  |   .5647975   .4097648     1.38   0.168    -.2386477    1.368243
+         19  |   1.197773   .6350191     1.89   0.059    -.0473391    2.442885
+         20  |   .4692943   .4047676     1.16   0.246    -.3243527    1.262941
+             |
+       _cons |   .1631226   .6374139     0.26   0.798    -1.086685     1.41293
+------------------------------------------------------------------------------
+
+. 
+.                 
+. 
+.                 *test tc/tar constraint*
+.                 test dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+
+       F(  1,  3030) =    0.05
+            Prob > F =    0.8290
+
+.                 local tctar=`r(p)'
+
+. 
+.                                 
+.                 constraint 1 dif_advalorem_mfn_5 =1.5*dif_ln_tcost_5
+
+.                                 
+.                 cnsreg dif_ln_imp_5  unc_pre dif_advalorem_mfn_5 dif_ln_tcost
+> _5  `var'_00 unc_pre_Xcent   i.section , r         constraint(1)
+
+Constrained linear regression                           Number of obs =  3,055
+                                                        F(23, 3031)   =   7.97
+                                                        Prob > F      = 0.0000
+                                                        Root MSE      = 1.6273
+
+ ( 1)  dif_advalorem_mfn_5 - 1.5*dif_ln_tcost_5 = 0
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     unc_pre |    .624096   .2009704     3.11   0.002     .2300439    1.018148
+dif_advalo~5 |  -4.854108   .6969127    -6.97   0.000    -6.220577   -3.487638
+dif_ln_tco~5 |  -3.236072   .4646085    -6.97   0.000    -4.147051   -2.325092
+ln_mean_k~00 |  -.0276005   .1149536    -0.24   0.810    -.2529953    .1977943
+unc_pre_Xc~l |   .1927375    .186346     1.03   0.301    -.1726399    .5581149
+             |
+     section |
+          2  |   .7167373   .4407521     1.63   0.104     -.147466    1.580941
+          3  |   .0225719   .5351434     0.04   0.966    -1.026709    1.071853
+          4  |   1.116459   .4404363     2.53   0.011     .2528744    1.980043
+          5  |   .8818337   .5801375     1.52   0.129     -.255669    2.019336
+          6  |   .8139297   .4066986     2.00   0.045     .0164967    1.611363
+          7  |   1.357711   .4154909     3.27   0.001     .5430384    2.172384
+          8  |   .6671499   .4377438     1.52   0.128     -.191155    1.525455
+          9  |   1.677503    .482868     3.47   0.001     .7307215    2.624285
+         10  |   .9521934   .4308535     2.21   0.027     .1073987    1.796988
+         11  |   1.037069   .4014641     2.58   0.010     .2498998    1.824239
+         12  |    .265662   .4032948     0.66   0.510    -.5250971    1.056421
+         13  |   1.034812    .420166     2.46   0.014     .2109728    1.858651
+         14  |   .6845573   .4738502     1.44   0.149     -.244543    1.613658
+         15  |   .9899164    .400528     2.47   0.014     .2045823    1.775251
+         16  |   .9495257   .3951974     2.40   0.016     .1746437    1.724408
+         17  |   1.236079   .4404444     2.81   0.005     .3724791    2.099679
+         18  |   .5638294   .4096892     1.38   0.169    -.2394675    1.367126
+         19  |   1.196646   .6345331     1.89   0.059    -.0475125    2.440805
+         20  |   .4689795   .4046662     1.16   0.247    -.3244686    1.262428
+             |
+       _cons |   .1511725   .6364823     0.24   0.812    -1.096808    1.399153
+------------------------------------------------------------------------------
+
+. 
+.                 
+. 
+. 
+.                 
+.                 outreg2 using  `outregfile'.out,  `replace' keep(`keepvars' u
+> nc_pre_Xcent) /*
+>                                         */ bfmt(fc) coefastr level(95) se br 
+>  cons   ctitle(constrained, CHINA , ,sections , robust SE) /*
+>                                         */addstat("TC/TAR constr (pval)", `tc
+> tar' )
+dir : seeout
+
+.                                         
+.                                         
+.                                         
+. exit
+
+end of do-file
+
+. 
+. do longdiff_vs_EUJPN_replicate.do
+
+. 
+. 
+. set more off
+
+. 
+. use replication_appxdata3,clear
+
+. 
+. 
+. 
+. local outregfilekeep tableA5.out
+
+. local replace replace
+
+. 
+. 
+. *US, EU and Japan separate*
+. 
+. foreach cc of varlist USA EU JPN{
+  2. 
+. 
+. 
+. areg dif_ln_imp_5 `cc'_dif_advalorem_mfn_5  `cc'_post_unc_pre /*
+>                 */ if `cc'==1,  ab(section ) vce(robust)                
+  3. 
+. 
+. 
+. outreg2  using `outregfilekeep', nolabel `replace' /*
+>                                 */cttop(`cc' ONLY, section FE , "ROBUST SE", 
+> "MATCHED", Flex Tariff ) bfmt(fc) coefastr level(95) se br  cons 
+  4.                                 
+. local replace 
+  5.                                 
+. }
+
+Linear regression, absorbing indicators             Number of obs     =  3,100
+Absorbed variable: section                          No. of categories =     21
+                                                    F(2, 3077)        =   5.44
+                                                    Prob > F          = 0.0044
+                                                    R-squared         = 0.0307
+                                                    Adj R-squared     = 0.0238
+                                                    Root MSE          = 1.6382
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+USA_dif_ad~5 |  -6.041842   5.119854    -1.18   0.238    -16.08052    3.996837
+USA_post_u~e |   .5537318   .1926247     2.87   0.004     .1760457    .9314179
+       _cons |   .9838249   .1062761     9.26   0.000     .7754456    1.192204
+------------------------------------------------------------------------------
+dir : seeout
+
+Linear regression, absorbing indicators             Number of obs     =  3,004
+Absorbed variable: section                          No. of categories =     21
+                                                    F(2, 2981)        =   3.66
+                                                    Prob > F          = 0.0260
+                                                    R-squared         = 0.0369
+                                                    Adj R-squared     = 0.0298
+                                                    Root MSE          = 1.4428
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+EU_dif_adv~5 |  -7.969611   2.948633    -2.70   0.007    -13.75117   -2.188049
+EU_post_un~e |   .0173796   .1860709     0.09   0.926    -.3474608      .38222
+       _cons |   1.430003   .1064474    13.43   0.000     1.221285    1.638721
+------------------------------------------------------------------------------
+dir : seeout
+
+Linear regression, absorbing indicators             Number of obs     =  2,723
+Absorbed variable: section                          No. of categories =     21
+                                                    F(2, 2700)        =   2.07
+                                                    Prob > F          = 0.1265
+                                                    R-squared         = 0.0792
+                                                    Adj R-squared     = 0.0717
+                                                    Root MSE          = 1.4429
+
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+JPN_dif_ad~5 |  -8.305806   5.678302    -1.46   0.144    -19.44006    2.828453
+JPN_post_u~e |   .2077305   .1764496     1.18   0.239    -.1382595    .5537204
+       _cons |   .9039304   .0990952     9.12   0.000     .7096203     1.09824
+------------------------------------------------------------------------------
+dir : seeout
+
+. 
+. *Combine JPN, EU, and US into combined  panel*                  
+. 
+. xtset hs6
+
+Panel variable: hs6 (unbalanced)
+
+. 
+. 
+. ***section*ctry + h6 FE****
+.                 
+. *omit US uncertainty, *
+. *test that effectd on omitted group is the same*
+.                 
+. qui xtreg dif_ln_imp_5  JPN_dif_advalorem_mfn_5  EU_dif_advalorem_mfn_5 USA_d
+> if_advalorem_mfn_5  EU_post_unc_pre JPN_post_unc_pre    i.nctry#i.section   /
+> *
+>                 */ ,  fe vce(robust )           
+
+. 
+. *test whether effect for EU and JPN is different*
+. test EU_post_unc_pre =JPN_post_unc_pre
+
+ ( 1)  EU_post_unc_pre - JPN_post_unc_pre = 0
+
+       F(  1,  3099) =    1.26
+            Prob > F =    0.2609
+
+. local unccon=`r(p)'             
+
+. 
+.                 
+. test JPN_dif_advalorem_mfn_5 = USA_dif_advalorem_mfn_5=EU_dif_advalorem_mfn_5
+
+ ( 1)  JPN_dif_advalorem_mfn_5 - USA_dif_advalorem_mfn_5 = 0
+ ( 2)  JPN_dif_advalorem_mfn_5 - EU_dif_advalorem_mfn_5 = 0
+
+       F(  2,  3099) =    2.11
+            Prob > F =    0.1218
+
+. local tarcon = `r(p)'
+
+. 
+. 
+. *constrain tariff and unc effect to be same***
+. xtreg dif_ln_imp_5  dif_advalorem_mfn_5  USA_post_unc_pre   i.nctry#i.section
+>    /*
+>                 */ ,  fe vce(robust )           
+note: 1b.nctry#3.section omitted because of collinearity
+note: 1b.nctry#6.section omitted because of collinearity
+note: 1b.nctry#8.section omitted because of collinearity
+note: 1b.nctry#11.section omitted because of collinearity
+note: 1b.nctry#13.section omitted because of collinearity
+note: 1b.nctry#15.section omitted because of collinearity
+note: 1b.nctry#16.section omitted because of collinearity
+note: 1b.nctry#20.section omitted because of collinearity
+note: 2.nctry#4.section omitted because of collinearity
+note: 2.nctry#5.section omitted because of collinearity
+note: 2.nctry#12.section omitted because of collinearity
+note: 3.nctry#2.section omitted because of collinearity
+note: 3.nctry#7.section omitted because of collinearity
+note: 3.nctry#9.section omitted because of collinearity
+note: 3.nctry#10.section omitted because of collinearity
+note: 3.nctry#14.section omitted because of collinearity
+note: 3.nctry#17.section omitted because of collinearity
+note: 3.nctry#18.section omitted because of collinearity
+note: 3.nctry#19.section omitted because of collinearity
+note: 3.nctry#21.section omitted because of collinearity
+
+Fixed-effects (within) regression               Number of obs      =      8827
+Group variable: hs6                             Number of groups   =      3100
+
+R-sq:  Within  = 0.0508                         Obs per group: min =         2
+       Between = 0.0137                                        avg =       2.8
+       Overall = 0.0295                                        max =         3
+
+                                                F(44,3099)         =     10.74
+corr(u_i, Xb)  = -0.0600                        Prob > F           =    0.0000
+
+                                (Std. err. adjusted for 3,100 clusters in hs6)
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_advalo~5 |  -5.079841   2.639733    -1.92   0.054    -10.25564    .0959615
+USA_post_u~e |   .4282298   .2100275     2.04   0.042     .0164226     .840037
+             |
+       nctry#|
+     section |
+       1  2  |   .6155851    .211033     2.92   0.004     .2018063    1.029364
+       1  3  |          0  (omitted)
+       1  4  |   -.099357    .322867    -0.31   0.758    -.7324118    .5336979
+       1  5  |  -.3146384   .3009216    -1.05   0.296    -.9046644    .2753876
+       1  6  |          0  (omitted)
+       1  7  |   .1304037   .2268609     0.57   0.565    -.3144093    .5752168
+       1  8  |          0  (omitted)
+       1  9  |   .7136236   .2489323     2.87   0.004     .2255345    1.201713
+       1 10  |   -.282713   .2329326    -1.21   0.225     -.739431    .1740049
+       1 11  |          0  (omitted)
+       1 12  |  -.7563519   .1793676    -4.22   0.000    -1.108043   -.4046604
+       1 13  |          0  (omitted)
+       1 14  |   .1178638   .2973709     0.40   0.692    -.4652002    .7009279
+       1 15  |          0  (omitted)
+       1 16  |          0  (omitted)
+       1 17  |  -.3708458   .3105832    -1.19   0.233    -.9798155    .2381239
+       1 18  |  -.5483308   .2109836    -2.60   0.009    -.9620127    -.134649
+       1 19  |   .8950181     .25831     3.46   0.001      .388542    1.401494
+       1 20  |          0  (omitted)
+       1 21  |    1.00001    .396063     2.52   0.012     .2234369    1.776582
+       2  1  |   .2092642   .3388813     0.62   0.537    -.4551905     .873719
+       2  2  |   .6859578   .1803192     3.80   0.000     .3324006    1.039515
+       2  3  |   1.654707   .6350267     2.61   0.009     .4095913    2.899823
+       2  4  |          0  (omitted)
+       2  5  |          0  (omitted)
+       2  6  |   .4810651   .1406605     3.42   0.001     .2052679    .7568623
+       2  7  |   .1606446   .1903836     0.84   0.399    -.2126463    .5339355
+       2  8  |    .299345   .2521999     1.19   0.235    -.1951508    .7938408
+       2  9  |   .8345904   .2116439     3.94   0.000      .419614    1.249567
+       2 10  |   .4509362   .3003577     1.50   0.133     -.137984    1.039856
+       2 11  |   .1283156   .1624644     0.79   0.430    -.1902332    .4468644
+       2 12  |          0  (omitted)
+       2 13  |   .5942023   .1984533     2.99   0.003     .2050889    .9833156
+       2 14  |    .047629   .2356438     0.20   0.840    -.4144049    .5096629
+       2 15  |   .5784458   .1703892     3.39   0.001     .2443587     .912533
+       2 16  |   .4418806   .1365614     3.24   0.001     .1741206    .7096406
+       2 17  |   .3574423   .3010744     1.19   0.235    -.2328832    .9477679
+       2 18  |   .0088272   .1469607     0.06   0.952     -.279323    .2969773
+       2 19  |    1.26499   .3963015     3.19   0.001     .4879502     2.04203
+       2 20  |   .4910118   .1559319     3.15   0.002     .1852713    .7967522
+       2 21  |   1.070872   .7154157     1.50   0.135    -.3318648    2.473609
+       3  1  |  -.4435498   .2354298    -1.88   0.060     -.905164    .0180644
+       3  2  |          0  (omitted)
+       3  3  |   .0690179    .643302     0.11   0.915    -1.192323    1.330359
+       3  4  |  -.4072144    .252939    -1.61   0.108    -.9031595    .0887307
+       3  5  |  -.5318971   .3269595    -1.63   0.104    -1.172976    .1091822
+       3  6  |    .283391   .1396535     2.03   0.043     .0095684    .5572137
+       3  7  |          0  (omitted)
+       3  8  |   .0057803   .2206623     0.03   0.979    -.4268788    .4384394
+       3  9  |          0  (omitted)
+       3 10  |          0  (omitted)
+       3 11  |  -.7396899   .1607324    -4.60   0.000    -1.054843    -.424537
+       3 12  |  -.7237537   .1950536    -3.71   0.000    -1.106201   -.3413064
+       3 13  |    .240661   .2232877     1.08   0.281    -.1971458    .6784678
+       3 14  |          0  (omitted)
+       3 15  |   .3119877    .168314     1.85   0.064    -.0180306    .6420059
+       3 16  |   .3143592   .1410332     2.23   0.026     .0378311    .5908872
+       3 17  |          0  (omitted)
+       3 18  |          0  (omitted)
+       3 19  |          0  (omitted)
+       3 20  |   .2162287    .171999     1.26   0.209    -.1210148    .5534723
+       3 21  |          0  (omitted)
+             |
+       _cons |   1.076281   .0900413    11.95   0.000      .899734    1.252827
+-------------+----------------------------------------------------------------
+     sigma_u |  1.1274153
+     sigma_e |   1.327103
+         rho |  .41917977   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. 
+.                 
+. outreg2  using `outregfilekeep', nolabel `replace' keep(dif_advalorem_mfn_5  
+> USA_post_unc_pre) /*
+>                                 */cttop(COMBINED PANEL, hs6 FE, "cluster(hs )
+> ", "MATCHED", consrt tar, ctry*section FE ) bfmt(fc) coefastr level(95) se br
+>   cons /*
+>                                 */addstat("TarCoeff Equal (p-val)",`tarcon',"
+> omitted unc coefs equal (p-val)",`unccon')
+dir : seeout
+
+.                 
+. 
+end of do-file
+
+. 
+. do imp_demand_shocks_replicate.do
+
+. 
+. set more off
+
+. 
+. use replication_appxdata4,clear
+
+. 
+. 
+. local outregfile tableA6.out
+
+. local replace replace
+
+. 
+. constraint 1 dif_advalorem_mfn_5=1.5*dif_ln_tcost_5
+
+. 
+. 
+. local keepvars "dif_ln_imp_5 dif_advalorem_mfn_5 dif_ln_tcost_5  CHINA_unc_pr
+> e nonCH_unc_pre "
+
+. 
+. **include all of RoW **
+.                         
+. *combine with ctry*section                              
+.                                 
+. areg dif_ln_imp_5 dif_advalorem_mfn_5 dif_ln_tcost_5 CHINA_unc_pre nonCH_unc_
+> pre /*
+>         */  ,ab(ctry_section) vce(cluster hs)
+
+Linear regression, absorbing indicators             Number of obs     = 16,472
+Absorbed variable: ctry_section                     No. of categories =    147
+                                                    F(4, 3210)        =  56.38
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.1532
+                                                    Adj R-squared     = 0.1454
+                                                    Root MSE          = 1.4910
+
+                                (Std. err. adjusted for 3,211 clusters in hs6)
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_advalo~5 |  -4.633383   2.331287    -1.99   0.047    -9.204344   -.0624216
+dif_ln_tco~5 |  -3.465216   .2402965   -14.42   0.000    -3.936366   -2.994066
+CHINA_unc_~e |   .7510331   .1853022     4.05   0.000     .3877104    1.114356
+nonCH_unc_~e |   .0719733   .0998247     0.72   0.471    -.1237534    .2676999
+       _cons |   .1421353   .0528121     2.69   0.007     .0385864    .2456842
+------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. 
+. outreg2  using `outregfile', nolabel `replace' keep(`keepvars') /*
+>                                 */cttop(All NonPref, , ctry*section FE, "clus
+> ter(hs )") bfmt(fc) coefastr level(95) se br  cons /*
+>                                 */
+dir : seeout
+
+. 
+. local replace
+
+.                         
+. *NOW ADD HS6 FE WITH  CTRY*SECTION EFFECTS*                             
+.                 
+. 
+. *ctry*section effects*
+. 
+. xtreg dif_ln_imp_5  dif_ln_tcost_5 CHINA_unc_pre  i.ctry_section /*
+>         */  ,fe robust
+note: 11.ctry_section omitted because of collinearity
+note: 16.ctry_section omitted because of collinearity
+note: 18.ctry_section omitted because of collinearity
+note: 20.ctry_section omitted because of collinearity
+note: 77.ctry_section omitted because of collinearity
+note: 94.ctry_section omitted because of collinearity
+note: 103.ctry_section omitted because of collinearity
+note: 105.ctry_section omitted because of collinearity
+note: 107.ctry_section omitted because of collinearity
+note: 108.ctry_section omitted because of collinearity
+note: 109.ctry_section omitted because of collinearity
+note: 112.ctry_section omitted because of collinearity
+note: 114.ctry_section omitted because of collinearity
+note: 117.ctry_section omitted because of collinearity
+note: 118.ctry_section omitted because of collinearity
+note: 120.ctry_section omitted because of collinearity
+note: 122.ctry_section omitted because of collinearity
+note: 131.ctry_section omitted because of collinearity
+note: 132.ctry_section omitted because of collinearity
+note: 134.ctry_section omitted because of collinearity
+
+Fixed-effects (within) regression               Number of obs      =     16472
+Group variable: hs                              Number of groups   =      3211
+
+R-sq:  Within  = 0.1871                         Obs per group: min =         1
+       Between = 0.0096                                        avg =       5.1
+       Overall = 0.0812                                        max =         7
+
+                                                F(127,3210)        =         .
+corr(u_i, Xb)  = -0.4355                        Prob > F           =         .
+
+                                 (Std. err. adjusted for 3,211 clusters in hs)
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_ln_tco~5 |  -3.605312   .2516662   -14.33   0.000    -4.098755   -3.111869
+CHINA_unc_~e |   .6260717   .1987201     3.15   0.002     .2364406    1.015703
+             |
+ctry_section |
+          2  |   1.186642   .4559278     2.60   0.009     .2927031    2.080581
+          3  |   .4174058   1.438408     0.29   0.772    -2.402886    3.237697
+          4  |   1.324683   .3021735     4.38   0.000     .7322101    1.917155
+          5  |    .934557   .9840659     0.95   0.342    -.9949042    2.864018
+          6  |   1.111348    .187716     5.92   0.000     .7432923    1.479403
+          7  |   .9770196   .2447865     3.99   0.000     .4970659    1.456973
+          8  |   1.401208   .3084908     4.54   0.000     .7963488    2.006067
+          9  |   .7759559   .3521972     2.20   0.028     .0854018     1.46651
+         10  |   1.565454    .665431     2.35   0.019     .2607416    2.870167
+         11  |          0  (omitted)
+         12  |   .0392896   .3485088     0.11   0.910    -.6440328    .7226119
+         13  |   1.022173   .2522104     4.05   0.000     .5276628    1.516682
+         14  |   1.367978   .2640765     5.18   0.000      .850202    1.885753
+         15  |   1.275762   .1798335     7.09   0.000     .9231617    1.628362
+         16  |          0  (omitted)
+         17  |   1.239328   .3464145     3.58   0.000     .5601122    1.918544
+         18  |          0  (omitted)
+         19  |  -3.048347    .501038    -6.08   0.000    -4.030733    -2.06596
+         20  |          0  (omitted)
+         21  |   1.638184    .737824     2.22   0.026     .1915296    3.084837
+         22  |  -.7235573   .3055773    -2.37   0.018    -1.322704   -.1244109
+         23  |    .801916   .4234888     1.89   0.058      -.02842    1.632252
+         24  |   1.161911   1.198314     0.97   0.332    -1.187628    3.511449
+         25  |   .5543801   .2514439     2.20   0.028     .0613732    1.047387
+         26  |  -.0674938   .9693981    -0.07   0.944    -1.968196    1.833208
+         27  |   .3904659   .1561226     2.50   0.012     .0843558     .696576
+         28  |  -.0629631   .1778324    -0.35   0.723    -.4116397    .2857135
+         29  |   .5308151   .2086364     2.54   0.011     .1217409    .9398892
+         30  |  -.7069471   .3763679    -1.88   0.060    -1.444893    .0309987
+         31  |   .7979841   .6463594     1.23   0.217    -.4693349    2.065303
+         32  |  -1.114288   .1517089    -7.34   0.000    -1.411745   -.8168321
+         33  |   -.010731    .346347    -0.03   0.975    -.6898147    .6683526
+         34  |   .0541975   .1906189     0.28   0.776    -.3195497    .4279446
+         35  |   .7929106   .3250765     2.44   0.015     .1555321    1.430289
+         36  |   .4311417   .1182799     3.65   0.000     .1992298    .6630535
+         37  |   -.924664   .1273204    -7.26   0.000    -1.174302   -.6750265
+         38  |   .3037541   .2975074     1.02   0.307    -.2795697    .8870778
+         39  |  -.5221028   .1666431    -3.13   0.002    -.8488405    -.195365
+         40  |  -3.915782   .6127607    -6.39   0.000    -5.117224    -2.71434
+         41  |   -.443216   .1613683    -2.75   0.006    -.7596114   -.1268207
+         42  |   1.172639   .7191686     1.63   0.103    -.2374369    2.582716
+         43  |  -.4738782   .2800267    -1.69   0.091    -1.022928    .0751711
+         44  |    .670682   .4235605     1.58   0.113    -.1597945    1.501159
+         45  |   .5689082   1.806554     0.31   0.753    -2.973209    4.111025
+         46  |    .439324   .2844816     1.54   0.123    -.1184599    .9971079
+         47  |   -.646998   1.126273    -0.57   0.566    -2.855285    1.561289
+         48  |    .076901   .1555805     0.49   0.621    -.2281462    .3819482
+         49  |    -.24501   .1944652    -1.26   0.208    -.6262985    .1362785
+         50  |   .5899139   .2698291     2.19   0.029     .0608592    1.118969
+         51  |   -1.15703   .4511079    -2.56   0.010    -2.041519   -.2725417
+         52  |   .0917043   .6702301     0.14   0.891    -1.222418    1.405827
+         53  |  -1.164084   .1658954    -7.02   0.000    -1.489356   -.8388128
+         54  |  -.1891623   .3650569    -0.52   0.604    -.9049307     .526606
+         55  |   -.431257   .2087692    -2.07   0.039    -.8405915   -.0219226
+         56  |   .5469411    .331987     1.65   0.100    -.1039869    1.197869
+         57  |   .0361783   .1293877     0.28   0.780    -.2175126    .2898691
+         58  |  -1.204998   .1326778    -9.08   0.000     -1.46514   -.9448567
+         59  |   .3247372   .3434565     0.95   0.344    -.3486791    .9981536
+         60  |  -1.074358   .1747172    -6.15   0.000    -1.416927     -.73179
+         61  |  -4.280892   .4730463    -9.05   0.000    -5.208395   -3.353388
+         62  |  -.6569759   .2048214    -3.21   0.001     -1.05857   -.2553819
+         63  |   .2582875   .4474794     0.58   0.564    -.6190868    1.135662
+         64  |    .145622    .413255     0.35   0.725    -.6646484    .9558925
+         65  |   .9591252   .4845018     1.98   0.048     .0091609    1.909089
+         66  |  -.2165059   1.372641    -0.16   0.875    -2.907848    2.474836
+         67  |   .5487617   .3344237     1.64   0.101     -.106944    1.204467
+         68  |  -.0376838   .9557599    -0.04   0.969    -1.911645    1.836278
+         69  |   .2736209   .1916237     1.43   0.153    -.1020964    .6493382
+         70  |    .386244    .232877     1.66   0.097    -.0703587    .8428467
+         71  |  -.2795823   .3160227    -0.88   0.376     -.899209    .3400444
+         72  |  -.6502947   .4691083    -1.39   0.166    -1.570077    .2694874
+         73  |   .8130775   .6820171     1.19   0.233    -.5241557    2.150311
+         74  |  -1.375839   .1695976    -8.11   0.000    -1.708369   -1.043308
+         75  |  -1.020328   .3778254    -2.70   0.007    -1.761132   -.2795246
+         76  |   .2013433    .221781     0.91   0.364    -.2335034    .6361901
+         77  |          0  (omitted)
+         78  |   .3134746   .1496688     2.09   0.036     .0200185    .6069306
+         79  |   -.758263   .1449873    -5.23   0.000     -1.04254   -.4739859
+         80  |   .4822131   .4127932     1.17   0.243    -.3271518    1.291578
+         81  |  -.6063014   .1966111    -3.08   0.002    -.9917975   -.2208053
+         82  |  -3.358304   .8762831    -3.83   0.000    -5.076435   -1.640173
+         83  |   -.690581   .1796959    -3.84   0.000    -1.042911   -.3382506
+         84  |   2.155072   1.018653     2.12   0.034     .1577962    4.152348
+         85  |  -.1166132   .6620687    -0.18   0.860    -1.414733    1.181507
+         86  |   .6870429    .625193     1.10   0.272    -.5387751    1.912861
+         87  |   .7843095   1.391693     0.56   0.573    -1.944388    3.513007
+         88  |   -.338583   .4691475    -0.72   0.471    -1.258442     .581276
+         89  |  -.1781654   1.361124    -0.13   0.896    -2.846927    2.490596
+         90  |    .797759   .3948374     2.02   0.043        .0236    1.571918
+         91  |  -.2960736    .298632    -0.99   0.322    -.8816024    .2894552
+         92  |   1.349369   .7324196     1.84   0.066    -.0866888    2.785426
+         93  |   -2.02599   1.373099    -1.48   0.140    -4.718229    .6662499
+         94  |          0  (omitted)
+         95  |  -.9308428   .2765916    -3.37   0.001    -1.473157   -.3885287
+         96  |  -.1671942   .9544265    -0.18   0.861    -2.038541    1.704153
+         97  |   .0765301   .3239335     0.24   0.813    -.5586074    .7116677
+         98  |   .8606912   .8551028     1.01   0.314    -.8159116    2.537294
+         99  |   .2445763   .2372931     1.03   0.303    -.2206851    .7098377
+        100  |  -.5530903   .1580386    -3.50   0.000    -.8629572   -.2432235
+        101  |    .088703   .4520845     0.20   0.844    -.7977006    .9751067
+        102  |  -.1669865   .2275139    -0.73   0.463    -.6130737    .2791007
+        103  |          0  (omitted)
+        104  |   -.397021   .2689181    -1.48   0.140    -.9242896    .1302475
+        105  |          0  (omitted)
+        106  |  -.4097943    .183838    -2.23   0.026    -.7702462   -.0493425
+        107  |          0  (omitted)
+        108  |          0  (omitted)
+        109  |          0  (omitted)
+        110  |   .6927918   1.202415     0.58   0.565    -1.664788    3.050371
+        111  |   .2241042   .1759024     1.27   0.203    -.1207882    .5689966
+        112  |          0  (omitted)
+        113  |   .8207637   .3642325     2.25   0.024     .1066118    1.534916
+        114  |          0  (omitted)
+        115  |   .6782531   .6946452     0.98   0.329      -.68374    2.040246
+        116  |  -1.136911   .1721086    -6.61   0.000    -1.474365   -.7994572
+        117  |          0  (omitted)
+        118  |          0  (omitted)
+        119  |   .7223163   .4322141     1.67   0.095    -.1251273     1.56976
+        120  |          0  (omitted)
+        121  |  -1.032736   .1428479    -7.23   0.000    -1.312818   -.7526538
+        122  |          0  (omitted)
+        123  |  -.6770034   .1976453    -3.43   0.001    -1.064527   -.2894797
+        124  |  -3.848498   .2476315   -15.54   0.000    -4.334029   -3.362966
+        125  |  -.4245319   .2185919    -1.94   0.052    -.8531259     .004062
+        126  |   .9155036   .7295709     1.25   0.210    -.5149685    2.345976
+        127  |    -.20678   .3563356    -0.58   0.562    -.9054484    .4918885
+        128  |   1.075864   .4757909     2.26   0.024      .142979    2.008748
+        129  |  -.5052761   3.110399    -0.16   0.871    -6.603846    5.593294
+        130  |   .1794943   .2374826     0.76   0.450    -.2861385    .6451272
+        131  |          0  (omitted)
+        132  |          0  (omitted)
+        133  |   .2778054   .2139942     1.30   0.194    -.1417737    .6973845
+        134  |          0  (omitted)
+        135  |  -1.074024   .3763925    -2.85   0.004    -1.812018   -.3360299
+        136  |   .4936196   .6693951     0.74   0.461    -.8188655    1.806105
+        137  |  -1.543657    .166405    -9.28   0.000    -1.869928   -1.217386
+        138  |  -.5795639   .3937008    -1.47   0.141    -1.351494    .1923667
+        139  |  -.0383568   .2088842    -0.18   0.854    -.4479167    .3712031
+        140  |   .0298178   .4040999     0.07   0.941    -.7625022    .8221377
+        141  |   .4246677   .1318807     3.22   0.001     .1660887    .6832466
+        142  |  -.9010787   .1343641    -6.71   0.000    -1.164527   -.6376305
+        143  |   .0548569   .3238358     0.17   0.865     -.580089    .6898028
+        144  |  -.7001971   .1794581    -3.90   0.000    -1.052061    -.348333
+        145  |  -4.189192   .8062263    -5.20   0.000    -5.769962   -2.608421
+        146  |  -.8538529   .1627676    -5.25   0.000    -1.172992   -.5347139
+        147  |   .9240354   .9285247     1.00   0.320    -.8965261    2.744597
+             |
+       _cons |   .4476816   .0711657     6.29   0.000     .3081469    .5872164
+-------------+----------------------------------------------------------------
+     sigma_u |  1.0778211
+     sigma_e |  1.4004877
+         rho |  .37197389   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. 
+. outreg2  using `outregfile', nolabel `replace' keep(`keepvars')/*
+>                                 */cttop(All NonPref, hs6 FE , ctry*section FE
+> , "cluster(hs )") bfmt(fc) coefastr level(95) se br  cons 
+dir : seeout
+
+.                 
+.         
+. 
+. 
+. use replication_maindata2.dta,clear
+
+. 
+. gen nonCH_unc_pre=(1-CHINA)*unc_pre
+
+. 
+. egen ctry_section=group(country section)                
+
+. areg dif_ln_imp_5 dif_advalorem_mfn_5 dif_ln_tcost_5 CHINA_unc_pre nonCH_unc_
+> pre /*
+>         */  ,ab(ctry_section) vce(cluster hs)
+
+Linear regression, absorbing indicators             Number of obs     =  4,662
+Absorbed variable: ctry_section                     No. of categories =     42
+                                                    F(4, 2330)        =  23.87
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.2361
+                                                    Adj R-squared     = 0.2287
+                                                    Root MSE          = 1.5128
+
+                                (Std. err. adjusted for 2,331 clusters in hs6)
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_advalo~5 |  -13.80899   5.122556    -2.70   0.007    -23.85423   -3.763744
+dif_ln_tco~5 |  -4.062854   .4474417    -9.08   0.000    -4.940279   -3.185428
+CHINA_unc_~e |   .5026483   .2329215     2.16   0.031     .0458934    .9594033
+nonCH_unc_~e |  -.2003528   .2369545    -0.85   0.398    -.6650164    .2643109
+       _cons |   .5198366   .1036533     5.02   0.000     .3165742     .723099
+------------------------------------------------------------------------------
+
+. 
+. 
+. outreg2  using `outregfile', nolabel `replace' keep(`keepvars') /*
+>                                 */cttop(china & twn, , ctry*section FE, "clus
+> ter(hs )") bfmt(fc) coefastr level(95) se br  cons /*
+>                                 */
+dir : seeout
+
+. 
+. xtset hs6
+
+Panel variable: hs6 (balanced)
+
+. xtreg dif_ln_imp_5  CHINA_unc_pre dif_ln_tcost_5 dif_advalorem_mfn_5    i.ctr
+> y_section if ct_twn_chn ==2  , fe r  
+note: dif_advalorem_mfn_5 omitted because of collinearity
+note: 2.ctry_section omitted because of collinearity
+note: 24.ctry_section omitted because of collinearity
+note: 25.ctry_section omitted because of collinearity
+note: 26.ctry_section omitted because of collinearity
+note: 27.ctry_section omitted because of collinearity
+note: 28.ctry_section omitted because of collinearity
+note: 29.ctry_section omitted because of collinearity
+note: 30.ctry_section omitted because of collinearity
+note: 31.ctry_section omitted because of collinearity
+note: 32.ctry_section omitted because of collinearity
+note: 33.ctry_section omitted because of collinearity
+note: 34.ctry_section omitted because of collinearity
+note: 35.ctry_section omitted because of collinearity
+note: 36.ctry_section omitted because of collinearity
+note: 37.ctry_section omitted because of collinearity
+note: 38.ctry_section omitted because of collinearity
+note: 39.ctry_section omitted because of collinearity
+note: 40.ctry_section omitted because of collinearity
+note: 41.ctry_section omitted because of collinearity
+note: 42.ctry_section omitted because of collinearity
+
+Fixed-effects (within) regression               Number of obs      =      4662
+Group variable: hs6                             Number of groups   =      2331
+
+R-sq:  Within  = 0.3813                         Obs per group: min =         2
+       Between = 0.0140                                        avg =       2.0
+       Overall = 0.1944                                        max =         2
+
+                                                F(23,2330)         =     66.19
+corr(u_i, Xb)  = -0.0369                        Prob > F           =    0.0000
+
+                                (Std. err. adjusted for 2,331 clusters in hs6)
+------------------------------------------------------------------------------
+             |               Robust
+dif_ln_imp_5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+CHINA_unc_~e |   .7061464   .3041069     2.32   0.020      .109798    1.302495
+dif_ln_tco~5 |  -3.343264    .605192    -5.52   0.000    -4.530035   -2.156493
+dif_advalo~5 |          0  (omitted)
+             |
+ctry_section |
+          2  |          0  (omitted)
+          3  |  -.3491695    3.29432    -0.11   0.916    -6.809274    6.110935
+          4  |   .9984855   .2476169     4.03   0.000      .512913    1.484058
+          5  |   .3885796   1.088145     0.36   0.721    -1.745255    2.522414
+          6  |   1.142658   .2299806     4.97   0.000     .6916701    1.593646
+          7  |    .669081   .2688363     2.49   0.013     .1418978    1.196264
+          8  |   1.294356   .3616922     3.58   0.000     .5850843    2.003628
+          9  |   1.675937   .3201256     5.24   0.000     1.048176    2.303697
+         10  |   1.088619   .3334319     3.26   0.001     .4347651    1.742473
+         11  |   1.601759   .2286908     7.00   0.000       1.1533    2.050217
+         12  |   .6897018   .2652585     2.60   0.009     .1695344    1.209869
+         13  |   .8644719   .2501967     3.46   0.001     .3738405    1.355103
+         14  |   1.316039   .3596374     3.66   0.000     .6107958    2.021281
+         15  |   .9308477    .207698     4.48   0.000     .5235555     1.33814
+         16  |   .8658134   .1873537     4.62   0.000     .4984161    1.233211
+         17  |   1.088657   .3253092     3.35   0.001     .4507317    1.726583
+         18  |   .6422291   .2293933     2.80   0.005     .1923928    1.092065
+         19  |   1.309135   .5828943     2.25   0.025     .1660899    2.452181
+         20  |   .7778389   .2199421     3.54   0.000     .3465362    1.209142
+         21  |   .6997159   .3491657     2.00   0.045      .015008    1.384424
+         22  |  -.3925281   .3418594    -1.15   0.251    -1.062908    .2778523
+         23  |  -.0636487   .3252067    -0.20   0.845    -.7013734     .574076
+         24  |          0  (omitted)
+         25  |          0  (omitted)
+         26  |          0  (omitted)
+         27  |          0  (omitted)
+         28  |          0  (omitted)
+         29  |          0  (omitted)
+         30  |          0  (omitted)
+         31  |          0  (omitted)
+         32  |          0  (omitted)
+         33  |          0  (omitted)
+         34  |          0  (omitted)
+         35  |          0  (omitted)
+         36  |          0  (omitted)
+         37  |          0  (omitted)
+         38  |          0  (omitted)
+         39  |          0  (omitted)
+         40  |          0  (omitted)
+         41  |          0  (omitted)
+         42  |          0  (omitted)
+             |
+       _cons |  -.0463669   .0198667    -2.33   0.020    -.0853252   -.0074085
+-------------+----------------------------------------------------------------
+     sigma_u |  1.2103576
+     sigma_e |  1.3684992
+         rho |  .43890739   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+.         
+.         outreg2 using  `outregfile',  `replace' keep(`keepvars' ) /*
+>                                         */cttop(china & twn, hs6 FE, ctry*sec
+> tion FE, "cluster(hs )") bfmt(fc) coefastr level(95) se br  cons 
+dir : seeout
+
+.                                         
+. 
+end of do-file
+
+. 
+. do replicate_dd_panel.do
+
+. 
+. 
+. 
+. use "replication_appxdata5",clear
+
+. 
+. 
+. 
+. /* DOUBLE DIFFERENCES and Pre-accession trends*/
+. xtset hs6 year
+
+Panel variable: hs6 (unbalanced)
+ Time variable: year, 1996 to 2006, but with gaps
+         Delta: 1 unit
+
+.         
+.                         local x=5
+
+.                         local year=2005
+
+. 
+.                         local prex=3
+
+.                         local preyear=`year'-`x'-1 
+
+.                         
+.                         local outregfile tableA7.out
+
+. local replace replace
+
+. 
+.             gen dd_`x'=(ln(imports)-ln(L`x'.imports))/`x' - (ln(L6.imports)-l
+> n(L9.imports))/3 if ye==`year'
+(53,022 missing values generated)
+
+.             gen unc_2000=unc_pre/`x' if ye==`year'
+(51,532 missing values generated)
+
+.             gen dd_tc`x'=(ln_tcost-L`x'.ln_tcost)/`x' - (L6.ln_tcost-L9.ln_tc
+> ost)/3 if ye==`year'
+(53,024 missing values generated)
+
+.                 
+.                 
+.                 
+.               gen dd_adv`x'=(advalorem_mfn-L`x'.advalorem_mfn)/`x' - (L6.adva
+> lorem_mfn-L9.advalorem_mfn)/3 if ye==`year'
+(51,257 missing values generated)
+
+.                 
+.             gen dd_TTB`x'=(TTB-L5.TTB)/5 - (L6.TTB-L9.TTB)/3 if ye==`year'
+(50,847 missing values generated)
+
+.             gen dd_MFA`x'=(MFA-L5.MFA)/5 - (L6.MFA-L9.MFA)/3 if ye==`year'
+(50,847 missing values generated)
+
+. 
+.                 gen predefined=(L9.unc_adv_mfn_col2_zero!=.)
+
+.         
+.                 
+.                 /*set sample*/
+.                 qui reg  dd_5 unc_2000  dd_adv5 dd_tc5  if year==`year'  &  o
+> ut_tc_`prex'_`preyear'~=1 , r
+
+.                                 
+.                 capture drop ddsample common            
+
+.                 gen ddsample =1 if e(sample)
+(53,295 missing values generated)
+
+.                 bysort hs6: egen common=min(ddsample)
+(27,445 missing values generated)
+
+.         
+.         
+.                 /* unified pre and post sample */
+.                 
+.                 rreg  dd_5 unc_2000 dd_adv5 dd_tc5  if year==`year' &  out_tc
+> _`prex'_`preyear'~=1 & predefined==1 , nolog tune(6)
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  3,      2567) =      42.57
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+        dd_5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_2000 |   .5059846   .2237019     2.26   0.024     .0673301     .944639
+     dd_adv5 |  -5.698923   1.954431    -2.92   0.004    -9.531344   -1.866501
+      dd_tc5 |  -3.354387   .3093496   -10.84   0.000    -3.960987   -2.747787
+       _cons |  -.0580263   .0247383    -2.35   0.019    -.1065353   -.0095173
+------------------------------------------------------------------------------
+
+.                                 outreg2  test_5   dd_adv5 dd_tc5  using `outr
+> egfile', nolabel replace /*
+>                                         */cttop(unconstrained, rreg 2005 5 la
+> g, pre-period sample) bfmt(fc) coefastr level(95) se br nocons  
+dir : seeout
+
+.                  
+.                 rreg  dd_5 unc_2000  dd_adv5 dd_tc5 dd_TTB5 dd_MFA5 if year==
+> `year'  &  out_tc_`prex'_`preyear'~=1 & predefined==1 , nolog tune(6)
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  5,      2565) =      29.36
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+        dd_5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_2000 |   .4149868    .225103     1.84   0.065    -.0264152    .8563889
+     dd_adv5 |  -5.157392   1.960041    -2.63   0.009    -9.000816   -1.313969
+      dd_tc5 |  -3.424336   .3081404   -11.11   0.000    -4.028565   -2.820107
+     dd_TTB5 |  -.2304608   .2194024    -1.05   0.294    -.6606846    .1997629
+     dd_MFA5 |  -.4083331   .1122764    -3.64   0.000    -.6284947   -.1881716
+       _cons |  -.0549641   .0246538    -2.23   0.026    -.1033075   -.0066207
+------------------------------------------------------------------------------
+
+.                                 outreg2  test_5   dd_adv5 dd_tc5 dd_TTB5 dd_M
+> FA5  using `outregfile', nolabel append /*
+>                                         */cttop(unconstrained, rreg 2005 5 la
+> g, pre-period sample) bfmt(fc) coefastr level(95) se br nocons  
+dir : seeout
+
+. 
+.                                         
+.                                         
+.                                         
+. /*Falsification check for effect in pre-period */
+. xtset hs6 year
+
+Panel variable: hs6 (unbalanced)
+ Time variable: year, 1996 to 2006, but with gaps
+         Delta: 1 unit
+
+. local x=3
+
+.                 local year=1999
+
+. capture drop dif_TTB_3
+
+. capture drop dif_MFA_3
+
+.                 gen dif_TTB_3= TTB-L3.TTB       
+(15,378 missing values generated)
+
+.                 gen dif_MFA_3= MFA-L3.MFA
+(15,378 missing values generated)
+
+.                 capture drop test_3
+
+.                 gen unc_1996=L`x'.unc_adv_mfn_col2_zero
+(20,870 missing values generated)
+
+. 
+.                 
+.         **pre regression**
+.                 
+.                 rreg dif_ln_imp_`x' unc_1996 dif_advalorem_mfn_`x' dif_ln_tco
+> st_`x'   if year==`year' & common==1 , tune(6)
+
+   Huber iteration 1:  maximum difference in weights = .85236289
+   Huber iteration 2:  maximum difference in weights = .07559628
+   Huber iteration 3:  maximum difference in weights = .0123275
+Biweight iteration 4:  maximum difference in weights = .34421186
+Biweight iteration 5:  maximum difference in weights = .04096024
+Biweight iteration 6:  maximum difference in weights = .00875977
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  3,      2567) =      49.90
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+dif_ln_imp_3 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_1996 |  -.0050074    .108743    -0.05   0.963    -.2182403    .2082256
+dif_advalo~3 |   -4.50636    1.59433    -2.83   0.005    -7.632663   -1.380057
+dif_ln_tco~3 |  -3.436509    .289957   -11.85   0.000    -4.005083   -2.867936
+       _cons |   .5797142   .0594421     9.75   0.000      .463155    .6962735
+------------------------------------------------------------------------------
+
+.                         outreg2  test_`x' dif_advalorem_mfn_`x' dif_ln_tcost_
+> `x' using `outregfile', nolabel append /*
+>                                 */cttop(pre unconstrained rreg, `year', lag `
+> x') bfmt(fc) coefastr level(95) se br nocons 
+dir : seeout
+
+. 
+. 
+.                 rreg dif_ln_imp_`x' unc_1996 dif_advalorem_mfn_`x' dif_ln_tco
+> st_`x'   dif_MFA_`x' dif_TTB_`x'   if year==`year' & common==1 , tune(6)
+
+   Huber iteration 1:  maximum difference in weights = .853574
+   Huber iteration 2:  maximum difference in weights = .13247926
+   Huber iteration 3:  maximum difference in weights = .04252455
+Biweight iteration 4:  maximum difference in weights = .34429814
+Biweight iteration 5:  maximum difference in weights = .04097039
+Biweight iteration 6:  maximum difference in weights = .0152346
+Biweight iteration 7:  maximum difference in weights = .00667758
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  5,      2565) =      32.64
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+dif_ln_imp_3 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_1996 |   .0302926   .1091095     0.28   0.781    -.1836591    .2442443
+dif_advalo~3 |  -4.310623   1.587405    -2.72   0.007    -7.423348   -1.197898
+dif_ln_tco~3 |   -3.44445   .2886979   -11.93   0.000    -4.010555   -2.878345
+   dif_MFA_3 |   .4694766   .1596702     2.94   0.003     .1563809    .7825723
+   dif_TTB_3 |  -.5103473   .3020362    -1.69   0.091    -1.102607    .0819122
+       _cons |   .5715447   .0593938     9.62   0.000       .45508    .6880093
+------------------------------------------------------------------------------
+
+.                         outreg2  test_`x' dif_advalorem_mfn_`x' dif_ln_tcost_
+> `x' dif_MFA_`x' dif_TTB_`x' using `outregfile', nolabel append /*
+>                                 */cttop(pre unconstrained rreg, `year', lag `
+> x') bfmt(fc) coefastr level(95) se br nocons 
+dir : seeout
+
+. 
+. 
+end of do-file
+
+. 
+. do panel_regs_replicate.do
+
+. 
+. 
+. use replication_appxdata6,clear
+
+. 
+. local outregfile tableA8.out
+
+. local replace replace
+
+. local restrict "UNCONSTRAINED"
+
+. 
+. 
+. *gen pre and post variables, allowing uncertainty to vary by  year.
+. gen post=(year>2001)
+
+. gen post_X_unc=unc_adv_mfn_col2_zero_sig*post
+
+. gen pre_X_unc=unc_adv_mfn_col2_zero_sig*(1-post)
+
+.         
+.         
+.         
+. reghdfe ln_imp advalorem_mfn ln_tcost _IyeaXfix_1996 _IyeaXfix_1997 _IyeaXfix
+> _1998 _IyeaXfix_1999 _IyeaXfix_2001 _IyeaXfix_2002 _IyeaXfix_2003 _IyeaXfix_2
+> 004 _IyeaXfix_2005 _IyeaXfix_2006   /*
+>                 */  , ab(hs6 section_yr ) cluster(hs6 section_yr)
+(MWFE estimator converged in 7 iterations)
+Warning: VCV matrix was non-positive semi-definite; adjustment from Cameron, Ge
+> lbach & Miller applied.
+
+HDFE Linear regression                            Number of obs   =     37,002
+Absorbing 2 HDFE groups                           F(  12,    230) =      14.51
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8740
+                                                  Adj R-squared   =     0.8576
+Number of clusters (hs6)     =      4,005         Within R-sq.    =     0.0283
+Number of clusters (section_yr) =        231      Root MSE        =     1.1131
+
+                       (Std. err. adjusted for 231 clusters in hs6 section_yr)
+------------------------------------------------------------------------------
+             |               Robust
+      ln_imp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+advalorem_~n |  -5.562891   1.941416    -2.87   0.005    -9.388125   -1.737656
+    ln_tcost |  -2.468222   .2259255   -10.92   0.000    -2.913371   -2.023074
+_IyeaXf~1996 |  -.2297523   .2629232    -0.87   0.383    -.7477983    .2882937
+_IyeaXf~1997 |   .0294777   .2265438     0.13   0.897    -.4168888    .4758441
+_IyeaXf~1998 |   -.142835    .196599    -0.73   0.468    -.5302003    .2445303
+_IyeaXf~1999 |   .0776299   .1962634     0.40   0.693    -.3090741    .4643338
+_IyeaXf~2001 |   .2453117    .207229     1.18   0.238    -.1629983    .6536216
+_IyeaXf~2002 |   .4758579     .20346     2.34   0.020     .0749743    .8767416
+_IyeaXf~2003 |   .6805513   .3178967     2.14   0.033     .0541894    1.306913
+_IyeaXf~2004 |   .7417293   .2225979     3.33   0.001     .3031376    1.180321
+_IyeaXf~2005 |   .8661108   .2600901     3.33   0.001      .353647    1.378575
+_IyeaXf~2006 |   .8119954   .3055016     2.66   0.008     .2100559    1.413935
+       _cons |   14.28188   .1146596   124.56   0.000     14.05596    14.50779
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         hs6 |      4005        4005           0    *|
+  section_yr |       231         231           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+.                 
+. test _b[advalorem_mfn]=1.5*_b[ln_tcost] 
+
+ ( 1)  advalorem_mfn - 1.5*ln_tcost = 0
+
+       F(  1,   230) =    0.88
+            Prob > F =    0.3480
+
+. local tarcon=r(p)
+
+. 
+. outreg2 advalorem_mfn ln_tcost _IyeaXfix_* using `outregfile', nolabel `repla
+> ce' /*
+>                                 */cttop(`restrict', sigma=3, section*yr FE, h
+> s FE, "cluster(hs6 yr*section)" , "fixed@2000 unc") bfmt(fc) coefastr level(9
+> 5) se br  cons /*
+>                                 */addstat("Restriction (p-val)", `tarcon')
+dir : seeout
+
+.                                 
+. local replace
+
+. 
+. /** NOW FIX COEFF PRE AND POST PERIOD ***/                              
+.                                 
+. 
+. reghdfe ln_imp advalorem_mfn ln_tcost pre_X_unc post_X_unc   /*
+>                 */ , ab(hs6 section_yr) cluster(hs6 section_yr)
+(MWFE estimator converged in 7 iterations)
+Warning: VCV matrix was non-positive semi-definite; adjustment from Cameron, Ge
+> lbach & Miller applied.
+
+HDFE Linear regression                            Number of obs   =     37,002
+Absorbing 2 HDFE groups                           F(   4,    230) =      36.39
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8739
+                                                  Adj R-squared   =     0.8576
+Number of clusters (hs6)     =      4,005         Within R-sq.    =     0.0281
+Number of clusters (section_yr) =        231      Root MSE        =     1.1131
+
+                       (Std. err. adjusted for 231 clusters in hs6 section_yr)
+------------------------------------------------------------------------------
+             |               Robust
+      ln_imp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+advalorem_~n |  -8.222902   2.024498    -4.06   0.000    -12.21183   -4.233971
+    ln_tcost |  -2.470568   .2258998   -10.94   0.000    -2.915666   -2.025471
+   pre_X_unc |  -2.179141   .9573791    -2.28   0.024    -4.065495   -.2927863
+  post_X_unc |  -1.491204   .9530618    -1.56   0.119    -3.369052    .3866443
+       _cons |   15.50841   .5269043    29.43   0.000     14.47024    16.54659
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         hs6 |      4005        4005           0    *|
+  section_yr |       231         231           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+.         
+.                 
+. test _b[advalorem_mfn]=1.5*_b[ln_tcost] 
+
+ ( 1)  advalorem_mfn - 1.5*ln_tcost = 0
+
+       F(  1,   230) =    4.85
+            Prob > F =    0.0287
+
+. local tarcon=r(p)
+
+. 
+. outreg2 advalorem_mfn ln_tcost pre_X_unc post_X_unc using `outregfile', nolab
+> el `replace' /*
+>                                 */cttop(`restrict', sigma=3, section*yr FE, h
+> s FE, "cluster(hs yr*section )" ,  "pre vs post") bfmt(fc) coefastr level(95)
+>  se br  cons /*
+>                                 */addstat("Restriction (p-val)", `tarcon')
+dir : seeout
+
+. 
+. exit
+
+end of do-file
+
+. 
+. do replicate_dd_panel.do
+
+. 
+. 
+. 
+. use "replication_appxdata5",clear
+
+. 
+. 
+. 
+. /* DOUBLE DIFFERENCES and Pre-accession trends*/
+. xtset hs6 year
+
+Panel variable: hs6 (unbalanced)
+ Time variable: year, 1996 to 2006, but with gaps
+         Delta: 1 unit
+
+.         
+.                         local x=5
+
+.                         local year=2005
+
+. 
+.                         local prex=3
+
+.                         local preyear=`year'-`x'-1 
+
+.                         
+.                         local outregfile tableA7.out
+
+. local replace replace
+
+. 
+.             gen dd_`x'=(ln(imports)-ln(L`x'.imports))/`x' - (ln(L6.imports)-l
+> n(L9.imports))/3 if ye==`year'
+(53,022 missing values generated)
+
+.             gen unc_2000=unc_pre/`x' if ye==`year'
+(51,532 missing values generated)
+
+.             gen dd_tc`x'=(ln_tcost-L`x'.ln_tcost)/`x' - (L6.ln_tcost-L9.ln_tc
+> ost)/3 if ye==`year'
+(53,024 missing values generated)
+
+.                 
+.                 
+.                 
+.               gen dd_adv`x'=(advalorem_mfn-L`x'.advalorem_mfn)/`x' - (L6.adva
+> lorem_mfn-L9.advalorem_mfn)/3 if ye==`year'
+(51,257 missing values generated)
+
+.                 
+.             gen dd_TTB`x'=(TTB-L5.TTB)/5 - (L6.TTB-L9.TTB)/3 if ye==`year'
+(50,847 missing values generated)
+
+.             gen dd_MFA`x'=(MFA-L5.MFA)/5 - (L6.MFA-L9.MFA)/3 if ye==`year'
+(50,847 missing values generated)
+
+. 
+.                 gen predefined=(L9.unc_adv_mfn_col2_zero!=.)
+
+.         
+.                 
+.                 /*set sample*/
+.                 qui reg  dd_5 unc_2000  dd_adv5 dd_tc5  if year==`year'  &  o
+> ut_tc_`prex'_`preyear'~=1 , r
+
+.                                 
+.                 capture drop ddsample common            
+
+.                 gen ddsample =1 if e(sample)
+(53,295 missing values generated)
+
+.                 bysort hs6: egen common=min(ddsample)
+(27,445 missing values generated)
+
+.         
+.         
+.                 /* unified pre and post sample */
+.                 
+.                 rreg  dd_5 unc_2000 dd_adv5 dd_tc5  if year==`year' &  out_tc
+> _`prex'_`preyear'~=1 & predefined==1 , nolog tune(6)
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  3,      2567) =      42.57
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+        dd_5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_2000 |   .5059846   .2237019     2.26   0.024     .0673301     .944639
+     dd_adv5 |  -5.698923   1.954431    -2.92   0.004    -9.531344   -1.866501
+      dd_tc5 |  -3.354387   .3093496   -10.84   0.000    -3.960987   -2.747787
+       _cons |  -.0580263   .0247383    -2.35   0.019    -.1065353   -.0095173
+------------------------------------------------------------------------------
+
+.                                 outreg2  test_5   dd_adv5 dd_tc5  using `outr
+> egfile', nolabel replace /*
+>                                         */cttop(unconstrained, rreg 2005 5 la
+> g, pre-period sample) bfmt(fc) coefastr level(95) se br nocons  
+dir : seeout
+
+.                  
+.                 rreg  dd_5 unc_2000  dd_adv5 dd_tc5 dd_TTB5 dd_MFA5 if year==
+> `year'  &  out_tc_`prex'_`preyear'~=1 & predefined==1 , nolog tune(6)
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  5,      2565) =      29.36
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+        dd_5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_2000 |   .4149868    .225103     1.84   0.065    -.0264152    .8563889
+     dd_adv5 |  -5.157392   1.960041    -2.63   0.009    -9.000816   -1.313969
+      dd_tc5 |  -3.424336   .3081404   -11.11   0.000    -4.028565   -2.820107
+     dd_TTB5 |  -.2304608   .2194024    -1.05   0.294    -.6606846    .1997629
+     dd_MFA5 |  -.4083331   .1122764    -3.64   0.000    -.6284947   -.1881716
+       _cons |  -.0549641   .0246538    -2.23   0.026    -.1033075   -.0066207
+------------------------------------------------------------------------------
+
+.                                 outreg2  test_5   dd_adv5 dd_tc5 dd_TTB5 dd_M
+> FA5  using `outregfile', nolabel append /*
+>                                         */cttop(unconstrained, rreg 2005 5 la
+> g, pre-period sample) bfmt(fc) coefastr level(95) se br nocons  
+dir : seeout
+
+. 
+.                                         
+.                                         
+.                                         
+. /*Falsification check for effect in pre-period */
+. xtset hs6 year
+
+Panel variable: hs6 (unbalanced)
+ Time variable: year, 1996 to 2006, but with gaps
+         Delta: 1 unit
+
+. local x=3
+
+.                 local year=1999
+
+. capture drop dif_TTB_3
+
+. capture drop dif_MFA_3
+
+.                 gen dif_TTB_3= TTB-L3.TTB       
+(15,378 missing values generated)
+
+.                 gen dif_MFA_3= MFA-L3.MFA
+(15,378 missing values generated)
+
+.                 capture drop test_3
+
+.                 gen unc_1996=L`x'.unc_adv_mfn_col2_zero
+(20,870 missing values generated)
+
+. 
+.                 
+.         **pre regression**
+.                 
+.                 rreg dif_ln_imp_`x' unc_1996 dif_advalorem_mfn_`x' dif_ln_tco
+> st_`x'   if year==`year' & common==1 , tune(6)
+
+   Huber iteration 1:  maximum difference in weights = .85236289
+   Huber iteration 2:  maximum difference in weights = .07559628
+   Huber iteration 3:  maximum difference in weights = .0123275
+Biweight iteration 4:  maximum difference in weights = .34421186
+Biweight iteration 5:  maximum difference in weights = .04096024
+Biweight iteration 6:  maximum difference in weights = .00875977
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  3,      2567) =      49.90
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+dif_ln_imp_3 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_1996 |  -.0050074    .108743    -0.05   0.963    -.2182403    .2082256
+dif_advalo~3 |   -4.50636    1.59433    -2.83   0.005    -7.632663   -1.380057
+dif_ln_tco~3 |  -3.436509    .289957   -11.85   0.000    -4.005083   -2.867936
+       _cons |   .5797142   .0594421     9.75   0.000      .463155    .6962735
+------------------------------------------------------------------------------
+
+.                         outreg2  test_`x' dif_advalorem_mfn_`x' dif_ln_tcost_
+> `x' using `outregfile', nolabel append /*
+>                                 */cttop(pre unconstrained rreg, `year', lag `
+> x') bfmt(fc) coefastr level(95) se br nocons 
+dir : seeout
+
+. 
+. 
+.                 rreg dif_ln_imp_`x' unc_1996 dif_advalorem_mfn_`x' dif_ln_tco
+> st_`x'   dif_MFA_`x' dif_TTB_`x'   if year==`year' & common==1 , tune(6)
+
+   Huber iteration 1:  maximum difference in weights = .853574
+   Huber iteration 2:  maximum difference in weights = .13247926
+   Huber iteration 3:  maximum difference in weights = .04252455
+Biweight iteration 4:  maximum difference in weights = .34429814
+Biweight iteration 5:  maximum difference in weights = .04097039
+Biweight iteration 6:  maximum difference in weights = .0152346
+Biweight iteration 7:  maximum difference in weights = .00667758
+
+Robust regression                               Number of obs     =      2,571
+                                                F(  5,      2565) =      32.64
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+dif_ln_imp_3 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    unc_1996 |   .0302926   .1091095     0.28   0.781    -.1836591    .2442443
+dif_advalo~3 |  -4.310623   1.587405    -2.72   0.007    -7.423348   -1.197898
+dif_ln_tco~3 |   -3.44445   .2886979   -11.93   0.000    -4.010555   -2.878345
+   dif_MFA_3 |   .4694766   .1596702     2.94   0.003     .1563809    .7825723
+   dif_TTB_3 |  -.5103473   .3020362    -1.69   0.091    -1.102607    .0819122
+       _cons |   .5715447   .0593938     9.62   0.000       .45508    .6880093
+------------------------------------------------------------------------------
+
+.                         outreg2  test_`x' dif_advalorem_mfn_`x' dif_ln_tcost_
+> `x' dif_MFA_`x' dif_TTB_`x' using `outregfile', nolabel append /*
+>                                 */cttop(pre unconstrained rreg, `year', lag `
+> x') bfmt(fc) coefastr level(95) se br nocons 
+dir : seeout
+
+. 
+. 
+end of do-file
+
+. 
+. do china_price_vs_row_twn_replicate.do
+
+. set more off
+
+. local outregfile tableA9.out
+
+. local replace replace
+
+. 
+. /*** China and Rest of World (ROW) sample test ****/
+. 
+. 
+. use replication_appxdata7,clear
+
+. 
+. *combine with ctry*section                              
+.                                 
+. areg ldif_ln_pindex_hs6_total dif_advalorem_mfn_5 dif_ln_tcost_5 CHINA_fixunc
+> 2000 nonCH_fixunc2000 /*
+>         */  ,ab(ctry_section) vce(cluster hs)
+
+Linear regression, absorbing indicators             Number of obs     =  4,872
+Absorbed variable: ctry_section                     No. of categories =     42
+                                                    F(4, 2435)        =   4.31
+                                                    Prob > F          = 0.0018
+                                                    R-squared         = 0.1050
+                                                    Adj R-squared     = 0.0966
+                                                    Root MSE          = 0.5451
+
+                                 (Std. err. adjusted for 2,436 clusters in hs)
+------------------------------------------------------------------------------
+             |               Robust
+ldif_ln_pi~l | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_advalo~5 |  -.4604894    .991252    -0.46   0.642    -2.404274    1.483295
+dif_ln_tco~5 |  -.5373539   .2588289    -2.08   0.038    -1.044901   -.0298064
+CHINA_f~2000 |  -.2867966   .0834917    -3.44   0.001    -.4505187   -.1230745
+nonCH_f~2000 |    -.07378   .0527248    -1.40   0.162      -.17717    .0296101
+       _cons |   .1131628   .0283554     3.99   0.000     .0575596    .1687661
+------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. outreg2  using `outregfile', nolabel `replace' drop(i.ctry_section) /*
+>                                 */cttop("China & ROW", , ctry*section FE, "cl
+> uster(hs )", "MATCHED", trim025 tails  ) bfmt(fc) coefastr level(95) se br  c
+> ons 
+dir : seeout
+
+. 
+. local replace
+
+. 
+. 
+. 
+. *ctry*section effects*
+. 
+. xtreg ldif_ln_pindex_hs6_total dif_advalorem_mfn_5 dif_ln_tcost_5 CHINA_fixun
+> c2000  i.ctry_section /*
+>         */  ,fe robust
+note: dif_advalorem_mfn_5 omitted because of collinearity
+note: 23.ctry_section omitted because of collinearity
+note: 24.ctry_section omitted because of collinearity
+note: 25.ctry_section omitted because of collinearity
+note: 26.ctry_section omitted because of collinearity
+note: 27.ctry_section omitted because of collinearity
+note: 28.ctry_section omitted because of collinearity
+note: 29.ctry_section omitted because of collinearity
+note: 30.ctry_section omitted because of collinearity
+note: 31.ctry_section omitted because of collinearity
+note: 32.ctry_section omitted because of collinearity
+note: 33.ctry_section omitted because of collinearity
+note: 34.ctry_section omitted because of collinearity
+note: 35.ctry_section omitted because of collinearity
+note: 36.ctry_section omitted because of collinearity
+note: 37.ctry_section omitted because of collinearity
+note: 38.ctry_section omitted because of collinearity
+note: 39.ctry_section omitted because of collinearity
+note: 40.ctry_section omitted because of collinearity
+note: 41.ctry_section omitted because of collinearity
+note: 42.ctry_section omitted because of collinearity
+
+Fixed-effects (within) regression               Number of obs      =      4872
+Group variable: hs                              Number of groups   =      2436
+
+R-sq:  Within  = 0.1471                         Obs per group: min =         2
+       Between = 0.0455                                        avg =       2.0
+       Overall = 0.0941                                        max =         2
+
+                                                F(22,2435)         =         .
+corr(u_i, Xb)  = 0.0044                         Prob > F           =         .
+
+                                 (Std. err. adjusted for 2,436 clusters in hs)
+------------------------------------------------------------------------------
+             |               Robust
+ldif_ln_pi~l | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_advalo~5 |          0  (omitted)
+dif_ln_tco~5 |  -.3989593   .2819759    -1.41   0.157    -.9518967    .1539782
+CHINA_f~2000 |  -.2170915    .094348    -2.30   0.021    -.4021021   -.0320809
+             |
+ctry_section |
+          2  |  -.1934136   .0906686    -2.13   0.033    -.3712091   -.0156181
+          3  |  -.3252356   .4263531    -0.76   0.446    -1.161288    .5108168
+          4  |  -.1750879    .074111    -2.36   0.018     -.320415   -.0297608
+          5  |  -.0915153   .1713581    -0.53   0.593     -.427538    .2445075
+          6  |  -.1211028   .0548214    -2.21   0.027    -.2286042   -.0136015
+          7  |   -.125808   .0828077    -1.52   0.129    -.2881889    .0365728
+          8  |  -.0853885   .1460682    -0.58   0.559    -.3718192    .2010423
+          9  |  -.2838321   .2047335    -1.39   0.166     -.685302    .1176378
+         10  |  -.1623906   .0912192    -1.78   0.075    -.3412658    .0164846
+         11  |  -.3610574   .0680927    -5.30   0.000     -.494583   -.2275318
+         12  |   .0741894   .0910937     0.81   0.415    -.1044397    .2528185
+         13  |   -.008735    .097127    -0.09   0.928    -.1991951    .1817252
+         14  |  -.2714685   .1999082    -1.36   0.175    -.6634762    .1205392
+         15  |  -.1032103   .0634848    -1.63   0.104    -.2277001    .0212794
+         16  |  -.0262339    .064784    -0.40   0.686    -.1532714    .1008036
+         17  |  -.1020419   .1003619    -1.02   0.309    -.2988455    .0947617
+         18  |  -.0420943   .1060426    -0.40   0.691    -.2500373    .1658487
+         19  |  -.2761027   .5052052    -0.55   0.585    -1.266779    .7145737
+         20  |   .1135142   .0980363     1.16   0.247     -.078729    .3057573
+         21  |  -1.906568   .0128127  -148.80   0.000    -1.931693   -1.881443
+         22  |   .3417108   .1190397     2.87   0.004     .1082812    .5751404
+         23  |          0  (omitted)
+         24  |          0  (omitted)
+         25  |          0  (omitted)
+         26  |          0  (omitted)
+         27  |          0  (omitted)
+         28  |          0  (omitted)
+         29  |          0  (omitted)
+         30  |          0  (omitted)
+         31  |          0  (omitted)
+         32  |          0  (omitted)
+         33  |          0  (omitted)
+         34  |          0  (omitted)
+         35  |          0  (omitted)
+         36  |          0  (omitted)
+         37  |          0  (omitted)
+         38  |          0  (omitted)
+         39  |          0  (omitted)
+         40  |          0  (omitted)
+         41  |          0  (omitted)
+         42  |          0  (omitted)
+             |
+       _cons |   .1484039   .0074486    19.92   0.000     .1337977      .16301
+-------------+----------------------------------------------------------------
+     sigma_u |  .40473586
+     sigma_e |  .52055944
+         rho |  .37675635   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. 
+. outreg2  using `outregfile', nolabel `replace'  keep(dif_ln_tcost_5 CHINA_fix
+> unc2000)/*
+>                                 */cttop("China & ROW", hs6 FE, ctry*section F
+> E, "cluster(hs )", "MATCHED",trim025 tails ) bfmt(fc) coefastr level(95) se b
+> r  cons 
+dir : seeout
+
+. 
+.         
+. /*** China & Taiwan Test****/
+. 
+. use replication_appxdata8,clear
+
+. 
+.                         
+. areg ldif_ln_pindex_hs6_total dif_advalorem_mfn_5 dif_ln_tcost_5 CHINA_fixunc
+> 2000 nonCH_fixunc2000 /*
+>         */  ,ab(ctry_section) vce(cluster hs)
+
+Linear regression, absorbing indicators             Number of obs     =  3,356
+Absorbed variable: ctry_section                     No. of categories =     40
+                                                    F(4, 1677)        =   2.30
+                                                    Prob > F          = 0.0571
+                                                    R-squared         = 0.0841
+                                                    Adj R-squared     = 0.0722
+                                                    Root MSE          = 0.6380
+
+                                 (Std. err. adjusted for 1,678 clusters in hs)
+------------------------------------------------------------------------------
+             |               Robust
+ldif~6_total | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_advalo~5 |   .2638352   1.534039     0.17   0.863    -2.744997    3.272667
+dif_ln_tco~5 |  -.2791126   .2367573    -1.18   0.239    -.7434836    .1852584
+CHINA_f~2000 |  -.2008884   .0909401    -2.21   0.027    -.3792565   -.0225203
+nonCH_f~2000 |   .2054366   .1171578     1.75   0.080    -.0243544    .4352276
+       _cons |  -.0376126   .0418678    -0.90   0.369    -.1197312     .044506
+------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. outreg2  using `outregfile', nolabel `replace'  drop(i.ctry_section) /*
+>                                 */cttop("China & Taiwan", , ctry*section FE, 
+> "cluster(hs )", "MATCHED", trim025 tails  ) bfmt(fc) coefastr level(95) se br
+>   cons 
+dir : seeout
+
+. 
+. local replace
+
+. 
+. *ctry*section effects*
+. 
+. xtreg ldif_ln_pindex_hs6_total dif_advalorem_mfn_5 dif_ln_tcost_5 CHINA_fixun
+> c2000  i.ctry_section /*
+>         */  ,fe robust
+note: dif_advalorem_mfn_5 omitted because of collinearity
+note: 22.ctry_section omitted because of collinearity
+note: 23.ctry_section omitted because of collinearity
+note: 24.ctry_section omitted because of collinearity
+note: 25.ctry_section omitted because of collinearity
+note: 26.ctry_section omitted because of collinearity
+note: 27.ctry_section omitted because of collinearity
+note: 28.ctry_section omitted because of collinearity
+note: 29.ctry_section omitted because of collinearity
+note: 30.ctry_section omitted because of collinearity
+note: 31.ctry_section omitted because of collinearity
+note: 32.ctry_section omitted because of collinearity
+note: 33.ctry_section omitted because of collinearity
+note: 34.ctry_section omitted because of collinearity
+note: 35.ctry_section omitted because of collinearity
+note: 36.ctry_section omitted because of collinearity
+note: 37.ctry_section omitted because of collinearity
+note: 38.ctry_section omitted because of collinearity
+note: 39.ctry_section omitted because of collinearity
+note: 40.ctry_section omitted because of collinearity
+
+Fixed-effects (within) regression               Number of obs      =      3356
+Group variable: hs                              Number of groups   =      1678
+
+R-sq:  Within  = 0.0656                         Obs per group: min =         2
+       Between = 0.0176                                        avg =       2.0
+       Overall = 0.0406                                        max =         2
+
+                                                F(21,1677)         =         .
+corr(u_i, Xb)  = -0.0316                        Prob > F           =         .
+
+                                 (Std. err. adjusted for 1,678 clusters in hs)
+------------------------------------------------------------------------------
+             |               Robust
+ldif~6_total | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+dif_advalo~5 |          0  (omitted)
+dif_ln_tco~5 |  -.1382774   .3213598    -0.43   0.667    -.7685859     .492031
+CHINA_f~2000 |  -.4039593   .1494008    -2.70   0.007    -.6969909   -.1109277
+             |
+ctry_section |
+          2  |   .2221034   .1502899     1.48   0.140    -.0726722    .5168789
+          3  |   1.350431   1.232312     1.10   0.273    -1.066601    3.767464
+          4  |   .1454672   .1237456     1.18   0.240    -.0972449    .3881794
+          5  |   .1631877   .6007829     0.27   0.786    -1.015176    1.341551
+          6  |   .0956987   .1107572     0.86   0.388    -.1215383    .3129357
+          7  |  -.0220877   .1111124    -0.20   0.842    -.2400212    .1958459
+          8  |   .5943169   .2192677     2.71   0.007     .1642497    1.024384
+          9  |   .3762956   .3347343     1.12   0.261    -.2802453    1.032837
+         10  |  -.0815824   .1326859    -0.61   0.539    -.3418297    .1786649
+         11  |  -.0918292   .1057813    -0.87   0.385    -.2993065    .1156481
+         12  |   .3522556   .1273854     2.77   0.006     .1024046    .6021067
+         13  |   .0706038   .1512265     0.47   0.641    -.2260088    .3672163
+         14  |  -.1144699    .198757    -0.58   0.565    -.5043079    .2753681
+         15  |    .149876   .1007509     1.49   0.137    -.0477347    .3474867
+         16  |   .0779608   .1006556     0.77   0.439    -.1194631    .2753847
+         17  |   -.195466   .1210353    -1.61   0.107     -.432862    .0419301
+         18  |   .0366833   .1622988     0.23   0.821    -.2816462    .3550128
+         19  |   1.434668   .0981954    14.61   0.000     1.242069    1.627266
+         20  |   .2530394   .1329356     1.90   0.057    -.0076978    .5137767
+         21  |  -.0968525   .1628017    -0.59   0.552    -.4161685    .2224634
+         22  |          0  (omitted)
+         23  |          0  (omitted)
+         24  |          0  (omitted)
+         25  |          0  (omitted)
+         26  |          0  (omitted)
+         27  |          0  (omitted)
+         28  |          0  (omitted)
+         29  |          0  (omitted)
+         30  |          0  (omitted)
+         31  |          0  (omitted)
+         32  |          0  (omitted)
+         33  |          0  (omitted)
+         34  |          0  (omitted)
+         35  |          0  (omitted)
+         36  |          0  (omitted)
+         37  |          0  (omitted)
+         38  |          0  (omitted)
+         39  |          0  (omitted)
+         40  |          0  (omitted)
+             |
+       _cons |   .0463421   .0110717     4.19   0.000     .0246263    .0680578
+-------------+----------------------------------------------------------------
+     sigma_u |  .46545274
+     sigma_e |  .64377083
+         rho |  .34329055   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. 
+. outreg2  using `outregfile', nolabel `replace'  keep(dif_ln_tcost_5 CHINA_fix
+> unc2000)/*
+>                                 */sortvar( CHINA_fixunc2000 nonCH_fixunc2000 
+> dif_advalorem_mfn_5 dif_ln_tcost_5) /*
+>                                 */cttop("China & Taiwan", hs6 FE, ctry*sectio
+> n FE, "cluster(hs )", "MATCHED",trim025 tails ) bfmt(fc) coefastr level(95) s
+> e br  cons 
+dir : seeout
+
+. 
+end of do-file
+
+. 
+. 
+. /*appendix figures*/
+. 
+. 
+. do figureA2_replicate.do
+
+. 
+. set more off
+
+. 
+. 
+. use  replication_maindata1,clear
+
+. 
+. 
+. /*make graph for appendix Figure A4 */
+. twoway (lpolyci ldif_ln_pindex_hs6_cont unc_pre if pindex_sample==1 & trim_02
+> 5tails==1,degree(0)  ) ,/*
+>         title (Change in HS6 continuer price index (ln) 2005-2000) 
+>         */xtitle(1-({&tau}{sub:2V}/{&tau}{sub:1V}){sup:-3}) legend(off)
+
+.         *ylabel(-0.15(.05)0.25)
+.         
+. graph export figureA2.pdf, as(pdf) replace
+file figureA2.pdf saved as PDF format
+
+. 
+. 
+. exit
+
+end of do-file
+
+. 
+. do persist_stat_figure_replicate.do
+
+. 
+. use replication_appxdata9,clear
+
+. 
+. sum
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        hs4n |      1,087    5341.242    2759.589        101       9706
+   hs4_coeff |      1,082    .2879548    .1219994  -.2877698   .8141391
+hs4_coeff_~t |      1,082    4.944257     3.46514  -1.659584    22.2715
+   tstatrank |      1,082       541.5    312.4908          1       1082
+
+. 
+. sum hs4_coeff, det
+
+      HS4 Persistence coeff on lag_trade, hs6+ctry FEs
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         -.04      -.2877698
+ 5%     .0770165      -.1422652
+10%     .1496878      -.1278539       Obs               1,082
+25%      .223714      -.1222707       Sum of wgt.       1,082
+
+50%     .2888173                      Mean           .2879548
+                        Largest       Std. dev.      .1219994
+75%     .3596554        .621217
+90%     .4333194       .6666667       Variance       .0148839
+95%     .4904597        .699932       Skewness      -.2438446
+99%     .5842755       .8141391       Kurtosis       4.428836
+
+. sum hs4_coeff_stat, det
+
+          HS4 Persistence coeff tstat, hs6+ctry FEs
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     -.778548      -1.659584
+ 5%     .6697949      -1.650928
+10%     1.288324      -1.495325       Obs               1,082
+25%     2.548106      -1.244418       Sum of wgt.       1,082
+
+50%     4.229277                      Mean           4.944257
+                        Largest       Std. dev.       3.46514
+75%     6.556563       18.91628
+90%     9.643066       19.61618       Variance       12.00719
+95%     11.72487       21.56809       Skewness       1.197928
+99%     16.04965        22.2715       Kurtosis       5.064319
+
+. 
+. label var hs4_coeff_stat "Persistence coefficient t-stat"
+
+. label var hs4_coeff "Persistence coefficient"
+
+. 
+. twoway (scatter hs4_coeff_stat hs4_coeff, msize(zero) msymbol(none) mlabel(hs
+> 4n) mlabsize(tiny) mlabcolor(navy) mlabgap(zero)), yline(3.09, lwidth(thin)) 
+>       
+
+. graph export "figureA3.pdf", as(pdf) replace
+file figureA3.pdf saved as PDF format
+
+. 
+. 
+end of do-file
+
+. 
+. 
+. 
+. 
+. 
+. 
+end of do-file
+
+. 
+. graph close _all
+
+. 
+end of do-file

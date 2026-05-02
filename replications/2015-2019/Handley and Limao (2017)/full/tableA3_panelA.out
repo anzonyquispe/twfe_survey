@@ -1,0 +1,21 @@
+	(1)	(2)	(3)	(4)	(5)	(6)	(7)	(8)
+	UNCONSTRAINED	UNCONSTRAINED	UNCONSTRAINED	UNCONSTRAINED	UNCONSTRAINED	UNCONSTRAINED	Variable Sigma	Variable Sigma
+								
+	sigma=3	sigma=3	sigma=2	sigma=2	sigma=4	sigma=4	sigma from Broda-Weinstein	sigma from Broda-Weinstein
+		section dummies		section dummies		section dummies		section dummies
+VARIABLES	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5
+								
+unc_pre_sig3	0.743***	0.716***						
+	[0.154]	[0.186]						
+unc_pre_sig2			0.869***	0.838***				
+			[0.189]	[0.226]				
+unc_pre_sig4					0.692***	0.666***		
+					[0.138]	[0.168]		
+unc_pre_bwsig							0.648***	0.595***
+							[0.138]	[0.149]
+								
+Observations	3,211	3,211	3,211	3,211	3,211	3,211	2,733	2,733
+R-squared	0.033	0.053	0.032	0.053	0.033	0.053	0.034	0.055
+Restriction (p-val)	0.204	0.536	0.339	0.717	0.166	0.484	0.149	0.256
+Robust standard errors in brackets								
+*** p<0.01, ** p<0.05, * p<0.1								

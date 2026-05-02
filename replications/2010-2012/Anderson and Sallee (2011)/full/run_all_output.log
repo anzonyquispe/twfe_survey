@@ -1,0 +1,58 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\replications\2010-20
+> 12\Anderson and Sallee (2011)\full\run_all_output.log
+  log type:  text
+ opened on:   2 May 2026, 01:19:04
+
+. 
+. set more off
+
+. 
+. display "============================================="
+=============================================
+
+. display "Anderson and Sallee (2011) — Partial Replication"
+Anderson and Sallee (2011) — Partial Replication
+
+. display "============================================="
+=============================================
+
+. display ""
+
+
+. display "Running cafe_compliance_behavior.do (Tables 1-2, Figures 1-5)..."
+Running cafe_compliance_behavior.do (Tables 1-2, Figures 1-5)...
+
+. 
+. capture noisily do cafe_compliance_behavior.do
+
+. *********************
+. ***** FILE INFO *****
+. *********************
+. * Name: cafe_compliance_behavior
+. * Author: Soren Anderson
+. * Date: May 28, 2010
+. * Description:
+. 
+. 
+. 
+. *************************
+. ***** PRELIMINARIES *****
+. *************************
+. version 12
+
+. clear
+
+. pause off
+
+. set more off
+
+. capture set mem 500m
+
+. cd "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Ande
+> rson and Sallee (2011)/full"
+C:\Users\Usuario\Documents\GitHub\twfe_survey\replications\2010-2012\Anderson a
+> nd Sallee (2011)\full
+
+. capture log close

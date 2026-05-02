@@ -1,0 +1,28 @@
+	(1)	(2)	(3)	(4)
+	NLS	OLS	NLS	OLS
+	2005	2005	2005	2005
+	sigma=	sigma=	sigma=	sigma=
+			sections	sections
+VARIABLES	alpha	dif_ln_imp_5	alpha	dif_ln_imp_5
+				
+unc_pre		0.686***		0.567***
+		[0.150]		[0.185]
+dif_ln_tcost_5		-4.309***		-4.227***
+		[0.844]		[0.847]
+dif_advalorem_mfn_5		-6.464***		-6.340***
+		[1.266]		[1.270]
+Constant	1.598***	0.877***	0.879***	0.312
+	[0.109]	[0.0845]	[0.280]	[0.209]
+				
+Observations	3,043	3,043	3,043	3,043
+R-squared	0.020		0.043	
+Test TC/Tar Restriction	0.335	0.373	0.720	0.818
+Unc Coeff	0.903		0.712	
+Unc SE	0.324		0.345	
+Tariff Coeff	-6.678		-6.446	
+Tariff SE	1.260		1.268	
+TC Coeff	-4.452		-4.298	
+TC SE	0.840		0.845	
+Test unrestrict sigma=3 p-value	0.106		0.984	
+Robust standard errors in brackets				
+*** p<0.01, ** p<0.05, * p<0.1				

@@ -1,0 +1,17 @@
+	(1)	(2)	(3)	(4)	(5)	(6)	(7)	(8)	(9)	(10)
+	UNCONSTRAINED	UNCONSTRAINED	RobustREG	RobustREG	midpoint growth	midpoint growth	UNCONSTRAINED	UNCONSTRAINED	drop hs2=84-85	drop hs2=84-85
+										
+	sigma=3	sigma=3	sigma=3	sigma=3	sigma=3	sigma=3	sigma=3	sigma=3	sigma=3	sigma=3
+		section dummies		section dummies		section dummies		section dummies		section dummies
+VARIABLES	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_imports0_5	dif_imports0_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5	dif_ln_imp_5
+										
+unc_pre	0.743***	0.716***	0.521***	0.510***	0.430***	0.434***			0.787***	0.808***
+	[0.154]	[0.186]	[0.124]	[0.149]	[0.0901]	[0.108]			[0.162]	[0.198]
+unc_pre_ave							0.956***	0.877***		
+							[0.131]	[0.154]		
+										
+Observations	3,211	3,211	3,211	3,211	3,841	3,841	3,565	3,565	2,567	2,567
+R-squared	0.033	0.053	0.041	0.065	0.019	0.039	0.036	0.060	0.034	0.058
+Restriction (p-val)	0.204	0.536	0.00228	0.0208	0.0158	0.200	0.0409	0.0332	0.165	0.517
+Robust standard errors in brackets										
+*** p<0.01, ** p<0.05, * p<0.1										
