@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\usepackage{booktabs,caption,geometry,amsmath,longtable,verbatim}
+\usepackage{booktabs,caption,geometry,amsmath,longtable}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \geometry{margin=0.8in}
@@ -32,7 +32,7 @@ by manufacturer and fleet. Output below is the raw Stata log; final table values
 require additional calculations in Excel as noted by the authors.
 
 \begin{scriptsize}
-\verbatiminput{cafe_compliance_behavior.txt}
+\input{cafe_compliance_behavior_table}
 \end{scriptsize}
 
 %% ====================================================================
@@ -44,7 +44,7 @@ Corner-solution years are zeroed out. Final marginal cost calculations require
 additional computations in Excel.
 
 \begin{scriptsize}
-\verbatiminput{cafe_compliance_costs.txt}
+\input{cafe_compliance_costs_table}
 \end{scriptsize}
 
 \end{document}

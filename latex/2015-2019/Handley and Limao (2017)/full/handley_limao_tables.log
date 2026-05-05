@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.16)  2 MAY 2026 01:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.16)  4 MAY 2026 15:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -174,13 +174,90 @@ Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
 \c@LT@chunks=\count308
 \LT@p@ftn=\toks24
 )
-(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/tools\verbatim.sty
-Package: verbatim 2024-01-22 v1.5x LaTeX2e package for verbatim enhancements
-\every@verbatim=\toks25
-\verbatim@line=\toks26
-\verbatim@in@stream=\read2
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/adjustbox\adjustbox.s
+ty
+Package: adjustbox 2025/02/26 v1.3c Adjusting TeX boxes (trim, clip, ...)
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/xkeyval\xkeyval.sty
+Package: xkeyval 2022/06/16 v2.9 package option processing (HA)
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkeyval.tex
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkvutils.te
+x
+\XKV@toks=\toks25
+\XKV@tempa@toks=\toks26
 )
-(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty
+\XKV@depth=\count309
+File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
+))
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/adjustbox\adjcalc.sty
+Package: adjcalc 2012/05/16 v1.1 Provides advanced setlength with multiple back
+-ends (calc, etex, pgfmath)
+)
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/adjustbox\trimclip.st
+y
+Package: trimclip 2025/02/21 v1.2a Trim and clip general TeX material
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+)
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics
+.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.d
+ef
+File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen188
+\Gin@req@width=\dimen189
+)
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/collectbox\collectbox
+.sty
+Package: collectbox 2022/10/17 v0.4c Collect macro arguments as boxes
+\collectedbox=\box60
+)
+\tc@llx=\dimen190
+\tc@lly=\dimen191
+\tc@urx=\dimen192
+\tc@ury=\dimen193
+Package trimclip Info: Using driver 'tc-pdftex.def'.
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/adjustbox\tc-pdftex.d
+ef
+File: tc-pdftex.def 2025/02/26 v2.3 Clipping driver for pdftex
+))
+\adjbox@Width=\dimen194
+\adjbox@Height=\dimen195
+\adjbox@Depth=\dimen196
+\adjbox@Totalheight=\dimen197
+\adjbox@pwidth=\dimen198
+\adjbox@pheight=\dimen199
+\adjbox@pdepth=\dimen256
+\adjbox@ptotalheight=\dimen257
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/ifoddpage\ifoddpage.s
+ty
+Package: ifoddpage 2022/10/18 v1.2 Conditionals for odd/even page detection
+\c@checkoddpage=\count310
+)
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/varwidth\varwidth.sty
+Package: varwidth 2009/03/30 ver 0.92;  Variable-width minipages
+\@vwid@box=\box61
+\sift@deathcycles=\count311
+\@vwid@loff=\dimen258
+\@vwid@roff=\dimen259
+)
+==> First Aid for varwidth.sty applied!
+) (C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty
 Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
 )
 (C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/lm\lmodern.sty
@@ -227,7 +304,7 @@ File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 (C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-p
 dftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count309
+\l__color_backend_stack_int=\count312
 ) (handley_limao_tables.aux)
 \openout1 = `handley_limao_tables.aux'.
 
@@ -287,365 +364,228 @@ Package caption Info: End \AtBeginDocument code.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-(handley_limao_tables.toc)
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.
+mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count313
+\scratchdimen=\dimen260
+\scratchbox=\box62
+\nofMPsegments=\count314
+\nofMParguments=\count315
+\everyMPshowfont=\toks27
+\MPscratchCnt=\count316
+\MPscratchDim=\dimen261
+\MPnumerator=\count317
+\makeMPintoPDFobject=\count318
+\everyMPtoPDFconversion=\toks28
+)
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf
+-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys
+.cfg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+)) (handley_limao_tables.toc)
 \tf@toc=\write3
 \openout3 = `handley_limao_tables.toc'.
 
  [1
 
 {C:/Users/Usuario/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Us
-uario/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}]
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 3
-0.
+uario/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}] (table1_tabl
+e.tex
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
+.
 
-(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmtt.fd
-File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-File: "table1.csv"  (verbatim)
-
-Overfull \hbox (24.47217pt too wide) in paragraph at lines 30--30
-[]\T1/lmtt/m/n/10.95 "t-stat for high vs low differences for imports (-3.05), p
-rices (2.45), and varieties (-3)"[] 
- []
-
-[2
-
-]
-File: "table2.out"  (verbatim)
- [3
-
-] [4]
-File: "table3_panelA.out"  (verbatim)
-
-Overfull \hbox (30.2209pt too wide) in paragraph at lines 53--53
-[] \T1/lmtt/m/n/10.95 unconstrained unconstrained unconstrained unconstrained s
-unk_hs4_coeff_stat_t unconstrained[] 
- []
-
-
-Overfull \hbox (191.18544pt too wide) in paragraph at lines 53--53
-[] \T1/lmtt/m/n/10.95 sunk_hs4_coeff_stat_t sunk_hs4_coeff_stat_t sunk_hs4_coef
-f_stat_t sunk_hs4_coeff_stat_t tercile 1 sunk_hs4_coeff_stat_t[] 
- []
-
-File: "table3_panelB.out"  (verbatim)
-
-Overfull \hbox (76.21077pt too wide) in paragraph at lines 59--59
-[] \T1/lmtt/m/n/10.95 unconstrained unconstrained unconstrained unconstrained s
-unk_hs4_coeff_stat_t sunk_hs4_coeff_stat_t[] 
- []
-
-
-Overfull \hbox (127.94937pt too wide) in paragraph at lines 59--59
-[] \T1/lmtt/m/n/10.95 sunk_hs4_coeff_stat_t sunk_hs4_coeff_stat_t sunk_hs4_coef
-f_stat_t sunk_hs4_coeff_stat_t tercile 1 tercile~ 1[] 
- []
-
-[5
-
-] [6]
-File: "table4.out"  (verbatim)
-
-Overfull \hbox (513.11452pt too wide) in paragraph at lines 70--70
-[] \T1/lmtt/m/n/10.95 ldif_ln_pindex_hs6_total ldif_ln_pindex_hs6_total HS4 ldi
-f_ln_pindex_hs4_total HS4 ldif_ln_pindex_hs4_total dif_ln_num_prod_ dif_ln_num_
-prod_ dif_ln_num_prod_ dif_ln_num_prod_[] 
- []
-
-
-Overfull \hbox (306.16011pt too wide) in paragraph at lines 70--70
-[] \T1/lmtt/m/n/10.95 PRICE trim 0.025 tails PRICE trim 0.025 tails   PRICE tri
-m 0.025 tails PRICE trim 0.025 tails PRICE trim 0.025 tails PRICE trim 0.025 ta
-ils[] 
- []
-
-
-Overfull \hbox (541.85818pt too wide) in paragraph at lines 70--70
-[]\T1/lmtt/m/n/10.95 VARIABLES ldif_ln_pindex_hs6_total ldif_ln_pindex_hs6_tota
-l ldif_ln_pindex_hs4_total ldif_ln_pindex_hs4_total dif_ln_num_prod_5 dif_ln_nu
-m_prod_5 dif_ln_num_prod_5 dif_ln_num_prod_5[] 
- []
-
-
-Overfull \hbox (1.47723pt too wide) in paragraph at lines 70--70
-[]\T1/lmtt/m/n/10.95 dif_advalorem_mfn_5 5.137*** 0.560 9.839** 6.829 -5.170***
- -4.066*** -3.196*** -2.792**[] 
- []
-
-[7
-
-]
-File: "table5.out"  (verbatim)
-
-Overfull \hbox (30.2209pt too wide) in paragraph at lines 80--80
-[] \T1/lmtt/m/n/10.95 PRICE trim 0.025 tails PRICE trim 0.025 tails PRICE trim 
-0.025 tails PRICE trim 0.025 tails[] 
- []
-
-
-Overfull \hbox (47.4671pt too wide) in paragraph at lines 80--80
-[]\T1/lmtt/m/n/10.95 VARIABLES ldif_ln_pindex_hs6_total ldif_ln_pindex_hs6_tota
-l dif_ln_num_prod_5 dif_ln_num_prod_5[] 
- []
-
-[8
-
-]
-LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 8
-8.
- (C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
+(C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 8
-8.
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
+.
 
 (C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/lm\omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-88.
+1.
 
 (C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/lm\omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-88.
+1.
 
 (C:\Users\Usuario\AppData\Local\Programs\MiKTeX\tex/latex/lm\omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 88.
+(Font)              <12> on input line 1.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 88.
+(Font)              <8> on input line 1.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 88.
-File: "table6.out"  (verbatim)
+(Font)              <6> on input line 1.
+)
+[2
+
+] (table2_table.tex)
+Overfull \hbox (88.00443pt too wide) in paragraph at lines 1--40
+[][]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1--40
+
+ []
+
+[3
+
+]
+Overfull \vbox (196.49136pt too high) has occurred while \output is active []
+
+
+[4] (table3_panelA_table.tex)
+Overfull \hbox (2.60724pt too wide) in paragraph at lines 1--49
+[]  
+ []
+
+(table3_panelB_table.tex)
+Overfull \hbox (2.60724pt too wide) in paragraph at lines 1--53
+[]  
+ []
+
+[5
+
+] (table4_table.tex)
+Overfull \hbox (2.59605pt too wide) in paragraph at lines 1--62
+[]  
+ []
+
+[6
+
+] (table5_table.tex)
+Overfull \hbox (225.79855pt too wide) in paragraph at lines 1--70
+[][]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1--70
+
+ []
+
+[7
+
+] (table6_table.tex) [8
+
+{C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.en
+c}] (tableA1_table.tex
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 2.
+)
+Overfull \hbox (385.0182pt too wide) in paragraph at lines 2--87
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2--87
+
+ []
 
 [9
 
-{C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.en
-c}]
-File: "tableA1.csv"  (verbatim)
-
-Overfull \hbox (472.87338pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 section,imp_share_05,unc_pre,dif_ln_imp_5,unc_pre_p50,dif_
-ln_imp_5_p50,unc_pre_sd,dif_ln_imp_5_sd,unc_pre_min,dif_ln_imp_5_min,unc_pre_ma
-x,dif_ln_imp_5_max,nobs,nobs_imp 
+{C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}] 
+(tableA2_table.tex)
+Overfull \hbox (209.20895pt too wide) in paragraph at lines 1--93
+[]
  []
 
 
-Overfull \hbox (104.95444pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Animals,.25893027,.14549288,.43220428,0,.67863894,.1842250
-5,1.4225007,0,-3.151166,.49168342,3.0079594,48,[] 
- []
+Underfull \hbox (badness 10000) in paragraph at lines 1--93
 
-
-Overfull \hbox (173.93924pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Vegetables,.17974892,.22561006,.80677599,.19564298,.715238
-57,.22173385,1.3412864,0,-2.2767277,.59707731,5.2048464,81,[] 
- []
-
-
-Overfull \hbox (185.4367pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Fats & Oils,.0040051364,.24814197,.54730213,.29399729,.580
-49107,.17517594,1.2073612,0,-1.2964878,.47581002,2.5358372,9,[] 
- []
-
-
-Overfull \hbox (219.92911pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Prepared Foodstuffs,.43672252,.3665925,1.3890015,.36768737
-,1.1136408,.15073517,1.6252773,0,-2.2092037,.65364563,7.2190609,68,[] 
- []
-
-
-Overfull \hbox (104.95444pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Minerals,.30033648,.19629779,.91429132,0,.76107121,.263275
-59,1.9339755,0,-3.95893,.73477203,4.6591473,50,[] 
- []
-
-
-Overfull \hbox (173.93924pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Chemicals,1.7253431,.41470987,1.1734594,.43398026,1.025730
-1,.19022553,1.6278025,0,-4.3524914,.87895751,6.6706486,417,[] 
- []
-
-
-Overfull \hbox (283.16518pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Plastics, Rubber & Articles",3.7837334,.5153504,1.7267351
-,.52007878,1.5126462,.18336402,1.7682194,0,-3.4994392,.81426495,7.3841887,148,[
-] 
- []
-
-
-Overfull \hbox (277.41644pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Hides, Leather, & Articles",2.4846342,.45648924,.88179862
-,.48799998,.65625572,.21549079,1.3500364,0,-1.0466871,.77070159,5.7268991,43,[]
- 
- []
-
-
-Overfull \hbox (254.42151pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Wood, Straw & Articles",.89272326,.45651802,1.9480611,.53
-568304,1.3929501,.20343247,1.6595546,0,-.71888638,.80989063,6.5163012,42,[] 
- []
-
-
-Overfull \hbox (254.42151pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Pulp, Paper & Articles",1.1664677,.43761134,1.2570851,.52
-408582,1.0869455,.19682701,1.6307951,0,-3.0925093,.63922608,6.5971498,78,[] 
- []
-
-
-Overfull \hbox (231.42657pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Textiles & Articles,9.7300682,.64179009,1.4987869,.7047628
-2,1.2402277,.17355794,1.8708857,0,-3.3343105,.85795808,8.9107494,610,[] 
- []
-
-
-Overfull \hbox (311.90884pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Footwear, Headgear, other",6.5822496,.54335952,.59754819,
-.54432166,.45639038,.14570469,.75823081,.22974531,-1.5231409,.8233918,2.4957294
-,53,[] 
- []
-
-
-Overfull \hbox (288.91391pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Stone, Plaster, Cement, other",1.6398208,.60459459,1.3661
-611,.6355685,1.2400875,.13766477,1.6122426,0,-3.6566496,.8256523,7.9737644,123,
-[] 
- []
-
-
-Overfull \hbox (346.40125pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Precious stones, Metals, Jewellery,...",.94409931,.481101
-24,.94318873,.50117624,.86092281,.30645907,1.4509581,0,-2.4094954,.86397666,4.6
-598616,28,[] 
- []
-
-
-Overfull \hbox (237.17531pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Base Metals & Articles,5.7170753,.5086813,1.3753266,.55909
-592,1.2643385,.17662336,1.8334174,0,-7.5855179,.84253597,9.973753,373,[] 
- []
-
-
-Overfull \hbox (369.39618pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Machinery; Electrical Equipment; Electronics,42.706264,.55
-925035,1.3302459,.59355795,1.1555901,.11329881,1.5517437,0,-4.360014,.82853222,
-6.8642979,644,[] 
- []
-
-
-Overfull \hbox (254.42151pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Vehicles, Aircraft, Vessels",2.1117487,.41654128,1.544538
-1,.448632,1.600811,.1766552,1.8552471,0,-4.2613106,.7037037,7.0986834,81,[] 
- []
-
-
-Overfull \hbox (334.90378pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 "Optical, Medical & other instruments",2.0953503,.613222,.
-93971324,.61638188,.84645605,.098958045,1.6016158,0,-5.1987534,.85627902,7.7967
-148,182,[] 
- []
-
-
-Overfull \hbox (219.92911pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Arms and Ammunition,.032147195,.59457582,1.6209651,.672061
-56,1.5438695,.2436659,1.5935605,0,-1.1521578,.75956911,4.4252481,8,[] 
- []
-
-
-Overfull \hbox (300.41138pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Miscellaneous Manufactures,17.090717,.6529839,.85757846,.6
-489538,.72504807,.10790579,.96789098,.24796832,-1.7496538,.8669771,4.9864817,11
-8,[] 
- []
-
-
-Overfull \hbox (18.72343pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Art and Antiques,.11781123,0,.76516831,0,.7342701,0,.50846
-601,0,-.021612167,0,1.4698038,7,[] 
- []
-
-
-Overfull \hbox (150.9443pt too wide) in paragraph at lines 101--101
-[]\T1/lmtt/m/n/10.95 Total,12.551961,.51994807,1.2829558,.57058048,1.0979214,.2
-0262127,1.6752075,0,-7.5855179,.87895751,9.973753,,3211[] 
  []
 
 [10
 
 ]
-File: "tableA2.out"  (verbatim)
- [11
+Overfull \vbox (891.734pt too high) has occurred while \output is active []
 
-] [12] [13]
-File: "tableA3_panelA.out"  (verbatim)
 
-Overfull \hbox (156.69304pt too wide) in paragraph at lines 117--117
-[] \T1/lmtt/m/n/10.95 UNCONSTRAINED UNCONSTRAINED UNCONSTRAINED UNCONSTRAINED U
-NCONSTRAINED UNCONSTRAINED Variable Sigma Variable Sigma[] 
+[11] (tableA3_panelA_table.tex)
+Overfull \hbox (2.60316pt too wide) in paragraph at lines 1--99
+[]  
+ []
+
+(tableA3_panelB_table.tex)
+Overfull \hbox (2.6054pt too wide) in paragraph at lines 1--103
+[]  
+ []
+
+[12
+
+] (tableA4_table.tex)
+Overfull \hbox (45.59554pt too wide) in paragraph at lines 1--109
+[]
  []
 
 
-Overfull \hbox (87.70824pt too wide) in paragraph at lines 117--117
-[] \T1/lmtt/m/n/10.95 sigma=3 sigma=3 sigma=2 sigma=2 sigma=4 sigma=4 sigma fro
-m Broda-Weinstein sigma from Broda-Weinstein[] 
+Underfull \hbox (badness 10000) in paragraph at lines 1--109
+
+ []
+
+[13
+
+] (tableA5_table.tex)
+Overfull \hbox (57.11714pt too wide) in paragraph at lines 1--115
+[]
  []
 
 
-Overfull \hbox (150.9443pt too wide) in paragraph at lines 117--117
-[]\T1/lmtt/m/n/10.95 VARIABLES dif_ln_imp_5 dif_ln_imp_5 dif_ln_imp_5 dif_ln_im
-p_5 dif_ln_imp_5 dif_ln_imp_5 dif_ln_imp_5 dif_ln_imp_5[] 
- []
+Underfull \hbox (badness 10000) in paragraph at lines 1--115
 
-File: "tableA3_panelB.out"  (verbatim)
-
-Overfull \hbox (294.66264pt too wide) in paragraph at lines 123--123
-[] \T1/lmtt/m/n/10.95 UNCONSTRAINED UNCONSTRAINED RobustREG RobustREG midpoint 
-growth midpoint growth UNCONSTRAINED UNCONSTRAINED drop hs2=84-85 drop hs2=84-8
-5[] 
- []
-
-
-Overfull \hbox (323.40631pt too wide) in paragraph at lines 123--123
-[]\T1/lmtt/m/n/10.95 VARIABLES dif_ln_imp_5 dif_ln_imp_5 dif_ln_imp_5 dif_ln_im
-p_5 dif_imports0_5 dif_imports0_5 dif_ln_imp_5 dif_ln_imp_5 dif_ln_imp_5 dif_ln
-_imp_5[] 
  []
 
 [14
 
-]
-File: "tableA4.out"  (verbatim)
- [15
-
-]
-File: "tableA5.out"  (verbatim)
- [16
-
-]
-File: "tableA6.out"  (verbatim)
- [17
-
-]
-File: "tableA7.out"  (verbatim)
- [18
-
-]
-File: "tableA8.out"  (verbatim)
- [19
-
-]
-File: "tableA9.out"  (verbatim)
-
-Overfull \hbox (127.94937pt too wide) in paragraph at lines 171--171
-[]\T1/lmtt/m/n/10.95 VARIABLES ldif_ln_pindex_hs6_total ldif_ln_pindex_hs6_tota
-l ldif_ln_pindex_hs6_total ldif_ln_pindex_hs6_total[] 
+] (tableA6_table.tex)
+Overfull \hbox (4.8027pt too wide) in paragraph at lines 1--121
+[]
  []
 
-[20
+
+Underfull \hbox (badness 10000) in paragraph at lines 1--121
+
+ []
+
+[15
+
+] (tableA7_table.tex)
+Overfull \hbox (96.21112pt too wide) in paragraph at lines 1--127
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1--127
+
+ []
+
+[16
+
+] (tableA8_table.tex) [17
+
+] (tableA9_table.tex)
+Overfull \hbox (228.00546pt too wide) in paragraph at lines 1--139
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1--139
+
+ []
+
+[18
 
 ] (handley_limao_tables.aux)
  ***********
@@ -654,22 +594,23 @@ L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 3886 strings out of 467871
- 66326 string characters out of 5417408
- 472226 words of memory out of 5000000
- 32728 multiletter control sequences out of 15000+600000
- 665386 words of font info for 61 fonts, out of 8000000 for 9000
+ 5781 strings out of 467871
+ 100544 string characters out of 5417408
+ 538683 words of memory out of 5000000
+ 34529 multiletter control sequences out of 15000+600000
+ 671640 words of font info for 64 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,5n,65p,260b,384s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 86i,8n,93p,299b,264s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.
 pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi1
 2.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr
-12.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
-ri12.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/
-lmtt10.pfb>
-Output written on handley_limao_tables.pdf (20 pages, 141119 bytes).
+10.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
+r12.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
+mr8.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
+mri12.pfb>
+Output written on handley_limao_tables.pdf (18 pages, 181255 bytes).
 PDF statistics:
- 94 PDF objects out of 1000 (max. 8388607)
+ 96 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

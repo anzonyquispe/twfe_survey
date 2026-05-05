@@ -1,0 +1,28 @@
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcccccc}
+\toprule
+ & (1) & (2) & (3) & (4) & (5) & (6) \\
+ &  &  &  &  & unconstrained & unconstrained \\
+ & unconstrained & unconstrained & unconstrained & unconstrained & sunk\_hs4\_coeff\_stat\_t & sunk\_hs4\_coeff\_stat\_t \\
+ & sunk\_hs4\_coeff\_stat\_t & sunk\_hs4\_coeff\_stat\_t & sunk\_hs4\_coeff\_stat\_t & sunk\_hs4\_coeff\_stat\_t & tercile 1 & tercile~ 1 \\
+ & tercile 1 & tercile~ 1 & tercile 1 & tercile~ 1 & POOL & POOL \\
+ & CHINA & CHINA & EU & EU & hs6 fe/cluster & hs6 fe/cluster \\
+VARIABLES & section fe & section fe & section fe & section fe & ctry*section FE & ctry*section FE \\
+\midrule
+unc\_pre & 0.0363 & 0.816*** & 0.492 & -0.336 &  &  \\
+ & [0.313] & [0.263] & [0.302] & [0.241] &  &  \\
+dif\_advalorem\_mfn\_5 & -2.659 & -7.703 & 5.845 & -12.43*** & -1.150 & -9.563** \\
+ & [11.49] & [5.805] & [6.075] & [3.166] & [5.881] & [3.876] \\
+USA\_unc\_pre &  &  &  &  & -0.444 & 1.144*** \\
+ &  &  &  &  & [0.409] & [0.315] \\
+Constant & 0.454** & 0.373 & 0.360 & 0.797 & 1.432*** & 0.703*** \\
+ & [0.227] & [0.326] & [0.311] & [0.530] & [0.196] & [0.174] \\
+\midrule
+Observations & 975 & 1,945 & 975 & 1,945 & 1,950 & 3,890 \\
+R-squared & 0.047 & 0.037 & 0.066 & 0.050 & 0.032 & 0.035 \\
+Number of hs6 &  &  &  &  & 975 & 1,945 \\
+\bottomrule
+\multicolumn{7}{l}{\footnotesize Robust standard errors in brackets} \\
+\multicolumn{7}{l}{\footnotesize *** p<0.01, ** p<0.05, * p<0.1} \\
+\end{tabular}
+\end{adjustbox}

@@ -1,0 +1,665 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\data\2010-2012\Aaron
+> son et al. (2012)\Supplemental-Files-for-AAF\unix_files\cps_match.log
+  log type:  text
+ opened on:   4 May 2026, 16:30:02
+
+. 
+.  clear
+
+.  use ogr_uhhid-minwage_79.dta
+
+. 
+.  
+. *  Drop all boarders/roomers housemate/roommate since we assume they don't  c
+> ontribute to the head's and head's relatives' finances
+.  drop if relhd>14
+(86,822 observations deleted)
+
+. 
+. **** Generate Count of Kids and Adults ****
+. gen child=. 
+(10,871,375 missing values generated)
+
+. gen adult=. 
+(10,871,375 missing values generated)
+
+.  replace child=1 if age<18 
+(2,709,958 real changes made)
+
+.  replace adult=1 if age>=18 
+(8,161,417 real changes made)
+
+. 
+. bysort _hhid month state hhnum year: egen kids=count(child)
+
+. bysort _hhid month state hhnum year: egen adults=count(adult)
+
+. drop child adult
+
+. 
+. 
+. *********
+. * Wages *
+. *********
+. 
+. replace ernhr = ernhr/100 if ernhr~=-1
+variable ernhr was int now float
+(2,762,018 real changes made)
+
+. gen wage = ernhr if ernhr~=-1
+(8,108,474 missing values generated)
+
+. 
+. gen hours = .
+(10,871,375 missing values generated)
+
+. replace hours = hoursu1 if year>=1994 & hoursu1>=0  //Usual weekly hours at m
+> ain job
+(2,202,300 real changes made)
+
+. replace hours = hours1 if year>=1994 & hoursu1==-4 & hours1>=0 // Hours last 
+> week at main job if usual hours vary
+(191,436 real changes made)
+
+. replace hours = ernush if year<1994 & ernush>=0 // Usual hours worked per wee
+> k
+(2,480,762 real changes made)
+
+. 
+. drop ernhr hoursu1 hours1 ernush 
+
+. 
+. gen qtrincome = wage*hours*13 //Weekly Wage * 13 since 13 weeks per quarter
+(8,113,160 missing values generated)
+
+. label var qtrincome "Hourly Wage x Usual Hours Per Week x 13"
+
+. 
+. ********************
+. * Household Income *
+. ********************
+. 
+. bysort _hhid month state hhnum year : egen hincqtr = total(qtrincome)
+
+. 
+. gen finc = .
+(10,871,375 missing values generated)
+
+.  replace finc = 2500   if (year>=1994 & faminc==1) | (year<1994 & faminc==0)
+(270,625 real changes made)
+
+.  replace finc = 6250   if (year>=1994 & faminc==2) | (year<1994 & faminc==1)
+(221,555 real changes made)
+
+.  replace finc = 8750   if (year>=1994 & faminc==3) | (year<1994 & faminc==2)
+(207,896 real changes made)
+
+.  replace finc = 11250  if (year>=1994 & faminc==4) | (year<1994 & faminc==3)
+(268,092 real changes made)
+
+.  replace finc = 13750  if (year>=1994 & faminc==5) | (year<1994 & faminc==4)
+(255,999 real changes made)
+
+.  replace finc = 16250  if (year<1994 & faminc==5 )
+(167,884 real changes made)
+
+.  replace finc = 18750  if (year<1994 & faminc==6 )
+(188,286 real changes made)
+
+.  replace finc = 17500  if (year>=1994 & faminc==6)
+(239,501 real changes made)
+
+.  replace finc = 22500  if (faminc==7)
+(470,706 real changes made)
+
+.  replace finc = 27500  if (faminc==8)
+(470,392 real changes made)
+
+.  replace finc = 32500  if (faminc==9)
+(448,097 real changes made)
+
+.  replace finc = 37500  if (faminc==10)
+(481,683 real changes made)
+
+.  replace finc = 45000  if (faminc==11)
+(588,634 real changes made)
+
+.  replace finc = 62500  if (year<1994 & faminc==12)
+(121,088 real changes made)
+
+.  replace finc = 55000  if (year>=1994 & faminc==12)
+(414,721 real changes made)
+
+.  replace finc = 67500  if (year>=1994 & faminc==13)
+(435,744 real changes made)
+
+.  replace finc = 75000  if (year<1994 & faminc==13) | (year>=1994 & year<=2002
+>  & faminc==14) | (year==2003 & month<10 & faminc==14)
+(717,419 real changes made)
+
+.  replace finc = 87500  if (year==2003 & month>=10 & faminc==14) | (year>=2004
+>  & faminc==14)
+(178,597 real changes made)
+
+.  replace finc = 125000 if (year==2003 & month>=10 & faminc==15) | (year>=2004
+>  & faminc==15)
+(144,492 real changes made)
+
+.  replace finc = 150000 if (year==2003 & month>=10 & faminc==16) | (year>=2004
+>  & faminc==16)
+(92,373 real changes made)
+
+. 
+. gen fincqtr = finc/4
+(4,487,591 missing values generated)
+
+. 
+. gen f1 = max(hincqtr, fincqtr)
+
+. bysort _hhid month state hhnum year : egen F1 = max(f1)
+
+. label var F1 "Maximum Household/Family Income across all Household Members"
+
+. gen diff = F1-hincqtr
+
+. 
+. count if diff
+  4,977,866
+
+. count if diff==0
+  5,893,509
+
+. count if diff~=0 & diff~=.
+  4,977,866
+
+. summ diff if diff~=0, detail
+
+                            diff
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%        130.3       .1796875
+ 5%          625       .3000488
+10%          954       .3000488       Obs           4,977,866
+25%       2812.5       .3000488       Sum of wgt.   4,977,866
+
+50%         6875                      Mean           8746.563
+                        Largest       Std. dev.      7680.679
+75%        13750          37500
+90%        18750          37500       Variance       5.90e+07
+95%        21875          37500       Skewness       1.334546
+99%        37500          37500       Kurtosis       4.936572
+
+. summ hincqtr, detail
+
+                           hincqtr
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs          10,871,375
+25%            0              0       Sum of wgt.    10871375
+
+50%         1144                      Mean           3629.214
+                        Largest       Std. dev.      5218.688
+75%       5782.4       158764.7
+90%        10400       158764.7       Variance       2.72e+07
+95%        13923       187181.3       Skewness       2.315603
+99%      22224.8       187181.3       Kurtosis       13.12684
+
+. summ F1, detail
+
+         Maximum Household/Family Income across all
+                      Household Members
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs          10,871,375
+25%       1562.5              0       Sum of wgt.    10871375
+
+50%         5625                      Mean           7634.155
+                        Largest       Std. dev.      7575.423
+75%        11250       158764.7
+90%        18750       158764.7       Variance       5.74e+07
+95%      19806.8       187181.3       Skewness       1.379681
+99%      32822.4       187181.3       Kurtosis        5.69681
+
+. 
+. drop diff faminc finc fincqtr f1
+
+. 
+. count //ogr_next1_79 count
+  10,871,375
+
+. save ogr_next1_79, replace
+(file ogr_next1_79.dta not found)
+file ogr_next1_79.dta saved
+
+. 
+. 
+. use ogr_next1_79
+
+. *****************************************************************************
+> *
+. * Identify Household Head and Highest Earner Who is Over 18 and Not the Head 
+> *
+. *****************************************************************************
+> *
+. 
+. ***************************
+. * Identify Household Head *
+. ***************************
+. gen householdhead = 1 if relhd==1 | relhd==2
+(6,523,566 missing values generated)
+
+. by _hhid month state hhnum year: egen ties=count(householdhead)
+
+. tab ties
+
+       ties |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     33,337        0.31        0.31
+          1 | 10,837,991       99.69      100.00
+          2 |         47        0.00      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. drop ties
+
+. 
+. by _hhid month state hhnum year: egen minlineno_hh = min(lineno) if household
+> head==1
+(6,523,566 missing values generated)
+
+. gen ishh = 1 if householdhead==1 & lineno==minlineno_hh
+(6,523,580 missing values generated)
+
+. by _hhid month state hhnum year: egen ties=count(ishh) 
+
+. tab ties
+
+       ties |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     33,337        0.31        0.31
+          1 | 10,838,038       99.69      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. drop ties
+
+. 
+. ***********************
+. * Identify "Person 2" *
+. ***********************
+. 
+. *Combine husband and wife codes in to one spouse code to be consistent across
+>  years
+. replace relhd = 3 if year>=1989 & year<=1993 & relhd==4
+(433,216 real changes made)
+
+. 
+. gen nonhead18orover = .
+(10,871,375 missing values generated)
+
+. replace nonhead18orover = 1 if relhd~=1 & relhd~=2 & age>=18
+(3,818,102 real changes made)
+
+. 
+. *Max Wage of Non-Household Head Over 18
+. by _hhid month state hhnum year : egen nonheadmaxwage = max(wage) if nonhead1
+> 8orover==1
+(9,169,136 missing values generated)
+
+. gen nonheadhasmaxwage = 1 if float(wage)==float(nonheadmaxwage) & nonhead18or
+> over==1
+(7,621,891 missing values generated)
+
+. by _hhid month state hhnum year : egen multiples = count(nonheadhasmaxwage)
+
+. 
+. *Break Ties by Choosing Person with minimum Relationship to Head Code
+. by _hhid month state hhnum year : egen minrelhd = min(relhd) if float(wage)==
+> float(nonheadmaxwage) & nonhead18orover==1
+(7,621,891 missing values generated)
+
+. gen hasminrelhd = 1 if relhd==minrelhd & nonhead18orover==1
+(7,869,712 missing values generated)
+
+. 
+. 
+. 
+. *Count Number of People Who Have Minimum Relationship Code
+. by _hhid month state hhnum year: egen ties1=count(hasminrelhd) // This is a l
+> ittle different - Old code used count of people with max wage and who are ove
+> r 18 -> works out the same
+
+. tab ties1 // Still a lot of ties
+
+      ties1 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |  1,831,240       16.84       16.84
+          1 |  8,883,225       81.71       98.56
+          2 |    131,368        1.21       99.77
+          3 |     19,640        0.18       99.95
+          4 |      4,121        0.04       99.98
+          5 |      1,130        0.01       99.99
+          6 |        357        0.00      100.00
+          7 |        118        0.00      100.00
+          8 |         37        0.00      100.00
+          9 |         10        0.00      100.00
+         10 |         21        0.00      100.00
+         11 |         63        0.00      100.00
+         13 |         13        0.00      100.00
+         15 |         15        0.00      100.00
+         17 |         17        0.00      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. 
+. *Minimum Line Number of 18+ Group with Maximum Wage
+. by _hhid month state hhnum year: egen minlineno_p2 = min(lineno) if float(wag
+> e)==float(nonheadmaxwage) & nonhead18orover==1
+(7,621,891 missing values generated)
+
+. gen hasminlineno_p2 = 1 if lineno==minlineno_p2
+(7,914,594 missing values generated)
+
+. by _hhid month state hhnum year: egen ties2=count(hasminlineno_p2)
+
+. tab ties2
+
+      ties2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |  1,831,240       16.84       16.84
+          1 |  9,040,135       83.16      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. 
+. *People who are 18+, Have Maximum Wage and Have a Wage Value for the 2nd year
+. sort _hhid month state hhnum lineno mis
+
+. gen fwage = wage[_n+1] if mis==4 & mis[_n+1]==8 & _hhid[_n+1]==_hhid & month[
+> _n+1]==month & state[_n+1]==state & hhnum[_n+1]==hhnum & lineno[_n+1]==lineno
+>  & year+1==year[_n+1]
+(10,466,704 missing values generated)
+
+. gen choose_p2 = 1 if float(wage)==float(nonheadmaxwage) & nonhead18orover==1 
+> & fwage~=.
+(10,705,880 missing values generated)
+
+. sort _hhid month state hhnum year
+
+. by _hhid month state hhnum year: egen ties3 = count(choose_p2)
+
+. tab ties3, missing
+
+      ties3 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 | 10,315,010       94.88       94.88
+          1 |    546,000        5.02       99.90
+          2 |      9,518        0.09       99.99
+          3 |        780        0.01      100.00
+          4 |         59        0.00      100.00
+          6 |          8        0.00      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. 
+. 
+. * Break Ties among people with wage in both periods, max wage in first period
+. by _hhid month state hhnum year: egen minlineno_p2_b = min(lineno) if choose_
+> p2==1
+(10,705,880 missing values generated)
+
+. gen _temp = 1 if choose_p2==1 & lineno==minlineno_p2_b
+(10,708,210 missing values generated)
+
+. by _hhid month state hhnum year: egen ties4 = count(_temp)
+
+. tab ties4
+
+      ties4 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 | 10,315,010       94.88       94.88
+          1 |    556,365        5.12      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. drop _temp ties4
+
+. 
+. 
+. gen person = .
+(10,871,375 missing values generated)
+
+. replace person = 1 if ishh==1 //Household Head Equals Household Head with min
+> imum Line Number
+(4,347,795 real changes made)
+
+. 
+. replace person = 2 if ties1==1 & hasminrelhd==1 // Person 2 Case 1 - Unique P
+> erson with Max Wage and Minimum Relhd
+(2,918,131 real changes made)
+
+. replace person = 2 if ties1>1 & ties1<. & ties3==1 & choose_p2==1 // Person 2
+>  Case 2 - Unique Person with Max Wage and Non-Missing Wage in Both Periods
+(2,230 real changes made)
+
+. replace person = 2 if ties1>1 & ties1<. & ties3>1 & ties3<. & lineno==minline
+> no_p2_b // Person 2 Case 3 - Person with Max Wage, Non-Missing Wage in Both P
+> eriods, Minimum Line Number of this group
+(696 real changes made)
+
+. replace person = 2 if ties1>1 & ties1<. & ties3==0 & lineno==minlineno_p2 // 
+> Person 2 Case 4 - All Person 2 Candidates Missing Wage in 2nd Period, Take Mi
+> nimum Line Number
+(35,724 real changes made)
+
+. // Fixed error in case 4 - had ties3==. instead of 0, stata won't allow ties3
+>  to be .
+. 
+. //Other version of person for replication purpopses
+. gen _person = .
+(10,871,375 missing values generated)
+
+. replace _person = 1 if ishh==1
+(4,347,795 real changes made)
+
+. replace _person = 2 if multiples==1 & hasminrelhd==1
+(2,718,901 real changes made)
+
+. replace _person = 2 if multiples>1 & multiples<. & ties3==1 & choose_p2==1
+(13,429 real changes made)
+
+. replace _person = 2 if multiples>1 & multiples<. & ties3>1 & ties3<. & lineno
+> ==minlineno_p2_b
+(2,176 real changes made)
+
+. replace _person = 2 if multiples>1 & multiples<. & ties3==. & lineno==minline
+> no_p2
+(0 real changes made)
+
+. 
+. tab person _person, missing
+
+           |             _person
+    person |         1          2          . |     Total
+-----------+---------------------------------+----------
+         1 | 4,347,795          0          0 | 4,347,795 
+         2 |         0  2,725,720    231,061 | 2,956,781 
+         . |         0      8,786  3,558,013 | 3,566,799 
+-----------+---------------------------------+----------
+     Total | 4,347,795  2,734,506  3,789,074 |10,871,375 
+
+. drop _person
+
+. 
+. gen head = 0
+
+. replace head = 1 if person==1
+(4,347,795 real changes made)
+
+. 
+. //Confirm one last time that only one "person 1" and one "person 2" in each h
+> ousehold
+. gen person1 = 1 if person==1
+(6,523,580 missing values generated)
+
+. gen person2 = 1 if person==2
+(7,914,594 missing values generated)
+
+. by _hhid month state hhnum year: egen nperson1 = count(person1)
+
+. by _hhid month state hhnum year: egen nperson2 = count(person2)
+
+. gen npersons = nperson1+nperson2
+
+. 
+. tab nperson1
+
+   nperson1 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     33,337        0.31        0.31
+          1 | 10,838,038       99.69      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. tab nperson2
+
+   nperson2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |  1,831,240       16.84       16.84
+          1 |  9,040,135       83.16      100.00
+------------+-----------------------------------
+      Total | 10,871,375      100.00
+
+. tab npersons mis, missing
+
+           |    Month in sample
+  npersons |         4          8 |     Total
+-----------+----------------------+----------
+         0 |        54         56 |       110 
+         1 |   926,505    937,852 | 1,864,357 
+         2 | 4,484,721  4,522,187 | 9,006,908 
+-----------+----------------------+----------
+     Total | 5,411,280  5,460,095 |10,871,375 
+
+. 
+. drop person1 nperson1 person2 nperson2
+
+. drop nonhead18orover nonheadmaxwage minrelhd hasminrelhd ties* minlineno_p2 h
+> asminlineno_p2 minlineno_p2_b choose_p2
+
+. 
+. count
+  10,871,375
+
+. save ogr_next2_79, replace
+(file ogr_next2_79.dta not found)
+file ogr_next2_79.dta saved
+
+. 
+. drop if mis==4 & person==.
+(1,775,639 observations deleted)
+
+. 
+. ************
+. * Matching *
+. ************
+. sort _hhid month state hhnum lineno year 
+
+. foreach var of varlist _hhid month state hhnum lineno female nonwhite person 
+> npersons {
+  2.  gen l`var' = `var'[_n-1]
+  3. }
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(2,662 missing values generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1,791,160 missing values generated)
+(1 missing value generated)
+
+. 
+. gen dhead = head-head[_n-1]
+(1 missing value generated)
+
+. gen dyear = year-year[_n-1]
+(1 missing value generated)
+
+. gen dage = age-age[_n-1]
+(1 missing value generated)
+
+. gen dmis = mis-mis[_n-1]
+(1 missing value generated)
+
+. 
+. gen match = .
+(9,095,736 missing values generated)
+
+.  replace match = 1 if _hhid==l_hhid & month==lmonth & state==lstate & hhnum==
+> lhhnum & lineno==llineno ///
+>                       & female==lfemale & nonwhite==lnonwhite & dmis==4 & dye
+> ar==1 & (dage==0 | dage==1) ///
+>                                           & npersons==lnpersons & (lperson==1
+>  | lperson==2) & (dhead==0 | (lperson==2 & head==1))
+(2,446,196 real changes made)
+
+.                                           
+. tab year match if mis==8, missing
+
+   Year of |         match
+CPS Survey |         1          . |     Total
+-----------+----------------------+----------
+      1979 |         0    170,639 |   170,639 
+      1980 |    96,835    103,472 |   200,307 
+      1981 |   108,808     80,564 |   189,372 
+      1982 |   105,904    126,423 |   232,327 
+      1983 |   105,016    107,606 |   212,622 
+      1984 |   102,955    127,286 |   230,241 
+      1985 |    50,259     64,855 |   115,114 
+      1986 |    25,024     30,571 |    55,595 
+      1987 |    99,033    122,649 |   221,682 
+      1988 |    95,645    114,685 |   210,330 
+      1989 |    91,197    120,115 |   211,312 
+      1990 |    98,900    126,425 |   225,325 
+      1991 |   102,696    123,184 |   225,880 
+      1992 |   101,100    120,171 |   221,271 
+      1993 |   100,598    116,597 |   217,195 
+      1994 |    95,655    116,511 |   212,166 
+      1995 |    37,233     48,140 |    85,373 
+      1996 |    29,094     31,449 |    60,543 
+      1997 |    88,932     92,253 |   181,185 
+      1998 |    88,850     91,053 |   179,903 
+      1999 |    89,528     91,109 |   180,637 
+      2000 |    90,603     94,363 |   184,966 
+      2001 |    88,815    106,483 |   195,298 
+      2002 |    90,002    120,320 |   210,322 
+      2003 |    99,928    110,862 |   210,790 
+      2004 |    81,534    127,157 |   208,691 
+      2005 |    89,128    117,632 |   206,760 
+      2006 |    97,177    106,127 |   203,304 
+      2007 |    95,747    105,198 |   200,945 
+-----------+----------------------+----------
+     Total | 2,446,196  3,013,899 | 5,460,095 
+
+. count if match==. & mis==8
+  3,013,899
+
+. 
+. save temp_matched.dta, replace
+(file temp_matched.dta not found)
+file temp_matched.dta saved
+
+. log close
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\data\2010-2012\Aaron
+> son et al. (2012)\Supplemental-Files-for-AAF\unix_files\cps_match.log
+  log type:  text
+ closed on:   4 May 2026, 16:36:07
+-------------------------------------------------------------------------------

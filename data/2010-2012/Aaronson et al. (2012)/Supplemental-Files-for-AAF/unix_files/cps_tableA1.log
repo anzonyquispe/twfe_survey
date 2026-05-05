@@ -1,0 +1,48 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\data\2010-2012\Aaron
+> son et al. (2012)\Supplemental-Files-for-AAF\unix_files\cps_tableA1.log
+  log type:  text
+ opened on:   4 May 2026, 16:42:00
+
+. 
+. ************
+. * Table A1 *
+. ************
+. 
+. *Make income annual (current quarterly)
+. replace tot_inc = tot_inc*4
+(809,439 real changes made)
+
+. 
+. su tot_inc firstsharemw agehead adults kids if firstsharemw==0 [w=hhwgt]
+(analytic weights assumed)
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     tot_inc | 688,354  1.2550e+09    38332.13   22470.59          0     722470
+firstsharemw | 688,354  1.2550e+09           0          0          0          0
+     agehead | 688,354  1.2550e+09    42.09653   10.92422         18         64
+      adults | 688,354  1.2550e+09    2.145247   .8556902          1         11
+        kids | 688,354  1.2550e+09    .8860517   1.114157          0         13
+
+. su tot_inc firstsharemw agehead adults kids if firstsharemw>=0.2 & firstshare
+> mw<. [w=hhwgt]
+(analytic weights assumed)
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     tot_inc |  93,836   164033534    21434.64   15086.09          0   366809.6
+firstsharemw |  93,836   164033534    .6523131   .3218538         .2          1
+     agehead |  93,836   164033534    41.19396   12.20445         18         64
+      adults |  93,836   164033534    2.221919   .9179729          1         10
+        kids |  93,836   164033534    .9326808   1.184889          0         12
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\data\2010-2012\Aaron
+> son et al. (2012)\Supplemental-Files-for-AAF\unix_files\cps_tableA1.log
+  log type:  text
+ closed on:   4 May 2026, 16:42:01
+-------------------------------------------------------------------------------

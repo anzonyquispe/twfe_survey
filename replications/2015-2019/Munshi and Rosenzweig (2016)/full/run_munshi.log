@@ -1,0 +1,321 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Munshi and Rosenzweig (2016)/full/run_munshi.log
+  log type:  text
+ opened on:   4 May 2026, 16:37:12
+
+. 
+. * ===========================================================================
+> ==
+. * TABLE 6 -- Migration and Income
+. * ===========================================================================
+> ==
+. di _n "===== TABLE 6 ====="
+
+===== TABLE 6 =====
+
+. 
+. use "$datadir/table6", clear
+
+. 
+. * Column 1: bootstrap reg
+. di _n "--- Table 6, Column 1 ---"
+
+--- Table 6, Column 1 ---
+
+. bootstrap, rep(200) seed(12345): reg mig pminc jpminc if total>=30 & cvsq<100
+>  & icrisat==1,  cluster(castecode)
+(running regress on estimation sample)
+
+Bootstrap replications (200)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+..................................................   150
+..................................................   200
+
+Linear regression                                       Number of obs = 19,362
+                                                        Replications  =    200
+                                                        Wald chi2(2)  =   9.92
+                                                        Prob > chi2   = 0.0070
+                                                        R-squared     = 0.0010
+                                                        Adj R-squared = 0.0008
+                                                        Root MSE      = 0.1724
+
+                             (Replications based on 148 clusters in castecode)
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+        mig1 | coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       pminc |   .0058604    .002627     2.23   0.026     .0007116    .0110092
+      jpminc |  -.0160525   .0052384    -3.06   0.002    -.0263195   -.0057855
+       _cons |   .0328153   .0065476     5.01   0.000     .0199823    .0456483
+------------------------------------------------------------------------------
+
+. 
+. * Column 2: bootstrap reg with cvsq
+. di _n "--- Table 6, Column 2 ---"
+
+--- Table 6, Column 2 ---
+
+. bootstrap, rep(200) seed(12345): reg mig pminc jpminc cvsq if total>=30 & cvs
+> q<100 & icrisat==1,  cluster(castecode)
+(running regress on estimation sample)
+
+Bootstrap replications (200)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+..................................................   150
+..................................................   200
+
+Linear regression                                       Number of obs = 19,362
+                                                        Replications  =    200
+                                                        Wald chi2(3)  =  11.49
+                                                        Prob > chi2   = 0.0094
+                                                        R-squared     = 0.0023
+                                                        Adj R-squared = 0.0021
+                                                        Root MSE      = 0.1723
+
+                             (Replications based on 148 clusters in castecode)
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+        mig1 | coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       pminc |   .0050551   .0028375     1.78   0.075    -.0005063    .0106165
+      jpminc |  -.0183035   .0057694    -3.17   0.002    -.0296112   -.0069957
+        cvsq |  -.0003757   .0001487    -2.53   0.012     -.000667   -.0000843
+       _cons |   .0381763   .0077797     4.91   0.000     .0229284    .0534242
+------------------------------------------------------------------------------
+
+. 
+. * Column 3: areg with village FE
+. di _n "--- Table 6, Column 3 ---"
+
+--- Table 6, Column 3 ---
+
+. bootstrap, rep(200) seed(12345): areg mig pminc jpminc cvsq vjpminc  if total
+> >=30 & cvsq<100 & icrisat==1, a(village) cluster(castecode)
+(running areg on estimation sample)
+
+Bootstrap replications (200)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+..................................................   150
+..................................................   200
+
+Linear regression, absorbing indicators             Number of obs     = 19,362
+Absorbed variable: village                          No. of categories =     60
+                                                    Replications      =    200
+                                                    Wald chi2(4)      =  20.87
+                                                    Prob > chi2       = 0.0003
+                                                    R-squared         = 0.0735
+                                                    Adj R-squared     = 0.0704
+                                                    Root MSE          = 0.1663
+
+                             (Replications based on 148 clusters in castecode)
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+        mig1 | coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       pminc |   .0020715   .0039916     0.52   0.604    -.0057519    .0098949
+      jpminc |   -.017156   .0137166    -1.25   0.211      -.04404    .0097281
+        cvsq |   -.000525   .0001222    -4.30   0.000    -.0007645   -.0002855
+     vjpminc |   .0087726   .0265678     0.33   0.741    -.0432993    .0608446
+       _cons |   .0385152    .009522     4.04   0.000     .0198525    .0571779
+------------------------------------------------------------------------------
+
+. 
+. * Columns 4-6: two-way clustering (village, castecode) using reghdfe
+. * Original uses cgmreg which hangs; reghdfe provides equivalent two-way clust
+> ering
+. di _n "--- Table 6, Column 4 (reghdfe) ---"
+
+--- Table 6, Column 4 (reghdfe) ---
+
+. reghdfe mig pminc jpminc cvsq vpminc if total>=30 & cvsq<100 & icrisat==1, no
+> absorb vce(cluster village castecode)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     19,362
+Absorbing 1 HDFE group                            F(   4,     59) =       5.22
+Statistics robust to heteroskedasticity           Prob > F        =     0.0011
+                                                  R-squared       =     0.0023
+                                                  Adj R-squared   =     0.0021
+Number of clusters (village) =         60         Within R-sq.    =     0.0023
+Number of clusters (castecode) =        148       Root MSE        =     0.1723
+
+                     (Std. err. adjusted for 60 clusters in village castecode)
+------------------------------------------------------------------------------
+             |               Robust
+        mig1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       pminc |     .00262   .0032854     0.80   0.428    -.0039541     .009194
+      jpminc |  -.0224189   .0075517    -2.97   0.004    -.0375298   -.0073079
+        cvsq |  -.0003733   .0001562    -2.39   0.020    -.0006859   -.0000608
+      vpminc |   .0065214   .0111249     0.59   0.560    -.0157395    .0287823
+       _cons |   .0381209   .0097699     3.90   0.000     .0185714    .0576703
+------------------------------------------------------------------------------
+
+. 
+. di _n "--- Table 6, Column 5 (reghdfe) ---"
+
+--- Table 6, Column 5 (reghdfe) ---
+
+. reghdfe mig pminc jpminc cvsq vpminc second bank hlthctr bus towndist if tota
+> l>=30 & cvsq<100 & icrisat==1, noabsorb vce(cluster village castecode)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     19,362
+Absorbing 1 HDFE group                            F(   9,     59) =       2.25
+Statistics robust to heteroskedasticity           Prob > F        =     0.0310
+                                                  R-squared       =     0.0136
+                                                  Adj R-squared   =     0.0132
+Number of clusters (village) =         60         Within R-sq.    =     0.0136
+Number of clusters (castecode) =        148       Root MSE        =     0.1713
+
+                     (Std. err. adjusted for 60 clusters in village castecode)
+------------------------------------------------------------------------------
+             |               Robust
+        mig1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       pminc |   .0024919   .0032659     0.76   0.448    -.0040431     .009027
+      jpminc |  -.0240353   .0106779    -2.25   0.028    -.0454018   -.0026688
+        cvsq |  -.0005292   .0001664    -3.18   0.002    -.0008621   -.0001963
+      vpminc |   .0064489   .0134244     0.48   0.633    -.0204133    .0333111
+      second |  -.0238633   .0172965    -1.38   0.173    -.0584735    .0107468
+        bank |  -.0465692   .0175184    -2.66   0.010    -.0816234    -.011515
+     hlthctr |  -.0168372   .0122411    -1.38   0.174    -.0413317    .0076573
+         bus |   .0119624   .0147159     0.81   0.420    -.0174841    .0414089
+    towndist |   .0002988   .0009916     0.30   0.764    -.0016852    .0022829
+       _cons |   .0834294    .024374     3.42   0.001      .034657    .1322017
+------------------------------------------------------------------------------
+
+. testparm second bank hlthctr bus towndist
+
+ ( 1)  second = 0
+ ( 2)  bank = 0
+ ( 3)  hlthctr = 0
+ ( 4)  bus = 0
+ ( 5)  towndist = 0
+
+       F(  5,    59) =    1.99
+            Prob > F =    0.0926
+
+. 
+. di _n "--- Table 6, Column 6 (reghdfe) ---"
+
+--- Table 6, Column 6 (reghdfe) ---
+
+. reghdfe mig pminc jpminc cvsq vjpminc second bank hlthctr bus towndist if tot
+> al>=30 & cvsq<100 & icrisat==1, noabsorb vce(cluster village castecode)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     19,362
+Absorbing 1 HDFE group                            F(   9,     59) =       2.39
+Statistics robust to heteroskedasticity           Prob > F        =     0.0220
+                                                  R-squared       =     0.0136
+                                                  Adj R-squared   =     0.0132
+Number of clusters (village) =         60         Within R-sq.    =     0.0136
+Number of clusters (castecode) =        148       Root MSE        =     0.1713
+
+                     (Std. err. adjusted for 60 clusters in village castecode)
+------------------------------------------------------------------------------
+             |               Robust
+        mig1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       pminc |   .0020743   .0030179     0.69   0.495    -.0039645    .0081132
+      jpminc |  -.0245311   .0106474    -2.30   0.025    -.0458366   -.0032256
+        cvsq |  -.0005292   .0001665    -3.18   0.002    -.0008623   -.0001961
+     vjpminc |   .0073183   .0125858     0.58   0.563    -.0178658    .0325024
+      second |  -.0238591   .0172999    -1.38   0.173     -.058476    .0107579
+        bank |  -.0465766   .0175131    -2.66   0.010    -.0816203   -.0115329
+     hlthctr |  -.0168359   .0122365    -1.38   0.174    -.0413211    .0076493
+         bus |   .0119515   .0147198     0.81   0.420    -.0175028    .0414058
+    towndist |   .0002973   .0009922     0.30   0.765    -.0016881    .0022828
+       _cons |    .083466   .0243819     3.42   0.001     .0346779    .1322542
+------------------------------------------------------------------------------
+
+. testparm second bank hlthctr bus towndist
+
+ ( 1)  second = 0
+ ( 2)  bank = 0
+ ( 3)  hlthctr = 0
+ ( 4)  bus = 0
+ ( 5)  towndist = 0
+
+       F(  5,    59) =    2.00
+            Prob > F =    0.0925
+
+. 
+. di _n "===== TABLE 6 DONE ====="
+
+===== TABLE 6 DONE =====
+
+. 
+. 
+. * ===========================================================================
+> ==
+. * TABLE 8A -- Wild Bootstrap Tests
+. * ===========================================================================
+> ==
+. di _n "===== TABLE 8A ====="
+
+===== TABLE 8A =====
+
+. 
+. #delimit ;
+delimiter now ;
+. use "$datadir/table8a.dta", clear ;
+
+. di _n "--- Table 8a, Row 1 ---" ;
+
+--- Table 8a, Row 1 ---
+
+. cap noi cgmwildboot dpout10     pdinc10 pjdincx10 mark3d jmark3d  share71 jsh
+> are71,   cluster(state) bootcluster(state) seed(999);
+command cgmwildboot is unrecognized
+
+. di _n "--- Table 8a, Row 2 ---" ;
+
+--- Table 8a, Row 2 ---
+
+. cap noi cgmwildboot dpout10     pdinc10 pjdincx10 mark3d jmark3d  share71 jsh
+> are71,   cluster(state) bootcluster(state) seed(999) null(0 0 . . . .);
+command cgmwildboot is unrecognized
+
+. di _n "--- Table 8a, Row 3 ---" ;
+
+--- Table 8a, Row 3 ---
+
+. cap noi cgmwildboot dpoutvb5     pdinc5 pjdincx5 mark3d jmark3d  share71 jsha
+> re71,   cluster(state) bootcluster(state) seed(999);
+command cgmwildboot is unrecognized
+
+. di _n "--- Table 8a, Row 4 ---" ;
+
+--- Table 8a, Row 4 ---
+
+. cap noi cgmwildboot dpoutvb5     pdinc5 pjdincx5 mark3d jmark3d  share71 jsha
+> re71,   cluster(state) bootcluster(state) seed(999) null(0 0 . . . .);
+command cgmwildboot is unrecognized
+
+. #delimit cr
+delimiter now cr
+. 
+. * NOTE: table8b.dta not available, so last 2 rows of Table 8a are skipped
+. 
+. di _n "===== TABLE 8A DONE ====="
+
+===== TABLE 8A DONE =====
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Munshi and Rosenzweig (2016)/full/run_munshi.log
+  log type:  text
+ closed on:   4 May 2026, 16:38:53
+-------------------------------------------------------------------------------

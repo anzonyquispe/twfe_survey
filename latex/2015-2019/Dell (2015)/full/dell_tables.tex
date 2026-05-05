@@ -1,0 +1,59 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,longtable,adjustbox}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Dell (2015)}\\
+{\large Trafficking Networks and the Mexican Drug War}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 105(6), 1738--1779}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Partial replication.
+Drug trade-related homicide data (\texttt{drughom}) and border organization data
+are confidential (redacted). Tables 2--5 Panel A, Tables 4--5, and Tables 6--7
+require this confidential data. Successfully replicated: Table 1 (covariate balance),
+Table 2 Panel B (overall homicides), and Table 3 Panel B (overall homicides, election cycles).
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 1 -- Covariate Balance}
+
+Summary statistics and covariate balance tests for municipalities with close PAN
+elections (within 5\% margin). Columns show means for PAN wins vs.\ losses,
+t-statistics, local linear regression coefficients, and neighbor municipality effects.
+
+\input{table1_table}
+
+%% ====================================================================
+\clearpage
+\section{Table 2, Panel B -- Overall Homicides (2007--2008 Elections)}
+
+RD regressions of overall (not drug-related) homicide outcomes on PAN victory.
+Columns (1)--(6): homicide indicator; columns (7)--(12): homicide rate per 100,000.
+Quadratic and linear RD polynomials across post-inauguration, lame duck, and
+pre-election periods.
+
+\begin{adjustbox}{max width=\textwidth}
+\input{t2_panelb}
+\end{adjustbox}
+
+%% ====================================================================
+\clearpage
+\section{Table 3, Panel B -- Overall Homicides (2007--2010 Elections)}
+
+Same specification as Table 2 Panel B but using the expanded sample
+of municipalities with elections in 2007--2010.
+
+\begin{adjustbox}{max width=\textwidth}
+\input{t3_panelb}
+\end{adjustbox}
+
+\end{document}

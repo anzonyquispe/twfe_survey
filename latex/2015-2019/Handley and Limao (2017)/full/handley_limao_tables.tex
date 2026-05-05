@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\usepackage{booktabs,caption,geometry,amsmath,longtable,verbatim}
+\usepackage{booktabs,caption,geometry,amsmath,longtable,adjustbox}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \geometry{margin=0.8in}
@@ -26,9 +26,7 @@
 
 Summary statistics for key variables, split by low/high trade policy uncertainty.
 
-\begin{small}
-\verbatiminput{table1.csv}
-\end{small}
+\input{table1_table}
 
 %% ====================================================================
 \clearpage
@@ -38,9 +36,7 @@ OLS regressions of changes in log imports (2005--2000) on uncertainty, tariff ch
 and transport cost changes. Columns (1)--(2) without section dummies; (3)--(4) with section dummies.
 Constrained specification restricts the uncertainty coefficient to match the NLS estimate.
 
-\begin{small}
-\verbatiminput{table2.out}
-\end{small}
+\input{table2_table}
 
 %% ====================================================================
 \clearpage
@@ -49,15 +45,11 @@ Constrained specification restricts the uncertainty coefficient to match the NLS
 Import growth regressions split by terciles of sunk cost measures.
 Panel A reports results for China and Taiwan separately, plus pooled specifications.
 
-\begin{small}
-\verbatiminput{table3_panelA.out}
-\end{small}
+\input{table3_panelA_table}
 
 \subsection*{Table 3 -- Panel B}
 
-\begin{small}
-\verbatiminput{table3_panelB.out}
-\end{small}
+\input{table3_panelB_table}
 
 %% ====================================================================
 \clearpage
@@ -66,9 +58,7 @@ Panel A reports results for China and Taiwan separately, plus pooled specificati
 Decomposition of import growth into price index changes and variety growth.
 Columns (1)--(4) for prices, (5)--(8) for number of products.
 
-\begin{small}
-\verbatiminput{table4.out}
-\end{small}
+\input{table4_table}
 
 %% ====================================================================
 \clearpage
@@ -76,9 +66,7 @@ Columns (1)--(4) for prices, (5)--(8) for number of products.
 
 Price and variety regressions interacted with high/low sunk cost indicator.
 
-\begin{small}
-\verbatiminput{table5.out}
-\end{small}
+\input{table5_table}
 
 %% ====================================================================
 \clearpage
@@ -87,9 +75,7 @@ Price and variety regressions interacted with high/low sunk cost indicator.
 Nonlinear least squares estimation of the structural model with the uncertainty
 parameter $\alpha$ (sunk cost elasticity of trade). Compared with OLS reduced form.
 
-\begin{small}
-\verbatiminput{table6.out}
-\end{small}
+\input{table6_table}
 
 %% ====================================================================
 %% APPENDIX TABLES
@@ -97,78 +83,58 @@ parameter $\alpha$ (sunk cost elasticity of trade). Compared with OLS reduced fo
 \clearpage
 \section{Appendix Table A1 -- Detailed Summary Statistics}
 
-\begin{small}
-\verbatiminput{tableA1.csv}
-\end{small}
+\input{tableA1_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A2}
 
-\begin{small}
-\verbatiminput{tableA2.out}
-\end{small}
+\input{tableA2_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A3 -- Panel A}
 
-\begin{small}
-\verbatiminput{tableA3_panelA.out}
-\end{small}
+\input{tableA3_panelA_table}
 
 \subsection*{Appendix Table A3 -- Panel B}
 
-\begin{small}
-\verbatiminput{tableA3_panelB.out}
-\end{small}
+\input{tableA3_panelB_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A4}
 
-\begin{small}
-\verbatiminput{tableA4.out}
-\end{small}
+\input{tableA4_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A5}
 
-\begin{small}
-\verbatiminput{tableA5.out}
-\end{small}
+\input{tableA5_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A6}
 
-\begin{small}
-\verbatiminput{tableA6.out}
-\end{small}
+\input{tableA6_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A7}
 
-\begin{small}
-\verbatiminput{tableA7.out}
-\end{small}
+\input{tableA7_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A8}
 
-\begin{small}
-\verbatiminput{tableA8.out}
-\end{small}
+\input{tableA8_table}
 
 %% ====================================================================
 \clearpage
 \section{Appendix Table A9}
 
-\begin{small}
-\verbatiminput{tableA9.out}
-\end{small}
+\input{tableA9_table}
 
 \end{document}

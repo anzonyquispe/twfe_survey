@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\usepackage{booktabs,caption,geometry,amsmath,longtable,verbatim}
+\usepackage{booktabs,caption,geometry,amsmath,longtable,adjustbox}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \geometry{margin=0.8in}
@@ -32,9 +32,7 @@ Key regressors include log capital (\texttt{lcap}), log employment (\texttt{lemp
 US and other multinational dummies, log PCs per employee and interactions,
 trust (\texttt{ldegree\_t}), and people skills (\texttt{peeps}).
 
-\begin{small}
-\verbatiminput{Table6.csv}
-\end{small}
+\input{Table6_table}
 
 %% ====================================================================
 \clearpage
@@ -43,9 +41,7 @@ trust (\texttt{ldegree\_t}), and people skills (\texttt{peeps}).
 Robustness checks replacing the aggregate people skills variable with specific
 management practice sub-indices: operations, monitoring, targets, and overall management.
 
-\begin{small}
-\verbatiminput{tablec2.csv}
-\end{small}
+\input{tablec2_table}
 
 %% ====================================================================
 \clearpage
@@ -54,9 +50,7 @@ management practice sub-indices: operations, monitoring, targets, and overall ma
 Probit/OLS regressions testing whether observable firm characteristics predict
 interview completion. Dependent variable: indicator for completing the survey interview.
 
-\begin{small}
-\verbatiminput{TableA5.csv}
-\end{small}
+\input{TableA5_table}
 
 %% ====================================================================
 \clearpage
@@ -65,8 +59,6 @@ interview completion. Dependent variable: indicator for completing the survey in
 Regressions testing whether observable characteristics predict successful matching
 to accounting data among interviewed firms.
 
-\begin{small}
-\verbatiminput{TableA6.csv}
-\end{small}
+\input{TableA6_table}
 
 \end{document}

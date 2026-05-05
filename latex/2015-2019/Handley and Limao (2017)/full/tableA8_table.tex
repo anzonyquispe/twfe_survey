@@ -1,0 +1,49 @@
+\begin{tabular}{lcc}
+\toprule
+ & (1) & (2) \\
+ & UNCONSTRAINED & UNCONSTRAINED \\
+ & sigma=3 & sigma=3 \\
+ & section*yr FE & section*yr FE \\
+ & hs FE & hs FE \\
+ & cluster(hs6 yr*section) & cluster(hs yr*section ) \\
+ & fixed@2000 unc & pre vs post \\
+VARIABLES & ln\_imp & ln\_imp \\
+\midrule
+advalorem\_mfn & -5.563*** & -8.223*** \\
+ & [1.941] & [2.024] \\
+ln\_tcost & -2.468*** & -2.471*** \\
+ & [0.226] & [0.226] \\
+\_IyeaXfix\_1996 & -0.230 &  \\
+ & [0.263] &  \\
+\_IyeaXfix\_1997 & 0.0295 &  \\
+ & [0.227] &  \\
+\_IyeaXfix\_1998 & -0.143 &  \\
+ & [0.197] &  \\
+\_IyeaXfix\_1999 & 0.0776 &  \\
+ & [0.196] &  \\
+\_IyeaXfix\_2001 & 0.245 &  \\
+ & [0.207] &  \\
+\_IyeaXfix\_2002 & 0.476** &  \\
+ & [0.203] &  \\
+\_IyeaXfix\_2003 & 0.681** &  \\
+ & [0.318] &  \\
+\_IyeaXfix\_2004 & 0.742*** &  \\
+ & [0.223] &  \\
+\_IyeaXfix\_2005 & 0.866*** &  \\
+ & [0.260] &  \\
+\_IyeaXfix\_2006 & 0.812*** &  \\
+ & [0.306] &  \\
+pre\_X\_unc &  & -2.179** \\
+ &  & [0.957] \\
+post\_X\_unc &  & -1.491 \\
+ &  & [0.953] \\
+Constant & 14.28*** & 15.51*** \\
+ & [0.115] & [0.527] \\
+\midrule
+Observations & 37,002 & 37,002 \\
+R-squared & 0.874 & 0.874 \\
+Restriction (p-val) & 0.348 & 0.0287 \\
+\bottomrule
+\multicolumn{3}{l}{\footnotesize Robust standard errors in brackets} \\
+\multicolumn{3}{l}{\footnotesize *** p<0.01, ** p<0.05, * p<0.1} \\
+\end{tabular}

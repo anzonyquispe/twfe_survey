@@ -1,0 +1,492 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\data\2010-2012\Aaron
+> son et al. (2012)\Supplemental-Files-for-AAF\unix_files\id-prepare_79.log
+  log type:  text
+ opened on:   4 May 2026, 16:26:59
+
+. 
+. use ogr_select.dta
+
+. 
+. ********* DATA RESTRICTIONS **********
+. keep if year>=1979 & year<=2007
+(1,371,223 observations deleted)
+
+. 
+. ***********************************************
+. * Variable Fixes that Are No Longer Necessary *
+. ***********************************************
+. replace hhid = trim(hhid)
+(0 real changes made)
+
+. replace stname=trim(stname)
+(0 real changes made)
+
+. 
+. *********************************************
+. * Drop Periods Where Matching is Impossible *
+. *********************************************
+. drop if mis==4 & year==1984 & month>=7 & month<=12 
+(121,239 observations deleted)
+
+. drop if mis==8 & year==1985 & month>=7 & month<=12
+(123,553 observations deleted)
+
+. drop if mis==4 & year==1985 & month>=1 & month<=9
+(184,922 observations deleted)
+
+. drop if mis==8 & year==1986 & month>=1 & month<=9
+(183,628 observations deleted)
+
+. drop if mis==4 & year==1994 & month>=6 & month<=12
+(132,828 observations deleted)
+
+. drop if mis==8 & year==1995 & month>=6 & month<=12
+(130,993 observations deleted)
+
+. drop if mis==4 & year==1995 & month>=1 & month<=8
+(154,058 observations deleted)
+
+. drop if mis==8 & year==1996 & month>=1 & month<=8
+(132,943 observations deleted)
+
+. 
+. *Drop if data aren't usable
+. drop if  age==-1 & relhd==-1 & lineno==-1
+(538,463 observations deleted)
+
+. drop if  age==. & relhd==. & lineno==.
+(449,084 observations deleted)
+
+. count if age==. | age==-1 | relhd==-1 | relhd==. |lineno==-1|lineno==.
+  7,356
+
+. 
+. drop if length(hhid)<8
+(3,748 observations deleted)
+
+. 
+. 
+. ********* Generate State FIPS Variable **************
+. 
+. *fix a bug with Maine and New Hampshire 
+. replace stname = substr(stname, 1, 5) if substr(stname, 1, 5)=="Maine" 
+(0 real changes made)
+
+. replace stname = substr(stname, 1, 13) if substr(stname, 1, 13)=="New Hampshi
+> re" 
+(0 real changes made)
+
+. 
+. gen state = "" 
+(10,977,377 missing values generated)
+
+.  replace state="01"  if stname=="Alabama" 
+variable state was str1 now str2
+(152,082 real changes made)
+
+.  replace state="02"  if stname=="Alaska" 
+(153,289 real changes made)
+
+.  replace state="04"  if stname=="Arizona" 
+(141,109 real changes made)
+
+.  replace state="05"  if stname=="Arkansas" 
+(140,044 real changes made)
+
+.  replace state="06"  if stname=="California" 
+(864,340 real changes made)
+
+.  replace state="08"  if stname=="Colorado" 
+(165,887 real changes made)
+
+.  replace state="09"  if stname=="Connecticut" 
+(139,805 real changes made)
+
+.  replace state="10"  if stname=="Delaware" 
+(117,758 real changes made)
+
+.  replace state="11" if stname=="Washington, D.C." 
+(101,106 real changes made)
+
+.  replace state="12" if stname=="Florida" 
+(457,674 real changes made)
+
+.  replace state="13" if stname=="Georgia" 
+(171,517 real changes made)
+
+.  replace state="15" if stname=="Hawaii" 
+(122,225 real changes made)
+
+.  replace state="16" if stname=="Idaho" 
+(145,519 real changes made)
+
+.  replace state="17" if stname=="Illinois" 
+(425,589 real changes made)
+
+.  replace state="18" if stname=="Indiana" 
+(171,089 real changes made)
+
+.  replace state="19" if stname=="Iowa" 
+(163,562 real changes made)
+
+.  replace state="20" if stname=="Kansas" 
+(148,076 real changes made)
+
+.  replace state="21" if stname=="Kentucky" 
+(146,798 real changes made)
+
+.  replace state="22" if stname=="Louisiana" 
+(133,814 real changes made)
+
+.  replace state="23" if stname=="Maine" 
+(139,886 real changes made)
+
+.  replace state="24" if stname=="Maryland" 
+(156,496 real changes made)
+
+.  replace state="25" if stname=="Massachusetts" 
+(299,524 real changes made)
+
+.  replace state="26" if stname=="Michigan" 
+(388,199 real changes made)
+
+.  replace state="27" if stname=="Minnesota" 
+(173,004 real changes made)
+
+.  replace state="28" if stname=="Mississippi" 
+(141,245 real changes made)
+
+.  replace state="29" if stname=="Missouri" 
+(158,952 real changes made)
+
+.  replace state="30" if stname=="Montana" 
+(143,255 real changes made)
+
+.  replace state="31" if stname=="Nebraska" 
+(152,447 real changes made)
+
+.  replace state="32" if stname=="Nevada" 
+(139,500 real changes made)
+
+.  replace state="33" if stname=="New Hampshire" 
+(129,260 real changes made)
+
+.  replace state="34" if stname=="New Jersey" 
+(347,070 real changes made)
+
+.  replace state="35" if stname=="New Mexico" 
+(134,729 real changes made)
+
+.  replace state="36" if stname=="New York" 
+(656,009 real changes made)
+
+.  replace state="37" if stname=="North Carolina" 
+(308,285 real changes made)
+
+.  replace state="38" if stname=="North Dakota" 
+(148,824 real changes made)
+
+.  replace state="39" if stname=="Ohio" 
+(423,362 real changes made)
+
+.  replace state="40" if stname=="Oklahoma" 
+(146,299 real changes made)
+
+.  replace state="41" if stname=="Oregon" 
+(139,094 real changes made)
+
+.  replace state="42" if stname=="Pennsylvania" 
+(445,788 real changes made)
+
+.  replace state="44" if stname=="Rhode Island" 
+(125,383 real changes made)
+
+.  replace state="45" if stname=="South Carolina" 
+(137,003 real changes made)
+
+.  replace state="46" if stname=="South Dakota" 
+(165,598 real changes made)
+
+.  replace state="47" if stname=="Tennessee" 
+(146,047 real changes made)
+
+.  replace state="48" if stname=="Texas" 
+(520,327 real changes made)
+
+.  replace state="49" if stname=="Utah" 
+(155,825 real changes made)
+
+.  replace state="50" if stname=="Vermont" 
+(117,942 real changes made)
+
+.  replace state="51" if stname=="Virginia" 
+(182,531 real changes made)
+
+.  replace state="53" if stname=="Washington" 
+(153,825 real changes made)
+
+.  replace state="54" if stname=="West Virginia" 
+(143,861 real changes made)
+
+.  replace state="55" if stname=="Wisconsin" 
+(175,363 real changes made)
+
+.  replace state="56" if stname=="Wyoming" 
+(121,161 real changes made)
+
+. tab stname if state==""
+no observations
+
+. drop stname 
+
+. 
+.  gen mon = string(month) 
+
+.  replace mon = "0"+mon if month < 10 
+(8,155,730 real changes made)
+
+. 
+. gen num = string(hhnum)
+
+.  
+. gen uhhid = state+hhid+num+mon if (year < 2003) | (year==2003 & mis==8) | (ye
+> ar==2003 & mis==4 & month<5) | (year==2004 & mis==8 & month<5) | (year==2004 
+> & mis==4 & month<5) | (year==2005 & mis==8 & month<5) 
+(1,585,563 missing values generated)
+
+. replace uhhid = state+hhid+mon if (year==2003 & mis==4 & month>=5) | (year==2
+> 004 & mis==8 & month>=5) 
+(281,716 real changes made)
+
+. replace uhhid = state+hhid+hhid2+mon if (year==2004 & mis==4 & month>=5) | (y
+> ear==2005 & mis==8 & month>=5) | (year==2005 & mis==4) | (year >2005) 
+variable uhhid was str20 now str24
+(1,303,847 real changes made)
+
+. 
+. 
+. * Note that there are some observations where hhnum is a valid missing,
+. * we assume that this corresponds to the same family once the other id variab
+> les
+. * (_hhid month state lineno and year) are matched. If we drop all of these
+. * observations, the sample size is slightly smaller but the results do not ch
+> ange
+. * in a meaningful way.                          
+. replace hhnum = 0 if (year==2003 & mis==4 & month>=5 | year==2004 & mis==8 & 
+> month>=5) | (year==2004 & mis==4 & month>=5 | year==2005 & mis==4 | year==200
+> 5 & month>=5 & mis==8 | year>2005)
+(1,585,563 real changes made)
+
+.  
+.  gen _hhid = ""
+(10,977,377 missing values generated)
+
+.  replace _hhid = hhid if (year<2004 | year==2004 & mis==8 | year==2004 & mis=
+> =4 & month<5 | year==2005 & mis==8 & month<5)
+variable _hhid was str1 now str15
+(9,673,530 real changes made)
+
+.  replace _hhid = hhid+hhid2 if (year==2004 & mis==4 & month>=5 | year==2005 &
+>  mis==4 | year==2005 & month>=5 & mis==8 | year>2005)
+variable _hhid was str15 now str20
+(1,303,847 real changes made)
+
+.  global id "_hhid month state hhnum lineno year"
+
+. 
+. 
+. ************************
+. * Check for duplicates *
+. ************************
+. duplicates tag $id, gen(dup)
+
+Duplicates in terms of _hhid month state hhnum lineno year
+
+. tab year
+
+Year of CPS |
+     Survey |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1979 |    344,622        3.14        3.14
+       1980 |    403,878        3.68        6.82
+       1981 |    379,764        3.46       10.28
+       1982 |    467,403        4.26       14.54
+       1983 |    429,234        3.91       18.45
+       1984 |    346,148        3.15       21.60
+       1985 |    172,965        1.58       23.18
+       1986 |    280,598        2.56       25.73
+       1987 |    446,598        4.07       29.80
+       1988 |    424,505        3.87       33.67
+       1989 |    426,780        3.89       37.55
+       1990 |    450,594        4.10       41.66
+       1991 |    446,412        4.07       45.73
+       1992 |    438,620        4.00       49.72
+       1993 |    433,384        3.95       53.67
+       1994 |    299,697        2.73       56.40
+       1995 |    155,019        1.41       57.81
+       1996 |    246,085        2.24       60.05
+       1997 |    369,752        3.37       63.42
+       1998 |    368,039        3.35       66.77
+       1999 |    369,827        3.37       70.14
+       2000 |    370,422        3.37       73.52
+       2001 |    394,837        3.60       77.11
+       2002 |    429,470        3.91       81.03
+       2003 |    426,615        3.89       84.91
+       2004 |    418,061        3.81       88.72
+       2005 |    417,307        3.80       92.52
+       2006 |    412,332        3.76       96.28
+       2007 |    408,409        3.72      100.00
+------------+-----------------------------------
+      Total | 10,977,377      100.00
+
+. tab year if dup~=0
+
+Year of CPS |
+     Survey |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1979 |      1,838       12.29       12.29
+       1980 |      1,770       11.84       24.13
+       1981 |      1,687       11.28       35.41
+       1982 |      3,795       25.38       60.79
+       1983 |      2,973       19.88       80.68
+       1994 |        586        3.92       84.60
+       1995 |        944        6.31       90.91
+       1996 |          9        0.06       90.97
+       1997 |          8        0.05       91.02
+       1998 |          3        0.02       91.04
+       1999 |         86        0.58       91.62
+       2000 |        152        1.02       92.64
+       2001 |        252        1.69       94.32
+       2002 |        244        1.63       95.95
+       2003 |        276        1.85       97.80
+       2004 |        225        1.50       99.30
+       2005 |        104        0.70      100.00
+------------+-----------------------------------
+      Total |     14,952      100.00
+
+. gen duphh = 1 if dup>0 & (relhd==1 | relhd==2)
+(10,971,932 missing values generated)
+
+. bysort _hhid month state hhnum year: egen drophh = min(duphh)
+(10,962,408 missing values generated)
+
+. drop if drophh==1
+(14,969 observations deleted)
+
+. drop if dup>0 
+(4,173 observations deleted)
+
+. drop dup duphh drophh
+
+. 
+. ******************************************
+. * Create Household Weights for 1979-1988 *
+. ******************************************
+. 
+. /**********************************************************
+>  * From CPS Utilities hhwgt entry:                                           
+>  *
+>  * The final household weight equals the weight of the    *
+>  * wife in a husband-wife household and it equals the     *
+>  * weight of the reference person in all other households.*
+>  **********************************************************/
+.  
+.  *Wife is spouse in husband-wife household
+.  gen temp = wgt if relhd==3 & female==1 & year<1989 & hhwgt==.
+(10,070,720 missing values generated)
+
+.  bysort _hhid month state hhnum year: egen htemp = min(temp)
+(8,310,851 missing values generated)
+
+.  replace hhwgt = htemp if year<1989 & hhwgt==.
+(2,647,384 real changes made)
+
+.  drop temp htemp
+
+.  
+.  *Reference person if not in a husband-wife household
+.  gen temp = wgt if (relhd==1 | relhd==2)  & year<1989 & hhwgt
+(9,468,715 missing values generated)
+
+.  bysort _hhid month state hhnum year: egen htemp = min(temp)
+(7,313,507 missing values generated)
+
+.  replace hhwgt = htemp if year<1989 & hhwgt==.
+(1,033,216 real changes made)
+
+.  drop temp htemp
+
+.  
+.  tab year if hhwgt~=.
+
+Year of CPS |
+     Survey |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1979 |    342,416        3.12        3.12
+       1980 |    401,687        3.67        6.79
+       1981 |    377,652        3.45       10.24
+       1982 |    462,531        4.22       14.46
+       1983 |    425,516        3.88       18.34
+       1984 |    346,143        3.16       21.50
+       1985 |    172,965        1.58       23.08
+       1986 |    280,595        2.56       25.64
+       1987 |    446,595        4.08       29.71
+       1988 |    424,500        3.87       33.59
+       1989 |    426,780        3.89       37.48
+       1990 |    450,594        4.11       41.59
+       1991 |    446,412        4.07       45.67
+       1992 |    438,620        4.00       49.67
+       1993 |    433,384        3.95       53.63
+       1994 |    298,847        2.73       56.35
+       1995 |    153,756        1.40       57.76
+       1996 |    246,073        2.25       60.00
+       1997 |    369,744        3.37       63.38
+       1998 |    368,036        3.36       66.73
+       1999 |    369,712        3.37       70.11
+       2000 |    370,183        3.38       73.49
+       2001 |    394,474        3.60       77.09
+       2002 |    429,115        3.92       81.00
+       2003 |    426,227        3.89       84.89
+       2004 |    417,747        3.81       88.70
+       2005 |    417,152        3.81       92.51
+       2006 |    412,332        3.76       96.27
+       2007 |    408,409        3.73      100.00
+------------+-----------------------------------
+      Total | 10,958,197      100.00
+
+.  tab year if hhwgt==.
+
+Year of CPS |
+     Survey |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1979 |          1        2.63        2.63
+       1980 |          1        2.63        5.26
+       1981 |          4       10.53       15.79
+       1982 |         12       31.58       47.37
+       1983 |          4       10.53       57.89
+       1984 |          5       13.16       71.05
+       1986 |          3        7.89       78.95
+       1987 |          3        7.89       86.84
+       1988 |          5       13.16      100.00
+------------+-----------------------------------
+      Total |         38      100.00
+
+.  drop if hhwgt==.
+(38 observations deleted)
+
+.  
+.  sort $id
+
+.  save ogr_uhhid-minwage_79.dta, replace
+(file ogr_uhhid-minwage_79.dta not found)
+file ogr_uhhid-minwage_79.dta saved
+
+.  log close
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\data\2010-2012\Aaron
+> son et al. (2012)\Supplemental-Files-for-AAF\unix_files\id-prepare_79.log
+  log type:  text
+ closed on:   4 May 2026, 16:30:02
+-------------------------------------------------------------------------------

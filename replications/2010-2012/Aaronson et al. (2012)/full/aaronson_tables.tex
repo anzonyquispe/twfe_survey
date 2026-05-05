@@ -1,0 +1,61 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,adjustbox}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Aaronson, Agarwal \& French (2012)}\\
+{\large The Spending and Debt Response to Minimum Wage Hikes}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 102(7), 3111--3139}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Partial replication (CPS analysis only).
+The full paper has three data sources: CPS, CEX (Consumer Expenditure Survey), and SIPP.
+The CPS regressions (Tables 1, A1, A3) were replicated from the supplemental files.
+CEX and SIPP analyses require additional data preparation programs
+(\texttt{addotherprogs.do}, \texttt{otherstateprogs.dta}) not fully available.
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 1 -- Income and Minimum Wage (CPS Fixed Effects)}
+
+Fixed-effects regressions of total household income on log minimum wage.
+Household fixed effects with clustered standard errors.
+Columns vary by the initial share of minimum wage workers ($S$) and
+by occupation code restriction ($S_{120}$: food service occupations).
+
+\vspace{1em}
+\input{cps_table1_table}
+
+%% ====================================================================
+\clearpage
+\section{Table A1 -- Summary Statistics (CPS)}
+
+Summary statistics for selected variables by initial minimum wage share.
+Weighted by household weight (\texttt{hhwgt}).
+
+\vspace{1em}
+\begin{center}
+\input{cps_tableA1_table}
+\end{center}
+
+%% ====================================================================
+\clearpage
+\section{Table A3 -- Employment, Hours, and Wages (CPS)}
+
+Fixed-effects regressions of employment indicators, hours, and wages
+on log minimum wage. All specifications include year dummies and
+controls for number of adults and kids. Clustered standard errors at
+household level.
+
+\vspace{1em}
+\input{cps_tableA3_table}
+
+\end{document}
