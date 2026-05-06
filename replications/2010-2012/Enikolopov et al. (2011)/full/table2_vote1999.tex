@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Table 2: Effect of NTV on 1999 Vote Shares}
+\label{tab:enik_table2}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lccccccc}
+\toprule
+ & Unity & OVR & SPS & Yabloko & KPRF & LDPR & Turnout \\
+\midrule
+\multicolumn{8}{l}{\textit{Panel A: Without 1995 vote controls}} \\
+Watch\_probit & -17.719*** & 5.719*** & 4.473*** & 4.580*** & 1.676 & -1.723** & -6.538*** \\
+ & (2.512) & (1.947) & (1.067) & (0.839) & (2.026) & (0.658) & (1.940) \\
+$N$ & 2005 & 2005 & 2005 & 2005 & 2005 & 2005 & 2005 \\
+$R^2$ & 0.6701 & 0.7920 & 0.7815 & 0.7780 & 0.7380 & 0.6972 & 0.7055 \\
+\midrule
+\multicolumn{8}{l}{\textit{Panel B: With 1995 vote controls}} \\
+Watch\_probit & -15.479*** & 3.617** & 3.523*** & 3.850*** & 3.921** & -1.391** & -6.666*** \\
+ & (2.767) & (1.721) & (1.153) & (0.672) & (1.862) & (0.608) & (1.422) \\
+$N$ & 1686 & 1686 & 1686 & 1686 & 1686 & 1686 & 1686 \\
+$R^2$ & 0.6622 & 0.8190 & 0.8204 & 0.8371 & 0.8096 & 0.7299 & 0.8083 \\
+\midrule
+Region FE & Yes & Yes & Yes & Yes & Yes & Yes & Yes \\
+Socioeconomic & Yes & Yes & Yes & Yes & Yes & Yes & Yes \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\parbox{\textwidth}{\footnotesize\textit{Notes:} Watch\_probit is predicted NTV viewership. All regressions include region FE, population/wage polynomials, city dummy, medical controls. Robust SEs clustered at region. Regions 5, 6 excluded. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{table}

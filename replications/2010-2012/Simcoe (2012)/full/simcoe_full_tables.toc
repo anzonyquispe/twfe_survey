@@ -1,0 +1,5 @@
+\contentsline {section}{\numberline {1}Table 3 -- Covariate Balance (Matched Sample)}{2}{}%
+\contentsline {section}{\numberline {2}Table 4 -- Main Results: Duration and STB Affiliation}{3}{}%
+\contentsline {section}{\numberline {3}Table 5 -- Robustness: Alternative STB Measure (Email Activity)}{4}{}%
+\contentsline {section}{\numberline {4}Table 6 -- Robustness: Alternative Dependent Variables}{5}{}%
+\contentsline {section}{\numberline {5}Table 7 -- Interactions: Organization, Tech Area, and Cohort}{6}{}%

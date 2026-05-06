@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+      name:  agg
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Enikolopov et al. (2011)/full/aggregate.log
+  log type:  text
+ opened on:   6 May 2026, 00:03:32
+
+. 
+. use "NTV_Aggregate_Data.dta", clear
+
+. 
+. * Create polynomial variables
+. forvalues i=1/5 {
+  2.     gen pop_`i' = population^`i'
+  3.     gen wage_`i' = wages^`i'
+  4. }

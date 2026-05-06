@@ -1,0 +1,1223 @@
+-------------------------------------------------------------------------------
+      name:  t6
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table6.log
+  log type:  text
+ opened on:   6 May 2026, 00:29:24
+
+. 
+. * Column 1: Baseline weighted
+. di _n "--- Table 6, Column 1 ---"
+
+--- Table 6, Column 1 ---
+
+. xtreg urbrate yearsref yr1750-yr1900 if westelbe==1 [aweight=totalpop1750], f
+> e i(id) robust cluster(id)
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9052                                         min =          5
+     Between = 0.0972                                         avg =        5.7
+     Overall = 0.6777                                         max =          6
+
+                                                F(6,12)           =      87.55
+corr(u_i, Xb) = -0.0363                         Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .2807942   .1141716     2.46   0.030     .0320356    .5295528
+      yr1750 |   2.076572   .9698587     2.14   0.053    -.0365683    4.189713
+      yr1800 |    4.23235   .9056855     4.67   0.001     2.259031    6.205669
+      yr1850 |    .942083   3.849101     0.24   0.811    -7.444387    9.328553
+      yr1875 |   7.736152   5.271633     1.47   0.168     -3.74975    19.22205
+      yr1900 |   15.99261   7.584693     2.11   0.057    -.5330201    32.51823
+       _cons |    5.82186   1.442555     4.04   0.002     2.678803    8.964917
+-------------+----------------------------------------------------------------
+     sigma_u |  6.7943128
+     sigma_e |  4.5188013
+         rho |  .69331819   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C1 PanelA") b
+> r noaster nocons addstat(N States, e(df_a)+1) replace
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 yearsref fpresenceXpostXtrend yr1750-yr1900 if urbrate~=. & 
+> westelbe==1 [aweight=totalpop1750], fe robust cluster(id) small
+(sum of wgt is     4.9111e+07)
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           13                Number of obs =       74
+                                                      F(  6,    12) =  1353.80
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  48892.48855                Centered R2   =   0.9723
+Total (uncentered) SS   =  48892.48855                Uncentered R2 =   0.9723
+Residual SS             =  1356.404529                Root MSE      =    4.966
+
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   1.166205   .1065829    10.94   0.000     .9339806    1.398429
+      yr1750 |  -1.703171   1.644486    -1.04   0.321    -5.286198    1.879856
+      yr1800 |  -1.063667   1.340388    -0.79   0.443    -3.984122    1.856787
+      yr1850 |   11.67623   2.280222     5.12   0.000     6.708051     16.6444
+      yr1875 |   29.78038    2.45938    12.11   0.000     24.42186    35.13891
+      yr1900 |   50.76572   2.889345    17.57   0.000     44.47038    57.06106
+------------------------------------------------------------------------------
+Included instruments: fpresenceXpostXtrend yr1750 yr1800 yr1850 yr1875 yr1900
+------------------------------------------------------------------------------
+
+. cap noi outreg2 fpresenceXpostXtrend using "$outdir/table6_results.xls", br n
+> oaster nocons ctitle("T6 C1 PanelB")
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 urbrate (yearsref= fpresenceXpostXtrend) yr1750-yr1900 if we
+> stelbe==1 [aweight=totalpop1750], fe robust cluster(id) first
+(sum of wgt is     4.9111e+07)
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regressions
+-----------------------
+
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regression of yearsref:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs =                     74
+Number of clusters (id) =           13
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   1.166205   .1065829    10.94   0.000     .9526079    1.379802
+      yr1750 |  -1.703171   1.644486    -1.04   0.305    -4.998795    1.592452
+      yr1800 |  -1.063667   1.340388    -0.79   0.431    -3.749865     1.62253
+      yr1850 |   11.67623   2.280222     5.12   0.000     7.106561    16.24589
+      yr1875 |   29.78038    2.45938    12.11   0.000     24.85168    34.70909
+      yr1900 |   50.76572   2.889345    17.57   0.000     44.97534     56.5561
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  1,    12) =   119.72
+  Prob > F      =   0.0000
+Sanderson-Windmeijer multivariate F test of excluded instruments:
+  F(  1,    12) =   119.72
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,    12)  P-val | SW Chi-sq(  1) P-val | SW F(  1,    12)
+yearsref     |     119.72    0.0000 |      139.24   0.0000 |      119.72
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID F test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for i.i.d. errors only.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(1)=2.51     P-val=0.1132
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                     160.85
+Kleibergen-Paap Wald rk F statistic                               119.72
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,12)=        7.32     P-val=0.0191
+Anderson-Rubin Wald test           Chi-sq(1)=      8.51     P-val=0.0035
+Stock-Wright LM S statistic        Chi-sq(1)=      9.71     P-val=0.0018
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =         13
+Number of observations               N  =         74
+Number of regressors                 K  =          6
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          6
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           13                Number of obs =       74
+                                                      F(  6,    12) =   118.27
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  11852.19954                Centered R2   =   0.9052
+Total (uncentered) SS   =  11852.19954                Uncentered R2 =   0.9052
+Residual SS             =  1123.583646                Root MSE      =    4.292
+
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .2905586   .1019563     2.85   0.004      .090728    .4903893
+      yr1750 |   2.129495   .9610004     2.22   0.027     .2459694    4.013022
+      yr1800 |   4.279029    .890873     4.80   0.000      2.53295    6.025108
+      yr1850 |   .7510049   3.525716     0.21   0.831    -6.159271    7.661281
+      yr1875 |   7.366766   5.088728     1.45   0.148    -2.606959    17.34049
+      yr1900 |   15.41678   7.275582     2.12   0.034     1.156899    29.67666
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              2.509
+                                                   Chi-sq(1) P-val =    0.1132
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):              160.854
+                         (Kleibergen-Paap rk Wald F statistic):        119.722
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         yearsref
+Included instruments: yr1750 yr1800 yr1850 yr1875 yr1900
+Excluded instruments: fpresenceXpostXtrend
+------------------------------------------------------------------------------
+
+. cap noi outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C1 Pa
+> nelC") br noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. * Column 2: Overid
+. di _n "--- Table 6, Column 2 ---"
+
+--- Table 6, Column 2 ---
+
+. xtreg urbrate yearsref yr1750-yr1900 if westelbe==1 [aweight=totalpop1750], f
+> e i(id) robust cluster(id)
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9052                                         min =          5
+     Between = 0.0972                                         avg =        5.7
+     Overall = 0.6777                                         max =          6
+
+                                                F(6,12)           =      87.55
+corr(u_i, Xb) = -0.0363                         Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .2807942   .1141716     2.46   0.030     .0320356    .5295528
+      yr1750 |   2.076572   .9698587     2.14   0.053    -.0365683    4.189713
+      yr1800 |    4.23235   .9056855     4.67   0.001     2.259031    6.205669
+      yr1850 |    .942083   3.849101     0.24   0.811    -7.444387    9.328553
+      yr1875 |   7.736152   5.271633     1.47   0.168     -3.74975    19.22205
+      yr1900 |   15.99261   7.584693     2.11   0.057    -.5330201    32.51823
+       _cons |    5.82186   1.442555     4.04   0.002     2.678803    8.964917
+-------------+----------------------------------------------------------------
+     sigma_u |  6.7943128
+     sigma_e |  4.5188013
+         rho |  .69331819   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C2 PanelA") b
+> r noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 urbrate (yearsref= fpresence1850 fpresence1875 fpresence1900
+> ) yr1750-yr1900 if westelbe==1 [aweight=totalpop1750], fe robust cluster(id)
+(sum of wgt is     4.9111e+07)
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           13                Number of obs =       74
+                                                      F(  6,    12) =   128.80
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  11852.19954                Centered R2   =   0.9045
+Total (uncentered) SS   =  11852.19954                Uncentered R2 =   0.9045
+Residual SS             =  1131.663552                Root MSE      =    4.307
+
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .3209584   .1115506     2.88   0.004     .1023234    .5395935
+      yr1750 |   2.294263   .9720945     2.36   0.018     .3889925    4.199533
+      yr1800 |   4.424355   .9659722     4.58   0.000     2.531085    6.317626
+      yr1850 |   .1561169   3.738637     0.04   0.967    -7.171478    7.483711
+      yr1875 |   6.216746   5.446577     1.14   0.254    -4.458348    16.89184
+      yr1900 |   13.62404    7.80516     1.75   0.081    -1.673794    28.92187
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              3.449
+                                                   Chi-sq(3) P-val =    0.3274
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):               58.520
+                         (Kleibergen-Paap rk Wald F statistic):         42.051
+Stock-Yogo weak ID test critical values:  5% maximal IV relative bias    13.91
+                                         10% maximal IV relative bias     9.08
+                                         20% maximal IV relative bias     6.46
+                                         30% maximal IV relative bias     5.39
+                                         10% maximal IV size             22.30
+                                         15% maximal IV size             12.83
+                                         20% maximal IV size              9.54
+                                         25% maximal IV size              7.80
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         2.410
+                                                   Chi-sq(2) P-val =    0.2996
+------------------------------------------------------------------------------
+Instrumented:         yearsref
+Included instruments: yr1750 yr1800 yr1850 yr1875 yr1900
+Excluded instruments: fpresence1850 fpresence1875 fpresence1900
+------------------------------------------------------------------------------
+
+. cap noi outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C2 Pa
+> nelC") br noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 urbrate (yearsref= fpresence1850 fpresence1875 fpresence1900
+> ) yr1750-yr1900 if westelbe==1 [aweight=totalpop1750], fe robust first
+(sum of wgt is     4.9111e+07)
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regressions
+-----------------------
+
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regression of yearsref:
+
+Statistics robust to heteroskedasticity
+Number of obs =                     74
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1850 |   1.813004   .1276642    14.20   0.000     1.556942    2.069066
+fpresen~1875 |   2.262536   .1357778    16.66   0.000       1.9902    2.534872
+fpresen~1900 |   2.465644   .1884806    13.08   0.000     2.087599    2.843688
+      yr1750 |  -1.713777   1.978177    -0.87   0.390    -5.681497    2.253943
+      yr1800 |  -1.074273   1.766927    -0.61   0.546     -4.61828    2.469734
+      yr1850 |   13.51925   1.832284     7.38   0.000      9.84415    17.19434
+      yr1875 |   29.36135   2.034261    14.43   0.000     25.28114    33.44156
+      yr1900 |   49.41064   2.603681    18.98   0.000     44.18832    54.63296
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  3,    53) =   121.62
+  Prob > F      =   0.0000
+Sanderson-Windmeijer multivariate F test of excluded instruments:
+  F(  3,    53) =   121.62
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  3,    53)  P-val | SW Chi-sq(  3) P-val | SW F(  3,    53)
+yearsref     |     121.62    0.0000 |      419.92   0.0000 |      121.62
+
+NB: first-stage test statistics heteroskedasticity-robust
+
+Stock-Yogo weak ID F test critical values for single endogenous regressor:
+                                    5% maximal IV relative bias    13.91
+                                   10% maximal IV relative bias     9.08
+                                   20% maximal IV relative bias     6.46
+                                   30% maximal IV relative bias     5.39
+                                   10% maximal IV size             22.30
+                                   15% maximal IV size             12.83
+                                   20% maximal IV size              9.54
+                                   25% maximal IV size              7.80
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for i.i.d. errors only.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(3)=8.82     P-val=0.0318
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                      58.52
+Kleibergen-Paap Wald rk F statistic                               121.62
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=3:
+                                    5% maximal IV relative bias    13.91
+                                   10% maximal IV relative bias     9.08
+                                   20% maximal IV relative bias     6.46
+                                   30% maximal IV relative bias     5.39
+                                   10% maximal IV size             22.30
+                                   15% maximal IV size             12.83
+                                   20% maximal IV size              9.54
+                                   25% maximal IV size              7.80
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(3,53)=        7.89     P-val=0.0002
+Anderson-Rubin Wald test           Chi-sq(3)=     27.25     P-val=0.0000
+Stock-Wright LM S statistic        Chi-sq(3)=      9.12     P-val=0.0278
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics heteroskedasticity-robust
+
+Number of observations               N  =         74
+Number of regressors                 K  =          6
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          8
+Number of excluded instruments       L1 =          3
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity
+
+                                                      Number of obs =       74
+                                                      F(  6,    55) =    57.06
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  11852.19954                Centered R2   =   0.9045
+Total (uncentered) SS   =  11852.19954                Uncentered R2 =   0.9045
+Residual SS             =  1131.663552                Root MSE      =    4.307
+
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .3209584   .0818112     3.92   0.000     .1606115    .4813054
+      yr1750 |   2.294263   1.763345     1.30   0.193    -1.161829    5.750355
+      yr1800 |   4.424355   1.884663     2.35   0.019     .7304837    8.118227
+      yr1850 |   .1561169   2.466629     0.06   0.950    -4.678387     4.99062
+      yr1875 |   6.216746   3.855769     1.61   0.107    -1.340423    13.77391
+      yr1900 |   13.62404   5.398603     2.52   0.012     3.042972    24.20511
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              8.818
+                                                   Chi-sq(3) P-val =    0.0318
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):               58.520
+                         (Kleibergen-Paap rk Wald F statistic):        121.616
+Stock-Yogo weak ID test critical values:  5% maximal IV relative bias    13.91
+                                         10% maximal IV relative bias     9.08
+                                         20% maximal IV relative bias     6.46
+                                         30% maximal IV relative bias     5.39
+                                         10% maximal IV size             22.30
+                                         15% maximal IV size             12.83
+                                         20% maximal IV size              9.54
+                                         25% maximal IV size              7.80
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         2.228
+                                                   Chi-sq(2) P-val =    0.3283
+------------------------------------------------------------------------------
+Instrumented:         yearsref
+Included instruments: yr1750 yr1800 yr1850 yr1875 yr1900
+Excluded instruments: fpresence1850 fpresence1875 fpresence1900
+------------------------------------------------------------------------------
+
+. cap noi outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C2 Pa
+> nelB") br noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. * Column 3: Unweighted
+. di _n "--- Table 6, Column 3 ---"
+
+--- Table 6, Column 3 ---
+
+. xtreg urbrate yearsref yr1750-yr1900 if westelbe==1, fe i(id) robust cluster(
+> id)
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.8458                                         min =          5
+     Between = 0.1032                                         avg =        5.7
+     Overall = 0.6835                                         max =          6
+
+                                                F(6,12)           =      89.56
+corr(u_i, Xb) = -0.0135                         Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .2195565   .1217351     1.80   0.096    -.0456815    .4847946
+      yr1750 |    2.53522   .9347027     2.71   0.019     .4986777    4.571762
+      yr1800 |   4.937072   1.535829     3.21   0.007     1.590787    8.283356
+      yr1850 |   2.723912   3.236403     0.84   0.416    -4.327604    9.775427
+      yr1875 |   9.902981   5.181086     1.91   0.080    -1.385637     21.1916
+      yr1900 |   20.04083    8.03468     2.49   0.028     2.534768    37.54689
+       _cons |    5.14464   1.793257     2.87   0.014     1.237468    9.051812
+-------------+----------------------------------------------------------------
+     sigma_u |  6.7116182
+     sigma_e |  5.8488139
+         rho |  .56836964   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C3 PanelA") b
+> r noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 yearsref fpresenceXpostXtrend yr1750-yr1900 if urbrate~=. & 
+> westelbe==1, fe robust cluster(id) small
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           13                Number of obs =       74
+                                                      F(  6,    12) =   333.60
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  48503.20208                Centered R2   =   0.9668
+Total (uncentered) SS   =  48503.20208                Uncentered R2 =   0.9668
+Residual SS             =  1611.663301                Root MSE      =    5.413
+
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   1.115779   .1418744     7.86   0.000     .8066608    1.424896
+      yr1750 |    -1.2203   1.663393    -0.73   0.477    -4.844522    2.403922
+      yr1800 |  -.6241465   1.391351    -0.45   0.662     -3.65564    2.407347
+      yr1850 |   12.50604   2.462233     5.08   0.000     7.141299    17.87079
+      yr1875 |   30.39216   2.810889    10.81   0.000     24.26776    36.51656
+      yr1900 |   50.91289   3.179608    16.01   0.000     43.98512    57.84066
+------------------------------------------------------------------------------
+Included instruments: fpresenceXpostXtrend yr1750 yr1800 yr1850 yr1875 yr1900
+------------------------------------------------------------------------------
+
+. cap noi outreg2 fpresenceXpostXtrend using "$outdir/table6_results.xls", br n
+> oaster nocons ctitle("T6 C3 PanelB")
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 urbrate (yearsref= fpresenceXpostXtrend) yr1750-yr1900 if we
+> stelbe==1, fe robust cluster(id) first
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regressions
+-----------------------
+
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        13                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regression of yearsref:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs =                     74
+Number of clusters (id) =           13
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   1.115779   .1418744     7.86   0.000     .8314559    1.400101
+      yr1750 |    -1.2203   1.663393    -0.73   0.466    -4.553814    2.113214
+      yr1800 |  -.6241465   1.391351    -0.45   0.655    -3.412477    2.164184
+      yr1850 |   12.50604   2.462233     5.08   0.000     7.571618    17.44047
+      yr1875 |   30.39216   2.810889    10.81   0.000     24.75901    36.02531
+      yr1900 |   50.91289   3.179608    16.01   0.000     44.54081    57.28497
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  1,    12) =    61.85
+  Prob > F      =   0.0000
+Sanderson-Windmeijer multivariate F test of excluded instruments:
+  F(  1,    12) =    61.85
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,    12)  P-val | SW Chi-sq(  1) P-val | SW F(  1,    12)
+yearsref     |      61.85    0.0000 |       71.93   0.0000 |       61.85
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID F test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for i.i.d. errors only.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(1)=3.09     P-val=0.0786
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                     107.26
+Kleibergen-Paap Wald rk F statistic                                61.85
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,12)=        2.54     P-val=0.1373
+Anderson-Rubin Wald test           Chi-sq(1)=      2.95     P-val=0.0859
+Stock-Wright LM S statistic        Chi-sq(1)=      5.37     P-val=0.0205
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =         13
+Number of observations               N  =         74
+Number of regressors                 K  =          6
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          6
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           13                Number of obs =       74
+                                                      F(  6,    12) =    92.58
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  12202.78726                Centered R2   =   0.8457
+Total (uncentered) SS   =  12202.78726                Uncentered R2 =   0.8457
+Residual SS             =  1882.648441                Root MSE      =    5.555
+
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .2038423   .1238575     1.65   0.100     -.038914    .4465985
+      yr1750 |   2.495981   .8743055     2.85   0.004     .7823741    4.209589
+      yr1800 |   4.907201   1.432967     3.42   0.001     2.098637    7.715766
+      yr1850 |   3.077529   3.257496     0.94   0.345    -3.307045    9.462104
+      yr1875 |   10.54006   5.305355     1.99   0.047     .1417548    20.93836
+      yr1900 |   21.00277   8.107374     2.59   0.010     5.112609    36.89293
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              3.093
+                                                   Chi-sq(1) P-val =    0.0786
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):              107.263
+                         (Kleibergen-Paap rk Wald F statistic):         61.851
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         yearsref
+Included instruments: yr1750 yr1800 yr1850 yr1875 yr1900
+Excluded instruments: fpresenceXpostXtrend
+------------------------------------------------------------------------------
+
+. cap noi outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C3 Pa
+> nelC") br noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. * Column 4: All, weighted
+. di _n "--- Table 6, Column 4 ---"
+
+--- Table 6, Column 4 ---
+
+. xtreg urbrate yearsref yr1750-yr1900 [aweight=totalpop1750], fe i(id) robust 
+> cluster(id)
+
+Fixed-effects (within) regression               Number of obs     =        109
+Group variable: id                              Number of groups  =         19
+
+R-squared:                                      Obs per group:
+     Within  = 0.8885                                         min =          5
+     Between = 0.0670                                         avg =        5.7
+     Overall = 0.6501                                         max =          6
+
+                                                F(6,18)           =      47.86
+corr(u_i, Xb) = -0.0247                         Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 19 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .2677559   .1101508     2.43   0.026     .0363376    .4991743
+      yr1750 |   2.149628   .8042726     2.67   0.016     .4599143    3.839342
+      yr1800 |   4.247378   .8397255     5.06   0.000      2.48318    6.011576
+      yr1850 |   1.509911   3.436652     0.44   0.666    -5.710226    8.730049
+      yr1875 |     8.5449   4.828105     1.77   0.094    -1.598573    18.68837
+      yr1900 |   16.84007   6.951829     2.42   0.026     2.234819    31.44532
+       _cons |   6.516384   1.347916     4.83   0.000     3.684517     9.34825
+-------------+----------------------------------------------------------------
+     sigma_u |  7.0864702
+     sigma_e |  4.8200941
+         rho |  .68369129   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C4 PanelA") b
+> r noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 yearsref fpresenceXpostXtrend yr1750-yr1900 if urbrate~=. [a
+> weight=totalpop1750], fe robust cluster(id) small
+(sum of wgt is     6.9080e+07)
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        19                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           19                Number of obs =      109
+                                                      F(  6,    18) =   570.42
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  69552.67664                Centered R2   =   0.9659
+Total (uncentered) SS   =  69552.67664                Uncentered R2 =   0.9659
+Residual SS             =   2371.98065                Root MSE      =    5.314
+
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   1.006258   .1075275     9.36   0.000     .7803508    1.232165
+      yr1750 |   -1.74082   1.130051    -1.54   0.141    -4.114969    .6333289
+      yr1800 |  -1.285825   .9871991    -1.30   0.209    -3.359854     .788203
+      yr1850 |   16.15277   2.453072     6.58   0.000     10.99906    21.30648
+      yr1875 |     34.131    2.69942    12.64   0.000     28.45973    39.80227
+      yr1900 |    54.4867    2.76249    19.72   0.000     48.68293    60.29048
+------------------------------------------------------------------------------
+Included instruments: fpresenceXpostXtrend yr1750 yr1800 yr1850 yr1875 yr1900
+------------------------------------------------------------------------------
+
+. cap noi outreg2 fpresenceXpostXtrend using "$outdir/table6_results.xls", br n
+> oaster nocons ctitle("T6 C4 PanelB")
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 urbrate (yearsref= fpresenceXpostXtrend) yr1750-yr1900 [awei
+> ght=totalpop1750], fe robust cluster(id) first
+(sum of wgt is     6.9080e+07)
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        19                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regressions
+-----------------------
+
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        19                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regression of yearsref:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs =                    109
+Number of clusters (id) =           19
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   1.006258   .1075275     9.36   0.000     .7924275    1.220088
+      yr1750 |   -1.74082   1.130051    -1.54   0.127     -3.98805    .5064102
+      yr1800 |  -1.285825   .9871991    -1.30   0.196    -3.248979    .6773284
+      yr1850 |   16.15277   2.453072     6.58   0.000     11.27457    21.03097
+      yr1875 |     34.131    2.69942    12.64   0.000      28.7629    39.49909
+      yr1900 |    54.4867    2.76249    19.72   0.000     48.99319    59.98022
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  1,    18) =    87.57
+  Prob > F      =   0.0000
+Sanderson-Windmeijer multivariate F test of excluded instruments:
+  F(  1,    18) =    87.57
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,    18)  P-val | SW Chi-sq(  1) P-val | SW F(  1,    18)
+yearsref     |      87.57    0.0000 |       96.93   0.0000 |       87.57
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID F test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for i.i.d. errors only.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(1)=2.08     P-val=0.1494
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                     127.43
+Kleibergen-Paap Wald rk F statistic                                87.57
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,18)=        5.12     P-val=0.0362
+Anderson-Rubin Wald test           Chi-sq(1)=      5.67     P-val=0.0172
+Stock-Wright LM S statistic        Chi-sq(1)=      9.18     P-val=0.0025
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =         19
+Number of observations               N  =        109
+Number of regressors                 K  =          6
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          6
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           19                Number of obs =      109
+                                                      F(  6,    18) =    60.48
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =   17506.7939                Centered R2   =   0.8884
+Total (uncentered) SS   =   17506.7939                Uncentered R2 =   0.8884
+Residual SS             =  1953.108336                Root MSE      =    4.658
+
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |    .283662   .1122104     2.53   0.011     .0637337    .5035904
+      yr1750 |   2.213824   .8136415     2.72   0.007     .6191156    3.808532
+      yr1800 |   4.304336   .7789359     5.53   0.000      2.77765    5.831023
+      yr1850 |   1.176126   3.641352     0.32   0.747    -5.960792    8.313045
+      yr1875 |   7.923619   5.456007     1.45   0.146    -2.769959     18.6172
+      yr1900 |   15.89348   7.930329     2.00   0.045     .3503191    31.43664
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              2.078
+                                                   Chi-sq(1) P-val =    0.1494
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):              127.431
+                         (Kleibergen-Paap rk Wald F statistic):         87.575
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         yearsref
+Included instruments: yr1750 yr1800 yr1850 yr1875 yr1900
+Excluded instruments: fpresenceXpostXtrend
+------------------------------------------------------------------------------
+
+. cap noi outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C4 Pa
+> nelC") br noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. * Column 5: All, unweighted
+. di _n "--- Table 6, Column 5 ---"
+
+--- Table 6, Column 5 ---
+
+. xtreg urbrate yearsref yr1750-yr1900, fe i(id) robust cluster(id)
+
+Fixed-effects (within) regression               Number of obs     =        109
+Group variable: id                              Number of groups  =         19
+
+R-squared:                                      Obs per group:
+     Within  = 0.8423                                         min =          5
+     Between = 0.0666                                         avg =        5.7
+     Overall = 0.6537                                         max =          6
+
+                                                F(6,18)           =      28.57
+corr(u_i, Xb) = -0.0068                         Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 19 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |    .191056   .1051589     1.82   0.086    -.0298747    .4119866
+      yr1750 |   2.311484   .7394635     3.13   0.006     .7579287    3.865039
+      yr1800 |   4.941346   1.197698     4.13   0.001     2.425075    7.457617
+      yr1850 |   3.852018   2.872044     1.34   0.197    -2.181923     9.88596
+      yr1875 |   11.47839   4.243181     2.71   0.014     2.563793    20.39298
+      yr1900 |   21.30383   6.336472     3.36   0.003     7.991399    34.61627
+       _cons |   5.802292   1.453518     3.99   0.001     2.748564    8.856021
+-------------+----------------------------------------------------------------
+     sigma_u |  7.0436269
+     sigma_e |  5.6886343
+         rho |   .6052302   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C5 PanelA") b
+> r noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 yearsref fpresenceXpostXtrend yr1750-yr1900 if urbrate~=., f
+> e robust cluster(id) small
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        19                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+OLS estimation
+--------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           19                Number of obs =      109
+                                                      F(  6,    18) =   624.20
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =   67135.0125                Centered R2   =   0.9594
+Total (uncentered) SS   =   67135.0125                Uncentered R2 =   0.9594
+Residual SS             =   2724.18806                Root MSE      =    5.695
+
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   .9603542   .1452582     6.61   0.000     .6551781     1.26553
+      yr1750 |  -.9751382   1.081722    -0.90   0.379    -3.247751    1.297475
+      yr1800 |  -.5672434   .9346604    -0.61   0.551    -2.530892    1.396405
+      yr1850 |    16.7542   2.416996     6.93   0.000     11.67628    21.83212
+      yr1875 |   34.29606   2.780607    12.33   0.000     28.45422     40.1379
+      yr1900 |   54.27214   2.857168    19.00   0.000     48.26945    60.27482
+------------------------------------------------------------------------------
+Included instruments: fpresenceXpostXtrend yr1750 yr1800 yr1850 yr1875 yr1900
+------------------------------------------------------------------------------
+
+. cap noi outreg2 fpresenceXpostXtrend using "$outdir/table6_results.xls", br n
+> oaster nocons ctitle("T6 C5 PanelB")
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. cap noi xtivreg2 urbrate (yearsref= fpresenceXpostXtrend) yr1750-yr1900, fe r
+> obust cluster(id) first
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        19                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regressions
+-----------------------
+
+
+FIXED EFFECTS ESTIMATION
+------------------------
+Number of groups =        19                    Obs per group: min =         5
+                                                               avg =       5.7
+                                                               max =         6
+
+First-stage regression of yearsref:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs =                    109
+Number of clusters (id) =           19
+------------------------------------------------------------------------------
+             |               Robust
+    yearsref | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresenceX~d |   .9603542   .1452582     6.61   0.000     .6714924    1.249216
+      yr1750 |  -.9751382   1.081722    -0.90   0.370     -3.12626    1.175984
+      yr1800 |  -.5672434   .9346604    -0.61   0.546    -2.425918    1.291431
+      yr1850 |    16.7542   2.416996     6.93   0.000     11.94774    21.56066
+      yr1875 |   34.29606   2.780607    12.33   0.000     28.76652    39.82561
+      yr1900 |   54.27214   2.857168    19.00   0.000     48.59035    59.95393
+------------------------------------------------------------------------------
+F test of excluded instruments:
+  F(  1,    18) =    43.71
+  Prob > F      =   0.0000
+Sanderson-Windmeijer multivariate F test of excluded instruments:
+  F(  1,    18) =    43.71
+  Prob > F      =   0.0000
+
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,    18)  P-val | SW Chi-sq(  1) P-val | SW F(  1,    18)
+yearsref     |      43.71    0.0000 |       48.38   0.0000 |       43.71
+
+NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID F test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for i.i.d. errors only.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Kleibergen-Paap rk LM statistic          Chi-sq(1)=2.66     P-val=0.1031
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                      88.40
+Kleibergen-Paap Wald rk F statistic                                43.71
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,18)=        1.70     P-val=0.2087
+Anderson-Rubin Wald test           Chi-sq(1)=      1.88     P-val=0.1701
+Stock-Wright LM S statistic        Chi-sq(1)=      2.92     P-val=0.0875
+
+NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  =         19
+Number of observations               N  =        109
+Number of regressors                 K  =          6
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          6
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) =           19                Number of obs =      109
+                                                      F(  6,    18) =    29.70
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  17240.78847                Centered R2   =   0.8423
+Total (uncentered) SS   =  17240.78847                Uncentered R2 =   0.8423
+Residual SS             =  2718.303348                Root MSE      =    5.496
+
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    yearsref |   .1927654   .1428756     1.35   0.177    -.0872657    .4727965
+      yr1750 |   2.314776   .6966037     3.32   0.001     .9494574    3.680094
+      yr1800 |    4.94394    1.14205     4.33   0.000     2.705564    7.182317
+      yr1850 |   3.813653   3.885193     0.98   0.326    -3.801185    11.42849
+      yr1875 |   11.40988   6.064889     1.88   0.060    -.4770839    23.29684
+      yr1900 |   21.20103    9.00363     2.35   0.019     3.554236    38.84782
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              2.657
+                                                   Chi-sq(1) P-val =    0.1031
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):               88.398
+                         (Kleibergen-Paap rk Wald F statistic):         43.710
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         yearsref
+Included instruments: yr1750 yr1800 yr1850 yr1875 yr1900
+Excluded instruments: fpresenceXpostXtrend
+------------------------------------------------------------------------------
+
+. cap noi outreg2 yearsref using "$outdir/table6_results.xls", ctitle("T6 C5 Pa
+> nelC") br noaster nocons
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table6_results.xls
+dir : seeout
+
+. 
+. log close t6
+      name:  t6
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table6.log
+  log type:  text
+ closed on:   6 May 2026, 00:29:27
+-------------------------------------------------------------------------------

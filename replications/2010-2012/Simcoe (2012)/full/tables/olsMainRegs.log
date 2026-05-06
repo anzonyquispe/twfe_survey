@@ -1,0 +1,137 @@
+-------------------------------------------------------------------------------
+      name:  main
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Simcoe (2012)/full/tables/olsMainRegs.log
+  log type:  text
+ opened on:   6 May 2026, 01:00:54
+
+. 
+. * Col 1: Straight OLS Diff-in-diffs
+. di _n "--- Col 1: OLS Diff-in-Diffs ---"
+
+--- Col 1: OLS Diff-in-Diffs ---
+
+. qui xi: reg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `
+> st_controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc) & cSam
+> ple==1), cluster(wg)
+
+. est store col1
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        393       33.70       33.70
+          1 |        773       66.30      100.00
+------------+-----------------------------------
+      Total |      1,166      100.00
+
+. di "R-square: " %8.4f e(r2)
+R-square:   0.1794
+
+. di "N: " e(N)
+N: 1166
+
+. 
+. * Col 2: P-score Matched Diff-in-diffs
+. di _n "--- Col 2: Matched Diff-in-Diffs ---"
+
+--- Col 2: Matched Diff-in-Diffs ---
+
+. qui xi: reg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum `
+> st_controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc) & matc
+> h_samp2 & cSample==1), cluster(wg)
+
+. est store col2
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        290       30.46       30.46
+          1 |        662       69.54      100.00
+------------+-----------------------------------
+      Total |        952      100.00
+
+. di "R-square: " %8.4f e(r2)
+R-square:   0.2020
+
+. 
+. * Col 3: Matched Diff-diffs with WG FEs
+. di _n "--- Col 3: WG Fixed Effects ---"
+
+--- Col 3: WG Fixed Effects ---
+
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum
+>  `st_controls' `controls' i.pubCohort strfc if ((strfc|nsrfc) & match_samp2 &
+>  cSample==1), fe i(wg) robust
+
+. est store col3
+
+. tab strfc if e(sample)
+
+       1/0: |
+  Published |
+as Proposed |
+   Standard |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        290       30.46       30.46
+          1 |        662       69.54      100.00
+------------+-----------------------------------
+      Total |        952      100.00
+
+. di "R-square: " %8.4f e(r2)
+R-square:   0.0891
+
+. 
+. * Col 5: RE Standards Only
+. di _n "--- Col 5: Standards Only RE ---"
+
+--- Col 5: Standards Only RE ---
+
+. qui xi: xtreg ttlDur st_stbafl1yr st_lwgipr st_othDum `controls' i.pubCohort 
+> i.techarea if ((strfc) & cSample==1), re i(wg) cluster(wg)
+
+. est store col5
+
+. di "R-square: " %8.4f e(r2)
+R-square:        .
+
+. 
+. estout col1 col2 col3 col5, cells(b(fmt(1)) se(par fmt(1) star)) stats(N r2 d
+> f_m N_g, fmt(0 %8.2f 0 0)) drop(`st_controls' `controls' _I* strfc _cons) sty
+> le(tex) starlevels(+ 0.10 * 0.05 ** 0.01 *** 0.001)
+
+            &        col1   &        col2   &        col3   &        col5   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   \\
+st_stbafl1yr&         7.8   &         6.8   &         5.4   &         4.2   \\
+            &       (1.9)***&       (1.9)***&       (2.1)*  &       (1.5)** \\
+st_lwgipr   &         6.5   &         0.6   &        -1.1   &        18.6   \\
+            &       (9.6)   &      (10.6)   &      (11.3)   &       (6.6)** \\
+st_othDum   &       155.7   &       153.6   &        92.2   &        86.7   \\
+            &      (65.7)*  &      (73.2)*  &      (77.8)   &      (32.6)** \\
+stbafl1yr   &        -3.3   &        -1.3   &         0.7   &               \\
+            &       (1.6)*  &       (1.5)   &       (2.7)   &               \\
+lwgipr      &         4.9   &         3.6   &        10.9   &               \\
+            &       (7.5)   &       (8.1)   &      (12.0)   &               \\
+othDum      &       -75.0   &       -60.3   &       -46.8   &               \\
+            &      (59.5)   &      (69.6)   &      (81.2)   &               \\
+N           &        1166   &         952   &         952   &         773   \\
+r2          &        0.18   &        0.20   &        0.09   &               \\
+df_m        &          31   &          31   &          25   &          22   \\
+N_g         &               &               &         151   &         133   \\
+
+. 
+. log close main
+      name:  main
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Simcoe (2012)/full/tables/olsMainRegs.log
+  log type:  text
+ closed on:   6 May 2026, 01:00:55
+-------------------------------------------------------------------------------

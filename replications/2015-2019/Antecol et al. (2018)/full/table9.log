@@ -1,0 +1,772 @@
+-------------------------------------------------------------------------------
+      name:  t9
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Antecol et al. (2018)/full/table9.log
+  log type:  text
+ opened on:   6 May 2026, 00:04:01
+
+. 
+. * Columns 1-2: Cross-section
+. clear
+
+. use aer_predictsample
+(STATA_RV_112016_1001)
+
+. 
+. keep if year_80s==1
+(688 observations deleted)
+
+. collapse gncs_ever focs_ever focs_pre80 private ug_student-full_ratio, by(pol
+> _u)
+
+. 
+. local xx ug_students grad_students faculty full_av_salary assist_av_salary re
+> venue female_ratio full_ratio private
+
+. foreach x of local xx {
+  2.     di _n "--- Predicting FOCS from `x' ---"
+  3.     reg focs_ever `x' if focs_pre80==0
+  4.     di _n "--- Predicting GNCS from `x' ---"
+  5.     reg gncs_ever `x'
+  6. }
+
+--- Predicting FOCS from ug_students ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      1.13
+       Model |   .19755976         1   .19755976   Prob > F        =    0.2946
+    Residual |  6.82683048        39  .175046935   R-squared       =    0.0281
+-------------+----------------------------------   Adj R-squared   =    0.0032
+       Total |  7.02439024        40  .175609756   Root MSE        =    .41839
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ ug_students |  -.0058312   .0054889    -1.06   0.295    -.0169334    .0052711
+       _cons |   .3255981   .1193365     2.73   0.009     .0842173     .566979
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from ug_students ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      0.10
+       Model |   .02363394         1   .02363394   Prob > F        =    0.7541
+    Residual |  9.74380792        41  .237653852   R-squared       =    0.0024
+-------------+----------------------------------   Adj R-squared   =   -0.0219
+       Total |  9.76744186        42   .23255814   Root MSE        =     .4875
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ ug_students |   .0019662    .006235     0.32   0.754    -.0106256    .0145581
+       _cons |   .6165406   .1325914     4.65   0.000     .3487668    .8843143
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from grad_students ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      0.04
+       Model |   .00717253         1   .00717253   Prob > F        =    0.8428
+    Residual |  7.01721771        39  .179928659   R-squared       =    0.0010
+-------------+----------------------------------   Adj R-squared   =   -0.0246
+       Total |  7.02439024        40  .175609756   Root MSE        =    .42418
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+grad_stude~s |   .0042927   .0215002     0.20   0.843    -.0391956     .047781
+       _cons |   .1913818     .15569     1.23   0.226     -.123531    .5062946
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from grad_students ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      0.29
+       Model |  .068120781         1  .068120781   Prob > F        =    0.5944
+    Residual |  9.69932108        41  .236568807   R-squared       =    0.0070
+-------------+----------------------------------   Adj R-squared   =   -0.0172
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48638
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+grad_stude~s |  -.0128426   .0239326    -0.54   0.594    -.0611755    .0354904
+       _cons |   .7338156   .1709559     4.29   0.000     .3885633    1.079068
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from faculty ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      0.40
+       Model |  .071740201         1  .071740201   Prob > F        =    0.5295
+    Residual |  6.95265004        39  .178273078   R-squared       =    0.0102
+-------------+----------------------------------   Adj R-squared   =   -0.0152
+       Total |  7.02439024        40  .175609756   Root MSE        =    .42222
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     faculty |   -.008437   .0132999    -0.63   0.530    -.0353385    .0184646
+       _cons |   .3173112   .1676785     1.89   0.066    -.0218506     .656473
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from faculty ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      0.05
+       Model |  .012188955         1  .012188955   Prob > F        =    0.8221
+    Residual |  9.75525291        41  .237932998   R-squared       =    0.0012
+-------------+----------------------------------   Adj R-squared   =   -0.0231
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48778
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     faculty |   .0034236   .0151261     0.23   0.822    -.0271242    .0339715
+       _cons |   .6120955   .1879531     3.26   0.002     .2325165    .9916745
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from full_av_salary ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      2.98
+       Model |  .498451508         1  .498451508   Prob > F        =    0.0923
+    Residual |  6.52593874        39  .167331762   R-squared       =    0.0710
+-------------+----------------------------------   Adj R-squared   =    0.0471
+       Total |  7.02439024        40  .175609756   Root MSE        =    .40906
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+full_av_sa~y |   .0201203   .0116577     1.73   0.092    -.0034596    .0437002
+       _cons |  -.7742268   .5793047    -1.34   0.189    -1.945981    .3975276
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from full_av_salary ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      0.09
+       Model |  .022132922         1  .022132922   Prob > F        =    0.7618
+    Residual |  9.74530894        41  .237690462   R-squared       =    0.0023
+-------------+----------------------------------   Adj R-squared   =   -0.0221
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48754
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+full_av_sa~y |    .003971   .0130134     0.31   0.762      -.02231     .030252
+       _cons |   .4533061     .65264     0.69   0.491    -.8647271    1.771339
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from assist_av_salary ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      1.36
+       Model |  .236631796         1  .236631796   Prob > F        =    0.2507
+    Residual |  6.78775845        39  .174045088   R-squared       =    0.0337
+-------------+----------------------------------   Adj R-squared   =    0.0089
+       Total |  7.02439024        40  .175609756   Root MSE        =    .41719
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+assist_av_~y |   .0316412   .0271361     1.17   0.251    -.0232467    .0865291
+       _cons |  -.6924573   .7848313    -0.88   0.383    -2.279928    .8950139
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from assist_av_salary ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      0.14
+       Model |  .032899116         1  .032899116   Prob > F        =    0.7116
+    Residual |  9.73454274        41  .237427872   R-squared       =    0.0034
+-------------+----------------------------------   Adj R-squared   =   -0.0209
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48727
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+assist_av_~y |   .0113594   .0305161     0.37   0.712    -.0502691    .0729878
+       _cons |    .322852   .8851051     0.36   0.717    -1.464654    2.110358
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from revenue ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      0.00
+       Model |  7.8207e-06         1  7.8207e-06   Prob > F        =    0.9948
+    Residual |  7.02438242        39   .18011237   R-squared       =    0.0000
+-------------+----------------------------------   Adj R-squared   =   -0.0256
+       Total |  7.02439024        40  .175609756   Root MSE        =     .4244
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     revenue |   .0002312   .0350839     0.01   0.995    -.0707328    .0711951
+       _cons |   .2184116   .1796933     1.22   0.231    -.1450524    .5818756
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from revenue ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      1.33
+       Model |  .307410481         1  .307410481   Prob > F        =    0.2551
+    Residual |  9.46003138        41  .230732473   R-squared       =    0.0315
+-------------+----------------------------------   Adj R-squared   =    0.0079
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48035
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     revenue |   .0434879   .0376759     1.15   0.255    -.0326001     .119576
+       _cons |   .4419066   .1955297     2.26   0.029     .0470265    .8367868
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from female_ratio ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      0.86
+       Model |  .152161837         1  .152161837   Prob > F        =    0.3585
+    Residual |  6.87222841        39  .176210985   R-squared       =    0.0217
+-------------+----------------------------------   Adj R-squared   =   -0.0034
+       Total |  7.02439024        40  .175609756   Root MSE        =    .41977
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+female_ratio |  -1.501091   1.615364    -0.93   0.358    -4.768473    1.766292
+       _cons |   .5028288   .3118533     1.61   0.115    -.1279541    1.133612
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from female_ratio ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      0.62
+       Model |  .145990669         1  .145990669   Prob > F        =    0.4348
+    Residual |  9.62145119        41  .234669541   R-squared       =    0.0149
+-------------+----------------------------------   Adj R-squared   =   -0.0091
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48443
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+female_ratio |  -1.402788   1.778516    -0.79   0.435    -4.994573    2.188998
+       _cons |   .9120921   .3389657     2.69   0.010     .2275369    1.596647
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from full_ratio ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      0.89
+       Model |  .157579358         1  .157579358   Prob > F        =    0.3500
+    Residual |  6.86681089        39  .176072074   R-squared       =    0.0224
+-------------+----------------------------------   Adj R-squared   =   -0.0026
+       Total |  7.02439024        40  .175609756   Root MSE        =    .41961
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  full_ratio |   .6425807     .67924     0.95   0.350    -.7313119    2.016473
+       _cons |  -.0449987   .2871782    -0.16   0.876    -.6258716    .5358741
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from full_ratio ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      0.60
+       Model |  .139931489         1  .139931489   Prob > F        =    0.4446
+    Residual |  9.62751037        41  .234817326   R-squared       =    0.0143
+-------------+----------------------------------   Adj R-squared   =   -0.0097
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48458
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  full_ratio |  -.5815432   .7533371    -0.77   0.445    -2.102938    .9398518
+       _cons |   .8940243   .3231676     2.77   0.008      .241374    1.546675
+------------------------------------------------------------------------------
+
+--- Predicting FOCS from private ---
+
+      Source |       SS           df       MS      Number of obs   =        41
+-------------+----------------------------------   F(1, 39)        =      0.38
+       Model |  .067452445         1  .067452445   Prob > F        =    0.5422
+    Residual |   6.9569378        39   .17838302   R-squared       =    0.0096
+-------------+----------------------------------   Adj R-squared   =   -0.0158
+       Total |  7.02439024        40  .175609756   Root MSE        =    .42235
+
+------------------------------------------------------------------------------
+   focs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     private |   .0813397   .1322758     0.61   0.542    -.1862134    .3488929
+       _cons |   .1818182   .0900462     2.02   0.050    -.0003175    .3639538
+------------------------------------------------------------------------------
+
+--- Predicting GNCS from private ---
+
+      Source |       SS           df       MS      Number of obs   =        43
+-------------+----------------------------------   F(1, 41)        =      1.13
+       Model |  .260948354         1  .260948354   Prob > F        =    0.2950
+    Residual |  9.50649351        41  .231865695   R-squared       =    0.0267
+-------------+----------------------------------   Adj R-squared   =    0.0030
+       Total |  9.76744186        42   .23255814   Root MSE        =    .48152
+
+------------------------------------------------------------------------------
+   gncs_ever | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     private |  -.1558442   .1469033    -1.06   0.295    -.4525213     .140833
+       _cons |   .7272727   .1026613     7.08   0.000      .519944    .9346015
+------------------------------------------------------------------------------
+
+. 
+. * Columns 3-4: Changes predict adoption
+. clear
+
+. use aer_predictsample
+(STATA_RV_112016_1001)
+
+. 
+. keep if year_80s==1
+(688 observations deleted)
+
+. keep YEAR private gncs80 focs80 gncs85 focs85 pol_u ug_student-full_ratio
+
+. collapse private ug_student-full_ratio gncs80 focs80 gncs85 focs85, by(pol_u 
+> YEAR)
+
+. gen gncs=gncs80 if YEAR==1980
+(43 missing values generated)
+
+. replace gncs=gncs85 if YEAR==1985
+(43 real changes made)
+
+. gen focs=focs80 if YEAR==1980
+(43 missing values generated)
+
+. replace focs=focs85 if YEAR==1985
+(43 real changes made)
+
+. drop gncs80 gncs85 focs80 focs85
+
+. 
+. sort pol_u
+
+. save "$outdir/output/temp_table9.dta", replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/temp_table9.dta not found)
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/temp_table9.dta saved
+
+. 
+. clear
+
+. use aer_predictsample
+(STATA_RV_112016_1001)
+
+. keep if year_90_05==1
+(430 observations deleted)
+
+. keep gncs_ever focs_ever focs_pre80 pol_u
+
+. collapse gncs_ever focs_ever focs_pre80, by(pol_u)
+
+. 
+. sort pol_u
+
+. merge 1:m pol_u using "$outdir/output/temp_table9.dta"
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                                86  (_merge==3)
+    -----------------------------------------
+
+. drop _merge
+
+. 
+. replace gncs=gncs_ever if YEAR==1985
+(28 real changes made)
+
+. replace focs=focs_ever if YEAR==1985
+(7 real changes made)
+
+. 
+. foreach x of local xx {
+  2.     di _n "--- Panel: Predicting FOCS from `x' ---"
+  3.     cap noi xi: areg focs `x' i.Y if focs_pre80==0, absorb(pol_u)
+  4.     di _n "--- Panel: Predicting GNCS from `x' ---"
+  5.     cap noi xi: areg gncs `x' i.Y, absorb(pol_u)
+  6. }
+
+--- Panel: Predicting FOCS from ug_students ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   5.49
+                                                    Prob > F          = 0.0079
+                                                    R-squared         = 0.5617
+                                                    Adj R-squared     = 0.0897
+                                                    Root MSE          = 0.3001
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ ug_students |   .0049906   .0596827     0.08   0.934     -.115729    .1257102
+ _IYEAR_1985 |   .2169088   .0732225     2.96   0.005     .0688022    .3650154
+       _cons |  -.0894922   1.071263    -0.08   0.934    -2.256327    2.077342
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 0.948              Prob > F = 0.567
+
+--- Panel: Predicting GNCS from ug_students ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  38.60
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7428
+                                                    Adj R-squared     = 0.4668
+                                                    Root MSE          = 0.3442
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ ug_students |    .032725   .0680177     0.48   0.633    -.1046395    .1700895
+ _IYEAR_1985 |   .6349782   .0814906     7.79   0.000     .4704045    .7995519
+       _cons |  -.5681447   1.182035    -0.48   0.633    -2.955313    1.819023
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 0.985              Prob > F = 0.520
+
+--- Panel: Predicting FOCS from grad_students ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   5.54
+                                                    Prob > F          = 0.0076
+                                                    R-squared         = 0.5627
+                                                    Adj R-squared     = 0.0917
+                                                    Root MSE          = 0.2997
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+grad_stude~s |   .0249107   .0822526     0.30   0.764    -.1414609    .1912823
+ _IYEAR_1985 |   .2089476   .0748299     2.79   0.008     .0575899    .3603054
+       _cons |  -.1579598   .5236644    -0.30   0.765    -1.217171    .9012513
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 0.978              Prob > F = 0.528
+
+--- Panel: Predicting GNCS from grad_students ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  42.36
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7582
+                                                    Adj R-squared     = 0.4988
+                                                    Root MSE          = 0.3337
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+grad_stude~s |   .1545049   .0914045     1.69   0.099    -.0300903    .3391001
+ _IYEAR_1985 |     .58651   .0814999     7.20   0.000     .4219177    .7511024
+       _cons |  -.9620444   .5714125    -1.68   0.100    -2.116035    .1919465
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 1.110              Prob > F = 0.370
+
+--- Panel: Predicting FOCS from faculty ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   5.55
+                                                    Prob > F          = 0.0076
+                                                    R-squared         = 0.5628
+                                                    Adj R-squared     = 0.0920
+                                                    Root MSE          = 0.2997
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     faculty |   .0241783   .0741917     0.33   0.746    -.1258886    .1742452
+ _IYEAR_1985 |    .208263   .0746497     2.79   0.008     .0572698    .3592563
+       _cons |   -.274644   .8440499    -0.33   0.747    -1.981896    1.432608
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 0.971              Prob > F = 0.537
+
+--- Panel: Predicting GNCS from faculty ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  38.95
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7444
+                                                    Adj R-squared     = 0.4700
+                                                    Root MSE          = 0.3431
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     faculty |   .0588048   .0848811     0.69   0.492    -.1126161    .2302258
+ _IYEAR_1985 |   .6242227    .083596     7.47   0.000     .4553972    .7930481
+       _cons |  -.6575607   .9505896    -0.69   0.493    -2.577315    1.262194
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 0.997              Prob > F = 0.504
+
+--- Panel: Predicting FOCS from full_av_salary ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   6.10
+                                                    Prob > F          = 0.0050
+                                                    R-squared         = 0.5722
+                                                    Adj R-squared     = 0.1114
+                                                    Root MSE          = 0.2965
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+full_av_sa~y |   .0197479   .0201755     0.98   0.334    -.0210609    .0605567
+ _IYEAR_1985 |  -.1143115   .3472814    -0.33   0.744    -.8167543    .5881313
+       _cons |  -.8084325    .827235    -0.98   0.334    -2.481673    .8648083
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 0.933              Prob > F = 0.586
+
+--- Panel: Predicting GNCS from full_av_salary ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  39.41
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7463
+                                                    Adj R-squared     = 0.4740
+                                                    Root MSE          = 0.3418
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+full_av_sa~y |   .0199204   .0223398     0.89   0.378    -.0251957    .0650366
+ _IYEAR_1985 |   .3103743   .3892232     0.80   0.430    -.4756778    1.096426
+       _cons |  -.8221435   .9234666    -0.89   0.379    -2.687122    1.042835
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 1.007              Prob > F = 0.492
+
+--- Panel: Predicting FOCS from assist_av_salary ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   5.78
+                                                    Prob > F          = 0.0064
+                                                    R-squared         = 0.5667
+                                                    Adj R-squared     = 0.1000
+                                                    Root MSE          = 0.2984
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+assist_av_~y |   .0238469   .0353923     0.67   0.504    -.0477408    .0954345
+ _IYEAR_1985 |  -.0230105    .365922    -0.06   0.950    -.7631576    .7171367
+       _cons |  -.5660582   .8414054    -0.67   0.505    -2.267961    1.135845
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 0.954              Prob > F = 0.559
+
+--- Panel: Predicting GNCS from assist_av_salary ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  40.55
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7510
+                                                    Adj R-squared     = 0.4839
+                                                    Root MSE          = 0.3386
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+assist_av_~y |   .0496542   .0393567     1.26   0.214    -.0298284    .1291367
+ _IYEAR_1985 |   .1441573   .4084429     0.35   0.726    -.6807099    .9690245
+       _cons |   -1.18161   .9379867    -1.26   0.215    -3.075912    .7126926
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 1.037              Prob > F = 0.455
+
+--- Panel: Predicting FOCS from revenue ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   6.19
+                                                    Prob > F          = 0.0046
+                                                    R-squared         = 0.5736
+                                                    Adj R-squared     = 0.1145
+                                                    Root MSE          = 0.2960
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     revenue |  -.0730354    .069764    -1.05   0.302    -.2141463    .0680755
+ _IYEAR_1985 |   .3799875    .166643     2.28   0.028     .0429202    .7170548
+       _cons |   .2674597   .2596271     1.03   0.309    -.2576858    .7926052
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 1.028              Prob > F = 0.466
+
+--- Panel: Predicting GNCS from revenue ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  41.12
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7534
+                                                    Adj R-squared     = 0.4887
+                                                    Root MSE          = 0.3370
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     revenue |   .1060087   .0751463     1.41   0.166    -.0457523    .2577697
+ _IYEAR_1985 |   .4159216   .1819094     2.29   0.027      .048548    .7832952
+       _cons |  -.3924743   .2829209    -1.39   0.173    -.9638446     .178896
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 1.020              Prob > F = 0.476
+
+--- Panel: Predicting FOCS from female_ratio ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   5.52
+                                                    Prob > F          = 0.0077
+                                                    R-squared         = 0.5623
+                                                    Adj R-squared     = 0.0910
+                                                    Root MSE          = 0.2999
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+female_ratio |  -.9731932   3.994112    -0.24   0.809    -9.052047    7.105661
+ _IYEAR_1985 |   .2385013   .1022742     2.33   0.025     .0316322    .4453705
+       _cons |   .1741864   .7164159     0.24   0.809    -1.274902    1.623274
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 0.955              Prob > F = 0.557
+
+--- Panel: Predicting GNCS from female_ratio ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  38.96
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7444
+                                                    Adj R-squared     = 0.4701
+                                                    Root MSE          = 0.3431
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+female_ratio |   3.140068    4.50311     0.70   0.490    -5.954148    12.23428
+ _IYEAR_1985 |   .5900614   .1146879     5.14   0.000     .3584445    .8216784
+       _cons |  -.5535263   .7955237    -0.70   0.490    -2.160119    1.053067
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 0.990              Prob > F = 0.514
+
+--- Panel: Predicting FOCS from full_ratio ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(2, 39)          =   7.03
+                                                    Prob > F          = 0.0025
+                                                    R-squared         = 0.5871
+                                                    Adj R-squared     = 0.1425
+                                                    Root MSE          = 0.2912
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  full_ratio |   2.347091   1.513061     1.55   0.129     -.713364    5.407546
+ _IYEAR_1985 |   .2151481   .0643864     3.34   0.002     .0849142    .3453819
+       _cons |  -.9639708   .6230899    -1.55   0.130    -2.224289    .2963473
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 39) = 1.055              Prob > F = 0.435
+
+--- Panel: Predicting GNCS from full_ratio ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(2, 41)          =  40.72
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7518
+                                                    Adj R-squared     = 0.4853
+                                                    Root MSE          = 0.3381
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  full_ratio |  -2.293121   1.751701    -1.31   0.198    -5.830753    1.244512
+ _IYEAR_1985 |   .6569684   .0730591     8.99   0.000     .5094226    .8045143
+       _cons |     .95474   .7311409     1.31   0.199     -.521829    2.431309
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 41) = 1.032              Prob > F = 0.460
+
+--- Panel: Predicting FOCS from private ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+note: private omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =     82
+Absorbed variable: pol_u                            No. of categories =     41
+                                                    F(1, 40)          =  11.25
+                                                    Prob > F          = 0.0018
+                                                    R-squared         = 0.5616
+                                                    Adj R-squared     = 0.1123
+                                                    Root MSE          = 0.2963
+
+------------------------------------------------------------------------------
+        focs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     private |          0  (omitted)
+ _IYEAR_1985 |   .2195122   .0654459     3.35   0.002     .0872411    .3517833
+       _cons |          0   .0462772     0.00   1.000    -.0935298    .0935298
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(40, 40) = 1.000              Prob > F = 0.500
+
+--- Panel: Predicting GNCS from private ---
+i.YEAR            _IYEAR_1980-1985    (naturally coded; _IYEAR_1980 omitted)
+note: private omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =     86
+Absorbed variable: pol_u                            No. of categories =     43
+                                                    F(1, 42)          =  78.40
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.7414
+                                                    Adj R-squared     = 0.4766
+                                                    Root MSE          = 0.3410
+
+------------------------------------------------------------------------------
+        gncs | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     private |          0  (omitted)
+ _IYEAR_1985 |   .6511628   .0735413     8.85   0.000     .5027504    .7995752
+       _cons |   5.55e-17   .0520016     0.00   1.000    -.1049434    .1049434
+------------------------------------------------------------------------------
+F test of absorbed indicators: F(42, 42) = 1.000              Prob > F = 0.500
+
+. 
+. log close t9
+      name:  t9
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Antecol et al. (2018)/full/table9.log
+  log type:  text
+ closed on:   6 May 2026, 00:04:02
+-------------------------------------------------------------------------------

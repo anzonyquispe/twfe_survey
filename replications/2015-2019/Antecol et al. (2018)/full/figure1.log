@@ -1,0 +1,109 @@
+-------------------------------------------------------------------------------
+      name:  fig1
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Antecol et al. (2018)/full/figure1.log
+  log type:  text
+ opened on:   6 May 2026, 00:03:39
+
+. 
+. clear
+
+. use aer_acs
+
+. 
+. keep if educ==11
+(48,755 observations deleted)
+
+. keep if uhrswork>=30 & uhrswork!=.
+(3,080 observations deleted)
+
+. 
+. gen female=1 if sex==2
+(8,786 missing values generated)
+
+. replace female=0 if sex==1
+(8,786 real changes made)
+
+. 
+. gen law=1 if occ2010==2100
+(16,175 missing values generated)
+
+. gen dr=1 if occ2010==3060
+(16,617 missing values generated)
+
+. gen postsecondary=1 if occ2010==2200
+(16,834 missing values generated)
+
+. gen business=1 if occ2010>=0010 & occ2010<=0950
+(13,740 missing values generated)
+
+. gen group=1 if law==1
+(16,175 missing values generated)
+
+. replace group=2 if dr==1
+(961 real changes made)
+
+. replace group=3 if postsecondary==1
+(744 real changes made)
+
+. replace group=4 if business==1
+(3,838 real changes made)
+
+. keep if group!=.
+(10,632 observations deleted)
+
+. 
+. sort year age group
+
+. by year age group: gen ngroup = 1 if _n==1
+(6,938 missing values generated)
+
+. replace ngroup = sum(ngroup)
+(6,945 real changes made)
+
+. 
+. gen p75=.
+(6,946 missing values generated)
+
+. qui forvalues i = 1/8 {
+
+. 
+. gen top_25=1 if incwage>=p75
+(5,191 missing values generated)
+
+. gen top_25_female=top_25*female if top_25!=. & female!=.
+(5,191 missing values generated)
+
+. by year age group: gen n=_N
+
+. 
+. collapse female top_25_female (count) n [pw=perwt], by(year age group)
+
+. 
+. graph bar female top_25_female, over(group, label(labsize(vsmall)) relabel(1 
+> "Lawyers" 2 "Doctors" 3 `""Postsecondary" "Teachers""' 4 "Business")) over(ag
+> e, relabel(1 "Age 30" 2 "Age 40")) ytitle("Share Female") legend(label(1 "All
+>  Workers") label(2 "Top 25% of Earners")) bar(1, color(navy)) bar(2, color(dk
+> orange)) saving("$outdir/output/figure1.gph", replace)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/figure1.gph not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
+> ol et al. (2018)/full/output/figure1.gph saved
+
+. graph export "$outdir/output/figure1.png", replace width(1200)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/figure1.png not found)
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/figure1.png saved as PNG format
+
+. 
+. log close fig1
+      name:  fig1
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Antecol et al. (2018)/full/figure1.log
+  log type:  text
+ closed on:   6 May 2026, 00:03:46
+-------------------------------------------------------------------------------

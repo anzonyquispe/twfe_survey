@@ -1,0 +1,596 @@
+-------------------------------------------------------------------------------
+      name:  t5
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table5.log
+  log type:  text
+ opened on:   6 May 2026, 00:29:20
+
+. 
+. use "$datadir/20100816_replication_dataset_t5.dta", clear
+(Replication dataset for "Consequences of Radical Reform", Table 5)
+
+. tsset id year
+
+Panel variable: id (strongly balanced)
+ Time variable: year, 1849 to 1939, but with gaps
+         Delta: 1 unit
+
+. drop if year>1914
+(62 observations deleted)
+
+. 
+. levelsof year, local(timeperiods)
+1849 1882 1895 1907
+
+. 
+. local first = 1
+
+. * Agriculture: West Elbe, weighted
+. foreach X of local timeperiods {
+  2.     di _n "--- Table 5, Col 1, year `X' ---"
+  3.     reg agric fpresence if year==`X' & imputed==0 & westelbe==1 [aweight=p
+> op1849], cl(state)
+  4.     if `first' == 1 {
+  5.         outreg2 fpresence using "$outdir/table5_results.xls", br noaster c
+> title("T5 C1 yr`X'") replace
+  6.         local first = 0
+  7.     }
+  8.     else {
+  9.         outreg2 fpresence using "$outdir/table5_results.xls", br noaster c
+> title("T5 C1 yr`X'")
+ 10.     }
+ 11. }
+
+--- Table 5, Col 1, year 1849 ---
+(sum of wgt is 12,275,730)
+
+Linear regression                               Number of obs     =         23
+                                                F(1, 2)           =       0.84
+                                                Prob > F          =     0.4558
+                                                R-squared         =     0.0528
+                                                Root MSE          =      15.43
+
+                                  (Std. err. adjusted for 3 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.4297836    .468454    -0.92   0.456    -2.445378    1.585811
+       _cons |     59.107   10.03776     5.89   0.028       15.918     102.296
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 1, year 1882 ---
+(sum of wgt is 20,462,465)
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       2.49
+                                                Prob > F          =     0.1587
+                                                R-squared         =     0.0485
+                                                Root MSE          =     14.404
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.4498821   .2851578    -1.58   0.159    -1.124173    .2244088
+       _cons |   48.73236   5.264907     9.26   0.000     36.28283    61.18189
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 1, year 1895 ---
+(sum of wgt is 20,462,465)
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       4.60
+                                                Prob > F          =     0.0690
+                                                R-squared         =     0.0818
+                                                Root MSE          =     13.803
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.5697764   .2655278    -2.15   0.069     -1.19765    .0580971
+       _cons |   43.95212   4.628967     9.50   0.000     33.00635    54.89789
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 1, year 1907 ---
+(sum of wgt is 20,462,465)
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       3.88
+                                                Prob > F          =     0.0896
+                                                R-squared         =     0.0633
+                                                Root MSE          =     15.412
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.5540466   .2813816    -1.97   0.090    -1.219408    .1113151
+       _cons |   40.91545   4.979258     8.22   0.000     29.14138    52.68953
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+. 
+. * Agriculture: West Elbe, unweighted
+. foreach X of local timeperiods {
+  2.     di _n "--- Table 5, Col 2, year `X' ---"
+  3.     reg agric fpresence if year==`X' & imputed==0 & westelbe==1, cl(state)
+  4.     outreg2 fpresence using "$outdir/table5_results.xls", br noaster ctitl
+> e("T5 C2 yr`X'")
+  5. }
+
+--- Table 5, Col 2, year 1849 ---
+
+Linear regression                               Number of obs     =         23
+                                                F(1, 2)           =       0.80
+                                                Prob > F          =     0.4656
+                                                R-squared         =     0.0519
+                                                Root MSE          =     14.577
+
+                                  (Std. err. adjusted for 3 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.4110288   .4596646    -0.89   0.466    -2.388806    1.566748
+       _cons |   60.19079   9.059996     6.64   0.022     21.20877    99.17281
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 2, year 1882 ---
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       3.97
+                                                Prob > F          =     0.0865
+                                                R-squared         =     0.0590
+                                                Root MSE          =     13.402
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.4857622   .2437184    -1.99   0.086    -1.062065    .0905402
+       _cons |    50.8093   4.117117    12.34   0.000     41.07387    60.54474
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 2, year 1895 ---
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       6.19
+                                                Prob > F          =     0.0417
+                                                R-squared         =     0.0867
+                                                Root MSE          =     13.489
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.6014646    .241767    -2.49   0.042    -1.173153   -.0297764
+       _cons |   46.16334   3.778552    12.22   0.000     37.22849     55.0982
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 2, year 1907 ---
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       4.92
+                                                Prob > F          =     0.0621
+                                                R-squared         =     0.0659
+                                                Root MSE          =      15.22
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.5852997   .2639173    -2.22   0.062    -1.209365    .0387654
+       _cons |   43.12088   4.193382    10.28   0.000     33.20511    53.03665
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+. 
+. * Agriculture: All, weighted
+. foreach X of local timeperiods {
+  2.     di _n "--- Table 5, Col 3, year `X' ---"
+  3.     reg agric fpresence if year==`X' & imputed==0 [aweight=pop1849], cl(st
+> ate)
+  4.     outreg2 fpresence using "$outdir/table5_results.xls", br noaster ctitl
+> e("T5 C3 yr`X'")
+  5. }
+
+--- Table 5, Col 3, year 1849 ---
+(sum of wgt is 22,802,404)
+
+Linear regression                               Number of obs     =         39
+                                                F(1, 2)           =       2.16
+                                                Prob > F          =     0.2797
+                                                R-squared         =     0.0474
+                                                Root MSE          =     15.873
+
+                                  (Std. err. adjusted for 3 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.5082653   .3461245    -1.47   0.280    -1.997519    .9809882
+       _cons |   60.40703   4.233645    14.27   0.005     42.19113    78.62294
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 3, year 1882 ---
+(sum of wgt is 32,390,446)
+
+Linear regression                               Number of obs     =         62
+                                                F(1, 8)           =       5.36
+                                                Prob > F          =     0.0492
+                                                R-squared         =     0.0581
+                                                Root MSE          =     14.535
+
+                                  (Std. err. adjusted for 9 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.5854876   .2527963    -2.32   0.049    -1.168437   -.0025383
+       _cons |   50.79872   2.943751    17.26   0.000     44.01042    57.58702
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 3, year 1895 ---
+(sum of wgt is 32,390,446)
+
+Linear regression                               Number of obs     =         62
+                                                F(1, 8)           =      13.09
+                                                Prob > F          =     0.0068
+                                                R-squared         =     0.0739
+                                                Root MSE          =     14.354
+
+                                  (Std. err. adjusted for 9 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.6577799    .181822    -3.62   0.007    -1.077062   -.2384976
+       _cons |   45.29312   2.589076    17.49   0.000      39.3227    51.26354
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 3, year 1907 ---
+(sum of wgt is 32,390,446)
+
+Linear regression                               Number of obs     =         62
+                                                F(1, 8)           =       9.37
+                                                Prob > F          =     0.0156
+                                                R-squared         =     0.0745
+                                                Root MSE          =     15.737
+
+                                  (Std. err. adjusted for 9 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+       agric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |  -.7242998   .2366204    -3.06   0.016    -1.269948   -.1786521
+       _cons |   43.50977   2.925198    14.87   0.000     36.76425    50.25529
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+. 
+. * Industry: West Elbe, weighted
+. foreach X of local timeperiods {
+  2.     di _n "--- Table 5, Col 4, year `X' ---"
+  3.     reg industry fpresence if year==`X' & imputed==0 & westelbe==1 [aweigh
+> t=pop1849], cl(state)
+  4.     outreg2 fpresence using "$outdir/table5_results.xls", br noaster ctitl
+> e("T5 C4 yr`X'")
+  5. }
+
+--- Table 5, Col 4, year 1849 ---
+(sum of wgt is 12,275,730)
+
+Linear regression                               Number of obs     =         23
+                                                F(1, 2)           =       0.02
+                                                Prob > F          =     0.8970
+                                                R-squared         =     0.0015
+                                                Root MSE          =      12.09
+
+                                  (Std. err. adjusted for 3 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .0550468    .375748     0.15   0.897    -1.561666     1.67176
+       _cons |   30.14521   7.512929     4.01   0.057    -2.180316    62.47073
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 4, year 1882 ---
+(sum of wgt is 20,462,465)
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       2.70
+                                                Prob > F          =     0.1445
+                                                R-squared         =     0.0577
+                                                Root MSE          =     12.282
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .4202948   .2559003     1.64   0.145    -.1848132    1.025403
+       _cons |   35.49629   4.252399     8.35   0.000     25.44097    45.55162
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 4, year 1895 ---
+(sum of wgt is 20,462,465)
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       3.64
+                                                Prob > F          =     0.0981
+                                                R-squared         =     0.0732
+                                                Root MSE          =      12.15
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .4723197   .2475787     1.91   0.098    -.1131109     1.05775
+       _cons |   37.63319   3.869531     9.73   0.000     28.48321    46.78318
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 4, year 1907 ---
+(sum of wgt is 20,462,465)
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       1.52
+                                                Prob > F          =     0.2575
+                                                R-squared         =     0.0309
+                                                Root MSE          =     14.175
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .3501944    .284069     1.23   0.257    -.3215221    1.021911
+       _cons |    38.8922   4.509757     8.62   0.000     28.22832    49.55609
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+. 
+. * Industry: West Elbe, unweighted
+. foreach X of local timeperiods {
+  2.     di _n "--- Table 5, Col 5, year `X' ---"
+  3.     reg industry fpresence if year==`X' & imputed==0 & westelbe==1, cluste
+> r(state)
+  4.     outreg2 fpresence using "$outdir/table5_results.xls", br noaster ctitl
+> e("T5 C5 yr`X'")
+  5. }
+
+--- Table 5, Col 5, year 1849 ---
+
+Linear regression                               Number of obs     =         23
+                                                F(1, 2)           =       0.03
+                                                Prob > F          =     0.8758
+                                                R-squared         =     0.0019
+                                                Root MSE          =      11.39
+
+                                  (Std. err. adjusted for 3 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .0605442   .3420454     0.18   0.876    -1.411158    1.532247
+       _cons |   29.51224   6.640936     4.44   0.047     .9386047    58.08589
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 5, year 1882 ---
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       2.60
+                                                Prob > F          =     0.1509
+                                                R-squared         =     0.0541
+                                                Root MSE          =      11.16
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .3864696   .2396468     1.61   0.151    -.1802049    .9531442
+       _cons |   33.97164   3.312831    10.25   0.000     26.13804    41.80523
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 5, year 1895 ---
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       3.76
+                                                Prob > F          =     0.0938
+                                                R-squared         =     0.0700
+                                                Root MSE          =     11.293
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .4485717   .2314218     1.94   0.094     -.098654    .9957973
+       _cons |   35.62454   3.113182    11.44   0.000     28.26304    42.98605
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 5, year 1907 ---
+
+Linear regression                               Number of obs     =         44
+                                                F(1, 7)           =       1.64
+                                                Prob > F          =     0.2417
+                                                R-squared         =     0.0273
+                                                Root MSE          =     13.231
+
+                                  (Std. err. adjusted for 8 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |    .320867   .2509135     1.28   0.242    -.2724491    .9141831
+       _cons |   37.02523   3.609722    10.26   0.000     28.48959    45.56087
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+. 
+. * Industry: All, weighted
+. foreach X of local timeperiods {
+  2.     di _n "--- Table 5, Col 6, year `X' ---"
+  3.     reg industry fpresence if year==`X' & imputed==0 [aweight=pop1849], cl
+> uster(state)
+  4.     outreg2 fpresence using "$outdir/table5_results.xls", br noaster ctitl
+> e("T5 C6 yr`X'")
+  5. }
+
+--- Table 5, Col 6, year 1849 ---
+(sum of wgt is 22,802,404)
+
+Linear regression                               Number of obs     =         39
+                                                F(1, 2)           =       1.03
+                                                Prob > F          =     0.4177
+                                                R-squared         =     0.0419
+                                                Root MSE          =     12.467
+
+                                  (Std. err. adjusted for 3 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |    .374249   .3694955     1.01   0.418    -1.215562     1.96406
+       _cons |   24.85768   4.051147     6.14   0.026        7.427    42.28835
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 6, year 1882 ---
+(sum of wgt is 32,390,446)
+
+Linear regression                               Number of obs     =         62
+                                                F(1, 8)           =       4.96
+                                                Prob > F          =     0.0566
+                                                R-squared         =     0.0861
+                                                Root MSE          =     11.934
+
+                                  (Std. err. adjusted for 9 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .5942107   .2668414     2.23   0.057    -.0211267    1.209548
+       _cons |   32.84616   2.681746    12.25   0.000     26.66204    39.03028
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 6, year 1895 ---
+(sum of wgt is 32,390,446)
+
+Linear regression                               Number of obs     =         62
+                                                F(1, 8)           =       8.35
+                                                Prob > F          =     0.0202
+                                                R-squared         =     0.0993
+                                                Root MSE          =     11.894
+
+                                  (Std. err. adjusted for 9 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .6404879   .2217023     2.89   0.020     .1292416    1.151734
+       _cons |   35.07064   2.641655    13.28   0.000     28.97897    41.16231
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+--- Table 5, Col 6, year 1907 ---
+(sum of wgt is 32,390,446)
+
+Linear regression                               Number of obs     =         62
+                                                F(1, 8)           =       5.79
+                                                Prob > F          =     0.0427
+                                                R-squared         =     0.0584
+                                                Root MSE          =     14.108
+
+                                  (Std. err. adjusted for 9 clusters in state)
+------------------------------------------------------------------------------
+             |               Robust
+    industry | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   fpresence |   .5700536   .2368054     2.41   0.043     .0239793    1.116128
+       _cons |   35.54198   3.116314    11.41   0.000     28.35575    42.72822
+------------------------------------------------------------------------------
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table5_results.xls
+dir : seeout
+
+. 
+. log close t5
+      name:  t5
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table5.log
+  log type:  text
+ closed on:   6 May 2026, 00:29:24
+-------------------------------------------------------------------------------

@@ -1,0 +1,57 @@
+-------------------------------------------------------------------------------
+      name:  rob
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Simcoe (2012)/full/tables/olsRobustSTB.log
+  log type:  text
+ opened on:   6 May 2026, 01:00:55
+
+. 
+. * Alternative STB cross-sectional
+. qui xi: reg ttlDur st_lwgipr st_othDum lwgipr othDum st_stbEmail stbEmail `st
+> _controls' `controls' i.techarea i.pubCohort strfc if ((strfc|nsrfc) & cSampl
+> e & match_samp2), cluster(wg)
+
+. est store altcol1
+
+. qui xi: xtreg ttlDur st_lwgipr st_othDum lwgipr othDum st_stbEmail stbEmail `
+> st_controls' `controls' i.pubCohort strfc if ((strfc|nsrfc) & cSample & match
+> _samp2), fe i(wg) robust
+
+. est store altcol2
+
+. 
+. estout altcol1 altcol2, cells(b(fmt(2)) se(par fmt(2) star)) stats(N r2 df_m 
+> N_g, fmt(0 %8.2f 0 0)) drop(`st_controls' `controls' _I*) style(tex) starleve
+> ls(+ 0.1 * 0.05 ** 0.01 *** 0.001)
+
+            &     altcol1   &     altcol2   \\
+            &        b/se   &        b/se   \\
+st_lwgipr   &        2.03   &        3.88   \\
+            &     (10.56)   &     (11.13)   \\
+st_othDum   &      117.54   &       85.94   \\
+            &     (73.08)   &     (74.13)   \\
+lwgipr      &        0.72   &       13.22   \\
+            &      (8.05)   &     (12.35)   \\
+othDum      &      -18.96   &       -4.64   \\
+            &     (66.93)   &     (76.06)   \\
+st_stbEmail &        3.18   &        3.09   \\
+            &      (1.41)*  &      (1.34)*  \\
+stbEmail    &        1.84   &        3.48   \\
+            &      (1.15)   &      (1.42)*  \\
+strfc       &     -765.96   &     -742.76   \\
+            &    (360.97)*  &    (419.46)+  \\
+_cons       &      168.96   &      143.13   \\
+            &    (285.23)   &    (363.63)   \\
+N           &         952   &         952   \\
+r2          &        0.21   &        0.12   \\
+df_m        &          31   &          25   \\
+N_g         &               &         151   \\
+
+. 
+. log close rob
+      name:  rob
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Simcoe (2012)/full/tables/olsRobustSTB.log
+  log type:  text
+ closed on:   6 May 2026, 01:00:56
+-------------------------------------------------------------------------------

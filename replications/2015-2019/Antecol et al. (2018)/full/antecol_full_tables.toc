@@ -1,0 +1,9 @@
+\contentsline {section}{\numberline {1}Figure 1 -- Gender Composition by Profession}{2}{}%
+\contentsline {section}{\numberline {2}Figure 2 -- Descriptive Trends}{3}{}%
+\contentsline {section}{\numberline {3}Table 2 -- Main Results: Tenure at Policy University}{4}{}%
+\contentsline {section}{\numberline {4}Table 3 -- Event Study}{5}{}%
+\contentsline {section}{\numberline {5}Table 4 -- Robustness: Alternative Specifications}{6}{}%
+\contentsline {section}{\numberline {6}Table 5 -- Other Outcomes}{7}{}%
+\contentsline {section}{\numberline {7}Table 6 -- Publications}{8}{}%
+\contentsline {section}{\numberline {8}Table 7 -- Fertility}{9}{}%
+\contentsline {section}{\numberline {9}Table 8 -- Balance Tests}{10}{}%

@@ -1,0 +1,80 @@
+-------------------------------------------------------------------------------
+      name:  fig2
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Antecol et al. (2018)/full/figure2.log
+  log type:  text
+ opened on:   6 May 2026, 00:03:47
+
+. 
+. clear
+
+. use aer_figure2_sample
+
+. twoway line av_number0 av_number1 policy_job_start, lpattern(- 1) xsc(r(1983 
+> 2003)) xlabel(1983(5)2003) legend(label(1 "Men") label(2 "Women")) xtitle("Ye
+> ar of First Job") ytitle("Average Number Hired") title("Average Number of Ass
+> istant Professors Hired") saving("$outdir/output/temp2a.gph", replace)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/temp2a.gph not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
+> ol et al. (2018)/full/output/temp2a.gph saved
+
+. twoway line av_tenure0 av_tenure1 policy_job_start, lpattern(- 1) xsc(r(1983 
+> 2003)) xlabel(1983(5)2003) legend(label(1 "Men") label(2 "Women")) xtitle("Ye
+> ar of First Job") ytitle("Tenure Rate") title("Tenure Rate") saving("$outdir/
+> output/temp2b.gph", replace)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/temp2b.gph not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
+> ol et al. (2018)/full/output/temp2b.gph saved
+
+. twoway line av_top0 av_top1       policy_job_start, lpattern(- 1) xsc(r(1983 
+> 2003)) xlabel(1983(5)2003) legend(label(1 "Men") label(2 "Women")) xtitle("Ye
+> ar of First Job") ytitle("Top-5 Publications within 7 Years") title("Average 
+> Number of Top-5 Publications within 7 Years") saving("$outdir/output/temp2c.g
+> ph", replace)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/temp2c.gph not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
+> ol et al. (2018)/full/output/temp2c.gph saved
+
+. twoway line av_pubs0 av_pubs1     policy_job_start, lpattern(- 1) xsc(r(1983 
+> 2003)) xlabel(1983(5)2003) legend(label(1 "Men") label(2 "Women")) xtitle("Ye
+> ar of First Job") ytitle("Non-Top-5 Publications within 7 Years") title("Aver
+> age Number of Non-Top-5 Publications within 7 Years") saving("$outdir/output/
+> temp2d.gph", replace)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/temp2d.gph not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
+> ol et al. (2018)/full/output/temp2d.gph saved
+
+. 
+. graph combine "$outdir/output/temp2a.gph" "$outdir/output/temp2b.gph" "$outdi
+> r/output/temp2c.gph" "$outdir/output/temp2d.gph", altshrink saving("$outdir/o
+> utput/figure2.gph", replace)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/figure2.gph not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
+> ol et al. (2018)/full/output/figure2.gph saved
+
+. graph export "$outdir/output/figure2.png", replace width(1200)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/figure2.png not found)
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/full/output/figure2.png saved as PNG format
+
+. 
+. log close fig2
+      name:  fig2
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Antecol et al. (2018)/full/figure2.log
+  log type:  text
+ closed on:   6 May 2026, 00:03:52
+-------------------------------------------------------------------------------

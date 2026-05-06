@@ -16,6 +16,31 @@ Apply the `twowayfeweights` diagnostic (Stata/R) to published AER papers that us
 
 Additionally, **10 papers** were identified as **No TWFE** (not amenable to `twowayfeweights` due to cross-sectional Bartik designs, RDD, or non-TWFE identification strategies) or **Sin data** (restricted/proprietary microdata that cannot be accessed).
 
+### Full Replications — 14 papers with complete replication PDFs
+
+Beyond the TWFE diagnostic, **14 papers** have full replication outputs (all feasible tables from the original paper re-estimated and compiled into LaTeX/PDF):
+
+| # | Paper | Wave | Status | Tables | Notes |
+|---|-------|------|--------|--------|-------|
+| 1 | Aaronson et al. (2012) | 1 | Full | 3 | CPS tables |
+| 2 | Anderson & Sallee (2011) | 1 | Partial | 3/8 | Proprietary data limits |
+| 3 | Bloom et al. (2012) | 1 | Partial | 4 | UK census restricted |
+| 4 | Dell (2015) | 2 | Full | 3 | Drug cols redacted |
+| 5 | Handley & Limão (2017) | 2 | Full | 17 | Complete paper |
+| 6 | Munshi & Rosenzweig (2016) | 2 | Partial | 2 | cgmwildboot issue |
+| 7 | Acemoglu et al. (2011) | 1 | Full | 1 | Democracy & growth |
+| 8 | Antecol et al. (2018) | 2 | Full | 7 | Tenure clock stopping |
+| 9 | Forman et al. (2012) | 1 | Full | 5 | Internet & wages |
+| 10 | Simcoe (2012) | 1 | Full | 4 | Standards committees |
+| 11 | Enikolopov et al. (2011) | 1 | Full | 7 | Media & persuasion |
+| 12 | Algan & Cahuc (2010) | 1 | Full | 4 | Trust & growth |
+| 13 | Fetzer (2019) | 2 | Full (partial) | 3 | District-level only (UKHLS not included) |
+| 14 | Dahl & Lochner (2012) | 1 | Failed | 0 | TAXSIM9 endpoint no longer available |
+
+PDFs are located in `latex/<wave>/<paper>/full/`.
+
+**Learning**: Stata MP license requires serial execution (one instance at a time) on Windows batch mode to avoid license conflicts.
+
 ## All 24 Replicated Papers
 
 | # | Paper | Negative Weights (%) | Wave | Notes |

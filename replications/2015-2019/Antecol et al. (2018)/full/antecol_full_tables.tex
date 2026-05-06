@@ -1,0 +1,117 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,adjustbox,graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Antecol, Bedard \& Stearns (2018)}\\
+{\large Equal but Inequitable: Who Benefits from Gender-Neutral}\\
+{\large Tenure Clock Stopping Policies?}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 108(9), 2420--2441}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Full replication.
+All tables (2--9) and figures (1--2) replicated from the original do-files
+using 7 datasets provided in the replication package.
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Figure 1 -- Gender Composition by Profession}
+
+Share of women overall and among top-25\% earners, by profession and age cohort.
+Data from Census 2000 and ACS 2010.
+
+\vspace{1em}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{output/figure1.png}
+\end{center}
+
+%% ====================================================================
+\clearpage
+\section{Figure 2 -- Descriptive Trends}
+
+Average number of hires, tenure rates, and publications by gender and year of first job.
+
+\vspace{1em}
+\begin{center}
+\includegraphics[width=0.95\textwidth]{output/figure2.png}
+\end{center}
+
+%% ====================================================================
+\clearpage
+\section{Table 2 -- Main Results: Tenure at Policy University}
+
+Effect of gender-neutral clock stopping (GNCS) and female-only clock stopping
+(FOCS) policies on probability of tenure at the policy university.
+University and cohort FE interacted with gender.
+
+\vspace{1em}
+\input{table2_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 3 -- Event Study}
+
+Event study specification with pre-policy leads and post-policy lags.
+Effects relative to $t-1$ (year before policy adoption).
+
+\vspace{1em}
+\input{table3_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 4 -- Robustness: Alternative Specifications}
+
+Six alternative specifications: (1) baseline, (2) no controls,
+(3) expanded sample, (4) top-10 department$\times$gender dummies,
+(5) no female interactions, (6) including endogenous covariates.
+
+\vspace{1em}
+\input{table4_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 5 -- Other Outcomes}
+
+Tenure anywhere, time at policy university, early leaving, late moves,
+time to tenure, jobs to associate, downward and upward moves.
+
+\vspace{1em}
+\input{table5_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 6 -- Publications}
+
+Top-5 and non-top-5 publications within 3, 5, 7, and 9 years.
+
+\vspace{1em}
+\input{table6_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 7 -- Fertility}
+
+Difference-in-means t-tests for fertility outcomes by policy status and gender.
+
+\vspace{1em}
+\input{table7_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 8 -- Balance Tests}
+
+Covariate balance across policy adoption for PhD rank, post-doc experience,
+and initial publications.
+
+\vspace{1em}
+\input{table8_full}
+
+\end{document}

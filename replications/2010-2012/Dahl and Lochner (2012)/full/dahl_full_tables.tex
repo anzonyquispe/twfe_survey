@@ -1,0 +1,43 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{amsmath}
+
+\title{Dahl \& Lochner (2012) --- Full Replication\\
+\large FAILED: External Dependency Not Available}
+\author{Automated Replication}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Replication Status: FAILED}
+
+The full replication of Dahl \& Lochner (2012) could not be completed due to two external dependencies:
+
+\begin{enumerate}
+    \item \textbf{TAXSIM9 package:} The paper's pipeline requires \texttt{taxsim9}, a Stata command that sends income data to NBER's TAXSIM calculator to compute federal/state EITC amounts. The package could not be installed (\texttt{command taxsim9 is unrecognized, r(199)}). NBER has since migrated to TAXSIM v35, and the original \texttt{taxsim9} endpoint may no longer be operational.
+
+    \item \textbf{NLSY state variable:} The replication package requires a state-of-residence variable from the restricted-access NLSY79 dataset. The publicly available data sets \texttt{state=0}, which disables all state-level tax calculations.
+\end{enumerate}
+
+\subsection*{Pipeline Structure}
+
+The paper's code consists of 4 sequential steps:
+\begin{enumerate}
+    \item \texttt{taxsim-eitc.do}: Prepares income data and sends to TAXSIM $\rightarrow$ \textbf{Failed at \texttt{taxsim9} command}
+    \item \texttt{merge-school-welfare.do}: Merges TAXSIM output with school/welfare data $\rightarrow$ Failed (missing input)
+    \item \texttt{makevars.do}: Creates first-differenced variables $\rightarrow$ Failed (missing input)
+    \item \texttt{regressions.do}: Runs IV regressions (Tables 2--7) $\rightarrow$ Failed (missing input)
+\end{enumerate}
+
+Step 1 partially executed: the main dataset was loaded and the first iteration of the foreach loop (actual income, no state taxes) ran through data preparation. However, the \texttt{taxsim9, replace full} command failed, preventing all downstream steps.
+
+\subsection*{Files Generated}
+\begin{itemize}
+    \item \texttt{preeitcinput.dta}: Pre-EITC input dataset (saved before TAXSIM call)
+    \item No regression output or tables were produced
+\end{itemize}
+
+\end{document}

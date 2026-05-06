@@ -1,0 +1,186 @@
+-------------------------------------------------------------------------------
+      name:  inter
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Simcoe (2012)/full/tables/olsInteractions.log
+  log type:  text
+ opened on:   6 May 2026, 01:00:56
+
+. 
+. decode techarea, gen(areaName)
+
+. replace areaName = "ops" if areaName == "o&m"
+(355 real changes made)
+
+. 
+. gen stb_org = stbafl1yr*orgDum
+(314 missing values generated)
+
+. gen stb_edu = stbafl1yr*eduDum
+(314 missing values generated)
+
+. gen st_stborg = stb_org * strfc
+(314 missing values generated)
+
+. gen st_stbedu = stb_edu * strfc
+(314 missing values generated)
+
+. 
+. g nsEffect = stbafl1yr
+(314 missing values generated)
+
+. foreach area in app int ops rtg sec tsv {
+  2.     qui gen stXarea_`area' = stbafl1yr * strfc * (areaName == "`area'")
+  3.     qui gen nsXarea_`area' = stbafl1yr * (areaName == "`area'")
+  4. }
+
+. 
+. g yrGrp = 1993 + 2 * floor((pubCohort - 1993)/2)
+
+. forval yr = 1993(2)2001 {
+  2.     gen stStb_`yr' = stbafl1yr * strfc * (yrGrp == `yr')
+  3.     gen nsStb_`yr' = stbafl1yr * (yrGrp == `yr')
+  4. }
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+(314 missing values generated)
+
+. 
+. * Org/Edu interactions
+. di _n "--- Organization/Education Interactions ---"
+
+--- Organization/Education Interactions ---
+
+. qui xi: reg ttlDur st_stbafl1yr st_orgDum st_stborg st_eduDum st_stbedu `st_c
+> ontrols' i.pubCohort i.techarea if ((strfc) & cSample==1), cluster(wg)
+
+. est store int1
+
+. 
+. qui xi: reg ttlDur st_stbafl1yr st_orgDum st_stborg st_eduDum st_stbedu stbaf
+> l1yr orgDum eduDum strfc stb_org stb_edu `controls' `st_controls' i.pubCohort
+> *strfc i.techarea*strfc if ((strfc|nsrfc) & cSample==1), cluster(wg)
+
+. est store int2
+
+. 
+. * TechArea interactions
+. di _n "--- Tech Area Interactions ---"
+
+--- Tech Area Interactions ---
+
+. qui xi: reg ttlDur stXarea_* st_othDum `st_controls' i.pubCohort i.techarea i
+> f ((strfc) & cSample), cluster(wg)
+
+. est store int3
+
+. 
+. qui xi: reg ttlDur stXarea_* nsXarea_* othDum st_othDum `controls' `st_contro
+> ls' i.pubCohort*strfc i.techarea*strfc if ((strfc|nsrfc) & cSample), cluster(
+> wg)
+
+. est store int4
+
+. 
+. * Cohort interactions
+. di _n "--- Cohort Interactions ---"
+
+--- Cohort Interactions ---
+
+. qui xi: reg ttlDur stStb_* othDum `controls' i.pubCohort i.techarea if (strfc
+>  & cSample), cluster(wg)
+
+. est store int5
+
+. 
+. qui xi: reg ttlDur stStb_* nsStb_* othDum st_othDum `controls' `st_controls' 
+> i.pubCohort*strfc i.techarea if ((strfc|nsrfc) & cSample), cluster(wg)
+
+. est store int6
+
+. 
+. estout int1 int2 int3 int4 int5 int6, cells(b(fmt(1)) se(par fmt(1) star)) st
+> ats(N r2 df_m N_g, fmt(0 %8.2f 0 0)) drop(strfc st_stbafl1yr stbafl1yr st_org
+> Dum st_eduDum orgDum eduDum othDum st_othDum stb_* _I* _cons `controls' `st_c
+> ontrols' nsXarea_* nsStb_*) style(tex) starlevels(+ 0.1 * 0.05 ** 0.01 *** 0.
+> 001)
+
+            &        int1   &        int2   &        int3   &        int4   &  
+>       int5   &        int6   \\
+            &        b/se   &        b/se   &        b/se   &        b/se   &  
+>       b/se   &        b/se   \\
+st_stborg   &         9.4   &        10.5   &               &               &  
+>              &               \\
+            &       (3.7)*  &       (6.1)+  &               &               &  
+>              &               \\
+st_stbedu   &        -0.1   &         1.1   &               &               &  
+>              &               \\
+            &       (2.4)   &       (3.8)   &               &               &  
+>              &               \\
+stXarea_app &               &               &         9.0   &         7.5   &  
+>              &               \\
+            &               &               &       (2.3)***&       (3.4)*  &  
+>              &               \\
+stXarea_int &               &               &         3.5   &         1.6   &  
+>              &               \\
+            &               &               &       (3.2)   &       (4.3)   &  
+>              &               \\
+stXarea_ops &               &               &         3.2   &         7.9   &  
+>              &               \\
+            &               &               &       (3.5)   &       (6.0)   &  
+>              &               \\
+stXarea_rtg &               &               &        -1.1   &         6.0   &  
+>              &               \\
+            &               &               &       (3.3)   &       (5.6)   &  
+>              &               \\
+stXarea_sec &               &               &        -0.8   &         6.5   &  
+>              &               \\
+            &               &               &       (5.9)   &       (6.6)   &  
+>              &               \\
+stXarea_tsv &               &               &         5.0   &        11.7   &  
+>              &               \\
+            &               &               &       (2.7)+  &       (3.2)***&  
+>              &               \\
+stStb_1993  &               &               &               &               &  
+>        0.1   &        -1.6   \\
+            &               &               &               &               &  
+>      (3.7)   &       (4.9)   \\
+stStb_1995  &               &               &               &               &  
+>        4.8   &         5.6   \\
+            &               &               &               &               &  
+>      (2.5)+  &       (4.5)   \\
+stStb_1997  &               &               &               &               &  
+>        0.9   &         5.7   \\
+            &               &               &               &               &  
+>      (2.6)   &       (4.1)   \\
+stStb_1999  &               &               &               &               &  
+>        6.4   &         7.5   \\
+            &               &               &               &               &  
+>      (2.4)** &       (3.4)*  \\
+stStb_2001  &               &               &               &               &  
+>        5.7   &        12.0   \\
+            &               &               &               &               &  
+>      (3.5)   &       (3.4)***\\
+N           &         773   &        1166   &         773   &        1166   &  
+>        773   &        1166   \\
+r2          &        0.22   &        0.20   &        0.22   &        0.21   &  
+>       0.21   &        0.19   \\
+df_m        &          24   &          49   &          26   &          53   &  
+>         25   &          46   \\
+N_g         &               &               &               &               &  
+>              &               \\
+
+. 
+. log close inter
+      name:  inter
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Simcoe (2012)/full/tables/olsInteractions.log
+  log type:  text
+ closed on:   6 May 2026, 01:00:57
+-------------------------------------------------------------------------------
