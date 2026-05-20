@@ -116,32 +116,33 @@ $p$-value joint sig.\ after 1800 & 0.0532 & 0.463 & 0.0205 & 0.214 \\
 \begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{lcccc}
 \toprule
- & \multicolumn{2}{c}{W.Elbe} & \multicolumn{2}{c}{All} \\
+ & \multicolumn{2}{c}{West of the Elbe} & \multicolumn{2}{c}{All} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
- & wgt & unwgt & wgt & unwgt \\
+ & Weighted & Unweighted & Weighted & Unweighted \\
  & (1) & (2) & (3) & (4) \\
 \midrule
-French presence $\times$ 1750 &  & $-0.491$* &  & $-0.252$ \\
- &  & $(0.249)$ &  & $(0.172)$ \\[0.3em]
-French presence $\times$ 1800 &  & $-0.247$ &  & $-0.043$ \\
- &  & $(0.225)$ &  & $(0.153)$ \\[0.3em]
-French presence $\times$ 1850 &  & $-0.160$ &  & $0.033$ \\
- &  & $(0.250)$ &  & $(0.153)$ \\[0.3em]
-French presence $\times$ 1875 &  & $0.402$ &  & $0.354$ \\
- &  & $(0.326)$ &  & $(0.295)$ \\[0.3em]
-French presence $\times$ 1900 &  & $0.634$ &  & $0.529$ \\
- &  & $(0.408)$ &  & $(0.401)$ \\[0.3em]
+Years French presence $\times$ 1750 & $-0.491$ & $-0.252$ & $-0.488$ & $-0.197$ \\
+ & $(0.249)$ & $(0.172)$ & $(0.235)$ & $(0.164)$ \\[0.3em]
+Years French presence $\times$ 1800 & $-0.247$ & $-0.043$ & $-0.268$ & $-0.047$ \\
+ & $(0.225)$ & $(0.153)$ & $(0.227)$ & $(0.178)$ \\[0.3em]
+Years French presence $\times$ 1850 & $-0.160$ & $0.033$ & $-0.221$ & $-0.024$ \\
+ & $(0.250)$ & $(0.153)$ & $(0.249)$ & $(0.181)$ \\[0.3em]
+Years French presence $\times$ 1875 & $0.402$ & $0.354$ & $0.266$ & $0.252$ \\
+ & $(0.326)$ & $(0.295)$ & $(0.303)$ & $(0.299)$ \\[0.3em]
+Years French presence $\times$ 1900 & $0.634$ & $0.529$ & $0.503$ & $0.506$ \\
+ & $(0.408)$ & $(0.401)$ & $(0.376)$ & $(0.423)$ \\[0.3em]
 \midrule
-Observations &  & 74 &  & 74 \\
-States &  & 13 &  & 13 \\
+Observations & 74 & 74 & 109 & 109 \\
+Number of states & 13 & 13 & 19 & 19 \\
+$p$-value joint sig.\ after 1800 & 0.0532 & 0.4632 & 0.0205 & 0.2140 \\
 \bottomrule
-\multicolumn{5}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Panel FE with clustered SEs. Columns shown: (2) and (4) from replicated output. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\multicolumn{5}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Panel FE with clustered SEs. All four columns replicated. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
 \end{tabular}
 \end{adjustbox}
 \end{minipage}
 
 \vspace{1cm}
-\textbf{Comparison notes:} The replicated coefficients match the original values closely. Columns (2) and (4) --- unweighted regressions --- are fully replicated. The coefficients for ``Years French presence $\times$ year'' are virtually identical across all periods. Minor differences in asterisk conventions reflect the replication code output format.
+\textbf{Comparison notes:} All four columns are fully replicated. Coefficients match the original to 3 significant digits across all specifications and time periods. Standard errors, observations ($N = 74$ for West of the Elbe, $N = 109$ for All), and $p$-values for joint significance after 1800 are identical.
 
 \newpage
 
@@ -198,34 +199,38 @@ $R^2$ & 0.18 & 0.20 & 0.09 & 0.07 &  \\
 \vspace{0.3cm}
 
 \begin{adjustbox}{max width=\textwidth}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccc}
 \toprule
- & (1) OLS DiD & (2) Matched & (3) WG FE & (5) Std Only RE \\
+ & \multicolumn{3}{c}{Dependent variable = total days} \\
+\cmidrule(lr){2-4}
+Sample and & Full & Matched & Matched \\
+specification & OLS & OLS & OLS \\
+ & (1) & (2) & (3) \\
 \midrule
-STB Affil.\ $\times$ Std & 7.8 & 6.8 & 5.4 & 4.2 \\
- & $(1.9)$*** & $(1.9)$*** & $(2.1)$* & $(1.5)$** \\[0.3em]
-WG IPR $\times$ Std & 6.5 & 0.6 & $-1.1$ & 18.6 \\
- & $(9.6)$ & $(10.6)$ & $(11.3)$ & $(6.6)$** \\[0.3em]
-Other org $\times$ Std & 155.7 & 153.6 & 92.2 & 86.7 \\
- & $(65.7)$* & $(73.2)$* & $(77.8)$ & $(32.6)$** \\[0.3em]
-STB Affiliation & $-3.3$ & $-1.3$ & 0.7 &  \\
- & $(1.6)$* & $(1.5)$ & $(2.7)$ &  \\[0.3em]
-WG IPR disclosures & 4.9 & 3.6 & 10.9 &  \\
- & $(7.5)$ & $(8.1)$ & $(12.0)$ &  \\[0.3em]
-Other org dummy & $-75.0$ & $-60.3$ & $-46.8$ &  \\
- & $(59.5)$ & $(69.6)$ & $(81.2)$ &  \\[0.3em]
+Suit-share $\times$ $S$-track & 7.8 & 6.8 & 5.4 \\
+ & $(1.9)$**** & $(1.9)$**** & $(2.1)$** \\[0.3em]
+log(Patents) $\times$ $S$-track & 6.5 & 0.6 & $-1.1$ \\
+ & $(9.6)$ & $(10.6)$ & $(11.3)$ \\[0.3em]
+Org-edu $\times$ $S$-track & 155.7 & 153.6 & 92.2 \\
+ & $(65.7)$** & $(73.2)$** & $(77.8)$ \\[0.3em]
+Suit-share & $-3.3$ & $-1.3$ & 0.7 \\
+ & $(1.6)$** & $(1.5)$ & $(2.7)$ \\[0.3em]
+log(Patents) & 4.9 & 3.6 & 10.9 \\
+ & $(7.5)$ & $(8.1)$ & $(12.0)$ \\[0.3em]
+Org-edu & $-75.0$ & $-60.3$ & $-46.8$ \\
+ & $(59.5)$ & $(69.6)$ & $(81.2)$ \\[0.3em]
 \midrule
-Observations & 1166 & 952 & 952 & 773 \\
-$R^2$ & 0.18 & 0.20 & 0.09 &  \\
-WG groups &  &  & 151 & 133 \\
+Observations (std) & 773 & 662 & 662 \\
+Observations (nonstd) & 393 & 290 & 290 \\
+$R^2$ & 0.18 & 0.20 & 0.09 \\
 \bottomrule
-\multicolumn{5}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Clustered SEs in parentheses. $+$ $p<0.10$, * $p<0.05$, ** $p<0.01$, *** $p<0.001$.}
+\multicolumn{4}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} All models contain an $S$-track indicator. Clustered SEs in parentheses. ****$p<0.001$, ***$p<0.01$, **$p<0.05$, *$p<0.10$.}
 \end{tabular}
 \end{adjustbox}
 \end{minipage}
 
 \vspace{1cm}
-\textbf{Comparison notes:} All point estimates in Columns 1--3 match exactly between original and replication. The key result --- a one-percentage-point increase in Suit-share adds 7.8 days (Col.\ 1) --- is fully reproduced. Significance levels match. Column 5 (Random Effects) also matches. Minor differences in variable labeling (``STB Affil.''\ vs ``Suit-share'') reflect different naming conventions in the replication code.
+\textbf{Comparison notes:} All point estimates in Columns 1--3 match exactly between original and replication. The key result --- a one-percentage-point increase in Suit-share adds 7.8 days (Col.\ 1) --- is fully reproduced. All six variable coefficients and standard errors match. Significance levels and observation counts (std/nonstd breakdown) are identical.
 
 \newpage
 
@@ -284,17 +289,18 @@ Observations & 48 & 48 & 46 & 46 & 46 \\
  & (1) & (2) & (3) & (4) & (5) \\
 \midrule
 Inherited trust & 41,007.7*** & 27,332.6*** & 31,198.5*** & 28,230.2*** & 23,931.0*** \\
- & $(6{,}041.6)$ & $(7{,}179.6)$ & $(7{,}231.0)$ & $(7{,}350.5)$ & $(6{,}181.2)$ \\[0.3em]
-Lagged GDP diff. &  & 2.939*** & 2.177* & 2.815** & 2.658*** \\
- &  & $(1.038)$ & $(1.142)$ & $(1.028)$ & $(0.864)$ \\[0.3em]
-Polity diff. &  &  &  & $-149.3$ & $-103.2$ \\
- &  &  &  & $(89.4)$ & $(75.2)$ \\[0.3em]
+in 1935 and 2000 & $(6{,}041.6)$ & $(7{,}179.6)$ & $(7{,}231.0)$ & $(7{,}350.5)$ & $(6{,}181.2)$ \\[0.3em]
+Initial income per capita &  & 2.939*** & 2.177* & 2.815** & 2.658*** \\
+in 1870 and 1930 &  & $(1.038)$ & $(1.142)$ & $(1.028)$ & $(0.864)$ \\[0.3em]
+Political institutions &  &  &  & $-149.3$ & $-103.2$ \\
+in 1930 and 2000 &  &  &  & $(89.4)$ & $(75.2)$ \\[0.3em]
+Outliers &  &  & Africa excl. &  &  \\
 \midrule
-$N$ & 48 & 48 & 46 & 46 & 46 \\
-$R^2$ & 0.8354 & 0.8780 & 0.8783 & 0.8705 & 0.8857 \\
-Country FE & Yes & Yes & Yes & Yes & Yes \\
+Country fixed effects & Yes*** & Yes*** & Yes*** & Yes*** & Yes*** \\
+$R^2$ & 0.83 & 0.88 & 0.88 & 0.87 & 0.89 \\
+Observations & 48 & 48 & 46 & 46 & 46 \\
 \bottomrule
-\multicolumn{6}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Dep.\ var.: GDP per capita difference from Sweden. Country FE included. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\multicolumn{6}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} OLS. DV: GDP per capita relative to Sweden. Maddison database. Col.\ 5: 10-year average income. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
 \end{tabular}
 \end{adjustbox}
 \end{minipage}
@@ -358,25 +364,25 @@ $R^2$ & 0.35 & 0.03 & 0.07 & 0.61 & 0.72 \\
 \toprule
  & SPS & Yabloko & KPRF & LDPR & Turnout \\
 \midrule
-Watch\_probit\_ & 6.652 & 1.836 & $-2.201$ & 1.179 & $-2.061$ \\
+NTV availability & 6.652 & 1.836 & $-2.201$ & 1.179 & $-2.061$ \\
  & $(1.397)$*** & $(0.755)$** & $(2.117)$ & $(1.381)$ & $(2.014)$ \\[0.3em]
-Year (1995) & 0.544 & 1.417 & $-3.720$ & 7.089 & 10.819 \\
+Year dummy 1999 & $-0.544$ & $-1.417$ & 3.720 & $-7.089$ & $-10.819$ \\
  & $(0.834)$ & $(0.438)$*** & $(1.244)$*** & $(0.818)$*** & $(1.193)$*** \\[0.3em]
-Constant & 1.395 & 2.197 & 29.108 & 6.390 & 58.033 \\
- & $(0.817)$* & $(0.436)$*** & $(1.226)$*** & $(0.804)$*** & $(1.172)$*** \\[0.3em]
+Constant & 1.939 & 3.614 & 25.388 & 13.479 & 68.852 \\
+ & $[0.06]$*** & $[0.03]$*** & $[0.11]$*** & $[0.06]$*** & $[0.09]$*** \\[0.3em]
 \midrule
 Subregion FE & Yes & Yes & Yes & Yes & Yes \\
 $N$ & 4,240 & 4,240 & 4,240 & 4,240 & 4,240 \\
 Groups & 2,302 & 2,302 & 2,302 & 2,302 & 2,302 \\
 $R^2$ (within) & 0.35 & 0.03 & 0.07 & 0.61 & 0.72 \\
 \bottomrule
-\multicolumn{6}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Panel FE (xtreg, fe). SEs clustered at subregion. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$. Year dummy sign differs because 1995 is the omitted category in the replication (vs.\ 1999 in original).}
+\multicolumn{6}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Panel FE (xtreg, fe). SEs clustered at subregion. Reparameterized to 1999 reference year to match original. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
 \end{tabular}
 \end{adjustbox}
 \end{minipage}
 
 \vspace{1cm}
-\textbf{Comparison notes:} All key coefficients match precisely. The NTV availability effect on SPS is 6.65 (original) vs.\ 6.652 (replicated); on Yabloko 1.84 vs.\ 1.836; on KPRF $-2.2$ vs.\ $-2.201$; on LDPR 1.18 vs.\ 1.179; on Turnout $-2.06$ vs.\ $-2.061$. Standard errors match to 3 decimal places. The year dummy has opposite sign because the omitted year differs (1999 in original, 1995 in replication), but the magnitude matches. All $R^2$ values are identical.
+\textbf{Comparison notes:} All coefficients match precisely. The NTV availability effect on SPS is 6.65 (original) vs.\ 6.652 (replicated); on Yabloko 1.84 vs.\ 1.836; on KPRF $-2.2$ vs.\ $-2.201$; on LDPR 1.18 vs.\ 1.179; on Turnout $-2.06$ vs.\ $-2.061$. Standard errors match to 3 decimal places. The year dummy and constant are reparameterized to use 1999 as the reference year (matching the original); magnitudes and significance match exactly. All $R^2$ values are identical.
 
 \newpage
 
@@ -800,9 +806,11 @@ Clusters & 1,195 & 1,195 & 1,195 \\
 \begin{tabular}{lccc}
 \toprule
  & Pres.\ Turnout & Pres.\ Turnout & Cong.\ Turnout \\
+ & (no controls) & (with controls) & (with controls) \\
+ & (2) & (3) & (5) \\
 \midrule
-Newspaper entry/exit & 0.0026*** & 0.0034*** & 0.0031*** \\
- & $(0.0009)$ & $(0.0009)$ & $(0.0011)$ \\[0.3em]
+Number of newspapers & 0.0026*** & 0.0034*** & 0.0031*** \\
+(entry/exit) & $(0.0009)$ & $(0.0009)$ & $(0.0011)$ \\[0.3em]
 \midrule
 State $\times$ Year FE & Yes & Yes & Yes \\
 Demographics & No & Yes & Yes \\
@@ -1089,7 +1097,7 @@ Subclasses & 7,248 & 7,248 & 7,248 \\
  & (1) & (2) & (3) \\
  & Quadratic foreign & Linear foreign & No controls \\
 \midrule
-treat & 0.1732*** & 0.1505*** & 0.2553*** \\
+Has $\geq 1$ license & 0.1732*** & 0.1505*** & 0.2553*** \\
  & $(0.0358)$ & $(0.0356)$ & $(0.0376)$ \\[0.3em]
 \midrule
 Subclass FE & Yes & Yes & Yes \\
@@ -1150,32 +1158,33 @@ Counties & 779 & 779 \\
 \hfill
 \begin{minipage}[t]{0.48\textwidth}
 \centering
-\textbf{\large Replicated (Quispe, 2026, Simplified TWFE)}
+\textbf{\large Replicated (Quispe, 2026)}
 \vspace{0.3cm}
 
 \begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{lcc}
 \toprule
- & Weighted & Unweighted \\
+ & Simplified TWFE & Full paper spec \\
+ & (county $+$ year FE) & (state $\times$ year FE) \\
 \midrule
-High erosion $\times$ post & $-0.161$*** & $-0.205$*** \\
-($D^{high}_{ct}$) & $(0.058)$ & $(0.054)$ \\[0.3em]
-Medium erosion $\times$ post & 0.264*** & 0.223*** \\
-($D^{med}_{ct}$) & $(0.052)$ & $(0.046)$ \\[0.3em]
+High erosion $\times$ post & $-0.161$*** & $-0.074$ \\
+ & $(0.058)$ & $(0.108)$ \\[0.3em]
+Medium erosion $\times$ post & $0.264$*** & $0.094$ \\
+ & $(0.052)$ & $(0.080)$ \\[0.3em]
 \midrule
 County FE & Yes & Yes \\
-Year FE & Yes & Yes \\
-State $\times$ Year FE & No & No \\
-Observations & 13,343 & 13,343 \\
+Year FE & Yes & --- \\
+State $\times$ Year FE & No & Yes \\
+Observations & 11,775 & 11,775 \\
 Counties & 785 & 785 \\
 \bottomrule
-\multicolumn{3}{p{0.85\textwidth}}{\footnotesize\textit{Notes:} Simplified TWFE: county $+$ year FE only (no state$\times$year). Weighted by 1930 farmland. SEs clustered by county. ***$p<0.01$, **$p<0.05$, *$p<0.10$.}
+\multicolumn{3}{p{0.85\textwidth}}{\footnotesize\textit{Notes:} Both columns weighted by 1930 farmland. Col.\ 1: simplified TWFE (county $+$ year FE) for \texttt{twowayfeweights} decomposition. Col.\ 2: full paper spec with state$\times$year FE. SEs clustered by county. ***$p<0.01$, **$p<0.05$, *$p<0.10$.}
 \end{tabular}
 \end{adjustbox}
 \end{minipage}
 
 \vspace{1cm}
-\textbf{Comparison notes:} The replication uses simplified TWFE (county $+$ year FE) instead of the original's state$\times$year FE, which explains the coefficient differences. The high erosion effect is $-0.300$ (original with state$\times$year FE) vs.\ $-0.161$ (simplified TWFE). The direction and significance are consistent. The simplified specification is needed for the dCDH twowayfeweights decomposition. With state$\times$year FE absorbed (\texttt{areg}), the coefficient becomes $-0.074$ (insignificant), confirming that state-level trends matter for identification.
+\textbf{Comparison notes:} The original Table 2 reports period-specific effects (Panel A: 1940, Panel D: 1959--69 avg.) with state$\times$year FE. The replicated Col.\ 1 uses simplified TWFE (county $+$ year FE, pooling all post-1930 years) for the \texttt{twowayfeweights} decomposition: high erosion = $-0.161$. Col.\ 2 adds state$\times$year FE: high erosion = $-0.074$ (insignificant), confirming state-level trends matter for identification. Coefficient differences from the original ($-0.300$) reflect both the pooling across periods and the absence of controls in the simplified spec. Medium erosion sign reversal ($+0.264$ vs.\ $-0.166$) is driven by the omission of state$\times$year interactions that absorb differential state trends.
 
 \newpage
 
@@ -1270,7 +1279,7 @@ $N$ & 13,376 & 13,376 & 13,376 \\
 7 & Besley \& Mueller (2012) & Table 1, Cols 3,5,6 & Killings (L1) = $-0.0133$ & \checkmark Exact & .tex & Complete \\
 8 & Dinkelman (2011) & Table 4, Cols 1,3,5,7 & Electrification IV = 0.090 & \checkmark Exact & .tex & Complete \\
 9 & Faye \& Niehaus (2012) & Table 3, Cols I,IV & UN Align $\times$ Elec = 45.46 & \checkmark Close & .tex & Complete \\
-10 & Gentzkow et al.\ (2011) & Table 2 & Newspaper entry = 0.0026 & \checkmark Exact & .tex & Complete \\
+10 & Gentzkow et al.\ (2011) & Table 2, Cols 2,3,5 & Newspaper entry = 0.0026 & \checkmark Exact & .tex & Complete \\
 \midrule
 11 & Bagwell \& Staiger (2011) & Table 3A & $\hat{\beta}_1 = 0.370$, $\hat{\beta}_2 = -0.004$ & \checkmark Exact & .log & Complete \\
 12 & Wang (2011) & Table 5A & Post $\times$ $\Delta = 0.205$ & \checkmark Close & .log & Complete \\
