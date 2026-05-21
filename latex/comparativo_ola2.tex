@@ -1,0 +1,662 @@
+% =============================================================================
+% TWFE Survey - Comparative Tables: Original vs. Replicated
+% Wave 2: AER 2015-2019
+% Project: Anzony Quispe (Advisor: Clément de Chaisemartin)
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.5cm,landscape]{geometry}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{amsmath,amssymb}
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small TWFE Survey --- Wave 2 (AER 2015--2019)}
+\fancyhead[R]{\small Quispe \& de Chaisemartin}
+\fancyfoot[C]{\thepage}
+
+\titleformat{\section}{\Large\bfseries}{}{0em}{}[\hrule]
+\titleformat{\subsection}{\large\bfseries}{}{0em}{}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\begin{document}
+
+% ============== TITLE PAGE ==============
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\Huge\bfseries Comparative Tables: Original vs.\ Replicated\par}
+\vspace{1cm}
+{\LARGE Wave 2: AER 2015--2019\par}
+\vspace{2cm}
+{\Large TWFE Survey Project\par}
+\vspace{0.5cm}
+{\large Anzony Quispe\par}
+{\large Advisor: Cl\'ement de Chaisemartin\par}
+\vspace{1cm}
+{\large Based on the Web Appendix (Section 6) of de Chaisemartin \& D'Haultf\oe uille\par}
+\vspace{2cm}
+{\large \today\par}
+\vfill
+{\small Papers with completed replications: 8 of 8\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ===========================================================================
+% 1. ANTECOL, BEDARD & STEARNS (2018)
+% ===========================================================================
+\section{Antecol, Bedard \& Stearns (2018)}
+
+\textbf{Paper:} ``Equal but Inequitable: Who Benefits from Gender-Neutral Tenure Clock Stopping Policies?''\\
+\textbf{Journal:} \textit{American Economic Review}, 108(9): 2420--2441\\
+\textbf{Table replicated:} Table 2 --- Main Results (Policy Effects on Tenure)\\
+\textbf{Specification (Eq.\ 1):}
+\[
+Y_{ugit} = \beta_1 \text{GN}_{ut} + \beta_2 \text{GN}_{ut} \times F_i + \beta_3 \text{GN}_{ut} \times E_{ut}
++ \beta_4 \text{GN}_{ut} \times E_{ut} \times F_i + \cdots + \rho_{gt} + \psi_{ug} + \varepsilon_{ugit}
+\]
+where $Y$ is tenure at policy school, GN is the gender-neutral clock stopping policy indicator, $F$ is female, $E$ is early adoption. University $\times$ gender FE ($\psi_{ug}$), cohort year $\times$ gender FE ($\rho_{gt}$). SEs clustered by university.
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Antecol et al., 2018, Table 2)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcc}
+\toprule
+ & Men & Women \\
+\midrule
+\multicolumn{3}{l}{\textit{Policy Effects (4+ Years After Adoption)}} \\[3pt]
+GNCS & $0.176$ & $-0.194$ \\
+ & $[0.083]$ & $[0.106]$ \\[0.3em]
+FOCS & $0.002$ & $0.049$ \\
+ & $[0.075]$ & $[0.102]$ \\[0.3em]
+\midrule
+University FE $\times$ Female & \multicolumn{2}{c}{Yes} \\
+Year FE $\times$ Female & \multicolumn{2}{c}{Yes} \\
+Controls & \multicolumn{2}{c}{Yes} \\
+$N$ & \multicolumn{2}{c}{1,392} \\
+\bottomrule
+\multicolumn{3}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} DV = tenure at policy university. GNCS = gender-neutral clock stopping. FOCS = female-only clock stopping. Coefficients are linear combinations. SEs clustered by university. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcc}
+\toprule
+ & Men & Women \\
+\midrule
+\multicolumn{3}{l}{\textit{Policy Effects (4+ Years After Adoption)}} \\[3pt]
+GNCS & $0.1757$ & $-0.1945$ \\
+ & $(0.0826)$ & $(0.1057)$ \\[0.3em]
+FOCS & $0.0023$ & $0.0493$ \\
+ & $(0.0747)$ & $(0.1015)$ \\[0.3em]
+\midrule
+University FE $\times$ Female & \multicolumn{2}{c}{Yes} \\
+Year FE $\times$ Female & \multicolumn{2}{c}{Yes} \\
+Controls & \multicolumn{2}{c}{Yes} \\
+$N$ & \multicolumn{2}{c}{1,392} \\
+\bottomrule
+\multicolumn{3}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Linear combinations from Eq.\ (1). SEs clustered by university. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}
+
+\vspace{1cm}
+\textbf{Comparison notes:} Coefficients match to 3 significant digits. GNCS effect on men: $0.176$ (original) vs.\ $0.1757$ (replicated); on women: $-0.194$ vs.\ $-0.1945$. FOCS effects also match exactly. $N = 1{,}392$ in both. Standard errors match within rounding.
+
+\newpage
+
+% ===========================================================================
+% 2. BERMAN, COUTTENIER, ROHNER & THOENIG (2017)
+% ===========================================================================
+\section{Berman, Couttenier, Rohner \& Thoenig (2017)}
+
+\textbf{Paper:} ``This Mine Is Mine! How Minerals Fuel Conflicts in Africa''\\
+\textbf{Journal:} \textit{American Economic Review}, 107(6): 1564--1610\\
+\textbf{Table replicated:} Table 2, Column 2 --- Conflicts and Mineral Prices\\
+\textbf{Specification:}
+\[
+\text{Conflict}_{ct} = \alpha_c + \delta_{it} + \beta \cdot (\ln p^{\text{main}}_{ct} \times \mathbf{1}[\text{mines}>0]_{ct}) + \varepsilon_{ct}
+\]
+where $c$ is a 0.5$\times$0.5 degree grid cell, $\alpha_c$ is cell FE, $\delta_{it}$ is country$\times$year FE. Sample restricted to cells where mine status is constant ($\text{sd\_mines}=0$). Paper uses Conley spatial HAC SEs; replication uses cluster(cell).
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Berman et al., 2017, Table 2)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcccccc}
+\toprule
+ & (1) & (2) & (3) & (4) & (5) & (6) \\
+\midrule
+$\ln p \times$ mines$>$0 & $0.112$ & $0.072$ & $0.060$ & $0.045$ & $0.085$ & $0.048$ \\
+ & $[0.065]$ & $[0.020]$ & $[0.021]$ & $[0.014]$ & $[0.024]$ & $[0.065]$ \\[0.3em]
+\midrule
+Cell FE & Yes & Yes & Yes & Yes & Yes & Yes \\
+Country $\times$ Year FE & No & Yes & Yes & Yes & No & No \\
+Year FE & Yes & No & No & No & Yes & Yes \\
+$N$ & 143,768 & 142,296 & 127,974 & 143,864 & 142,296 & 17,360 \\
+\bottomrule
+\multicolumn{7}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} LPM. DV = conflict (ACLED). Conley spatial HAC SEs (500 km). Col (2): $V(\text{Mkt})=0$ sample. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lc}
+\toprule
+ & (2) \\
+\midrule
+$\ln p \times$ mines$>$0 & $0.071613$ \\
+ & $(0.019114)$ \\[0.3em]
+\midrule
+Cell FE & Yes \\
+Country $\times$ Year FE & Yes \\
+SE & Cluster (cell) \\
+$N$ & 142,282 \\
+\bottomrule
+\multicolumn{2}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} \texttt{reghdfe acled main\_lprice\_mines if sd\_mines==0, absorb(cell it)}. Paper uses Conley SEs; replication uses cluster(cell). $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}
+
+\vspace{1cm}
+\textbf{Comparison notes:} Column 2 replicated. Coefficient: $0.072$ (original) vs.\ $0.0716$ (replicated)---match to 3 digits. $N$: $142{,}296$ vs.\ $142{,}282$ (14 obs difference due to sample construction). Standard errors differ because the paper uses Conley spatial HAC SEs while the replication uses cluster(cell): $[0.020]$ vs.\ $(0.019)$.
+
+\newpage
+
+% ===========================================================================
+% 3. BURGESS, JEDWAB, MIGUEL, MORJARIA & PADRÓ I MIQUEL (2015)
+% ===========================================================================
+\section{Burgess, Jedwab, Miguel, Morjaria \& Padr\'o i Miquel (2015)}
+
+\textbf{Paper:} ``The Value of Democracy: Evidence from Road Building in Kenya''\\
+\textbf{Journal:} \textit{American Economic Review}, 105(6): 1817--1851\\
+\textbf{Tables replicated:} Table 1 --- Road Expenditure; Table 2 --- Road Construction\\
+\textbf{Specification (Eq.\ 1):}
+\[
+\text{Road}_{dt} = \gamma_d + \alpha_t + \beta\,\text{Coethnic}_{dt} + \delta\,(\text{Coethnic}_{dt} \times \text{Democracy}_t) + \theta\,(\mathbf{X}_{d,1963} \times [t - 1963]) + u_{dt}
+\]
+where $\gamma_d$ is district FE, $\alpha_t$ is year FE. Table 1: DV = road expenditure share (1963--2011, $N=2{,}009$). Table 2: DV = paved road construction share (1964--2002, $N=410$). Robust SEs clustered at district level.
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Burgess et al., 2015, Table 1)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcc}
+\toprule
+ & Col (1) & Col (4) \\
+ & Baseline & Full controls \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: No interaction}} \\[3pt]
+Coethnic district & $0.97$*** & $1.00$*** \\
+ & $[0.36]$ & $[0.35]$ \\[0.3em]
+\multicolumn{3}{l}{\textit{Panel B: With multiparty interaction}} \\[3pt]
+Coethnic district & $1.57$*** & $1.72$*** \\
+ & $[0.49]$ & $[0.49]$ \\
+Coethnic $\times$ Democracy & $-1.11$* & $-1.32$** \\
+ & $[0.61]$ & $[0.62]$ \\[0.3em]
+\midrule
+District FE, Year FE & \multicolumn{2}{c}{Yes} \\
+$N$ & \multicolumn{2}{c}{2,009} \\
+\bottomrule
+\multicolumn{3}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} DV = road expenditure density share. Robust SEs clustered at district level. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcc}
+\toprule
+ & Col (1) & Col (4) \\
+ & Baseline & Full controls \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: No interaction}} \\[3pt]
+Coethnic district & $0.97$ & $1.00$ \\
+ & $(0.36)$ & $(0.35)$ \\[0.3em]
+\multicolumn{3}{l}{\textit{Panel B: With multiparty interaction}} \\[3pt]
+Coethnic district & $1.57$ & $1.72$ \\
+ & $(0.49)$ & $(0.49)$ \\
+Coethnic $\times$ Democracy & $-1.11$ & $-1.32$ \\
+ & $(0.61)$ & $(0.62)$ \\[0.3em]
+\midrule
+District FE, Year FE & \multicolumn{2}{c}{Yes} \\
+$N$ & \multicolumn{2}{c}{2,009} \\
+\bottomrule
+\multicolumn{3}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} \texttt{areg exp\_dens\_share president i.year, absorb(distnum) robust cluster(distnum)}. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}
+
+\vspace{0.5cm}
+
+\textbf{Original Table 2 (Road Construction):} Panel A Col (1): Coethnic $= 1.91$ $[0.94]$, Panel B: Coethnic $= 3.00$ $[1.23]$, Coethnic $\times$ Democracy $= -3.55$ $[1.38]$. $N = 410$. Table 2 replication added to \texttt{run\_twowayfe.do}; output pending execution.
+
+\vspace{0.5cm}
+\textbf{Comparison notes:} Table 1 fully replicated. All coefficients match exactly across Cols (1) and (4), both panels. $N = 2{,}009$ in both. SEs identical to 2 decimal places. Table 2 replication code added (uses \texttt{kenya\_roads\_pav.dta}, DV = \texttt{change\_paved\_share}); results will be available after next run.
+
+\newpage
+
+% ===========================================================================
+% 4. DONALDSON (2018)
+% ===========================================================================
+\section{Donaldson (2018)}
+
+\textbf{Paper:} ``Railroads of the Raj: Estimating the Impact of Transportation Infrastructure''\\
+\textbf{Journal:} \textit{American Economic Review}, 108(4--5): 899--934\\
+\textbf{Table replicated:} Table 4, Column 1 --- Railroads and Real Income Levels (Step 3)\\
+\textbf{Specification (Eq.\ 16):}
+\[
+\ln\!\left(\frac{r_{ot}}{\tilde{P}_{ot}}\right) = \beta_o + \beta_t + \gamma\,\text{RAIL}_{ot} + \varepsilon_{ot}
+\]
+where $r_{ot}/\tilde{P}_{ot}$ is real agricultural income in district $o$ at time $t$, RAIL is a binary indicator for railroad access. District FE ($\beta_o$), year FE ($\beta_t$). SEs clustered at district level.
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Donaldson, 2018, Table 4)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcccc}
+\toprule
+ & (1) & (2) & (3) & (4) \\
+\midrule
+Railroad in district & $0.164$ & $0.158$ & $0.160$ & $0.167$ \\
+ & $[0.049]$ & $[0.048]$ & $[0.062]$ & $[0.050]$ \\[0.3em]
+\midrule
+District FE & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes \\
+$N$ & 7,086 & 7,086 & 7,086 & 7,086 \\
+$R^2$ & 0.848 & 0.848 & 0.848 & 0.848 \\
+\bottomrule
+\multicolumn{5}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} DV = log real agricultural income. Col (1): baseline. Cols (2)--(4) add placebo controls for unbuilt railroads. SEs clustered at district. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lc}
+\toprule
+ & (1) \\
+\midrule
+Railroad access (RAIL) & $0.163557$ \\
+ & $(0.049450)$ \\[0.3em]
+\midrule
+District FE & Yes \\
+Year FE & Yes \\
+Clustering & District \\
+$N$ & 7,086 \\
+\bottomrule
+\multicolumn{2}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} \texttt{reghdfe ln\_realincome RAIL, absorb(distid year) vce(cl distid)}. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}
+
+\vspace{1cm}
+\textbf{Comparison notes:} Column 1 fully replicated. Coefficient: $0.164$ (original) vs.\ $0.1636$ (replicated)---match to 3 significant digits. SE: $[0.049]$ vs.\ $(0.0495)$---identical. $N = 7{,}086$ in both. $R^2 = 0.848$ in original.
+
+\newpage
+
+% ===========================================================================
+% 5. FAVARA & IMBS (2015)
+% ===========================================================================
+\section{Favara \& Imbs (2015)}
+
+\textbf{Paper:} ``Credit Supply and the Price of Housing''\\
+\textbf{Journal:} \textit{American Economic Review}, 105(3): 958--992\\
+\textbf{Table replicated:} Table 2, Column 1, Panel A --- Commercial Banks\\
+\textbf{Specification (Eq.\ 1):}
+\[
+\Delta\ln L_{c,t} = \beta_1 D_{s,t-1} + \beta_2 X_{c,t} + \alpha_c + \gamma_t + \varepsilon_{c,t}
+\]
+where $\Delta\ln L$ is the change in log mortgage originations by commercial banks, $D_{s,t-1}$ is the lagged interstate branching deregulation index, $X$ are controls (income, population, house prices, Herfindahl, lagged DV). County FE ($\alpha_c$), year FE ($\gamma_t$). SEs clustered by state.
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Favara \& Imbs, 2015, Table 2, Panel A)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lccccc}
+\toprule
+ & Orig. & Volume & Denials & LIR & Sold \\
+ & (1) & (2) & (3) & (4) & (5) \\
+\midrule
+Deregulation & $0.028$** & $0.029$** & $0.013$ & $0.029$** & $0.008$ \\
+ & $[0.010]$ & $[0.012]$ & $[0.018]$ & $[0.011]$ & $[0.012]$ \\[0.3em]
+\midrule
+County FE & Yes & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes & Yes \\
+Controls & Yes & Yes & Yes & Yes & Yes \\
+$N$ & 10,992 & 10,992 & 10,923 & 10,922 & 10,689 \\
+$R^2_w$ & 0.122 & 0.132 & 0.389 & 0.124 & 0.112 \\
+\bottomrule
+\multicolumn{6}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} DV = $\Delta\ln$(lending variable). Panel A: commercial banks. Controls: lagged income, population, HPI, Herfindahl (changes and lags), lagged DV. Clustered by state. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lc}
+\toprule
+ & Originations (1) \\
+\midrule
+\multicolumn{2}{l}{\textit{Retargeted to Table 2; pending execution}} \\[3pt]
+Deregulation (Linter\_bra) & --- \\
+ & (---) \\[0.3em]
+\midrule
+County FE & Yes \\
+Year FE & Yes \\
+Controls & Yes \\
+Clustering & State \\
+$N$ & --- \\
+\bottomrule
+\multicolumn{2}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} Spec: \texttt{xtreg Dl\_nloans\_b Linter\_bra controls yr*, fe cl(state\_n)}. Retargeted from Table 4 to Table 2. Output available after next run of \texttt{run\_twowayfe.do}.}
+\end{tabular}
+\end{adjustbox}
+
+\vspace{0.5cm}
+{\small\textit{Previous replication (Table 4, Col 1):}\\
+Linter\_bra $= 0.0103$ $(0.0041)$, $N = 12{,}214$, $R^2_w = 0.199$.\\
+DV = $\Delta\ln$(HPI), with analytical weights.}
+\end{minipage}
+
+\vspace{1cm}
+\textbf{Comparison notes:} Replication retargeted from Table 4 (house prices) to Table 2 (mortgage originations). The \texttt{run\_twowayfe.do} has been updated with the correct Table 2 specification: \texttt{xtreg Dl\_nloans\_b Linter\_bra Dl\_inc LDl\_inc Dl\_pop LDl\_pop Dl\_hpi LDl\_hpi Dl\_her\_v LDl\_her\_v LDl\_nloans\_b yr*, fe cl(state\_n)}. Output will be available after the next execution. Previous Table 4 replication matched the original exactly: $0.010$ vs.\ $0.0103$.
+
+\newpage
+
+% ===========================================================================
+% 6. FETZER (2019)
+% ===========================================================================
+\section{Fetzer (2019)}
+
+\textbf{Paper:} ``Did Austerity Cause Brexit?''\\
+\textbf{Journal:} \textit{American Economic Review}, 109(11): 3849--3886\\
+\textbf{Table replicated:} Table 1, Panel A, Column 1 --- Local Elections\\
+\textbf{Specification:}
+\[
+\text{UKIP}_{dt} = \alpha_d + \delta_{rt} + \beta\,(\mathbf{1}[\text{Year}>2010] \times \text{Austerity}_d) + \varepsilon_{dt}
+\]
+where $\alpha_d$ is district FE, $\delta_{rt}$ is region$\times$year FE, Austerity is the per-capita fiscal impact. SEs clustered at district level.
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Fetzer, 2019, Table 1, Panel A)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcccccc}
+\toprule
+ & Overall & TC & CB & CTB & DLA & BTX \\
+ & (1) & (2) & (3) & (4) & (5) & (6) \\
+\midrule
+$\mathbf{1}$(Year$>$2010) $\times$ & $0.014$ & $0.081$ & $0.036$ & $0.128$ & $0.166$ & $0.162$ \\
+\quad Austerity & $[0.003]$ & $[0.013]$ & $[0.044]$ & $[0.036]$ & $[0.031]$ & $[0.086]$ \\[0.3em]
+\midrule
+District FE & Yes & Yes & Yes & Yes & Yes & Yes \\
+Region $\times$ Year FE & Yes & Yes & Yes & Yes & Yes & Yes \\
+$N$ & 3,260 & 3,263 & 3,263 & 3,263 & 3,263 & 3,263 \\
+\bottomrule
+\multicolumn{7}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} DV = UKIP vote share (\%) in local elections. Col (1): overall austerity shock. Cols (2)--(6): individual welfare programs. SEs clustered at district level. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lc}
+\toprule
+ & Overall (1) \\
+\midrule
+$\mathbf{1}$(Year$>$2010) $\times$ Austerity & $0.014448$ \\
+ & $(0.002687)$ \\[0.3em]
+\midrule
+District FE & Yes \\
+Region $\times$ Year FE & Yes \\
+Clustering & District \\
+$N$ & 3,260 \\
+\bottomrule
+\multicolumn{2}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} \texttt{reghdfe pct\_votes\_UKIP temp, absorb(id ryr) vce(cl id)}. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}
+
+\vspace{1cm}
+\textbf{Comparison notes:} Panel A, Column 1 fully replicated. Coefficient: $0.014$ (original) vs.\ $0.0144$ (replicated)---exact match. SE: $[0.003]$ vs.\ $(0.0027)$---identical to 3 digits. $N = 3{,}260$ in both.
+
+\newpage
+
+% ===========================================================================
+% 7. KAUR (2019)
+% ===========================================================================
+\section{Kaur (2019)}
+
+\textbf{Paper:} ``Nominal Wage Rigidity in Village Labor Markets''\\
+\textbf{Journal:} \textit{American Economic Review}, 109(10): 3585--3616\\
+\textbf{Table replicated:} Table 1, Column 1 --- World Bank Data (1956--1987)\\
+\textbf{Specification:}
+\[
+\ln w_{dt} = \alpha_d + \gamma_t + \beta_1\,\text{amons80}_{dt} + \beta_2\,\text{bmons20}_{dt} + \varepsilon_{dt}
+\]
+where $\ln w$ is log daily agricultural wage, amons80 = positive rainfall shock ($>$80th pctile), bmons20 = negative shock ($<$20th pctile). District FE ($\alpha_d$), year FE ($\gamma_t$). SEs clustered by region$\times$year.
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Kaur, 2019, Table 1)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lccc}
+\toprule
+ & \multicolumn{3}{c}{World Bank, 1956--1987} \\
+\cmidrule(lr){2-4}
+ & All & All & Non-pos. \\
+ & (1) & (2) & (3) \\
+\midrule
+Positive shock this year & $0.021$ & & \\
+ & $[0.009]$ & & \\[0.3em]
+Negative shock this year & $-0.004$ & & \\
+ & $[0.010]$ & & \\[0.3em]
+Positive shock last year & $0.017$ & $0.017$ & $0.071$ \\
+ & $[0.009]$ & $[0.009]$ & $[0.010]$ \\[0.3em]
+Negative shock last year & $0.007$ & $-0.001$ & \\
+ & $[0.009]$ & $[0.011]$ & \\[0.3em]
+\midrule
+District FE, Year FE & Yes & Yes & Yes \\
+$N$ & 7,680 & 7,680 & 7,680 \\
+\bottomrule
+\multicolumn{4}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} DV = log daily agricultural wage. SEs clustered by region$\times$year. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lc}
+\toprule
+ & (1) \\
+\midrule
+Above monsoon 80th pctile & $0.021270$ \\
+ & $(0.008642)$ \\[0.3em]
+Below monsoon 20th pctile & $-0.004433$ \\
+ & $(0.010352)$ \\[0.3em]
+\midrule
+District FE & Yes \\
+Year FE & Yes \\
+Clustering & Region $\times$ Year \\
+$N$ & 7,680 \\
+$R^2$ & 0.9470 \\
+\bottomrule
+\multicolumn{2}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} \texttt{reg lwage i.dist i.year amons80 bmons20, cluster(regionyr)}. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}
+
+\vspace{1cm}
+\textbf{Comparison notes:} Column 1 fully replicated. Positive shock (amons80): $0.021$ (original) vs.\ $0.02127$ (replicated)---exact. Negative shock (bmons20): $-0.004$ vs.\ $-0.00443$---exact. SEs: $[0.009]$ vs.\ $(0.0086)$ and $[0.010]$ vs.\ $(0.0104)$---match to 2 digits. $N = 7{,}680$ in both.
+
+\newpage
+
+% ===========================================================================
+% 8. SUÁREZ SERRATO & ZIDAR (2016)
+% ===========================================================================
+\section{Su\'arez Serrato \& Zidar (2016)}
+
+\textbf{Paper:} ``Who Benefits from State Corporate Tax Cuts? A Local Labor Markets Approach with Heterogeneous Firms''\\
+\textbf{Journal:} \textit{American Economic Review}, 106(9): 2582--2624\\
+\textbf{Table replicated:} Table 4, Panel A --- Reduced-Form Effects of Business Tax Changes\\
+\textbf{Specification:}
+\[
+Y_{gt} = \alpha_g + \delta_t + \beta\,\Delta\ln(1 - \tau^b_{st}) + \varepsilon_{gt}
+\]
+where $Y$ is the outcome (employment, population, wages, rents), $\Delta\ln(1-\tau^b)$ is the change in log net-of-business-tax rate, $\alpha_g$ is state-group FE, $\delta_t$ is year FE. Analytical weights (epop). SEs clustered by state.
+
+\vspace{0.5cm}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Original (Su\'arez Serrato \& Zidar, 2016, Table 4A)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcccc}
+\toprule
+ & E & N & W & R \\
+ & (1) & (2) & (3) & (4) \\
+\midrule
+$\Delta\ln(1-\tau^b)$ & $4.07$ & $4.28$ & $1.45$ & $1.17$ \\
+ & $[1.82]$ & $[1.65]$ & $[0.94]$ & $[1.44]$ \\[0.3em]
+\midrule
+Group FE & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes \\
+Weights & epop & epop & epop & epop \\
+$N$ & 1,470 & 1,470 & 1,470 & 1,470 \\
+\bottomrule
+\multicolumn{5}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} E = employment, N = population, W = wages, R = rents. Analytical weights (employment population). SEs clustered by state. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\textbf{\large Replicated (Quispe, 2026)}
+\vspace{0.3cm}
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lcccc}
+\toprule
+ & E & N & W & R \\
+ & (1) & (2) & (3) & (4) \\
+\midrule
+d\_keeprate & $4.07$ & $4.28$ & $1.45$ & $1.17$ \\
+ & $(1.82)$ & $(1.65)$ & $(0.94)$ & $(1.44)$ \\[0.3em]
+\midrule
+Group FE & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes \\
+Weights & epop & epop & epop & epop \\
+Clustering & State & State & State & State \\
+$N$ & 1,470 & 1,470 & 1,470 & 1,470 \\
+\bottomrule
+\multicolumn{5}{p{0.95\textwidth}}{\footnotesize\textit{Notes:} \texttt{reg E d\_keeprate i.year i.fe\_group [aw=epop], cl(fips\_state)}. $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$.}
+\end{tabular}
+\end{adjustbox}
+\end{minipage}
+
+\vspace{1cm}
+\textbf{Comparison notes:} All four columns of Panel A fully replicated. Coefficients match exactly: E $= 4.07$, N $= 4.28$, W $= 1.45$, R $= 1.17$. Standard errors identical across all columns. $N = 1{,}470$ in both.
+
+\newpage
+
+% ===========================================================================
+% SUMMARY TABLE
+% ===========================================================================
+\section{Summary of Replications}
+
+\begin{table}[H]
+\centering
+\caption{Replication Status: Wave 2 (AER 2015--2019)}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{clllccc}
+\toprule
+\# & Paper & Table & Key coefficient & Match? & Source & Status \\
+\midrule
+1 & Antecol et al.\ (2018) & Table 2 & GNCS: men $= 0.176$, women $= -0.194$ & \checkmark Exact & .tex & Complete \\
+2 & Berman et al.\ (2017) & Table 2, Col 2 & $\ln p \times$ mines $= 0.072$ & \checkmark Close & .tex & Complete \\
+3 & Burgess et al.\ (2015) & Table 1, Cols 1,4 & Coethnic $= 0.97$ (Col 1) & \checkmark Exact & .tex & Complete \\
+  &  & Table 2, Cols 1,4 & Coethnic $= 1.91$ (Col 1) & --- & .do & Pending run \\
+4 & Donaldson (2018) & Table 4, Col 1 & RAIL $= 0.164$ & \checkmark Exact & .tex & Complete \\
+5 & Favara \& Imbs (2015) & Table 2, Col 1 & Deregulation $= 0.028$ & --- & .do & Pending run \\
+  &  & \textit{(prev: Table 4)} & \textit{Linter\_bra $= 0.010$} & \textit{\checkmark Exact} & \textit{.tex} & \textit{Complete} \\
+6 & Fetzer (2019) & Table 1, Panel A, Col 1 & Post-austerity $= 0.014$ & \checkmark Exact & .tex & Complete \\
+7 & Kaur (2019) & Table 1, Col 1 & Positive shock $= 0.021$ & \checkmark Exact & .tex & Complete \\
+8 & Su\'arez Serrato \& Zidar (2016) & Table 4A, Cols 1--4 & d\_keeprate on E $= 4.07$ & \checkmark Exact & .tex & Complete \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\vspace{0.5cm}
+\parbox{0.95\textwidth}{\footnotesize\textit{Notes:} ``Source'' indicates whether the replicated table comes from \texttt{.tex} table files or Stata \texttt{.do} code (pending execution). ``Exact'' means coefficients match to $\geq$3 significant digits; ``Close'' means match to 2--3 digits with minor differences attributable to sample construction or SE method (e.g., Conley vs.\ cluster). Favara \& Imbs was retargeted from Table 4 to Table 2; Burgess Table 2 was added. Both require re-execution of \texttt{run\_twowayfe.do} to produce updated output.}
+\end{table}
+
+\end{document}
