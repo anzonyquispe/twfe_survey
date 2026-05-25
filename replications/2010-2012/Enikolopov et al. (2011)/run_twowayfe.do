@@ -28,9 +28,9 @@ set more off
 set matsize 2000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Enikolopov et al. (2011)"
 global datadir  "$paperdir/Replication"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Enikolopov et al. (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -360,6 +360,31 @@ di "  1. $outdir/table3.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/enikolopov_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = tik_id          (subregion numeric ID)
+  T = _j              (election year: 1995/1999)
+  D = Watch_probit_   (NTV access, probit predicted)
+  Y = Votes_SPS_      (SPS vote share)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep tik_id _j Watch_probit_ Votes_SPS_
+
+label variable tik_id         "G: Subregion numeric ID"
+label variable _j             "T: Election year (1995/1999)"
+label variable Watch_probit_  "D: NTV access (probit predicted)"
+label variable Votes_SPS_     "Y: SPS vote share"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = tik_id, T = _j, D = Watch_probit_"
 
 log close _all

@@ -19,9 +19,9 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Zhang and Zhu (2011)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Zhang and Zhu (2011)"
 global datadir  "$paperdir/AER-2009_0165.R1_data"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Zhang and Zhu (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -382,6 +382,35 @@ di "  1. $outdir/table3_fe.tex"
 di "  2. $outdir/table4_fe.tex"
 di "  3. $outdir/zhang_zhu_tables.tex (compilable)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = id          (contributor ID)
+  T = week_num    (week number, 1-8)
+  D = after       (post-block binary)
+  Y = logTotal    (log total contributions)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+* Recreate week_num (lost after preserve/restore in STEP 2)
+gen week_num = week + 5
+replace week_num = week + 4 if week > 0
+
+keep id week_num after logTotal
+
+label variable id        "G: Contributor ID"
+label variable week_num  "T: Week number (1-8)"
+label variable after     "D: Post-block binary"
+label variable logTotal  "Y: Log total contributions"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = id, T = week_num, D = after"
 
 log close _all

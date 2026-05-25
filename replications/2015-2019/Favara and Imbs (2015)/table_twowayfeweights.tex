@@ -6,18 +6,19 @@
 \hline\hline
  & feTR & fdTR \\
 \hline
-$\hat{\beta}_{TWFE}$ & 0.0103 & --- \\
-Positive weights & 4406 & --- \\
-Negative weights & 2067 & --- \\
-\% Negative & 31.9\% & --- \\
-$\Sigma$ positive & 1.1244 & --- \\
-$\Sigma$ negative & $-$0.1244 & --- \\
+$\hat{\beta}_{TWFE}$ &    0.0364 & --- \\
+Positive weights & 3983 & --- \\
+Negative weights & 2730 & --- \\
+\% Negative &  40.7\% & --- \\
+$\Sigma$ positive &    1.1058 & --- \\
+$\Sigma$ negative & $-$   0.1058 & --- \\
 \hline
-\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for $\beta_{fe}$ and $\Delta_{TR}=0$: 0.0085} \\
-\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for opposite sign: 0.0296} \\
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for $\beta_{fe}$ and $\Delta_{TR}=0$:    0.0321} \\
+\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for opposite sign:    0.1168} \\
 \hline
-\multicolumn{3}{l}{\footnotesize Spec: \texttt{xtreg Dl\_hpi Linter\_bra yr* [aw=w1], fe cl(state\_n)}} \\
+\multicolumn{3}{l}{\footnotesize Spec: \texttt{xtreg Dl\_nloans\_b Linter\_bra controls yr*, fe cl(state\_n)}} \\
 \multicolumn{3}{l}{\footnotesize Panel: county $\times$ year. Treatment: lagged interstate branch deregulation.} \\
+\multicolumn{3}{l}{\footnotesize Outcome: $\Delta \ln$(mortgage originations, commercial banks). Table 2, Col 1, Panel A.} \\
 \multicolumn{3}{l}{\footnotesize fdTR: invalid syntax (treatment switches on/off).} \\
 \hline\hline
 \end{tabular}

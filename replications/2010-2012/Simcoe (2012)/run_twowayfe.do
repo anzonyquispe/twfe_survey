@@ -461,4 +461,28 @@ di _n "=============================================="
 di    "  DONE — all files written to $outdir"
 di    "=============================================="
 
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = techarea       (technology area)
+  T = pubCohort      (publication cohort, 1993-2003)
+  D = st_stbafl1yr   (Suit-share x S-track interaction)
+  Y = ttlDur         (total duration)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep techarea pubCohort st_stbafl1yr ttlDur
+
+label variable techarea      "G: Technology area"
+label variable pubCohort     "T: Publication cohort (1993-2003)"
+label variable st_stbafl1yr  "D: Suit-share x S-track"
+label variable ttlDur        "Y: Total duration"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = techarea, T = pubCohort, D = st_stbafl1yr"
+
 cap log close detail

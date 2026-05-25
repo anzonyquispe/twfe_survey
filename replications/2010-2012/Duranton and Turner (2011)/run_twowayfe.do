@@ -22,9 +22,9 @@ set more off
 set matsize 2000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Duranton and Turner (2011)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Duranton and Turner (2011)"
 global datadir  "$paperdir/data"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Duranton and Turner (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -621,6 +621,39 @@ di "  1. $outdir/table5a.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/duranton_turner_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = msa          (MSA identifier)
+  T = year         (decade: 1983/1993/2003)
+  D = Dl_ln_IH     (delta log lane-km interstate highways)
+  Y = Dl_vmt_IH    (delta log VKT interstate highways)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+* Reload and rebuild long panel (clean_wide lacks Dl_ln_IH)
+use "$datadir/Duranton_Turner_AER_2010.dta", clear
+drop if l_ln_km_IH_83 == 0
+gen Dl_ln_IH1993  = l_ln_km_IH_93 - l_ln_km_IH_83
+gen Dl_ln_IH2003  = l_ln_km_IH_03 - l_ln_km_IH_93
+gen Dl_vmt_IH1993 = l_vmt_IH_93   - l_vmt_IH_83
+gen Dl_vmt_IH2003 = l_vmt_IH_03   - l_vmt_IH_93
+reshape long Dl_ln_IH Dl_vmt_IH, i(msa) j(year)
+keep msa year Dl_ln_IH Dl_vmt_IH
+
+label variable msa        "G: MSA identifier"
+label variable year       "T: Decade (1983/1993/2003)"
+label variable Dl_ln_IH   "D: Delta log lane-km IH"
+label variable Dl_vmt_IH  "Y: Delta log VKT IH"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = msa, T = year, D = Dl_ln_IH"
 
 log close _all

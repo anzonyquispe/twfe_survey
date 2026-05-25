@@ -1,8 +1,9 @@
------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Bagwell and Staiger (2011)/run_twowayfe.log
   log type:  text
- opened on:  17 Apr 2026, 00:23:49
+ opened on:  24 May 2026, 23:29:14
 
 . 
 . * Install packages if needed
@@ -16,9 +17,11 @@
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 1: IMPORT AND CLEAN DATA
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . import delimited using "$datadir/MainData.txt", delimiter(" ") clear
 (encoding automatically selected: ISO-8859-2)
@@ -31,10 +34,10 @@
 Contains data
  Observations:        79,888                  
     Variables:            14                  
------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 Variable      Storage   Display    Value
     name         type    format    label      Variable label
------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 product         long    %12.0g                Product
 country         str10   %10s                  Country
 mfn             str17   %17s                  MFN
@@ -49,7 +52,7 @@ price6          str20   %20s                  Price6
 mismatch        str16   %16s                  MisMatch
 herf            str18   %18s                  Herf
 share           str20   %20s                  
------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 Sorted by: 
      Note: Dataset has changed since last saved.
 
@@ -133,9 +136,11 @@ share: contains nonnumeric characters; replaced as double
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 1b: SAMPLE RESTRICTIONS (matching Basic1.R)
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . * Drop observations without tariff bindings
 . drop if bnd == .
@@ -314,19 +319,23 @@ Number of observations: 42721
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 2: TABLE 3A OLS REGRESSIONS
 >   Equation (15a): τ_gc^WTO = α_G + α_c + β₁ τ_gc^BR + β₂ V_gc^BR + ε_gc
->   R: lm(TariffFinal ~ Import + TariffBase + as.factor(HS) + as.factor(Country) - 1)
+>   R: lm(TariffFinal ~ Import + TariffBase + as.factor(HS) + as.factor(Country
+> ) - 1)
 >   Stata: reg ... ibn.HS2 i.country_num, noconstant vce(robust)
 >   noconstant + ibn gives uncentered R², matching R's lm(... -1)
 >   Paper Table 3A: R²=0.804 for All, 0.763 for HS0, etc.
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . set matsize 2000
 set matsize ignored.
-    Matrix sizes are no longer limited by c(matsize) in modern Statas.  Matrix sizes are now limited by edition
-    of Stata.  See limits for more details.
+    Matrix sizes are no longer limited by c(matsize) in modern Statas.
+    Matrix sizes are now limited by edition of Stata.  See limits for more
+    details.
 
 . 
 . di _n "=============================================="
@@ -442,9 +451,11 @@ TABLE 3A: OLS REGRESSIONS
  29.             local nn_`k' = e(N)
  30. 
 .             if `has_base' {
- 31.                 di "  beta1 (TariffBase): " %9.4f `b1_`k'' " (" %7.4f `se1_`k'' ")"
+ 31.                 di "  beta1 (TariffBase): " %9.4f `b1_`k'' " (" %7.4f `se1
+> _`k'' ")"
  32.             }
- 33.             di "  beta2 (Import_M):   " %9.4f `b2_`k'' " (" %7.4f `se2_`k'' ")"
+ 33.             di "  beta2 (Import_M):   " %9.4f `b2_`k'' " (" %7.4f `se2_`k'
+> ' ")"
  34.             di "  R2:                 " %9.3f `r2_`k''
  35.             di "  N:                  " %9,0gc `nn_`k''
  36.         }
@@ -575,12 +586,14 @@ HS9      0.886    0.886      -0.0112    -0.0112
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
 >   Y = TariffFinal, G = HS2, T = country_num, D = Import_M
 >   Controls = TariffBase
 >   Type = feTR (fixed effects, continuous treatment)
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -599,21 +612,29 @@ TWOWAYFEWEIGHTS DECOMPOSITION
 
 . cap noisily twowayfeweights TariffFinal HS2 country_num Import_M, ///
 >     type(feTR) controls(TariffBase)
-The treatment variable in the regression varies within some group * period cells.
-The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) apply to two-way fixed effects regressions
+The treatment variable in the regression varies within some group * period cell
+> s.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) apply to two-
+> way fixed effects regressions
 with a group * period level treatment.
-The command will replace the treatment by its average value in each group * period.
-The results below apply to the two-way fixed effects regression with that treatment variable.
+The command will replace the treatment by its average value in each group * per
+> iod.
+The results below apply to the two-way fixed effects regression with that treat
+> ment variable.
 
 The control variable 1 varies within some group * period cells.
-The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fi
+> xed effects regressions
 with controls apply to group * period level controls.
-The command will replace control variable 1 by its average value in each group * period cell.
-The results below apply to the regression with control variable 1 averaged at the group * period level.
+The command will replace control variable 1 by its average value in each group 
+> * period cell.
+The results below apply to the regression with control variable 1 averaged at t
+> he group * period level.
 
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to -0.0048, estimates a weighted sum of 1476 ATTs. 
+the TWFE coefficient beta, equal to -0.0048, estimates a weighted sum of 1476 A
+> TTs. 
 1038 ATTs receive a positive weight, and 438 receive a negative weight.
 ------------------------------------------------
 Treat. var: Import_M    # ATTs      Σ weights  
@@ -625,7 +646,8 @@ Total                   1476        1.0000
 ------------------------------------------------
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . * Capture results if available
@@ -644,10 +666,12 @@ invalid syntax
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 4: LATEX TABLE (AER format matching Paper Table 3A)
 >   Layout: Row per sample (All, HS0-HS9), Columns: Sample, N, β₁, β₂, R²
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -663,7 +687,6 @@ LaTeX TABLE EXPORT
 . cap file close texfile
 
 . file open texfile using "$outdir/table3a.tex", write replace
-(file C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/table3a.tex not found)
 
 . 
 . file write texfile "\begin{table}[htbp]" _n
@@ -684,7 +707,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\cmidrule(lr){3-5}" _n
 
-. file write texfile "Sample & Observations & \$\hat{\beta}_1\$ & \$\hat{\beta}_2\$ & R\$^2\$ \\" _n
+. file write texfile "Sample & Observations & \$\hat{\beta}_1\$ & \$\hat{\beta}
+> _2\$ & R\$^2\$ \\" _n
 
 . file write texfile "\midrule" _n
 
@@ -723,7 +747,8 @@ LaTeX TABLE EXPORT
  25.         local s2 "`r(s)'"
  26. 
 .         * Write coefficient row
-.         file write texfile "`lab`k'' & `nfmt' & `b1fmt'`s1' & `b2fmt'`s2' & `r2fmt' \\" _n
+.         file write texfile "`lab`k'' & `nfmt' & `b1fmt'`s1' & `b2fmt'`s2' & `
+> r2fmt' \\" _n
  27. 
 .         * Write SE row
 .         if "`b1fmt'" != "---" {
@@ -756,7 +781,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile " two-digit HS product level." _n
 
-. file write texfile " Country fixed effects, \$\alpha_c\$, included for all estimates." _n
+. file write texfile " Country fixed effects, \$\alpha_c\$, included for all es
+> timates." _n
 
 . file write texfile " \$\hat{\beta}_1\$: pre-accession MFN tariff." _n
 
@@ -764,7 +790,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile " Equation: \$\tau_{gc}^{WTO} = \alpha_G + \alpha_c" _n
 
-. file write texfile " + \beta_1 \tau_{gc}^{BR} + \beta_2 V_{gc}^{BR} + \epsilon_{gc}\$." _n
+. file write texfile " + \beta_1 \tau_{gc}^{BR} + \beta_2 V_{gc}^{BR} + \epsilo
+> n_{gc}\$." _n
 
 . file write texfile " *** Significant at the 1 percent level," _n
 
@@ -794,7 +821,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\geometry{margin=1in}" _n
 
-. file write texfile "\captionsetup{labelsep=emdash, font=normalsize, justification=centering}" _n
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justifica
+> tion=centering}" _n
 
 . file write texfile "\begin{document}" _n _n
 
@@ -804,11 +832,13 @@ LaTeX TABLE EXPORT
 
 . file write texfile "{\large What Do Trade Negotiators Negotiate About?}\\" _n
 
-. file write texfile "{\large Empirical Evidence from the World Trade Organization}\\" _n
+. file write texfile "{\large Empirical Evidence from the World Trade Organizat
+> ion}\\" _n
 
 . file write texfile "\vspace{0.5em}" _n
 
-. file write texfile "{\normalsize \textit{American Economic Review}, 101(4), 1238--1273}" _n
+. file write texfile "{\normalsize \textit{American Economic Review}, 101(4), 1
+> 238--1273}" _n
 
 . file write texfile "\end{center}" _n _n
 
@@ -842,22 +872,75 @@ ALL DONE - Bagwell & Staiger (2011)
 Output files:
 
 . di "  1. $outdir/table3a.tex"
-  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/table3a.tex
+  1. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Bagwe
+> ll and Staiger (2011)/table3a.tex
 
 . di "  2. $outdir/bagwell_staiger_tables.tex (compilable)"
-  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/bagwell_staiger_tables.tex (com
-> pilable)
+  2. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Bagwe
+> ll and Staiger (2011)/bagwell_staiger_tables.tex (compilable)
 
 . di "  3. $outdir/run_twowayfe.log"
-  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/run_twowayfe.log
+  3. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Bagwe
+> ll and Staiger (2011)/run_twowayfe.log
+
+. di "  4. $outdir/panel_GTD.dta"
+  4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Bagwe
+> ll and Staiger (2011)/panel_GTD.dta
 
 . di "=============================================="
 ==============================================
 
 . 
+. 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = HS2           (HS2 industry code)
+>   T = country_num   (country numeric ID)
+>   D = Import_M      (imports, millions)
+>   Y = TariffFinal   (final bound tariff rate)
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "=============================================="
+==============================================
+
+. 
+. keep HS2 country_num Import_M TariffFinal
+
+. 
+. label variable HS2          "G: HS2 industry code"
+
+. label variable country_num  "T: Country numeric ID"
+
+. label variable Import_M     "D: Imports (millions)"
+
+. label variable TariffFinal  "Y: Final bound tariff rate"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Bagw
+    > ell and Staiger (2011)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 42721 observations
+
+. di "  G = HS2, T = country_num, D = Import_M"
+  G = HS2, T = country_num, D = Import_M
+
+. 
 . log close _all
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Bagwell and Staiger (2011)/run_twowayfe.log
   log type:  text
- closed on:  17 Apr 2026, 00:23:55
------------------------------------------------------------------------------------------------------------------
+ closed on:  24 May 2026, 23:29:19
+-------------------------------------------------------------------------------

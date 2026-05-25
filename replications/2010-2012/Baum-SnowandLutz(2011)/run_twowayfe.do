@@ -444,6 +444,31 @@ if `fetr_b_ok' == 1 {
 }
 di ""
 di "Output: table2_replication.tex, table_twowayfeweights.tex, baumsnow_tables.tex"
+di "  + panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = leaid       (school district LEA ID)
+  T = year        (census year, 1960-1990)
+  D = imp_post    (post-desegregation binary)
+  Y = lnwpu       (log white public enrollment)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep leaid year imp_post lnwpu
+
+label variable leaid     "G: School district LEA ID"
+label variable year      "T: Census year (1960-1990)"
+label variable imp_post  "D: Post-desegregation (binary)"
+label variable lnwpu     "Y: Log white public enrollment"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = leaid, T = year, D = imp_post"
 
 * log close _all

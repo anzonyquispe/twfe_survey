@@ -3,7 +3,7 @@
        log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
 > 12/Dinkelman (2011)/run_twowayfe.log
   log type:  text
- opened on:  23 Apr 2026, 11:08:33
+ opened on:  24 May 2026, 23:31:31
 
 . set more off
 
@@ -2658,9 +2658,6 @@ twowayfeweights (male): rc = 0
 >          "Standard errors clustered by place in parentheses. " ///
 >          "*** p\$<\$0.01, ** p\$<\$0.05, * p\$<\$0.1.") ///
 >     booktabs nonumbers
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Dink
-    > elman (2011)/table4_replication.tex not found)
 (output written to C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2
 > 010-2012/Dinkelman (2011)/table4_replication.tex)
 
@@ -2712,9 +2709,6 @@ twowayfeweights (male): rc = 0
 . cap file close texfile
 
 . file open texfile using "$outdir/table_twowayfeweights.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Dink
-    > elman (2011)/table_twowayfeweights.tex not found)
 
 . 
 . file write texfile "\begin{table}[htbp]" _n
@@ -2811,9 +2805,6 @@ twowayfeweights (male): rc = 0
 . cap file close fulltex
 
 . file open fulltex using "$outdir/dinkelman_tables.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Dink
-    > elman (2011)/dinkelman_tables.tex not found)
 
 . 
 . file write fulltex "\documentclass[12pt]{article}" _n
@@ -2925,8 +2916,58 @@ Output files:
   4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Dinke
 > lman (2011)/run_twowayfe.log
 
+. di "  5. $outdir/panel_GTD.dta"
+  5. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Dinke
+> lman (2011)/panel_GTD.dta
+
 . di "============================================================"
 ============================================================
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = comm_id      (community numeric ID)
+>   T = year         (year: 1996/2001)
+>   D = D            (electrification binary)
+>   Y = prop_emp_f   (proportion female employed)
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "============================================================"
+============================================================
+
+. 
+. keep comm_id year D prop_emp_f
+
+. 
+. label variable comm_id     "G: Community numeric ID"
+
+. label variable year        "T: Year (1996/2001)"
+
+. label variable D           "D: Electrification (binary)"
+
+. label variable prop_emp_f  "Y: Proportion female employed"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Dink
+    > elman (2011)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 3632 observations
+
+. di "  G = comm_id, T = year, D = D"
+  G = comm_id, T = year, D = D
 
 . 
 . log close
@@ -2934,5 +2975,5 @@ Output files:
        log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
 > 12/Dinkelman (2011)/run_twowayfe.log
   log type:  text
- closed on:  23 Apr 2026, 11:10:28
+ closed on:  24 May 2026, 23:33:37
 -------------------------------------------------------------------------------

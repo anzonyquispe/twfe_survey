@@ -26,9 +26,9 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Forman et al. (2012)"
 global datadir  "$paperdir/data_and_programs"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Forman et al. (2012)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -367,6 +367,39 @@ di "  1. $outdir/table2.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/forman_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = county_id         (county numeric ID)
+  T = period            (period: 1995/2000)
+  D = surv_deeppost00   (advanced Internet adoption fraction)
+  Y = wagediff          (wage growth differential)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+* Rebuild 2-period panel (period lost after use `base' in STEP 4)
+use "$datadir/countygrowth.dta", clear
+gen county_id = _n
+local N_counties = _N
+expand 2
+bysort county_id: gen period = cond(_n==1, 1995, 2000)
+bysort county_id: replace surv_deeppost00 = 0 if period == 1995
+bysort county_id: replace wagediff = . if period == 1995
+keep county_id period surv_deeppost00 wagediff
+
+label variable county_id        "G: County numeric ID"
+label variable period           "T: Period (1995/2000)"
+label variable surv_deeppost00  "D: Advanced Internet adoption"
+label variable wagediff         "Y: Wage growth differential"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = county_id, T = period, D = surv_deeppost00"
 
 log close _all

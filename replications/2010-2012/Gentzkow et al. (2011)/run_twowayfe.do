@@ -344,6 +344,31 @@ di "  1. $outdir/table2_replication.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/gentzkow_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "============================================================"
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = cnty90       (county ID, 1990 boundaries)
+  T = year         (election year)
+  D = numdailies   (number of daily newspapers)
+  Y = prestout     (presidential turnout)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+keep cnty90 year numdailies prestout
+
+label variable cnty90      "G: County ID (1990 boundaries)"
+label variable year        "T: Election year"
+label variable numdailies  "D: Number of daily newspapers"
+label variable prestout    "Y: Presidential turnout"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = cnty90, T = year, D = numdailies"
 
 log close

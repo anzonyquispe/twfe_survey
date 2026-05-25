@@ -394,4 +394,34 @@ else {
 }
 di "============================================================"
 
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = id         (local authority district)
+  T = ryr        (region x year)
+  D = temp       (post2010 x totalimpact_finlosswap, continuous)
+  Y = pct_votes_UKIP (UKIP vote share in local elections)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+use "$datadir/DISTRICT.dta", clear
+
+* Recreate temp (not in raw data, derived in STEP 1)
+gen temp = post2010 * totalimpact_finlosswap
+
+keep id ryr year temp pct_votes_UKIP post2010 totalimpact_finlosswap
+
+label variable id                      "G: Local authority district"
+label variable ryr                     "T: Region x year"
+label variable temp                    "D: Post-austerity x fiscal impact (continuous)"
+label variable pct_votes_UKIP          "Y: UKIP vote share"
+
+local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Fetzer (2019)"
+save "`outdir'/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = id, T = ryr, D = temp"
+
 * Done

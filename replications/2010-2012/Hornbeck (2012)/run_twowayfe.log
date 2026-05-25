@@ -1,8 +1,9 @@
------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Hornbeck (2012)/run_twowayfe.log
   log type:  text
- opened on:  20 Apr 2026, 16:22:16
+ opened on:  24 May 2026, 23:31:18
 
 . 
 . * Install packages if needed
@@ -28,7 +29,8 @@
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 1: DATA PREPARATION
 >   Follows original Analyze_DustBowl.do variable creation pipeline:
 >   1. Keep 12 Dust Bowl states, drop 1935
@@ -38,7 +40,8 @@
 >   5. Create farmland_weight (1930 farmland acres)
 >   6. Create id_stateyear
 >   7. Create time-varying treatment D_post
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . use "$datadir/DustBowl_All_base1910.dta", clear
 
@@ -52,8 +55,9 @@ Observations: 52874
 
 . desc, short
 
-Contains data from C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/AER-2009-1347_Data_Code/Anal
-> yze-Data/DustBowl_All_base1910.dta
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Hornbeck (2012)/AER-2009-1347_Data_Code/Analyze-Data/DustBowl_All_base1910.d
+> ta
  Observations:        52,874                  
     Variables:            89                  18 Jul 2011 16:06
 Sorted by: fips  year
@@ -116,7 +120,8 @@ Sorted by: fips  year
 . cap drop if frac_grassland_tot < .5
 
 . * Drop non-contiguous counties (line 163)
-. cap drop if fips==48043 | fips==48243 | fips==35013 | fips==35017 | fips==30007
+. cap drop if fips==48043 | fips==48243 | fips==35013 | fips==35017 | fips==300
+> 07
 
 . 
 . * Generate farmland weight: 1930 baseline farmland acres (lines 182-186)
@@ -198,7 +203,8 @@ m1_2 = share in HIGH erosion (>75% topsoil loss)
 . di ""
 
 
-. di "--- Outcome: value_landbuildings_f (log value farmland+buildings/acre) ---"
+. di "--- Outcome: value_landbuildings_f (log value farmland+buildings/acre) --
+> -"
 --- Outcome: value_landbuildings_f (log value farmland+buildings/acre) ---
 
 . summ value_landbuildings_f
@@ -309,7 +315,8 @@ After sample restrictions: 13343 obs, 785 counties
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 2: TABLE 2 -- SHORT/LONG-RUN AGRICULTURAL ADJUSTMENTS
 > 
 >   Simplified TWFE specification (county + year FE):
@@ -321,7 +328,8 @@ After sample restrictions: 13343 obs, 785 counties
 >   below is for twowayfeweights decomposition.
 > 
 >   Also run the full paper spec for comparison (areg with id_stateyear).
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -586,7 +594,8 @@ value_land~f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
 > 
 >   feTR: Y = value_landbuildings_f, G = fips, T = year
@@ -594,7 +603,8 @@ value_land~f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 >   other_treatments: D_med_post (= m1_1 * I(year > 1930))
 > 
 >   Sharp-like design: many counties with 0% land in high erosion (D=0 always)
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -632,7 +642,8 @@ A1: feTR -- D_high_post, weighted by farmland
 >     weight(farmland_weight) summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to -0.1611, estimates the sum of several terms.
+the TWFE coefficient beta, equal to -0.1611, estimates the sum of several terms
+> .
 
 The first term is a weighted sum of 3454 ATTs of the treatment.
 2717 ATTs receive a positive weight, and 737 receive a negative weight.
@@ -645,7 +656,8 @@ Negative weights        737         -0.0096
 Total                   3454        1.0000      
 ------------------------------------------------
 
-The next term is a weighted sum of 7634 ATTs of treatment 1 included in the other_treatments option.
+The next term is a weighted sum of 7634 ATTs of treatment 1 included in the oth
+> er_treatments option.
 2464 ATTs receive a positive weight, and 5170 receive a negative weight.
 ------------------------------------------------
 Other treat.: D_med_post# ATTs      Σ weights  
@@ -657,7 +669,8 @@ Total                   7634        0.0000
 ------------------------------------------------
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . * --- A2: feTR with D_high_post only, weighted ---
@@ -675,7 +688,8 @@ A2: feTR -- D_high_post only (no other_treatments)
 >     type(feTR) weight(farmland_weight) summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to -0.2617, estimates a weighted sum of 3454 ATTs. 
+the TWFE coefficient beta, equal to -0.2617, estimates a weighted sum of 3454 A
+> TTs. 
 2442 ATTs receive a positive weight, and 1012 receive a negative weight.
 ------------------------------------------------
 Treat. var: D_high_post # ATTs      Σ weights  
@@ -689,11 +703,13 @@ Total                   3454        1.0000
 Summary Measures:
 TWFE coefficient (β_fe) =   -0.2617
 min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.4239
-min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:    7.5676
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,
+> t) cells:    7.5676
 Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . * --- A3: feTR unweighted ---
@@ -711,7 +727,8 @@ A3: feTR -- D_high_post, unweighted
 >     type(feTR) other_treatments(D_med_post) summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to -0.2045, estimates the sum of several terms.
+the TWFE coefficient beta, equal to -0.2045, estimates the sum of several terms
+> .
 
 The first term is a weighted sum of 3454 ATTs of the treatment.
 2629 ATTs receive a positive weight, and 825 receive a negative weight.
@@ -724,7 +741,8 @@ Negative weights        825         -0.0066
 Total                   3454        1.0000      
 ------------------------------------------------
 
-The next term is a weighted sum of 7634 ATTs of treatment 1 included in the other_treatments option.
+The next term is a weighted sum of 7634 ATTs of treatment 1 included in the oth
+> er_treatments option.
 2376 ATTs receive a positive weight, and 5258 receive a negative weight.
 ------------------------------------------------
 Other treat.: D_med_post# ATTs      Σ weights  
@@ -736,13 +754,16 @@ Total                   7634        0.0000
 ------------------------------------------------
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 4: LATEX TABLES
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -765,7 +786,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\centering" _n
 
-. file write texfile "\caption{Table 2---Effects of Dust Bowl Erosion on Land Values (Simplified TWFE)}" _n
+. file write texfile "\caption{Table 2---Effects of Dust Bowl Erosion on Land V
+> alues (Simplified TWFE)}" _n
 
 . file write texfile "\label{tab:table2}" _n
 
@@ -773,13 +795,15 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\toprule" _n
 
-. file write texfile " & Weighted & Unweighted & State\$\times\$Year FE & High only \\\\" _n
+. file write texfile " & Weighted & Unweighted & State\$\times\$Year FE & High 
+> only \\" _n
 
-. file write texfile " & (1) & (2) & (3) & (4) \\\\" _n
+. file write texfile " & (1) & (2) & (3) & (4) \\" _n
 
 . file write texfile "\midrule" _n
 
-. file write texfile "\multicolumn{5}{l}{\textit{Dep.\ var.: ln(value farmland + buildings / acre)}} \\\\" _n
+. file write texfile "\multicolumn{5}{l}{\textit{Dep.\ var.: ln(value farmland 
+> + buildings / acre)}} \\" _n
 
 . file write texfile "\addlinespace" _n
 
@@ -825,7 +849,8 @@ LaTeX TABLE EXPORT
 . 
 . file write texfile "High erosion \$\times\$ post-1930"
 
-. file write texfile " & `bh1'`sh1' & `bh2'`sh2' & `bh3'`sh3' & `bh4'`sh4' \\\\" _n
+. file write texfile " & `bh1'`sh1' & `bh2'`sh2' & `bh3'`sh3' & `bh4'`sh4' \\" 
+> _n
 
 . 
 . * SEs
@@ -852,7 +877,7 @@ LaTeX TABLE EXPORT
 . }
 
 . 
-. file write texfile " & (`seh1') & (`seh2') & (`seh3') & (`seh4') \\\\" _n
+. file write texfile " & (`seh1') & (`seh2') & (`seh3') & (`seh4') \\" _n
 
 . file write texfile "\addlinespace" _n
 
@@ -890,7 +915,7 @@ LaTeX TABLE EXPORT
 . 
 . file write texfile "Medium erosion \$\times\$ post-1930"
 
-. file write texfile " & `bm1'`sm1' & `bm2'`sm2' & `bm3'`sm3' & \\\\" _n
+. file write texfile " & `bm1'`sm1' & `bm2'`sm2' & `bm3'`sm3' & \\" _n
 
 . 
 . local sem1 : di %7.3f `se_m1'
@@ -912,18 +937,18 @@ LaTeX TABLE EXPORT
 . }
 
 . 
-. file write texfile " & (`sem1') & (`sem2') & (`sem3') & \\\\" _n
+. file write texfile " & (`sem1') & (`sem2') & (`sem3') & \\" _n
 
 . file write texfile "\addlinespace" _n
 
 . 
-. file write texfile "County FE & Y & Y & & Y \\\\" _n
+. file write texfile "County FE & Y & Y & & Y \\" _n
 
-. file write texfile "Year FE & Y & Y & & Y \\\\" _n
+. file write texfile "Year FE & Y & Y & & Y \\" _n
 
-. file write texfile "State \$\times\$ Year FE & & & Y & \\\\" _n
+. file write texfile "State \$\times\$ Year FE & & & Y & \\" _n
 
-. file write texfile "Weighted (farmland) & Y & & Y & Y \\\\" _n
+. file write texfile "Weighted (farmland) & Y & & Y & Y \\" _n
 
 . file write texfile "\addlinespace" _n
 
@@ -936,24 +961,28 @@ LaTeX TABLE EXPORT
 
 . local gfmt = strtrim("`gfmt'")
 
-. file write texfile "Observations & `nfmt' & `nfmt' & `nfmt' & `nfmt' \\\\" _n
+. file write texfile "Observations & `nfmt' & `nfmt' & `nfmt' & `nfmt' \\" _n
 
-. file write texfile "Counties & `gfmt' & `gfmt' & `gfmt' & `gfmt' \\\\" _n
+. file write texfile "Counties & `gfmt' & `gfmt' & `gfmt' & `gfmt' \\" _n
 
 . 
 . file write texfile "\bottomrule" _n
 
 . file write texfile "\multicolumn{5}{p{0.95\linewidth}}{\footnotesize" _n
 
-. file write texfile " \textit{Notes:} Simplified two-way FE regressions for weight decomposition." _n
+. file write texfile " \textit{Notes:} Simplified two-way FE regressions for we
+> ight decomposition." _n
 
-. file write texfile " Full paper uses state\$\times\$year FE and 1930 baseline controls." _n
+. file write texfile " Full paper uses state\$\times\$year FE and 1930 baseline
+>  controls." _n
 
-. file write texfile " High/Medium erosion = share of county land in high/medium erosion areas" _n
+. file write texfile " High/Medium erosion = share of county land in high/mediu
+> m erosion areas" _n
 
 . file write texfile " (from 1930s Soil Conservation Service maps)." _n
 
-. file write texfile " Robust standard errors clustered by county in parentheses." _n
+. file write texfile " Robust standard errors clustered by county in parenthese
+> s." _n
 
 . file write texfile " *** Significant at 1\%, ** 5\%, * 10\%.}" _n
 
@@ -978,8 +1007,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\centering" _n
 
-. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}"
->  _n
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisema
+> rtin \& D'Haultf\oe uille, 2020)}" _n
 
 . file write texfile "\label{tab:twowayfe}" _n
 
@@ -987,27 +1016,31 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\toprule" _n
 
-. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 2, simplified (feTR)}} \\\\" _n
+. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 2, simpli
+> fied (feTR)}} \\" _n
 
 . file write texfile "\midrule" _n
 
-. file write texfile "Regression type & Fixed effects (feTR) \\\\" _n
+. file write texfile "Regression type & Fixed effects (feTR) \\" _n
 
-. file write texfile "Dependent variable & ln(farmland value / acre) \\\\" _n
+. file write texfile "Dependent variable & ln(farmland value / acre) \\" _n
 
-. file write texfile "Treatment variable & High erosion share \$\times\$ post-1930 \\\\" _n
+. file write texfile "Treatment variable & High erosion share \$\times\$ post-1
+> 930 \\" _n
 
-. file write texfile "Other treatment & Medium erosion share \$\times\$ post-1930 \\\\" _n
+. file write texfile "Other treatment & Medium erosion share \$\times\$ post-19
+> 30 \\" _n
 
-. file write texfile "Group (G) & County (FIPS) \\\\" _n
+. file write texfile "Group (G) & County (FIPS) \\" _n
 
-. file write texfile "Time (T) & Year (1910--1997) \\\\" _n
+. file write texfile "Time (T) & Year (1910--1997) \\" _n
 
-. file write texfile "Design & Fuzzy (erosion varies within county) \\\\" _n
+. file write texfile "Design & Fuzzy (erosion varies within county) \\" _n
 
 . file write texfile "\addlinespace" _n
 
-. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weight distribution}} \\\\" _n
+. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weig
+> ht distribution}} \\" _n
 
 . file write texfile "\bottomrule" _n
 
@@ -1034,23 +1067,26 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\geometry{margin=1in}" _n
 
-. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justification=centering}" _n
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justifica
+> tion=centering}" _n
 
 . file write texfile "\begin{document}" _n _n
 
 . file write texfile "\begin{center}" _n
 
-. file write texfile "{\Large\bfseries Hornbeck (2012)}\\\\" _n
+. file write texfile "{\Large\bfseries Hornbeck (2012)}\\" _n
 
-. file write texfile "{\large The Enduring Impact of the American Dust Bowl:}\\\\" _n
+. file write texfile "{\large The Enduring Impact of the American Dust Bowl:}\\
+> " _n
 
-. file write texfile "{\large Short- and Long-Run Adjustments to}\\\\" _n
+. file write texfile "{\large Short- and Long-Run Adjustments to}\\" _n
 
-. file write texfile "{\large Environmental Catastrophe}\\\\" _n
+. file write texfile "{\large Environmental Catastrophe}\\" _n
 
 . file write texfile "\vspace{0.5em}" _n
 
-. file write texfile "{\normalsize \textit{American Economic Review}, 102(4), 1477--1507}" _n
+. file write texfile "{\normalsize \textit{American Economic Review}, 102(4), 1
+> 477--1507}" _n
 
 . file write texfile "\end{center}" _n _n
 
@@ -1084,24 +1120,79 @@ ALL DONE - Hornbeck (2012)
 Output files:
 
 . di "  1. $outdir/table2_simplified.tex"
-  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/table2_simplified.tex
+  1. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hornb
+> eck (2012)/table2_simplified.tex
 
 . di "  2. $outdir/table_twowayfeweights.tex"
-  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/table_twowayfeweights.tex
+  2. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hornb
+> eck (2012)/table_twowayfeweights.tex
 
 . di "  3. $outdir/hornbeck_tables.tex (compilable master)"
-  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/hornbeck_tables.tex (compilable master)
+  3. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hornb
+> eck (2012)/hornbeck_tables.tex (compilable master)
 
 . di "  4. $outdir/run_twowayfe.log"
-  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/run_twowayfe.log
+  4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hornb
+> eck (2012)/run_twowayfe.log
+
+. di "  5. $outdir/panel_GTD.dta"
+  5. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hornb
+> eck (2012)/panel_GTD.dta
 
 . di "=============================================="
 ==============================================
 
 . 
+. 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = fips                    (county FIPS code)
+>   T = year                    (census year, 1910-1997)
+>   D = D_high_post             (high erosion x post-1930)
+>   Y = value_landbuildings_f   (log farm land+buildings value)
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "=============================================="
+==============================================
+
+. 
+. keep fips year D_high_post value_landbuildings_f
+
+. 
+. label variable fips                   "G: County FIPS code"
+
+. label variable year                   "T: Census year (1910-1997)"
+
+. label variable D_high_post            "D: High erosion x post-1930"
+
+. label variable value_landbuildings_f  "Y: Log farm land+buildings value"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Horn
+    > beck (2012)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 13343 observations
+
+. di "  G = fips, T = year, D = D_high_post"
+  G = fips, T = year, D = D_high_post
+
+. 
 . log close _all
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Hornbeck (2012)/run_twowayfe.log
   log type:  text
- closed on:  20 Apr 2026, 16:22:18
------------------------------------------------------------------------------------------------------------------
+ closed on:  24 May 2026, 23:31:23
+-------------------------------------------------------------------------------

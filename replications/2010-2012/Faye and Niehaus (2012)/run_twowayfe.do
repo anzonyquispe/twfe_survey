@@ -528,6 +528,31 @@ if `fdtr_ok' == 1 {
 }
 di ""
 di "Output: table2_replication.tex, table_twowayfeweights.tex, fayeniehaus_tables.tex"
+di "  + panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = pair_id      (donor x recipient pair ID)
+  T = year         (year, 1975-2003)
+  D = i_elecex     (election binary)
+  Y = oda          (ODA flows)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep pair_id year i_elecex oda
+
+label variable pair_id   "G: Donor x recipient pair ID"
+label variable year      "T: Year (1975-2003)"
+label variable i_elecex  "D: Election (binary)"
+label variable oda       "Y: ODA flows"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = pair_id, T = year, D = i_elecex"
 
 * log close _all

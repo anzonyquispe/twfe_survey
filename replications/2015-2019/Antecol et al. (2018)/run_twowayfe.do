@@ -501,6 +501,35 @@ cap copy "$outdir/table_twowayfeweights.tex" "$texdir/table_twowayfeweights.tex"
 cap copy "$outdir/antecol_tables.tex" "$texdir/antecol_tables.tex", replace
 
 
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = pol_u      (university identifier)
+  T = pol_job_start (year hired at policy university)
+  D = gncs       (binary: gender-neutral clock stopping policy in place)
+  Y = tenure_policy_school (tenure at policy school)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+* Reload original data
+use "$datadir/aer_primarysample.dta", clear
+
+* Keep essential panel variables
+keep pol_u pol_job_start gncs tenure_policy_school female
+
+* Label variables with G/T/D role
+label variable pol_u              "G: University identifier"
+label variable pol_job_start      "T: Year hired (cohort year)"
+label variable gncs               "D: Gender-neutral clock stopping (binary)"
+label variable tenure_policy_school "Y: Tenure at policy school"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = pol_u, T = pol_job_start, D = gncs"
+
+
 di _n "============================================================"
 di "  ALL DONE - Antecol et al. (2018)"
 di "============================================================"
@@ -508,7 +537,8 @@ di "Output files:"
 di "  1. $outdir/table2_replication.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/antecol_tables.tex (compilable master)"
-di "  4. $outdir/run_twowayfe.log"
+di "  4. $outdir/panel_GTD.dta (clean panel: G, T, D)"
+di "  5. $outdir/run_twowayfe.log"
 di "============================================================"
 
 cap log close detail

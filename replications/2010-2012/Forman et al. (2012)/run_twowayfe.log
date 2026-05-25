@@ -1,8 +1,9 @@
------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Forman et al. (2012)/run_twowayfe.log
   log type:  text
- opened on:  20 Apr 2026, 10:25:20
+ opened on:  24 May 2026, 23:31:12
 
 . 
 . * Install packages if needed
@@ -28,19 +29,23 @@
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 1: DATA PREPARATION
 >   Load cross-sectional county growth data (differences 1995-2000).
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . use "$datadir/countygrowth.dta", clear
 
 . 
 . * Define control variable globals (following original tables.do)
-. global controls "lnpop pctblk1990 pctunivp1990 pctHSp1990 pctbelowPL1990 medhhinc1990 carnegie1_enr frac_in_eng
-> _prog npatent1980s frprof pct65p1990 netmig95"
+. global controls "lnpop pctblk1990 pctunivp1990 pctHSp1990 pctbelowPL1990 medh
+> hinc1990 carnegie1_enr frac_in_eng_prog npatent1980s frprof pct65p1990 netmig
+> 95"
 
-. global change "change_totalpop change_pctblk change_pctunivp change_pctHSp change_pct65 change_netmig"
+. global change "change_totalpop change_pctblk change_pctunivp change_pctHSp ch
+> ange_pct65 change_netmig"
 
 . 
 . di _n "=== DATA SUMMARY ==="
@@ -52,8 +57,8 @@ Observations: 3137
 
 . desc, short
 
-Contains data from C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)/data_and_programs/count
-> ygrowth.dta
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Forman et al. (2012)/data_and_programs/countygrowth.dta
  Observations:         3,137                  
     Variables:            78                  23 Dec 2010 15:43
 Sorted by: 
@@ -73,7 +78,8 @@ Sorted by:
 . di ""
 
 
-. di "--- Treatment: surv_deeppost00 (fraction firms with advanced Internet) ---"
+. di "--- Treatment: surv_deeppost00 (fraction firms with advanced Internet) --
+> -"
 --- Treatment: surv_deeppost00 (fraction firms with advanced Internet) ---
 
 . summ surv_deeppost00, detail
@@ -145,14 +151,16 @@ change_net~g |      3,135   -.1436606     3.28659    -54.679    141.387
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 2: TABLE 2 -- MAIN EFFECTS: OLS
 >   Dep var: wagediff = ln(weekwage_2000) - ln(weekwage_1995)
 > 
 >   Col 1: surv_deeppost00, no controls
 >   Col 2: surv_deeppost00 + home Internet + missing + controls + changes
 >   Col 3: + shallow Internet + PCs per employee
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -178,13 +186,13 @@ Linear regression                               Number of obs     =      2,744
                                                 R-squared         =     0.0038
                                                 Root MSE          =     .08052
 
----------------------------------------------------------------------------------
-                |               Robust
-       wagediff | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
-----------------+----------------------------------------------------------------
-surv_deeppost00 |   .0372192   .0131858     2.82   0.005     .0113642    .0630743
-          _cons |   .1848458   .0017356   106.50   0.000     .1814426     .188249
----------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+             |               Robust
+    wagediff | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+surv_deep~00 |   .0372192   .0131858     2.82   0.005     .0113642    .0630743
+       _cons |   .1848458   .0017356   106.50   0.000     .1814426     .188249
+------------------------------------------------------------------------------
 
 . local b_1  = _b[surv_deeppost00]
 
@@ -194,7 +202,8 @@ surv_deeppost00 |   .0372192   .0131858     2.82   0.005     .0113642    .063074
 
 . local nn_1 = e(N)
 
-. di "  beta = " %7.4f `b_1' " (" %5.4f `se_1' "), R2 = " %5.3f `r2_1' ", N = " `nn_1'
+. di "  beta = " %7.4f `b_1' " (" %5.4f `se_1' "), R2 = " %5.3f `r2_1' ", N = "
+>  `nn_1'
   beta =  0.0372 (0.0132), R2 = 0.004, N = 2744
 
 . 
@@ -203,7 +212,8 @@ surv_deeppost00 |   .0372192   .0131858     2.82   0.005     .0113642    .063074
 
 --- Column 2: Full controls ---
 
-. regress wagediff surv_deeppost00 indivhomeinternet00_cty missing $controls $change, robust
+. regress wagediff surv_deeppost00 indivhomeinternet00_cty missing $controls $c
+> hange, robust
 
 Linear regression                               Number of obs     =      2,743
                                                 F(21, 2721)       =      14.62
@@ -211,33 +221,33 @@ Linear regression                               Number of obs     =      2,743
                                                 R-squared         =     0.1306
                                                 Root MSE          =     .07548
 
------------------------------------------------------------------------------------------
-                        |               Robust
-               wagediff | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
-------------------------+----------------------------------------------------------------
-        surv_deeppost00 |   .0278399   .0126398     2.20   0.028     .0030553    .0526246
-indivhomeinternet00_cty |   .0822748   .0378555     2.17   0.030     .0080464    .1565031
-                missing |   .0280682   .0170051     1.65   0.099     -.005276    .0614124
-                  lnpop |  -.0065422   .0018821    -3.48   0.001    -.0102327   -.0028517
-             pctblk1990 |   .0133063   .0118118     1.13   0.260    -.0098548    .0364673
-           pctunivp1990 |    .572033   .0789012     7.25   0.000     .4173207    .7267453
-             pctHSp1990 |  -.1555065   .0520436    -2.99   0.003    -.2575554   -.0534576
-         pctbelowPL1990 |  -.1615275    .046444    -3.48   0.001    -.2525965   -.0704584
-           medhhinc1990 |   -.000558   .0006181    -0.90   0.367    -.0017699     .000654
-          carnegie1_enr |   .0319719   .0474517     0.67   0.501    -.0610732    .1250169
-       frac_in_eng_prog |  -.2201671   .3629799    -0.61   0.544    -.9319112     .491577
-           npatent1980s |   .0164506   .0042973     3.83   0.000     .0080243    .0248768
-                 frprof |   -.010241    .053537    -0.19   0.848    -.1152182    .0947362
-             pct65p1990 |   .0443062   .0512846     0.86   0.388    -.0562544    .1448669
-               netmig95 |   .0032963   .0032014     1.03   0.303     -.002981    .0095737
-        change_totalpop |   .0526667   .0151875     3.47   0.001     .0228865    .0824469
-          change_pctblk |   .0264813   .0756051     0.35   0.726     -.121768    .1747305
-        change_pctunivp |    .821895   .1603947     5.12   0.000     .5073874    1.136403
-          change_pctHSp |  -.0223661   .0947318    -0.24   0.813    -.2081196    .1633874
-           change_pct65 |  -.5628001   .1192249    -4.72   0.000    -.7965806   -.3290196
-          change_netmig |   .0019928   .0037367     0.53   0.594    -.0053342    .0093198
-                  _cons |   .2995026   .0458432     6.53   0.000     .2096117    .3893936
------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+             |               Robust
+    wagediff | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+surv_deep~00 |   .0278399   .0126398     2.20   0.028     .0030553    .0526246
+indivhomei~y |   .0822748   .0378555     2.17   0.030     .0080464    .1565031
+     missing |   .0280682   .0170051     1.65   0.099     -.005276    .0614124
+       lnpop |  -.0065422   .0018821    -3.48   0.001    -.0102327   -.0028517
+  pctblk1990 |   .0133063   .0118118     1.13   0.260    -.0098548    .0364673
+pctunivp1990 |    .572033   .0789012     7.25   0.000     .4173207    .7267453
+  pctHSp1990 |  -.1555065   .0520436    -2.99   0.003    -.2575554   -.0534576
+pctbelo~1990 |  -.1615275    .046444    -3.48   0.001    -.2525965   -.0704584
+medhhinc1990 |   -.000558   .0006181    -0.90   0.367    -.0017699     .000654
+carnegie1_~r |   .0319719   .0474517     0.67   0.501    -.0610732    .1250169
+frac_in_en~g |  -.2201671   .3629799    -0.61   0.544    -.9319112     .491577
+npatent1980s |   .0164506   .0042973     3.83   0.000     .0080243    .0248768
+      frprof |   -.010241    .053537    -0.19   0.848    -.1152182    .0947362
+  pct65p1990 |   .0443062   .0512846     0.86   0.388    -.0562544    .1448669
+    netmig95 |   .0032963   .0032014     1.03   0.303     -.002981    .0095737
+change_tot~p |   .0526667   .0151875     3.47   0.001     .0228865    .0824469
+change_pct~k |   .0264813   .0756051     0.35   0.726     -.121768    .1747305
+change_pc~vp |    .821895   .1603947     5.12   0.000     .5073874    1.136403
+change_pc~Sp |  -.0223661   .0947318    -0.24   0.813    -.2081196    .1633874
+change_pct65 |  -.5628001   .1192249    -4.72   0.000    -.7965806   -.3290196
+change_net~g |   .0019928   .0037367     0.53   0.594    -.0053342    .0093198
+       _cons |   .2995026   .0458432     6.53   0.000     .2096117    .3893936
+------------------------------------------------------------------------------
 
 . local b_2  = _b[surv_deeppost00]
 
@@ -247,7 +257,8 @@ indivhomeinternet00_cty |   .0822748   .0378555     2.17   0.030     .0080464   
 
 . local nn_2 = e(N)
 
-. di "  beta = " %7.4f `b_2' " (" %5.4f `se_2' "), R2 = " %5.3f `r2_2' ", N = " `nn_2'
+. di "  beta = " %7.4f `b_2' " (" %5.4f `se_2' "), R2 = " %5.3f `r2_2' ", N = "
+>  `nn_2'
   beta =  0.0278 (0.0126), R2 = 0.131, N = 2743
 
 . 
@@ -256,7 +267,8 @@ indivhomeinternet00_cty |   .0822748   .0378555     2.17   0.030     .0080464   
 
 --- Column 3: + other IT ---
 
-. cap noisily regress wagediff surv_deeppost00 surv_pcperemp00 surv_shalpost00 ///
+. cap noisily regress wagediff surv_deeppost00 surv_pcperemp00 surv_shalpost00 
+> ///
 >     indivhomeinternet00_cty missing $controls $change, robust
 
 Linear regression                               Number of obs     =      2,743
@@ -265,42 +277,43 @@ Linear regression                               Number of obs     =      2,743
                                                 R-squared         =     0.1315
                                                 Root MSE          =     .07547
 
------------------------------------------------------------------------------------------
-                        |               Robust
-               wagediff | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
-------------------------+----------------------------------------------------------------
-        surv_deeppost00 |   .0246616   .0135208     1.82   0.068    -.0018505    .0511737
-        surv_pcperemp00 |   .0152203   .0108372     1.40   0.160    -.0060298    .0364703
-        surv_shalpost00 |   .0007328   .0078026     0.09   0.925    -.0145668    .0160325
-indivhomeinternet00_cty |   .0822158   .0378807     2.17   0.030     .0079379    .1564938
-                missing |   .0281626   .0169909     1.66   0.098    -.0051538    .0614791
-                  lnpop |  -.0068054   .0019003    -3.58   0.000    -.0105315   -.0030792
-             pctblk1990 |   .0123505   .0118612     1.04   0.298    -.0109073    .0356084
-           pctunivp1990 |   .5590101   .0807229     6.93   0.000     .4007257    .7172946
-             pctHSp1990 |  -.1588511   .0522206    -3.04   0.002    -.2612471   -.0564552
-         pctbelowPL1990 |  -.1598207   .0463488    -3.45   0.001    -.2507031   -.0689382
-           medhhinc1990 |  -.0005557   .0006171    -0.90   0.368    -.0017657    .0006543
-          carnegie1_enr |   .0338375   .0479915     0.71   0.481     -.060266    .1279409
-       frac_in_eng_prog |  -.2357478   .3647108    -0.65   0.518    -.9508861    .4793906
-           npatent1980s |   .0159796   .0042903     3.72   0.000      .007567    .0243922
-                 frprof |  -.0089253    .054336    -0.16   0.870    -.1154694    .0976188
-             pct65p1990 |   .0470007   .0512924     0.92   0.360    -.0535754    .1475768
-               netmig95 |   .0034356   .0031938     1.08   0.282    -.0028269    .0096981
-        change_totalpop |   .0538636   .0153229     3.52   0.000     .0238178    .0839094
-          change_pctblk |    .025075   .0758579     0.33   0.741      -.12367    .1738201
-        change_pctunivp |   .8161213   .1613179     5.06   0.000     .4998032    1.132439
-          change_pctHSp |  -.0259223   .0947487    -0.27   0.784    -.2117091    .1598644
-           change_pct65 |  -.5620548   .1190116    -4.72   0.000    -.7954171   -.3286925
-          change_netmig |   .0021813    .003726     0.59   0.558    -.0051248    .0094875
-                  _cons |   .3006315   .0459811     6.54   0.000     .2104701    .3907928
------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+             |               Robust
+    wagediff | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+surv_deep~00 |   .0246616   .0135208     1.82   0.068    -.0018505    .0511737
+surv_pcpe~00 |   .0152203   .0108372     1.40   0.160    -.0060298    .0364703
+surv_shal~00 |   .0007328   .0078026     0.09   0.925    -.0145668    .0160325
+indivhomei~y |   .0822158   .0378807     2.17   0.030     .0079379    .1564938
+     missing |   .0281626   .0169909     1.66   0.098    -.0051538    .0614791
+       lnpop |  -.0068054   .0019003    -3.58   0.000    -.0105315   -.0030792
+  pctblk1990 |   .0123505   .0118612     1.04   0.298    -.0109073    .0356084
+pctunivp1990 |   .5590101   .0807229     6.93   0.000     .4007257    .7172946
+  pctHSp1990 |  -.1588511   .0522206    -3.04   0.002    -.2612471   -.0564552
+pctbelo~1990 |  -.1598207   .0463488    -3.45   0.001    -.2507031   -.0689382
+medhhinc1990 |  -.0005557   .0006171    -0.90   0.368    -.0017657    .0006543
+carnegie1_~r |   .0338375   .0479915     0.71   0.481     -.060266    .1279409
+frac_in_en~g |  -.2357478   .3647108    -0.65   0.518    -.9508861    .4793906
+npatent1980s |   .0159796   .0042903     3.72   0.000      .007567    .0243922
+      frprof |  -.0089253    .054336    -0.16   0.870    -.1154694    .0976188
+  pct65p1990 |   .0470007   .0512924     0.92   0.360    -.0535754    .1475768
+    netmig95 |   .0034356   .0031938     1.08   0.282    -.0028269    .0096981
+change_tot~p |   .0538636   .0153229     3.52   0.000     .0238178    .0839094
+change_pct~k |    .025075   .0758579     0.33   0.741      -.12367    .1738201
+change_pc~vp |   .8161213   .1613179     5.06   0.000     .4998032    1.132439
+change_pc~Sp |  -.0259223   .0947487    -0.27   0.784    -.2117091    .1598644
+change_pct65 |  -.5620548   .1190116    -4.72   0.000    -.7954171   -.3286925
+change_net~g |   .0021813    .003726     0.59   0.558    -.0051248    .0094875
+       _cons |   .3006315   .0459811     6.54   0.000     .2104701    .3907928
+------------------------------------------------------------------------------
 
 . if !_rc {
 .     local b_3  = _b[surv_deeppost00]
 .     local se_3 = _se[surv_deeppost00]
 .     local r2_3 = e(r2)
 .     local nn_3 = e(N)
-.     di "  beta = " %7.4f `b_3' " (" %5.4f `se_3' "), R2 = " %5.3f `r2_3' ", N = " `nn_3'
+.     di "  beta = " %7.4f `b_3' " (" %5.4f `se_3' "), R2 = " %5.3f `r2_3' ", N
+>  = " `nn_3'
   beta =  0.0247 (0.0135), R2 = 0.131, N = 2743
 . }
 
@@ -314,7 +327,8 @@ indivhomeinternet00_cty |   .0822158   .0378807     2.17   0.030     .0079379   
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
 > 
 >   fdTR: The cross-sectional FD regression is equivalent to a 2-period
@@ -329,7 +343,8 @@ indivhomeinternet00_cty |   .0822158   .0378807     2.17   0.030     .0079379   
 >   With continuous D going from 0 to surv_deeppost00 (heterogeneous adoption),
 >   the FE/FD estimator assigns negative weights to counties with below-average
 >   Internet adoption intensity (Proposition S1 in dCDH web appendix).
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -350,7 +365,8 @@ TWOWAYFEWEIGHTS DECOMPOSITION
 . tempfile base
 
 . save `base'
-file C:\Users\Usuario\AppData\Local\Temp\ST_2ba4_000001.tmp saved as .dta format
+file C:\Users\Usuario\AppData\Local\Temp\ST_a1c8_000001.tmp saved as .dta
+    format
 
 . 
 . * Period 1 (1995): all missing FDs, D_level = 0
@@ -369,7 +385,8 @@ file C:\Users\Usuario\AppData\Local\Temp\ST_2ba4_000001.tmp saved as .dta format
 . tempfile p1
 
 . save `p1'
-file C:\Users\Usuario\AppData\Local\Temp\ST_2ba4_000002.tmp saved as .dta format
+file C:\Users\Usuario\AppData\Local\Temp\ST_a1c8_000002.tmp saved as .dta
+    format
 
 . 
 . * Period 2 (2000): FDs from data, D_level = surv_deeppost00
@@ -463,7 +480,8 @@ A1: fdTR -- surv_deeppost00 (no controls)
 >     type(fdTR) summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to 0.0372, estimates a weighted sum of 1478 ATTs. 
+the TWFE coefficient beta, equal to 0.0372, estimates a weighted sum of 1478 AT
+> Ts. 
 1078 ATTs receive a positive weight, and 400 receive a negative weight.
 ------------------------------------------------
 Treat. var: DD          # ATTs      Σ weights  
@@ -477,11 +495,13 @@ Total                   1478        1.0000
 Summary Measures:
 TWFE coefficient (β_fd) =    0.0372
 min σ(Δ) compatible with β_fd and Δ_TR = 0:    0.0300
-min σ(Δ) compatible with treatment effect of opposite sign than β_fd in all (g,t) cells:    0.8623
+min σ(Δ) compatible with treatment effect of opposite sign than β_fd in all (g,
+> t) cells:    0.8623
 Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . * --- A2: fdTR with controls ---
@@ -507,7 +527,8 @@ A2: fdTR -- with controls
 >     summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to 0.0278, estimates a weighted sum of 1478 ATTs. 
+the TWFE coefficient beta, equal to 0.0278, estimates a weighted sum of 1478 AT
+> Ts. 
 963 ATTs receive a positive weight, and 515 receive a negative weight.
 ------------------------------------------------
 Treat. var: DD          # ATTs      Σ weights  
@@ -521,11 +542,13 @@ Total                   1478        1.0000
 Summary Measures:
 TWFE coefficient (β_fd) =    0.0278
 min σ(Δ) compatible with β_fd and Δ_TR = 0:    0.0213
-min σ(Δ) compatible with treatment effect of opposite sign than β_fd in all (g,t) cells:    0.4215
+min σ(Δ) compatible with treatment effect of opposite sign than β_fd in all (g,
+> t) cells:    0.4215
 Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . * Reload base data for LaTeX export
@@ -533,9 +556,11 @@ The development of this package was funded by the European Union (ERC, REALLYCRE
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 4: LATEX TABLES
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -570,7 +595,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\midrule" _n
 
-. file write texfile "\multicolumn{4}{l}{\textit{Dep.\ var.: \$\Delta\$ln(weekly wage), 1995--2000}} \\\\" _n
+. file write texfile "\multicolumn{4}{l}{\textit{Dep.\ var.: \$\Delta\$ln(weekl
+> y wage), 1995--2000}} \\\\" _n
 
 . file write texfile "\addlinespace" _n
 
@@ -645,13 +671,16 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\multicolumn{4}{p{0.85\linewidth}}{\footnotesize" _n
 
-. file write texfile " \textit{Notes:} OLS regressions. Dependent variable is the change in" _n
+. file write texfile " \textit{Notes:} OLS regressions. Dependent variable is t
+> he change in" _n
 
-. file write texfile " log average weekly wages from 1995 to 2000. Treatment is the fraction" _n
+. file write texfile " log average weekly wages from 1995 to 2000. Treatment is
+>  the fraction" _n
 
 . file write texfile " of establishments using advanced Internet in 2000." _n
 
-. file write texfile " Heteroskedasticity-robust standard errors in parentheses." _n
+. file write texfile " Heteroskedasticity-robust standard errors in parentheses
+> ." _n
 
 . file write texfile " *** Significant at 1\%, ** 5\%, * 10\%.}" _n
 
@@ -676,8 +705,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\centering" _n
 
-. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}"
->  _n
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisema
+> rtin \& D'Haultf\oe uille, 2020)}" _n
 
 . file write texfile "\label{tab:twowayfe}" _n
 
@@ -685,7 +714,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\toprule" _n
 
-. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 2 (fdTR)}} \\\\" _n
+. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 2 (fdTR)}
+> } \\\\" _n
 
 . file write texfile "\midrule" _n
 
@@ -699,11 +729,13 @@ LaTeX TABLE EXPORT
 
 . file write texfile "Time (T) & Year (1995, 2000) \\\\" _n
 
-. file write texfile "Design & Fuzzy (Internet use varies within county) \\\\" _n
+. file write texfile "Design & Fuzzy (Internet use varies within county) \\\\" 
+> _n
 
 . file write texfile "\addlinespace" _n
 
-. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weight distribution}} \\\\" _n
+. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weig
+> ht distribution}} \\\\" _n
 
 . file write texfile "\bottomrule" _n
 
@@ -730,19 +762,22 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\geometry{margin=1in}" _n
 
-. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justification=centering}" _n
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justifica
+> tion=centering}" _n
 
 . file write texfile "\begin{document}" _n _n
 
 . file write texfile "\begin{center}" _n
 
-. file write texfile "{\Large\bfseries Forman, Goldfarb \& Greenstein (2012)}\\\\" _n
+. file write texfile "{\Large\bfseries Forman, Goldfarb \& Greenstein (2012)}\\
+> \\" _n
 
 . file write texfile "{\large The Internet and Local Wages: A Puzzle}\\\\" _n
 
 . file write texfile "\vspace{0.5em}" _n
 
-. file write texfile "{\normalsize \textit{American Economic Review}, 102(1), 556--575}" _n
+. file write texfile "{\normalsize \textit{American Economic Review}, 102(1), 5
+> 56--575}" _n
 
 . file write texfile "\end{center}" _n _n
 
@@ -776,24 +811,100 @@ ALL DONE - Forman et al. (2012)
 Output files:
 
 . di "  1. $outdir/table2.tex"
-  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)/table2.tex
+  1. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Forma
+> n et al. (2012)/table2.tex
 
 . di "  2. $outdir/table_twowayfeweights.tex"
-  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)/table_twowayfeweights.tex
+  2. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Forma
+> n et al. (2012)/table_twowayfeweights.tex
 
 . di "  3. $outdir/forman_tables.tex (compilable master)"
-  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)/forman_tables.tex (compilable master)
+  3. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Forma
+> n et al. (2012)/forman_tables.tex (compilable master)
 
 . di "  4. $outdir/run_twowayfe.log"
-  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)/run_twowayfe.log
+  4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Forma
+> n et al. (2012)/run_twowayfe.log
+
+. di "  5. $outdir/panel_GTD.dta"
+  5. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Forma
+> n et al. (2012)/panel_GTD.dta
 
 . di "=============================================="
 ==============================================
 
 . 
+. 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = county_id         (county numeric ID)
+>   T = period            (period: 1995/2000)
+>   D = surv_deeppost00   (advanced Internet adoption fraction)
+>   Y = wagediff          (wage growth differential)
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "=============================================="
+==============================================
+
+. 
+. * Rebuild 2-period panel (period lost after use `base' in STEP 4)
+. use "$datadir/countygrowth.dta", clear
+
+. gen county_id = _n
+
+. local N_counties = _N
+
+. expand 2
+(3,137 observations created)
+
+. bysort county_id: gen period = cond(_n==1, 1995, 2000)
+
+. bysort county_id: replace surv_deeppost00 = 0 if period == 1995
+(1,871 real changes made)
+
+. bysort county_id: replace wagediff = . if period == 1995
+(3,135 real changes made, 3,135 to missing)
+
+. keep county_id period surv_deeppost00 wagediff
+
+. 
+. label variable county_id        "G: County numeric ID"
+
+. label variable period           "T: Period (1995/2000)"
+
+. label variable surv_deeppost00  "D: Advanced Internet adoption"
+
+. label variable wagediff         "Y: Wage growth differential"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Form
+    > an et al. (2012)/panel_GTD.dta not found)
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Form
+    > an et al. (2012)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 6274 observations
+
+. di "  G = county_id, T = period, D = surv_deeppost00"
+  G = county_id, T = period, D = surv_deeppost00
+
+. 
 . log close _all
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Forman et al. (2012)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Forman et al. (2012)/run_twowayfe.log
   log type:  text
- closed on:  20 Apr 2026, 10:25:21
------------------------------------------------------------------------------------------------------------------
+ closed on:  24 May 2026, 23:31:14
+-------------------------------------------------------------------------------

@@ -1,0 +1,25 @@
+paper|G|T|D|design|subtype
+Algan and Cahuc (2010)|cty_num|period_num|trustgss|Other|
+Zhang and Zhu (2011)|id|week_num|after|Other|
+Bagwell and Staiger (2011)|HS2|country_num|Import_M|SFSD|SSFSD
+Wang (2011)|province_num|year|post_mismatch|SFSD|SSFSD
+Duranton and Turner (2011)|msa|year|Dl_ln_IH|Other|
+Moser and Voena (2012)|class_id|grntyr|treat|CLA|
+Enikolopov et al. (2011)|tik_id|_j|Watch_probit_|HAD|
+Forman et al. (2012)|county_id|period|surv_deeppost00|HAD|
+Acemoglu et al. (2011)|id|year|fpresence|Other|
+Hornbeck (2012)|fips|year|D_high_post|HAD|
+Besley and Mueller (2012)|region|time|L1_wtd|SFSD|SSFSD
+Simcoe (2012)|techarea|pubCohort|st_stbafl1yr|SFSD|SSFSD
+Dinkelman (2011)|comm_id|year|D|CLA|
+Gentzkow et al. (2011)|cnty90|year|numdailies|SFSD|SSFSD
+Baum-Snow and Lutz (2011)|leaid|year|imp_post|SAD|
+Faye and Niehaus (2012)|pair_id|year|i_elecex|SFSD|SSFSD
+Antecol et al. (2018)|pol_u|pol_job_start|gncs|SFSD|SSFSD
+Berman et al. (2017)|cell|it|main_lprice_mines|SFSD|SSFSD
+Burgess et al. (2015)|distnum|year|president|Other|
+Donaldson (2018)|distid|year|RAIL|SAD|
+Favara and Imbs (2015)|county|year|Linter_bra|SFSD|SSFSD
+Fetzer (2019)|id|ryr|temp|SFSD|SSFSD
+Kaur (2019)|dist|year|amons80|SFSD|SSFSD
+Suárez Serrato and Zidar (2016)|fe_group|year|d_keeprate|Other|

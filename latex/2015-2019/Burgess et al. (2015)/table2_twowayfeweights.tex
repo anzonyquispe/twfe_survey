@@ -1,0 +1,34 @@
+\begin{table}[htbp]
+\centering
+\caption{Two-Way FE Decomposition---Table 2: Road Construction (Burgess et al., 2015)}
+\label{tab:burgess_twfe_t2}
+\begin{tabular}{lcc}
+\toprule
+ & FE (feTR) & FD (fdTR) \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: Specification}} \\[3pt]
+Regression type & Fixed Effects & First Differences \\
+Dependent variable & \multicolumn{2}{c}{Change in paved road share} \\
+Treatment variable & \multicolumn{2}{c}{President's coethnic (non-binary)} \\
+Panel & \multicolumn{2}{c}{Districts $\times$ years (1964--2002)} \\[6pt]
+\multicolumn{3}{l}{\textit{Panel B: Weight Decomposition}} \\[3pt]
+$\hat{\beta}_{TWFE}$ & 1.911931 & --- \\
+\# positive weights & 65 & --- \\
+\# negative weights & 0 & --- \\
+\% negative weights &   0.0\% & ---\% \\[6pt]
+\multicolumn{3}{l}{\textit{Panel C: Classification (dCDH Web Appendix)}} \\[3pt]
+Design & \multicolumn{2}{c}{Not binary and/or not staggered} \\
+Dynamic effects & \multicolumn{2}{c}{No} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\textit{Notes:} Same treatment variable and decomposition as Table 1, 
+but using road construction data from maps (1964--2002) instead of 
+road expenditure data (1963--2011). 
+Negative weights indicate that the TWFE coefficient may not recover 
+a convex combination of causal effects under heterogeneous treatment effects.
+\end{minipage}
+\end{table}

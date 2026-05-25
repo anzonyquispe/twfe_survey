@@ -415,4 +415,31 @@ else {
 }
 di "============================================================"
 
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = cell       (0.5 x 0.5 degree grid cell)
+  T = it         (country x year)
+  D = main_lprice_mines (log world price x mine indicator, continuous)
+  Y = acled      (conflict indicator)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+use "$datadir/Data/BCRT_baseline.dta", clear
+keep if sd_mines == 0
+keep cell it year country_nb main_lprice_mines acled nb_acled
+
+label variable cell              "G: Grid cell (0.5x0.5 degree)"
+label variable it                "T: Country x year"
+label variable main_lprice_mines "D: Log world price x mine indicator (continuous)"
+label variable acled             "Y: Conflict indicator"
+
+local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Berman et al. (2017)"
+save "`outdir'/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = cell, T = it, D = main_lprice_mines"
+
 * Done

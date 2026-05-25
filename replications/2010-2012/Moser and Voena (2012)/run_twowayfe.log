@@ -1,8 +1,9 @@
------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Moser and Voena (2012)/run_twowayfe.log
   log type:  text
- opened on:  20 Apr 2026, 10:23:37
+ opened on:  24 May 2026, 23:29:26
 
 . 
 . * Install packages if needed
@@ -28,10 +29,12 @@
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 1: DATA PREPARATION
 >   Load patent class x year panel. Treatment = licensed class indicator.
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . use "$datadir/chem_patents_maindataset.dta", clear
 
@@ -45,8 +48,9 @@ Observations: 471120
 
 . desc, short
 
-Contains data from C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)/compulsory_licensing_
-> replication/chem_patents_maindataset.dta
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Moser and Voena (2012)/compulsory_licensing_replication/chem_patents_maindat
+> aset.dta
  Observations:       471,120                  
     Variables:            23                  23 Mar 2011 10:56
 Sorted by: 
@@ -127,7 +131,8 @@ Years (T): 65
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 2: TABLE 2 -- EFFECTS OF COMPULSORY LICENSING ON US PATENTING
 >   Dep var: count_usa (number of US patents in class c, year t)
 > 
@@ -137,7 +142,8 @@ Years (T): 65
 >   Col 4: count_cl + count_for (CL count as treatment)
 >   Col 5: count_cl + count_cl_2 + count_for (CL polynomial)
 >   Col 6: count_cl (no controls)
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -163,7 +169,8 @@ TABLE 2: EFFECTS OF COMPULSORY LICENSING
 
 --- Column 1: treat + count_for_2 ---
 
-. xtreg count_usa treat count_for_2 td_*, fe i(class_id) robust cluster(class_id)
+. xtreg count_usa treat count_for_2 td_*, fe i(class_id) robust cluster(class_i
+> d)
 note: td_1876 omitted because of collinearity.
 note: td_1939 omitted because of collinearity.
 
@@ -264,7 +271,8 @@ corr(u_i, Xb) = 0.0640                          Prob > F          =     0.0000
 
 . local ng_1 = e(N_g)
 
-. di "  beta(treat) = " %7.4f `b_1' " (" %5.4f `se_1' "), N = " `nn_1' ", groups = " `ng_1'
+. di "  beta(treat) = " %7.4f `b_1' " (" %5.4f `se_1' "), N = " `nn_1' ", group
+> s = " `ng_1'
   beta(treat) =  0.1732 (0.0358), N = 456624, groups = 7248
 
 . 
@@ -484,7 +492,8 @@ corr(u_i, Xb) = -0.0033                         Prob > F          =     0.0000
 
 --- Column 4: count_cl + count_for ---
 
-. xtreg count_usa count_cl count_for td_*, fe i(class_id) robust cluster(class_id)
+. xtreg count_usa count_cl count_for td_*, fe i(class_id) robust cluster(class_
+> id)
 
 Fixed-effects (within) regression               Number of obs     =    471,120
 Group variable: class_id                        Number of groups  =      7,248
@@ -590,7 +599,8 @@ corr(u_i, Xb) = 0.0648                          Prob > F          =     0.0000
 
 --- Column 5: count_cl + count_cl_2 + count_for ---
 
-. xtreg count_usa count_cl count_cl_2 count_for td_*, fe i(class_id) robust cluster(class_id)
+. xtreg count_usa count_cl count_cl_2 count_for td_*, fe i(class_id) robust clu
+> ster(class_id)
 
 Fixed-effects (within) regression               Number of obs     =    471,120
 Group variable: class_id                        Number of groups  =      7,248
@@ -798,13 +808,15 @@ corr(u_i, Xb) = -0.0023                         Prob > F          =     0.0000
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
 > 
 >   feTR: Y = count_usa, G = class_id, T = grntyr, D = treat
 >   Sharp design: many patent classes with treat=0 at all periods
 >   twowayfeweights handles G and T FE internally; only pass non-FE controls
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -841,7 +853,8 @@ A1: feTR -- treat with control (count_for)
 >     type(feTR) controls(count_for) summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to 0.1505, estimates a weighted sum of 7056 ATTs. 
+the TWFE coefficient beta, equal to 0.1505, estimates a weighted sum of 7056 AT
+> Ts. 
 7056 ATTs receive a positive weight, and 0 receive a negative weight.
 ------------------------------------------------
 Treat. var: treat       # ATTs      Σ weights  
@@ -858,7 +871,8 @@ min σ(Δ) compatible with β_fe and Δ_TR = 0:    4.2581
 Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . * --- A2: feTR without controls (matching Col 3) ---
@@ -876,7 +890,8 @@ A2: feTR -- treat without controls
 >     type(feTR) summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to 0.2553, estimates a weighted sum of 7056 ATTs. 
+the TWFE coefficient beta, equal to 0.2553, estimates a weighted sum of 7056 AT
+> Ts. 
 7056 ATTs receive a positive weight, and 0 receive a negative weight.
 ------------------------------------------------
 Treat. var: treat       # ATTs      Σ weights  
@@ -893,7 +908,8 @@ min σ(Δ) compatible with β_fe and Δ_TR = 0:         .
 Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . * --- A3: feTR with count_cl as treatment ---
@@ -911,7 +927,8 @@ A3: feTR -- count_cl (continuous treatment)
 >     type(feTR) controls(count_for) summary_measures
 
 Under the common trends assumption,
-the TWFE coefficient beta, equal to 0.0715, estimates a weighted sum of 7056 ATTs. 
+the TWFE coefficient beta, equal to 0.0715, estimates a weighted sum of 7056 AT
+> Ts. 
 7055 ATTs receive a positive weight, and 1 receive a negative weight.
 ------------------------------------------------
 Treat. var: count_cl    # ATTs      Σ weights  
@@ -925,17 +942,21 @@ Total                   7056        1.0000
 Summary Measures:
 TWFE coefficient (β_fe) =    0.0715
 min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.0768
-min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:  393.2524
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,
+> t) cells:  393.2524
 Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
 
 
-The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
 
 . 
 . 
-. /*==============================================================================
+. /*===========================================================================
+> ===
 >   STEP 4: LATEX TABLES
-> ==============================================================================*/
+> =============================================================================
+> =*/
 . 
 . di _n "=============================================="
 
@@ -960,7 +981,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\small" _n
 
-. file write texfile "\caption{Table 2---Effects of Compulsory Licensing on Domestic Invention}" _n
+. file write texfile "\caption{Table 2---Effects of Compulsory Licensing on Dom
+> estic Invention}" _n
 
 . file write texfile "\label{tab:table2}" _n
 
@@ -972,7 +994,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\midrule" _n
 
-. file write texfile "\multicolumn{7}{l}{\textit{Dep.\ var.: Number of US patents (count\_usa)}} \\\\" _n
+. file write texfile "\multicolumn{7}{l}{\textit{Dep.\ var.: Number of US paten
+> ts (count\_usa)}} \\\\" _n
 
 . file write texfile "\addlinespace" _n
 
@@ -987,7 +1010,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "Treat (licensed class)"
 
-. file write texfile " & `bfmt_1'`s_1' & `bfmt_2'`s_2' & `bfmt_3'`s_3' & & & \\\\" _n
+. file write texfile " & `bfmt_1'`s_1' & `bfmt_2'`s_2' & `bfmt_3'`s_3' & & & \\
+> \\" _n
 
 . 
 . forvalues k = 1/3 {
@@ -1010,7 +1034,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "No.\ licensed patents"
 
-. file write texfile " & & & & `bfmt_4'`s_4' & `bfmt_5'`s_5' & `bfmt_6'`s_6' \\\\" _n
+. file write texfile " & & & & `bfmt_4'`s_4' & `bfmt_5'`s_5' & `bfmt_6'`s_6' \\
+> \\" _n
 
 . 
 . forvalues k = 4/6 {
@@ -1038,16 +1063,19 @@ LaTeX TABLE EXPORT
 
 . local nfmt = strtrim("`nfmt'")
 
-. file write texfile "Observations & `nfmt' & `nfmt' & `nfmt' & `nfmt' & `nfmt' & `nfmt' \\\\" _n
+. file write texfile "Observations & `nfmt' & `nfmt' & `nfmt' & `nfmt' & `nfmt'
+>  & `nfmt' \\\\" _n
 
 . 
 . file write texfile "\bottomrule" _n
 
 . file write texfile "\multicolumn{7}{p{0.95\linewidth}}{\footnotesize" _n
 
-. file write texfile " \textit{Notes:} All regressions include patent class and year fixed effects." _n
+. file write texfile " \textit{Notes:} All regressions include patent class and
+>  year fixed effects." _n
 
-. file write texfile " Robust standard errors clustered by patent class in parentheses." _n
+. file write texfile " Robust standard errors clustered by patent class in pare
+> ntheses." _n
 
 . file write texfile " *** Significant at 1\%, ** 5\%, * 10\%.}" _n
 
@@ -1072,8 +1100,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\centering" _n
 
-. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}"
->  _n
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisema
+> rtin \& D'Haultf\oe uille, 2020)}" _n
 
 . file write texfile "\label{tab:twowayfe}" _n
 
@@ -1081,15 +1109,18 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\toprule" _n
 
-. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 2 (feTR)}} \\\\" _n
+. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 2 (feTR)}
+> } \\\\" _n
 
 . file write texfile "\midrule" _n
 
 . file write texfile "Regression type & Fixed effects (feTR) \\\\" _n
 
-. file write texfile "Dependent variable & No.\ US patents (count\_usa) \\\\" _n
+. file write texfile "Dependent variable & No.\ US patents (count\_usa) \\\\" _
+> n
 
-. file write texfile "Treatment variable & Licensed class indicator (treat) \\\\" _n
+. file write texfile "Treatment variable & Licensed class indicator (treat) \\\
+> \" _n
 
 . file write texfile "Group (G) & Patent class (class\_id) \\\\" _n
 
@@ -1099,7 +1130,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\addlinespace" _n
 
-. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weight distribution}} \\\\" _n
+. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weig
+> ht distribution}} \\\\" _n
 
 . file write texfile "\bottomrule" _n
 
@@ -1126,7 +1158,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\geometry{margin=1in}" _n
 
-. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justification=centering}" _n
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justifica
+> tion=centering}" _n
 
 . file write texfile "\begin{document}" _n _n
 
@@ -1140,7 +1173,8 @@ LaTeX TABLE EXPORT
 
 . file write texfile "\vspace{0.5em}" _n
 
-. file write texfile "{\normalsize \textit{American Economic Review}, 102(1), 396--427}" _n
+. file write texfile "{\normalsize \textit{American Economic Review}, 102(1), 3
+> 96--427}" _n
 
 . file write texfile "\end{center}" _n _n
 
@@ -1174,25 +1208,79 @@ ALL DONE - Moser & Voena (2012)
 Output files:
 
 . di "  1. $outdir/table2.tex"
-  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)/table2.tex
+  1. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Moser
+>  and Voena (2012)/table2.tex
 
 . di "  2. $outdir/table_twowayfeweights.tex"
-  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)/table_twowayfeweights.tex
+  2. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Moser
+>  and Voena (2012)/table_twowayfeweights.tex
 
 . di "  3. $outdir/moser_voena_tables.tex (compilable master)"
-  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)/moser_voena_tables.tex (compilable 
-> master)
+  3. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Moser
+>  and Voena (2012)/moser_voena_tables.tex (compilable master)
 
 . di "  4. $outdir/run_twowayfe.log"
-  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)/run_twowayfe.log
+  4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Moser
+>  and Voena (2012)/run_twowayfe.log
+
+. di "  5. $outdir/panel_GTD.dta"
+  5. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Moser
+>  and Voena (2012)/panel_GTD.dta
 
 . di "=============================================="
 ==============================================
 
 . 
+. 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = class_id    (patent class numeric ID)
+>   T = grntyr      (grant year, 1875-1939)
+>   D = treat       (licensed class binary)
+>   Y = count_usa   (US patent count)
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "=============================================="
+==============================================
+
+. 
+. keep class_id grntyr treat count_usa
+
+. 
+. label variable class_id   "G: Patent class numeric ID"
+
+. label variable grntyr     "T: Grant year (1875-1939)"
+
+. label variable treat      "D: Licensed class (binary)"
+
+. label variable count_usa  "Y: US patent count"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Mose
+    > r and Voena (2012)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 471120 observations
+
+. di "  G = class_id, T = grntyr, D = treat"
+  G = class_id, T = grntyr, D = treat
+
+. 
 . log close _all
       name:  <unnamed>
-       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)/run_twowayfe.log
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Moser and Voena (2012)/run_twowayfe.log
   log type:  text
- closed on:  20 Apr 2026, 10:25:17
------------------------------------------------------------------------------------------------------------------
+ closed on:  24 May 2026, 23:31:06
+-------------------------------------------------------------------------------

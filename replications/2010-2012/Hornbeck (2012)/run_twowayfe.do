@@ -27,9 +27,9 @@ set more off
 set matsize 5000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hornbeck (2012)"
 global datadir  "$paperdir/AER-2009-1347_Data_Code/Analyze-Data"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hornbeck (2012)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -471,6 +471,31 @@ di "  1. $outdir/table2_simplified.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/hornbeck_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = fips                    (county FIPS code)
+  T = year                    (census year, 1910-1997)
+  D = D_high_post             (high erosion x post-1930)
+  Y = value_landbuildings_f   (log farm land+buildings value)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep fips year D_high_post value_landbuildings_f
+
+label variable fips                   "G: County FIPS code"
+label variable year                   "T: Census year (1910-1997)"
+label variable D_high_post            "D: High erosion x post-1930"
+label variable value_landbuildings_f  "Y: Log farm land+buildings value"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = fips, T = year, D = D_high_post"
 
 log close _all

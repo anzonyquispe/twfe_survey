@@ -565,6 +565,31 @@ di "  1. $outdir/table1_replication.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/besley_mueller_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "============================================================"
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = region        (NI region, 11 regions)
+  T = time          (quarter, 1984:IV-2009:I)
+  D = L1_wtd        (lagged killings per SD)
+  Y = lnhouseprice  (log house price)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+keep region time L1_wtd lnhouseprice
+
+label variable region        "G: NI region (11 regions)"
+label variable time          "T: Quarter"
+label variable L1_wtd        "D: Lagged killings per SD"
+label variable lnhouseprice  "Y: Log house price"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = region, T = time, D = L1_wtd"
 
 cap log close detail

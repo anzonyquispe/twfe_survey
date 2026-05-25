@@ -410,4 +410,36 @@ else {
 }
 di "============================================================"
 
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = distid     (district identifier)
+  T = year
+  D = RAIL       (binary: district has railroad access)
+  Y = ln_realincome (log real agricultural income)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+use "$datadir/Data/income/income.dta", clear
+sort distid year
+merge 1:1 distid year using "$datadir/Data/maps/RAIL-dummies.dta"
+keep if _merge == 3
+drop _merge
+gen ln_realincome = log(realincome)
+
+keep distid year RAIL ln_realincome realincome
+
+label variable distid        "G: District identifier"
+label variable year          "T: Year"
+label variable RAIL          "D: Railroad access (binary)"
+label variable ln_realincome "Y: Log real agricultural income"
+
+local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Donaldson (2018)"
+save "`outdir'/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = distid, T = year, D = RAIL"
+
 * Done

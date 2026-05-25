@@ -21,9 +21,9 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Acemoglu et al. (2011)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Acemoglu et al. (2011)"
 global datadir  "$paperdir/20100816_replication10"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu et al. (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -408,6 +408,31 @@ di "  1. $outdir/table3.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/acemoglu_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = id           (polity numeric ID)
+  T = year         (year: 1700-1900)
+  D = fpresence    (French presence binary)
+  Y = urbrate      (urbanization rate)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep id year fpresence urbrate
+
+label variable id         "G: Polity numeric ID"
+label variable year       "T: Year (1700-1900)"
+label variable fpresence  "D: French presence (binary)"
+label variable urbrate    "Y: Urbanization rate"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = id, T = year, D = fpresence"
 
 log close _all

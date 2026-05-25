@@ -797,9 +797,6 @@ The development of this package was funded by the European Union (ERC, REALLYCR
 . tempname fh
 
 . file open `fh' using "$outdir/table4_replication.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Simc
-    > oe (2012)/table4_replication.tex not found)
 
 . 
 . file write `fh' "\begin{table}[htbp]\centering" _n
@@ -928,9 +925,6 @@ The development of this package was funded by the European Union (ERC, REALLYCR
 . tempname fh2
 
 . file open `fh2' using "$outdir/table_twowayfeweights.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Simc
-    > oe (2012)/table_twowayfeweights.tex not found)
 
 . 
 . file write `fh2' "\begin{table}[htbp]" _n
@@ -1090,9 +1084,6 @@ The development of this package was funded by the European Union (ERC, REALLYCR
 . tempname fh3
 
 . file open `fh3' using "$outdir/simcoe_tables.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Simc
-    > oe (2012)/simcoe_tables.tex not found)
 
 . 
 . file write `fh3' "\documentclass[12pt]{article}" _n
@@ -1207,6 +1198,52 @@ The development of this package was funded by the European Union (ERC, REALLYCR
 
 . di    "=============================================="
 ==============================================
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = techarea       (technology area)
+>   T = pubCohort      (publication cohort, 1993-2003)
+>   D = st_stbafl1yr   (Suit-share x S-track interaction)
+>   Y = ttlDur         (total duration)
+> =============================================================================
+> =*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "=============================================="
+==============================================
+
+. 
+. keep techarea pubCohort st_stbafl1yr ttlDur
+
+. 
+. label variable techarea      "G: Technology area"
+
+. label variable pubCohort     "T: Publication cohort (1993-2003)"
+
+. label variable st_stbafl1yr  "D: Suit-share x S-track"
+
+. label variable ttlDur        "Y: Total duration"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Simc
+    > oe (2012)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 2601 observations
+
+. di "  G = techarea, T = pubCohort, D = st_stbafl1yr"
+  G = techarea, T = pubCohort, D = st_stbafl1yr
 
 . 
 . cap log close detail

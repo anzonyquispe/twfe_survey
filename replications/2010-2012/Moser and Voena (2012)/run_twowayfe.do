@@ -23,9 +23,9 @@ set more off
 set matsize 5000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Moser and Voena (2012)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Moser and Voena (2012)"
 global datadir  "$paperdir/compulsory_licensing_replication"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Moser and Voena (2012)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -330,6 +330,31 @@ di "  1. $outdir/table2.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/moser_voena_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = class_id    (patent class numeric ID)
+  T = grntyr      (grant year, 1875-1939)
+  D = treat       (licensed class binary)
+  Y = count_usa   (US patent count)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep class_id grntyr treat count_usa
+
+label variable class_id   "G: Patent class numeric ID"
+label variable grntyr     "T: Grant year (1875-1939)"
+label variable treat      "D: Licensed class (binary)"
+label variable count_usa  "Y: US patent count"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = class_id, T = grntyr, D = treat"
 
 log close _all

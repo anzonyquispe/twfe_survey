@@ -451,4 +451,31 @@ else {
 }
 di "============================================================"
 
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = fe_group    (state groupings)
+  T = year        (decadal periods)
+  D = d_keeprate  (change in log net-of-business-tax rate, continuous)
+  Y = E           (employment changes)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+use "$datadir/Table4.dta", clear
+
+keep fe_group year d_keeprate E epop fips_state
+
+label variable fe_group   "G: State grouping"
+label variable year       "T: Decadal period"
+label variable d_keeprate "D: Change in log net-of-tax rate (continuous)"
+label variable E          "Y: Employment changes"
+
+local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Suárez Serrato and Zidar (2016)"
+save "`outdir'/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = fe_group, T = year, D = d_keeprate"
+
 * Done

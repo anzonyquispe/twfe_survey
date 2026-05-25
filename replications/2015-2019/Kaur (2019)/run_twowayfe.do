@@ -418,4 +418,31 @@ else {
 }
 di "============================================================"
 
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = dist       (district, 240 units)
+  T = year       (1956-1987, 32 periods)
+  D = amons80    (binary: monsoon arrival rainfall > 80th percentile)
+  Y = lwage      (log daily agricultural wage)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+use "$datadir/data_wb_replication.dta", clear
+
+keep dist year amons80 bmons20 lwage regionyr
+
+label variable dist    "G: District (240 units)"
+label variable year    "T: Year (1956-1987)"
+label variable amons80 "D: Monsoon rainfall > 80th pctile (binary)"
+label variable lwage   "Y: Log daily agricultural wage"
+
+local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Kaur (2019)"
+save "`outdir'/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = dist, T = year, D = amons80"
+
 * Done

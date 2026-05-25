@@ -451,6 +451,31 @@ di "  1. $outdir/table4_replication.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/dinkelman_tables.tex (compilable master)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "============================================================"
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = comm_id      (community numeric ID)
+  T = year         (year: 1996/2001)
+  D = D            (electrification binary)
+  Y = prop_emp_f   (proportion female employed)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+keep comm_id year D prop_emp_f
+
+label variable comm_id     "G: Community numeric ID"
+label variable year        "T: Year (1996/2001)"
+label variable D           "D: Electrification (binary)"
+label variable prop_emp_f  "Y: Proportion female employed"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = comm_id, T = year, D = D"
 
 log close

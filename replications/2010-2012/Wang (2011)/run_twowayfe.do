@@ -26,9 +26,9 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Wang (2011)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Wang (2011)"
 global datadir  "$paperdir/aer_wang_data_files"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Wang (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -559,6 +559,31 @@ di "  1. $outdir/table5a.tex"
 di "  2. $outdir/table_twowayfeweights.tex"
 di "  3. $outdir/wang_tables.tex (compilable)"
 di "  4. $outdir/run_twowayfe.log"
+di "  5. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = province_num    (province numeric ID)
+  T = year            (survey year, 1989-2004)
+  D = post_mismatch   (Post x Mismatch interaction)
+  Y = logapt_sqm      (log apartment size, sqm)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep province_num year post_mismatch logapt_sqm
+
+label variable province_num   "G: Province numeric ID"
+label variable year           "T: Survey year (1989-2004)"
+label variable post_mismatch  "D: Post x Mismatch interaction"
+label variable logapt_sqm     "Y: Log apartment size (sqm)"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = province_num, T = year, D = post_mismatch"
 
 log close _all

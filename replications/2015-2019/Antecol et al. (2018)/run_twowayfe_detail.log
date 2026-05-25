@@ -1101,9 +1101,6 @@ invalid syntax
 . cap file close texfile
 
 . file open texfile using "$outdir/table2_replication.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
-    > col et al. (2018)/table2_replication.tex not found)
 
 . 
 . file write texfile "\begin{table}[htbp]" _n
@@ -1219,9 +1216,6 @@ invalid syntax
 . cap file close texfile
 
 . file open texfile using "$outdir/table_twowayfeweights.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
-    > col et al. (2018)/table_twowayfeweights.tex not found)
 
 . 
 . file write texfile "\begin{table}[htbp]" _n
@@ -1329,9 +1323,6 @@ invalid syntax
 . cap file close fulltex
 
 . file open fulltex using "$outdir/antecol_tables.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
-    > col et al. (2018)/antecol_tables.tex not found)
 
 . 
 . file write fulltex "\documentclass[12pt]{article}" _n
@@ -1428,6 +1419,61 @@ invalid syntax
 
 . 
 . 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = pol_u      (university identifier)
+>   T = pol_job_start (year hired at policy university)
+>   D = gncs       (binary: gender-neutral clock stopping policy in place)
+>   Y = tenure_policy_school (tenure at policy school)
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "============================================================"
+============================================================
+
+. 
+. * Reload original data
+. use "$datadir/aer_primarysample.dta", clear
+
+. 
+. * Keep essential panel variables
+. keep pol_u pol_job_start gncs tenure_policy_school female
+
+. 
+. * Label variables with G/T/D role
+. label variable pol_u              "G: University identifier"
+
+. label variable pol_job_start      "T: Year hired (cohort year)"
+
+. label variable gncs               "D: Gender-neutral clock stopping (binary)"
+
+. label variable tenure_policy_school "Y: Tenure at policy school"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/panel_GTD.dta not found)
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Ante
+    > col et al. (2018)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 1392 observations
+
+. di "  G = pol_u, T = pol_job_start, D = gncs"
+  G = pol_u, T = pol_job_start, D = gncs
+
+. 
+. 
 . di _n "============================================================"
 
 ============================================================
@@ -1453,8 +1499,12 @@ Output files:
   3. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
 > ol et al. (2018)/antecol_tables.tex (compilable master)
 
-. di "  4. $outdir/run_twowayfe.log"
+. di "  4. $outdir/panel_GTD.dta (clean panel: G, T, D)"
   4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
+> ol et al. (2018)/panel_GTD.dta (clean panel: G, T, D)
+
+. di "  5. $outdir/run_twowayfe.log"
+  5. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antec
 > ol et al. (2018)/run_twowayfe.log
 
 . di "============================================================"

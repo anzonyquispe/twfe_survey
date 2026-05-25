@@ -3,14 +3,19 @@
   "Credit Supply and the Price of Housing"
   AER 105(3), 958-992
 
-  Main TWFE spec: Table 4, Column 1
-  xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)
+  Main TWFE spec: Table 2, Column 1, Panel A (Commercial Banks)
+  xtreg Dl_nloans_b Linter_bra Dl_inc LDl_inc Dl_pop LDl_pop
+        Dl_hpi LDl_hpi Dl_her_v LDl_her_v LDl_nloans_b yr*, fe cl(state_n)
+
+  Equation (1): Δln L_{c,t} = β₁ D_{s,t-1} + β₂ X_{c,t} + α_c + γ_t + ε_{c,t}
 
   Treatment: Linter_bra (lagged interstate branching deregulation, binary)
-  Panel: county x year
-  Outcome: Dl_hpi (change in log house price index)
-  Weights: w1 (analytical weights)
+  Panel: county × year (1994-2005)
+  Outcome: Dl_nloans_b (Δ log number of mortgage originations, commercial banks)
+  Controls: Dl_inc LDl_inc Dl_pop LDl_pop Dl_hpi LDl_hpi Dl_her_v LDl_her_v
+            LDl_nloans_b (lagged dep var)
   Clustering: state_n
+  G = county, T = year, D = Linter_bra
 =============================================================================*/
 
 clear all
@@ -45,12 +50,12 @@ sum Linter_bra, detail
 tab Linter_bra, missing
 
 * Outcome variable
-di _n "--- Outcome: Dl_hpi ---"
-sum Dl_hpi, detail
+di _n "--- Outcome: Dl_nloans_b (Δ log # mortgage originations, commercial banks) ---"
+sum Dl_nloans_b, detail
 
-* Weights
-di _n "--- Weights: w1 ---"
-sum w1, detail
+* Control variables
+di _n "--- Controls ---"
+sum Dl_inc LDl_inc Dl_pop LDl_pop Dl_hpi LDl_hpi Dl_her_v LDl_her_v LDl_nloans_b
 
 * Check yr* variables exist
 cap ds yr*
@@ -63,25 +68,28 @@ else {
     ds yr*
 }
 
-* ─── STEP 2: Replicate Table 4, Column 1 ─────────────────────────────────────
+* ─── STEP 2: Replicate Table 2, Column 1, Panel A ────────────────────────────
 di _n "============================================================"
-di "  STEP 2: TABLE 4, COLUMN 1 REPLICATION"
-di "  xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)"
+di "  STEP 2: TABLE 2, COLUMN 1, PANEL A REPLICATION"
+di "  xtreg Dl_nloans_b Linter_bra $D_control LDl_nloans_b yr*, fe cl(state_n)"
 di "============================================================"
 
+* Define controls (same as original master.do)
+global D_control "Dl_inc LDl_inc Dl_pop LDl_pop Dl_hpi LDl_hpi Dl_her_v LDl_her_v"
+
 xtset county year
-xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)
+xtreg Dl_nloans_b Linter_bra $D_control LDl_nloans_b yr*, fe cl(state_n)
 
-local beta_t4c1 = _b[Linter_bra]
-local se_t4c1   = _se[Linter_bra]
-local n_t4c1    = e(N)
-local r2_t4c1   = e(r2_w)
+local beta_t2c1 = _b[Linter_bra]
+local se_t2c1   = _se[Linter_bra]
+local n_t2c1    = e(N)
+local r2_t2c1   = e(r2_w)
 
-di _n "--- Table 4 Col 1 Results ---"
-di "  beta(Linter_bra) = " %9.4f `beta_t4c1'
-di "  se(Linter_bra)   = " %9.4f `se_t4c1'
-di "  N                = " `n_t4c1'
-di "  R2 (within)      = " %9.4f `r2_t4c1'
+di _n "--- Table 2 Col 1 Panel A Results ---"
+di "  beta(Linter_bra) = " %9.4f `beta_t2c1'
+di "  se(Linter_bra)   = " %9.4f `se_t2c1'
+di "  N                = " `n_t2c1'
+di "  R2 (within)      = " %9.4f `r2_t2c1'
 
 * ─── STEP 3: twowayfeweights decomposition ───────────────────────────────────
 di _n "============================================================"
@@ -91,7 +99,7 @@ di "============================================================"
 * --- 3a. feTR ---
 di _n "--- feTR decomposition ---"
 cap scalar drop nplus nminus beta sumplus summinus
-cap noisily twowayfeweights Dl_hpi county year Linter_bra, type(feTR) weight(w1) summary_measures
+cap noisily twowayfeweights Dl_nloans_b county year Linter_bra, type(feTR) summary_measures
 local twfe_rc = _rc
 
 local fetr_ok = 0
@@ -156,7 +164,7 @@ else {
 * --- 3b. fdTR ---
 di _n "--- fdTR decomposition ---"
 cap scalar drop nplus nminus beta sumplus summinus
-cap noisily twowayfeweights Dl_hpi county year Linter_bra, type(fdTR) weight(w1) summary_measures
+cap noisily twowayfeweights Dl_nloans_b county year Linter_bra, type(fdTR) summary_measures
 local twfe_rc = _rc
 
 local fdtr_ok = 0
@@ -225,31 +233,41 @@ local texdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
 
 * --- Table replication ---
 cap file close texfile
-file open texfile using "`texdir'/table4_replication.tex", write replace
+file open texfile using "`texdir'/table2_replication.tex", write replace
 
 file write texfile "\begin{table}[htbp]" _n
 file write texfile "\centering" _n
-file write texfile "\caption{Replication of Favara and Imbs (2015), Table 4, Column 1}" _n
-file write texfile "\label{tab:favara_t4c1}" _n
+file write texfile "\caption{Replication of Favara and Imbs (2015), Table 2, Column 1, Panel A}" _n
+file write texfile "\label{tab:favara_t2c1}" _n
 file write texfile "\begin{tabular}{lc}" _n
 file write texfile "\hline\hline" _n
-file write texfile " & $\Delta \ln(\text{HPI})$ \\" _n
+file write texfile " & $\Delta \ln(\text{Originations})$ \\" _n
 file write texfile "\hline" _n
-file write texfile "Linter\_bra & " %9.4f (`beta_t4c1') " \\" _n
-file write texfile " & (" %9.4f (`se_t4c1') ") \\" _n
+file write texfile "Linter\_bra & " %9.4f (`beta_t2c1') " \\" _n
+file write texfile " & (" %9.4f (`se_t2c1') ") \\" _n
 file write texfile "\hline" _n
+file write texfile "Controls & Yes \\" _n
 file write texfile "County FE & Yes \\" _n
 file write texfile "Year FE & Yes \\" _n
-file write texfile "Weights & Yes (w1) \\" _n
 file write texfile "Clustering & State \\" _n
-file write texfile "N & " %9.0fc (`n_t4c1') " \\" _n
-file write texfile "$R^2$ (within) & " %9.4f (`r2_t4c1') " \\" _n
+file write texfile "N & " %9.0fc (`n_t2c1') " \\" _n
+file write texfile "$R^2$ (within) & " %9.4f (`r2_t2c1') " \\" _n
 file write texfile "\hline\hline" _n
 file write texfile "\end{tabular}" _n
+file write texfile _n
+file write texfile "\vspace{6pt}" _n
+file write texfile "\begin{minipage}{0.85\textwidth}" _n
+file write texfile "\footnotesize" _n
+file write texfile "\textit{Notes:} Dependent variable: $\Delta \ln$(number of mortgage originations) " _n
+file write texfile "by commercial banks. Controls include changes and lagged changes in " _n
+file write texfile "per capita income, population, house price index, and Herfindahl index " _n
+file write texfile "of mortgage concentration, plus lagged dependent variable. " _n
+file write texfile "Standard errors clustered at the state level in parentheses." _n
+file write texfile "\end{minipage}" _n
 file write texfile "\end{table}" _n
 
 file close texfile
-di "  Saved: table4_replication.tex"
+di "  Saved: table2_replication.tex"
 
 * --- twowayfeweights table ---
 cap file close texfile
@@ -353,8 +371,9 @@ if `fetr_sens2' != . {
     file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$ for opposite sign: " %9.4f (`fetr_sens2') "} \\" _n
 }
 file write texfile "\hline" _n
-file write texfile "\multicolumn{3}{l}{\footnotesize Spec: \texttt{xtreg Dl\_hpi Linter\_bra yr* [aw=w1], fe cl(state\_n)}} \\" _n
+file write texfile "\multicolumn{3}{l}{\footnotesize Spec: \texttt{xtreg Dl\_nloans\_b Linter\_bra controls yr*, fe cl(state\_n)}} \\" _n
 file write texfile "\multicolumn{3}{l}{\footnotesize Panel: county $\times$ year. Treatment: lagged interstate branch deregulation.} \\" _n
+file write texfile "\multicolumn{3}{l}{\footnotesize Outcome: $\Delta \ln$(mortgage originations, commercial banks). Table 2, Col 1, Panel A.} \\" _n
 if `fdtr_ok' == 0 {
     file write texfile "\multicolumn{3}{l}{\footnotesize fdTR: invalid syntax (treatment switches on/off).} \\" _n
 }
@@ -376,7 +395,7 @@ file write texfile "\begin{document}" _n
 file write texfile "\section*{Favara and Imbs (2015): TWFE Weight Decomposition}" _n
 file write texfile "\subsection*{Paper: ``Credit Supply and the Price of Housing'', AER 105(3)}" _n
 file write texfile _n
-file write texfile "\input{table4_replication}" _n
+file write texfile "\input{table2_replication}" _n
 file write texfile _n
 file write texfile "\input{table_twowayfeweights}" _n
 file write texfile _n
@@ -389,11 +408,11 @@ di "  Saved: favara_tables.tex"
 di _n "============================================================"
 di "  FINAL SUMMARY: Favara and Imbs (2015)"
 di "============================================================"
-di "  Table 4, Column 1"
-di "  Spec: xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)"
-di "  beta(Linter_bra)  = " %9.4f `beta_t4c1'
-di "  se(Linter_bra)    = " %9.4f `se_t4c1'
-di "  N                 = " `n_t4c1'
+di "  Table 2, Column 1, Panel A (Commercial Banks)"
+di "  Spec: xtreg Dl_nloans_b Linter_bra controls yr*, fe cl(state_n)"
+di "  beta(Linter_bra)  = " %9.4f `beta_t2c1'
+di "  se(Linter_bra)    = " %9.4f `se_t2c1'
+di "  N                 = " `n_t2c1'
 di "  Panel: " `n_counties' " counties x " `n_years' " years"
 di "------------------------------------------------------------"
 if `fetr_ok' {
@@ -411,5 +430,35 @@ else {
     di "  fdTR: FAILED"
 }
 di "============================================================"
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = county     (county FIPS)
+  T = year       (1994-2005)
+  D = Linter_bra (lagged interstate branching deregulation, binary)
+  Y = Dl_nloans_b (Δ log # mortgage originations, commercial banks)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Favara and Imbs/20121416_1data/data"
+use "$datadir/hmda.dta", clear
+merge 1:1 county year using "$datadir/hp_dereg_controls.dta", nogen keep(1 3)
+merge 1:1 county year using "$datadir/call.dta", nogen keep(1 3)
+
+keep county year state_n Linter_bra Dl_nloans_b
+
+label variable county      "G: County FIPS"
+label variable year        "T: Year (1994-2005)"
+label variable Linter_bra  "D: Lagged interstate branching deregulation (binary)"
+label variable Dl_nloans_b "Y: Delta log # mortgage originations (commercial banks)"
+
+local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Favara and Imbs (2015)"
+save "`outdir'/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = county, T = year, D = Linter_bra"
 
 * Done

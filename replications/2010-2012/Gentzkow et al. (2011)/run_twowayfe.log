@@ -3,7 +3,7 @@
        log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
 > 12/Gentzkow et al. (2011)/run_twowayfe.log
   log type:  text
- opened on:  23 Apr 2026, 11:26:57
+ opened on:  24 May 2026, 23:33:37
 
 . set more off
 
@@ -30,9 +30,11 @@ set matsize ignored.
   [2]  (SITE)      "D:\era_data2\ado\site/"
   [3]              "."
   [4]  (PERSONAL)  "C:\Users\Usuario\ado\personal/"
-  [5]  (PLUS)      "C:\Users\Usuario\ado\plus/"
+  [5]  (PLUS)      "c:\ado\plus/"
   [6]  (OLDPLACE)  "c:\ado/"
-  [7]              "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-201
+  [7]              "D:/era_data2/ado/plus"
+  [8]              "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+  [9]              "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-201
 > 2/Gentzkow et al. (2011)/20091316_data/external"
 
 . 
@@ -485,9 +487,6 @@ twowayfeweights (T=year): rc=0
 >          "Standard errors clustered by county in parentheses. " ///
 >          "*** p\$<\$0.01, ** p\$<\$0.05, * p\$<\$0.1.") ///
 >     booktabs nonumbers
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Gent
-    > zkow et al. (2011)/table2_replication.tex not found)
 (output written to C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2
 > 010-2012/Gentzkow et al. (2011)/table2_replication.tex)
 
@@ -522,9 +521,6 @@ twowayfeweights (T=year): rc=0
 . cap file close texfile
 
 . file open texfile using "$outdir/table_twowayfeweights.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Gent
-    > zkow et al. (2011)/table_twowayfeweights.tex not found)
 
 . 
 . file write texfile "\begin{table}[htbp]" _n
@@ -613,9 +609,6 @@ twowayfeweights (T=year): rc=0
 . cap file close fulltex
 
 . file open fulltex using "$outdir/gentzkow_tables.tex", write replace
-(file
-    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Gent
-    > zkow et al. (2011)/gentzkow_tables.tex not found)
 
 . 
 . file write fulltex "\documentclass[12pt]{article}" _n
@@ -726,8 +719,58 @@ Output files:
   4. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Gentz
 > kow et al. (2011)/run_twowayfe.log
 
+. di "  5. $outdir/panel_GTD.dta"
+  5. C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Gentz
+> kow et al. (2011)/panel_GTD.dta
+
 . di "============================================================"
 ============================================================
+
+. 
+. 
+. /*===========================================================================
+> ===
+>   STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+>   G = cnty90       (county ID, 1990 boundaries)
+>   T = year         (election year)
+>   D = numdailies   (number of daily newspapers)
+>   Y = prestout     (presidential turnout)
+> =============================================================================
+> =*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)
+
+. di "============================================================"
+============================================================
+
+. 
+. keep cnty90 year numdailies prestout
+
+. 
+. label variable cnty90      "G: County ID (1990 boundaries)"
+
+. label variable year        "T: Election year"
+
+. label variable numdailies  "D: Number of daily newspapers"
+
+. label variable prestout    "Y: Presidential turnout"
+
+. 
+. save "$outdir/panel_GTD.dta", replace
+file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Gent
+    > zkow et al. (2011)/panel_GTD.dta saved
+
+. di "  -> panel_GTD.dta saved with " _N " observations"
+  -> panel_GTD.dta saved with 15627 observations
+
+. di "  G = cnty90, T = year, D = numdailies"
+  G = cnty90, T = year, D = numdailies
 
 . 
 . log close
@@ -735,5 +778,5 @@ Output files:
        log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
 > 12/Gentzkow et al. (2011)/run_twowayfe.log
   log type:  text
- closed on:  23 Apr 2026, 11:27:02
+ closed on:  24 May 2026, 23:33:41
 -------------------------------------------------------------------------------

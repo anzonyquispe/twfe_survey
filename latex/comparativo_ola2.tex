@@ -73,6 +73,12 @@ Y_{ugit} = \beta_1 \text{GN}_{ut} + \beta_2 \text{GN}_{ut} \times F_i + \beta_3 
 \]
 where $Y$ is tenure at policy school, GN is the gender-neutral clock stopping policy indicator, $F$ is female, $E$ is early adoption. University $\times$ gender FE ($\psi_{ug}$), cohort year $\times$ gender FE ($\rho_{gt}$). SEs clustered by university.
 
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{pol\_u} (university), $T$ (time) = \texttt{pol\_job\_start} (hire cohort year), $D$ (treatment) = \texttt{gncs} (gender-neutral policy).\\
+\textbf{Design classification:} SFSD (SSFSD).
+\end{minipage}}
+
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}
 \centering
@@ -145,6 +151,12 @@ $N$ & \multicolumn{2}{c}{1,392} \\
 \]
 where $c$ is a 0.5$\times$0.5 degree grid cell, $\alpha_c$ is cell FE, $\delta_{it}$ is country$\times$year FE. Sample restricted to cells where mine status is constant ($\text{sd\_mines}=0$). Paper uses Conley spatial HAC SEs; replication uses cluster(cell).
 
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{cell} (grid cell), $T$ (time) = \texttt{it} (country$\times$year), $D$ (treatment) = \texttt{main\_lprice\_mines} ($\ln$ price $\times$ mines).\\
+\textbf{Design classification:} SFSD (SSFSD).
+\end{minipage}}
+
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}
 \centering
@@ -210,6 +222,12 @@ $N$ & 142,282 \\
 \text{Road}_{dt} = \gamma_d + \alpha_t + \beta\,\text{Coethnic}_{dt} + \delta\,(\text{Coethnic}_{dt} \times \text{Democracy}_t) + \theta\,(\mathbf{X}_{d,1963} \times [t - 1963]) + u_{dt}
 \]
 where $\gamma_d$ is district FE, $\alpha_t$ is year FE. Table 1: DV = road expenditure share (1963--2011, $N=2{,}009$). Table 2: DV = paved road construction share (1964--2002, $N=410$). Robust SEs clustered at district level.
+
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{distnum} (district), $T$ (time) = \texttt{year}, $D$ (treatment) = \texttt{president} (coethnic president).\\
+\textbf{Design classification:} Other.
+\end{minipage}}
 
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}
@@ -291,6 +309,12 @@ $N$ & \multicolumn{2}{c}{2,009} \\
 \]
 where $r_{ot}/\tilde{P}_{ot}$ is real agricultural income in district $o$ at time $t$, RAIL is a binary indicator for railroad access. District FE ($\beta_o$), year FE ($\beta_t$). SEs clustered at district level.
 
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{distid} (district), $T$ (time) = \texttt{year}, $D$ (treatment) = \texttt{RAIL} (railroad access).\\
+\textbf{Design classification:} SAD.
+\end{minipage}}
+
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}
 \centering
@@ -356,6 +380,12 @@ $N$ & 7,086 \\
 \Delta\ln L_{c,t} = \beta_1 D_{s,t-1} + \beta_2 X_{c,t} + \alpha_c + \gamma_t + \varepsilon_{c,t}
 \]
 where $\Delta\ln L$ is the change in log mortgage originations by commercial banks, $D_{s,t-1}$ is the lagged interstate branching deregulation index, $X$ are controls (income, population, house prices, Herfindahl, lagged DV). County FE ($\alpha_c$), year FE ($\gamma_t$). SEs clustered by state.
+
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{county} (county FIPS), $T$ (time) = \texttt{year} (1994--2005), $D$ (treatment) = \texttt{Linter\_bra} (branching deregulation index).\\
+\textbf{Design classification:} SFSD (SSFSD).
+\end{minipage}}
 
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}
@@ -432,6 +462,12 @@ DV = $\Delta\ln$(HPI), with analytical weights.}
 \]
 where $\alpha_d$ is district FE, $\delta_{rt}$ is region$\times$year FE, Austerity is the per-capita fiscal impact. SEs clustered at district level.
 
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{id} (local authority), $T$ (time) = \texttt{ryr} (region$\times$year), $D$ (treatment) = \texttt{temp} (post-2010 $\times$ austerity impact).\\
+\textbf{Design classification:} SFSD (SSFSD).
+\end{minipage}}
+
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}
 \centering
@@ -497,6 +533,12 @@ $N$ & 3,260 \\
 \ln w_{dt} = \alpha_d + \gamma_t + \beta_1\,\text{amons80}_{dt} + \beta_2\,\text{bmons20}_{dt} + \varepsilon_{dt}
 \]
 where $\ln w$ is log daily agricultural wage, amons80 = positive rainfall shock ($>$80th pctile), bmons20 = negative shock ($<$20th pctile). District FE ($\alpha_d$), year FE ($\gamma_t$). SEs clustered by region$\times$year.
+
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{dist} (district), $T$ (time) = \texttt{year} (1956--1987), $D$ (treatment) = \texttt{amons80} (above 80th pctile monsoon shock).\\
+\textbf{Design classification:} SFSD (SSFSD).
+\end{minipage}}
 
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}
@@ -573,6 +615,12 @@ $R^2$ & 0.9470 \\
 Y_{gt} = \alpha_g + \delta_t + \beta\,\Delta\ln(1 - \tau^b_{st}) + \varepsilon_{gt}
 \]
 where $Y$ is the outcome (employment, population, wages, rents), $\Delta\ln(1-\tau^b)$ is the change in log net-of-business-tax rate, $\alpha_g$ is state-group FE, $\delta_t$ is year FE. Analytical weights (epop). SEs clustered by state.
+
+\vspace{0.3cm}
+\noindent\fcolorbox{black!30}{black!5}{\begin{minipage}{0.97\textwidth}
+\small\textbf{Panel variables:} $G$ (group) = \texttt{fe\_group} (state-border group), $T$ (time) = \texttt{year}, $D$ (treatment) = \texttt{d\_keeprate} ($\Delta\ln$ net-of-tax rate).\\
+\textbf{Design classification:} Other.
+\end{minipage}}
 
 \vspace{0.5cm}
 \begin{minipage}[t]{0.48\textwidth}

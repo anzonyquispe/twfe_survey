@@ -21,9 +21,9 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Bagwell and Staiger (2011)"
 global datadir  "$paperdir/20061172_data"
-global outdir   "$paperdir"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Bagwell and Staiger (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -398,6 +398,31 @@ di "Output files:"
 di "  1. $outdir/table3a.tex"
 di "  2. $outdir/bagwell_staiger_tables.tex (compilable)"
 di "  3. $outdir/run_twowayfe.log"
+di "  4. $outdir/panel_GTD.dta"
 di "=============================================="
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = HS2           (HS2 industry code)
+  T = country_num   (country numeric ID)
+  D = Import_M      (imports, millions)
+  Y = TariffFinal   (final bound tariff rate)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+keep HS2 country_num Import_M TariffFinal
+
+label variable HS2          "G: HS2 industry code"
+label variable country_num  "T: Country numeric ID"
+label variable Import_M     "D: Imports (millions)"
+label variable TariffFinal  "Y: Final bound tariff rate"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = HS2, T = country_num, D = Import_M"
 
 log close _all

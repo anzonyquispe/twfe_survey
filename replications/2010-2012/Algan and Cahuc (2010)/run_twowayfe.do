@@ -24,8 +24,8 @@ set more off
 cap log close _all
 
 * --- Paths ---
-global paperdir "C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)"
-global outdir   "C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)"
+global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Algan and Cahuc (2010)"
+global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Algan and Cahuc (2010)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -435,6 +435,31 @@ di "  3. $outdir/table_tableVI.tex"
 di "  4. $outdir/table_twowayfeweights.tex"
 di "  5. $outdir/algan_cahuc_tables.tex  (compilable)"
 di "  6. $outdir/run_twowayfe.log"
+di "  7. $outdir/panel_GTD.dta"
 di "============================================================"
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = cty_num             (country numeric ID)
+  T = period_num           (period: 1935/2000)
+  D = trustgss             (inherited trust from GSS)
+  Y = gdpk_diffswd_good   (GDP per capita relative to Sweden)
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+keep cty_num period_num trustgss gdpk_diffswd_good
+
+label variable cty_num            "G: Country numeric ID"
+label variable period_num          "T: Period (1935/2000)"
+label variable trustgss            "D: Inherited trust (GSS)"
+label variable gdpk_diffswd_good  "Y: GDP per capita rel. Sweden"
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = cty_num, T = period_num, D = trustgss"
 
 log close _all

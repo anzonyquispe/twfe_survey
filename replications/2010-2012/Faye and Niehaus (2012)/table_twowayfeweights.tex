@@ -2,23 +2,22 @@
 \centering
 \caption{TWFE Weight Decomposition --- Faye and Niehaus (2012)}
 \label{tab:fayeniehaus_twowayfe}
-\begin{tabular}{lc}
+\begin{tabular}{lcc}
 \toprule
- & feTR \\
+ & feTR & fdTR \\
 \midrule
-$\hat{\beta}_{TWFE}$ & 2.1827 \\
-Positive weights & 1,370 \\
-Negative weights & 0 \\
-\% Negative & 0.0\% \\
+$\hat{\beta}_{TWFE}$ & 2.1827 & 2.1827 \\
+Positive weights & 1370 & 1370 \\
+Negative weights & 0 & 0 \\
+\% Negative & 0.0\% & 0.0\% \\
 \addlinespace
-Treatment & Executive election (binary) \\
-Unit (G) & Donor$\times$Recipient pair \\
-Time (T) & Year (1975--2004) \\
-Design & Repeated binary treatment \\
+Treatment & \multicolumn{2}{c}{Executive election (binary)} \\
+Unit (G) & \multicolumn{2}{c}{Donor$\times$Recipient pair} \\
+Time (T) & \multicolumn{2}{c}{Year (1975--2003)} \\
+Design & \multicolumn{2}{c}{Staggered (elections in different years)} \\
 \bottomrule
-\multicolumn{2}{p{0.85\linewidth}}{\footnotesize
+\multicolumn{3}{p{0.85\linewidth}}{\footnotesize
  \textit{Notes:} Decomposition following de Chaisemartin and
- D'Haultf\oe uille (2020). Pair FE + Year FE.
- Treatment switches on/off (election years); fdTR not applicable.}
+ D'Haultf\oe uille (2020). Pair FE + Year FE.}
 \end{tabular}
 \end{table}
