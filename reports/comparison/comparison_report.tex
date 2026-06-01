@@ -1,0 +1,1037 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs,caption,geometry,graphicx,longtable,array,xcolor,float}
+\geometry{margin=0.75in}
+\captionsetup{font=small}
+\definecolor{match}{RGB}{0,128,0}
+\definecolor{mismatch}{RGB}{200,0,0}
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries TWFE Survey: Design Classification Comparison}\\\\[0.5em]
+{\large \texttt{classify\_design.ado} vs \texttt{sketch\_did\_design.do}}\\\\[0.5em]
+{\normalsize Generated: \today}\\\\[0.3em]
+{\normalsize 24 papers from AER 2010--2019}
+\end{center}
+\vspace{1em}
+
+\newpage
+\section*{Paper 1: Algan and Cahuc (2010)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Algan and Cahuc (2010)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{cty\_num} \\
+Time (T) & \texttt{period\_num} \\
+Treatment (D) & \texttt{trustgss} \\
+Outcome (Y) & \texttt{gdpk\_diffswd\_good} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{center}
+\textit{[Histogram not available]}
+\end{center}
+\vspace{1em}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Algan and Cahuc (2010)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{Other} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & . & \\
+\# Negative weights & . & \\
+$\Sigma$ positive & . & \\
+$\Sigma$ negative & . & \\
+\% Negative & .\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 2: Zhang and Zhu (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Zhang and Zhu (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{id} \\
+Time (T) & \texttt{week\_num} \\
+Treatment (D) & \texttt{after} \\
+Outcome (Y) & \texttt{logTotal} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{center}
+\textit{[Histogram not available]}
+\end{center}
+\vspace{1em}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Zhang and Zhu (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{Other} & \textcolor{match}{Other} \\
+\addlinespace
+\# Positive weights & . & \\
+\# Negative weights & . & \\
+$\Sigma$ positive & . & \\
+$\Sigma$ negative & . & \\
+\% Negative & .\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 3: Bagwell and Staiger (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Bagwell and Staiger (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{HS2} \\
+Time (T) & \texttt{country\_num} \\
+Treatment (D) & \texttt{Import\_M} \\
+Outcome (Y) & \texttt{TariffFinal} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_3.png}
+\caption*{TWFE weight distribution — Bagwell and Staiger (2011)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Bagwell and Staiger (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 1044 & \\
+\# Negative weights & 432 & \\
+$\Sigma$ positive & 1.0561 & \\
+$\Sigma$ negative & -0.0561 & \\
+\% Negative & 29.3\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 4: Wang (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Wang (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{province\_num} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{post\_mismatch} \\
+Outcome (Y) & \texttt{logapt\_sqm} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{center}
+\textit{[Histogram not available]}
+\end{center}
+\vspace{1em}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Wang (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{HAD} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & . & \\
+\# Negative weights & . & \\
+$\Sigma$ positive & . & \\
+$\Sigma$ negative & . & \\
+\% Negative & .\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 5: Duranton and Turner (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Duranton and Turner (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{msa} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{Dl\_ln\_IH} \\
+Outcome (Y) & \texttt{Dl\_vmt\_IH} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{center}
+\textit{[Histogram not available]}
+\end{center}
+\vspace{1em}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Duranton and Turner (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{Other} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & . & \\
+\# Negative weights & . & \\
+$\Sigma$ positive & . & \\
+$\Sigma$ negative & . & \\
+\% Negative & .\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 6: Moser and Voena (2012)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Moser and Voena (2012)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{class\_id} \\
+Time (T) & \texttt{grntyr} \\
+Treatment (D) & \texttt{treat} \\
+Outcome (Y) & \texttt{count\_usa} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_6.png}
+\caption*{TWFE weight distribution — Moser and Voena (2012)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Moser and Voena (2012)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{CLA} & \textcolor{match}{CLA} \\
+\addlinespace
+\# Positive weights & 7056 & \\
+\# Negative weights & 0 & \\
+$\Sigma$ positive & 1.0000 & \\
+$\Sigma$ negative & 0.0000 & \\
+\% Negative & 0.0\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 7: Enikolopov et al. (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Enikolopov et al. (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{tik\_id} \\
+Time (T) & \texttt{\_j} \\
+Treatment (D) & \texttt{Watch\_probit\_} \\
+Outcome (Y) & \texttt{Votes\_SPS\_} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_7.png}
+\caption*{TWFE weight distribution — Enikolopov et al. (2011)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Enikolopov et al. (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{HAD} & \textcolor{match}{HAD} \\
+\addlinespace
+\# Positive weights & 918 & \\
+\# Negative weights & 1020 & \\
+$\Sigma$ positive & 3.2590 & \\
+$\Sigma$ negative & -2.2590 & \\
+\% Negative & 52.6\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 8: Forman et al. (2012)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Forman et al. (2012)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{county\_id} \\
+Time (T) & \texttt{period} \\
+Treatment (D) & \texttt{surv\_deeppost00} \\
+Outcome (Y) & \texttt{wagediff} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_8.png}
+\caption*{TWFE weight distribution — Forman et al. (2012)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Forman et al. (2012)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{HAD} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & . & \\
+\# Negative weights & . & \\
+$\Sigma$ positive & . & \\
+$\Sigma$ negative & . & \\
+\% Negative & .\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 9: Acemoglu et al. (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Acemoglu et al. (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{id} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{fpresence} \\
+Outcome (Y) & \texttt{urbrate} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_9.png}
+\caption*{TWFE weight distribution — Acemoglu et al. (2011)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Acemoglu et al. (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{Other} & \textcolor{match}{Other} \\
+\addlinespace
+\# Positive weights & 6 & \\
+\# Negative weights & 18 & \\
+$\Sigma$ positive & 1.3103 & \\
+$\Sigma$ negative & -0.3103 & \\
+\% Negative & 75.0\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 10: Hornbeck (2012)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Hornbeck (2012)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{fips} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{D\_high\_post} \\
+Outcome (Y) & \texttt{value\_landbuildings\_f} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_10.png}
+\caption*{TWFE weight distribution — Hornbeck (2012)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Hornbeck (2012)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{HAD} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & 2343 & \\
+\# Negative weights & 1111 & \\
+$\Sigma$ positive & 1.0065 & \\
+$\Sigma$ negative & -0.0065 & \\
+\% Negative & 32.2\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 11: Besley and Mueller (2012)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Besley and Mueller (2012)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{region} \\
+Time (T) & \texttt{time} \\
+Treatment (D) & \texttt{L1\_wtd} \\
+Outcome (Y) & \texttt{lnhouseprice} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_11.png}
+\caption*{TWFE weight distribution — Besley and Mueller (2012)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Besley and Mueller (2012)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 184 & \\
+\# Negative weights & 125 & \\
+$\Sigma$ positive & 1.0501 & \\
+$\Sigma$ negative & -0.0501 & \\
+\% Negative & 40.5\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 12: Simcoe (2012)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Simcoe (2012)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{techarea} \\
+Time (T) & \texttt{pubCohort} \\
+Treatment (D) & \texttt{st\_stbafl1yr} \\
+Outcome (Y) & \texttt{ttlDur} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_12.png}
+\caption*{TWFE weight distribution — Simcoe (2012)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Simcoe (2012)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 32 & \\
+\# Negative weights & 33 & \\
+$\Sigma$ positive & 3.0353 & \\
+$\Sigma$ negative & -2.0353 & \\
+\% Negative & 50.8\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 13: Dinkelman (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Dinkelman (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{comm\_id} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{D} \\
+Outcome (Y) & \texttt{prop\_emp\_f} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_13.png}
+\caption*{TWFE weight distribution — Dinkelman (2011)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Dinkelman (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{CLA} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & 365 & \\
+\# Negative weights & 0 & \\
+$\Sigma$ positive & 1.0000 & \\
+$\Sigma$ negative & 0.0000 & \\
+\% Negative & 0.0\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 14: Gentzkow et al. (2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Gentzkow et al. (2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{cnty90} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{numdailies} \\
+Outcome (Y) & \texttt{prestout} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_14.png}
+\caption*{TWFE weight distribution — Gentzkow et al. (2011)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Gentzkow et al. (2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 5919 & \\
+\# Negative weights & 4137 & \\
+$\Sigma$ positive & 1.5183 & \\
+$\Sigma$ negative & -0.5183 & \\
+\% Negative & 41.1\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 15: Baum-SnowandLutz(2011)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Baum-SnowandLutz(2011)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{leaid} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{imp\_post} \\
+Outcome (Y) & \texttt{lnwpu} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_15.png}
+\caption*{TWFE weight distribution — Baum-SnowandLutz(2011)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Baum-SnowandLutz(2011)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SAD} & \textcolor{match}{SAD} \\
+\addlinespace
+\# Positive weights & 152 & \\
+\# Negative weights & 56 & \\
+$\Sigma$ positive & 1.5412 & \\
+$\Sigma$ negative & -0.5412 & \\
+\% Negative & 26.9\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 16: Faye and Niehaus (2012)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Faye and Niehaus (2012)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2010-2012 \\
+Group (G) & \texttt{pair\_id} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{i\_elecex} \\
+Outcome (Y) & \texttt{oda} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_16.png}
+\caption*{TWFE weight distribution — Faye and Niehaus (2012)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Faye and Niehaus (2012)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 1370 & \\
+\# Negative weights & 0 & \\
+$\Sigma$ positive & 1.0000 & \\
+$\Sigma$ negative & 0.0000 & \\
+\% Negative & 0.0\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 17: Antecol et al. (2018)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Antecol et al. (2018)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{pol\_u} \\
+Time (T) & \texttt{pol\_job\_start} \\
+Treatment (D) & \texttt{gncs} \\
+Outcome (Y) & \texttt{tenure\_policy\_school} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_17.png}
+\caption*{TWFE weight distribution — Antecol et al. (2018)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Antecol et al. (2018)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 186 & \\
+\# Negative weights & 10 & \\
+$\Sigma$ positive & 1.0384 & \\
+$\Sigma$ negative & -0.0384 & \\
+\% Negative & 5.1\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 18: Berman et al. (2017)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Berman et al. (2017)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{cell} \\
+Time (T) & \texttt{it} \\
+Treatment (D) & \texttt{main\_lprice\_mines} \\
+Outcome (Y) & \texttt{acled} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_18.png}
+\caption*{TWFE weight distribution — Berman et al. (2017)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Berman et al. (2017)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 597 & \\
+\# Negative weights & 845 & \\
+$\Sigma$ positive & 10.6216 & \\
+$\Sigma$ negative & -9.6216 & \\
+\% Negative & 58.6\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 19: Burgess et al. (2015)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Burgess et al. (2015)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{distnum} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{president} \\
+Outcome (Y) & \texttt{exp\_dens\_share} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_19.png}
+\caption*{TWFE weight distribution — Burgess et al. (2015)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Burgess et al. (2015)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{Other} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & 319 & \\
+\# Negative weights & 0 & \\
+$\Sigma$ positive & 1.0000 & \\
+$\Sigma$ negative & 0.0000 & \\
+\% Negative & 0.0\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 20: Donaldson (2018)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Donaldson (2018)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{distid} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{RAIL} \\
+Outcome (Y) & \texttt{ln\_realincome} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_20.png}
+\caption*{TWFE weight distribution — Donaldson (2018)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Donaldson (2018)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{mismatch}{SAD} & \textcolor{mismatch}{SFSD} \\
+\addlinespace
+\# Positive weights & 3169 & \\
+\# Negative weights & 3293 & \\
+$\Sigma$ positive & 1.6941 & \\
+$\Sigma$ negative & -0.6941 & \\
+\% Negative & 51.0\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 21: Favara and Imbs (2015)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Favara and Imbs (2015)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{county} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{Linter\_bra} \\
+Outcome (Y) & \texttt{Dl\_nloans\_b} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_21.png}
+\caption*{TWFE weight distribution — Favara and Imbs (2015)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Favara and Imbs (2015)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 3983 & \\
+\# Negative weights & 2730 & \\
+$\Sigma$ positive & 1.1058 & \\
+$\Sigma$ negative & -0.1058 & \\
+\% Negative & 40.7\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 22: Fetzer (2019)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Fetzer (2019)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{id} \\
+Time (T) & \texttt{ryr} \\
+Treatment (D) & \texttt{temp} \\
+Outcome (Y) & \texttt{pct\_votes\_UKIP} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_22.png}
+\caption*{TWFE weight distribution — Fetzer (2019)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Fetzer (2019)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 483 & \\
+\# Negative weights & 592 & \\
+$\Sigma$ positive & 2.4188 & \\
+$\Sigma$ negative & -1.4188 & \\
+\% Negative & 55.1\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 23: Kaur (2019)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Kaur (2019)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{dist} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{amons80} \\
+Outcome (Y) & \texttt{lwage} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_23.png}
+\caption*{TWFE weight distribution — Kaur (2019)}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Kaur (2019)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
+\addlinespace
+\# Positive weights & 1708 & \\
+\# Negative weights & 24 & \\
+$\Sigma$ positive & 1.0028 & \\
+$\Sigma$ negative & -0.0028 & \\
+\% Negative & 1.4\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Paper 24: Suárez Serrato and Zidar (2016)}
+
+\begin{table}[H]
+\centering
+\caption*{Panel structure — Suárez Serrato and Zidar (2016)}
+\begin{tabular}{ll}
+\toprule
+Wave & 2015-2019 \\
+Group (G) & \texttt{fe\_group} \\
+Time (T) & \texttt{year} \\
+Treatment (D) & \texttt{d\_keeprate} \\
+Outcome (Y) & \texttt{E} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{center}
+\textit{[Histogram not available]}
+\end{center}
+\vspace{1em}
+
+\begin{table}[H]
+\centering
+\caption*{Classification comparison — Suárez Serrato and Zidar (2016)}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
+\midrule
+Design & \textcolor{match}{Other} & \textcolor{match}{Other} \\
+\addlinespace
+\# Positive weights & . & \\
+\# Negative weights & . & \\
+$\Sigma$ positive & . & \\
+$\Sigma$ negative & . & \\
+\% Negative & .\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\section*{Summary: All 24 Papers}
+
+\begin{center}
+\small
+\begin{longtable}{p{5.5cm}llrcc}
+\toprule
+Paper & G & D & \% Neg & classify\_design & sketch\_design \\
+\midrule
+\endhead
+\input{summary_rows}
+\bottomrule
+\end{longtable}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Design codes:}
+\begin{itemize}
+\item \textbf{CLA} — Classical DID (single adoption date, binary treatment)
+\item \textbf{SAD} — Staggered Adoption Design (multiple adoption dates, binary)
+\item \textbf{SFSD} — Staggered First Switch Design (non-binary/non-absorbing)
+\item \textbf{HAD} — Heterogeneous Adoption Design (common adoption, heterogeneous dose)
+\item \textbf{SSD} — Switchers and Stayers Design (sketch\_did\_design only)
+\item \textbf{Other} — Does not fit the above categories
+\end{itemize}
+
+\noindent\textcolor{match}{Green} = both methods agree. 
+\textcolor{mismatch}{Red} = methods disagree.
+
+\end{document}
