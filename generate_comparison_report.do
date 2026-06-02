@@ -150,7 +150,7 @@ assert `n_papers' == 24
 * --- CSV ---
 cap file close csvfh
 file open csvfh using "$outdir/comparison_results.csv", write replace
-file write csvfh "paper,wave,G,T,D,Y,n_pos,n_neg,sum_pos,sum_neg,pct_neg,classify_design,classify_subtype,sketch_design" _n
+file write csvfh "paper,wave,G,T,D,Y,n_pos,n_neg,sum_pos,sum_neg,pct_neg,classify_design,classify_subtype,sketch_design,notes" _n
 
 * --- LaTeX main document ---
 cap file close texfh
@@ -296,6 +296,55 @@ forvalues i = 1/`n_papers' {
     * Reload clean data (classify_design was inside preserve/restore but be safe)
     use "`dtapath'", clear
 
+    * Delete old weights and histogram files to avoid stale data from previous runs
+    cap erase "$outdir/weights_`i'.dta"
+    cap erase "$imgdir/hist_`i'.png"
+
+    * --- Preprocessing for twowayfeweights ---
+    * Destring if any key variable is stored as string
+    foreach v in `gvar' `tvar' `dvar' `yvar' {
+        cap confirm string var `v'
+        if _rc == 0 {
+            di "   NOTE: Destringing `v' (was string)"
+            destring `v', replace force
+        }
+    }
+
+    * Drop observations with missing key variables
+    local pre_N = _N
+    qui drop if missing(`gvar') | missing(`tvar') | missing(`dvar')
+    if "`yvar'" != "" {
+        qui drop if missing(`yvar')
+    }
+    local post_N = _N
+    if `pre_N' != `post_N' {
+        di "   NOTE: Dropped " `pre_N' - `post_N' " obs with missing values"
+    }
+
+    * Ensure G > 0 for factor variables
+    qui sum `gvar'
+    if r(min) <= 0 {
+        local g_shift = abs(r(min)) + 1
+        qui replace `gvar' = `gvar' + `g_shift'
+        di "   NOTE: Shifted G (`gvar') by +`g_shift' to ensure positive values"
+    }
+
+    * Ensure T > 0 for factor variables
+    qui sum `tvar'
+    if r(min) <= 0 {
+        local t_shift = abs(r(min)) + 1
+        qui replace `tvar' = `tvar' + `t_shift'
+        di "   NOTE: Shifted T (`tvar') by +`t_shift' to ensure positive values"
+    }
+
+    * Recast G and T to long integer (avoids float precision issues with factor vars)
+    qui replace `gvar' = round(`gvar')
+    qui replace `tvar' = round(`tvar')
+    cap recast long `gvar', force
+    cap recast long `tvar', force
+
+    local tw_errnote ""
+
     cap noisily twowayfeweights `yvar' `gvar' `tvar' `dvar', type(feTR) ///
         path("$outdir/weights_`i'.dta")
 
@@ -320,16 +369,66 @@ forvalues i = 1/`n_papers' {
         }
     }
     else {
-        di as error "   twowayfeweights failed with rc = " _rc
+        local tw_errrc = _rc
+        di as error "   twowayfeweights failed with rc = `tw_errrc'"
+        if `tw_errrc' == 402 {
+            local tw_errnote "Panel structure incompatible with TWFE weight decomposition (rc=402)"
+        }
+        else if `tw_errrc' == 452 {
+            local tw_errnote "Negative values in factor variables (rc=452)"
+        }
+        else if `tw_errrc' == 109 {
+            local tw_errnote "Type mismatch in variables (rc=109)"
+        }
+        else {
+            local tw_errnote "Computation failed (rc=`tw_errrc')"
+        }
     }
 
     di "   => Pos weights: `tw_npos'  Neg weights: `tw_nneg'  %Neg: " %5.1f `tw_pneg'
+
+    * --- Fallback: if twowayfeweights failed but DID create a weights file,
+    *     extract statistics directly from the file ---
+    if `tw_ok' == 0 {
+        cap confirm file "$outdir/weights_`i'.dta"
+        if _rc == 0 {
+            di "   NOTE: Extracting weight stats directly from weights file (fallback)"
+            preserve
+            cap {
+                use "$outdir/weights_`i'.dta", clear
+                qui count if weight > 0 & !missing(weight)
+                local tw_npos = r(N)
+                qui count if weight < 0 & !missing(weight)
+                local tw_nneg = r(N)
+                qui sum weight if weight > 0 & !missing(weight)
+                local tw_spos = r(sum)
+                qui sum weight if weight < 0 & !missing(weight)
+                local tw_sneg = r(sum)
+                local tw_total = `tw_npos' + `tw_nneg'
+                if `tw_total' > 0 {
+                    local tw_pneg = 100 * `tw_nneg' / `tw_total'
+                    local tw_ok = 1
+                    local tw_errnote "Weights extracted from file (twowayfeweights partial success)"
+                }
+                else {
+                    local tw_pneg = .
+                    local tw_npos = .
+                    local tw_nneg = .
+                    local tw_spos = .
+                    local tw_sneg = .
+                    local tw_errnote "Weights file created but all weights are zero/missing — degenerate panel (rc=109)"
+                }
+            }
+            restore
+        }
+    }
 
     local r_npos_`i' "`tw_npos'"
     local r_nneg_`i' "`tw_nneg'"
     local r_spos_`i' = string(`tw_spos', "%9.4f")
     local r_sneg_`i' = string(`tw_sneg', "%9.4f")
     local r_pneg_`i' = string(`tw_pneg', "%5.1f")
+    local r_note_`i' "`tw_errnote'"
 
     * ==========================================================================
     *  STEP D: Generate histogram of weights
@@ -482,7 +581,7 @@ forvalues i = 1/`n_papers' {
     * ==========================================================================
     *  STEP F: Write CSV row
     * ==========================================================================
-    file write csvfh `"`pname',`wname',`gvar',`tvar',`dvar',`yvar',`tw_npos',`tw_nneg',`r_spos_`i'',`r_sneg_`i'',`r_pneg_`i'',`cd_design',`cd_subtype',`sk_design'"' _n
+    file write csvfh `"`pname',`wname',`gvar',`tvar',`dvar',`yvar',`tw_npos',`tw_nneg',`r_spos_`i'',`r_sneg_`i'',`r_pneg_`i'',`cd_design',`cd_subtype',`sk_design',`tw_errnote'"' _n
 
     * ==========================================================================
     *  STEP G: Write LaTeX section for this paper
@@ -519,18 +618,28 @@ forvalues i = 1/`n_papers' {
     file write texfh "\end{tabular}" _n
     file write texfh "\end{table}" _n _n
 
-    * Histogram
-    cap confirm file "$imgdir/hist_`i'.png"
-    if _rc == 0 {
-        file write texfh "\begin{figure}[H]" _n
-        file write texfh "\centering" _n
-        file write texfh "\includegraphics[width=0.85\textwidth]{histograms/hist_`i'.png}" _n
-        file write texfh `"\caption*{TWFE weight distribution — `pname_e'}"' _n
-        file write texfh "\end{figure}" _n _n
+    * Histogram — only include if twowayfeweights actually succeeded
+    if `tw_ok' == 1 {
+        cap confirm file "$imgdir/hist_`i'.png"
+        if _rc == 0 {
+            file write texfh "\begin{figure}[H]" _n
+            file write texfh "\centering" _n
+            file write texfh "\includegraphics[width=0.85\textwidth]{histograms/hist_`i'.png}" _n
+            file write texfh `"\caption*{TWFE weight distribution — `pname_e'}"' _n
+            file write texfh "\end{figure}" _n _n
+        }
     }
     else {
         file write texfh "\begin{center}" _n
-        file write texfh "\textit{[Histogram not available]}" _n
+        if "`tw_errnote'" != "" {
+            file write texfh "\fbox{\parbox{0.85\textwidth}{\small" _n
+            file write texfh "\textit{Histogram not available.}\\[0.3em]" _n
+            file write texfh `"\textbf{Reason:} `tw_errnote'"' _n
+            file write texfh "}}" _n
+        }
+        else {
+            file write texfh "\textit{[Histogram not available]}" _n
+        }
         file write texfh "\end{center}" _n
         file write texfh "\vspace{1em}" _n _n
     }
@@ -566,6 +675,10 @@ forvalues i = 1/`n_papers' {
     file write texfh `"$\Sigma$ positive & `spos_f' & \\"' _n
     file write texfh `"$\Sigma$ negative & `sneg_f' & \\"' _n
     file write texfh `"\% Negative & `pneg_f'\% & \\"' _n
+    if "`tw_errnote'" != "" {
+        file write texfh "\addlinespace" _n
+        file write texfh `"\multicolumn{3}{p{10cm}}{\small\textit{Note: `tw_errnote'}} \\"' _n
+    }
     file write texfh "\bottomrule" _n
     file write texfh "\end{tabular}" _n
     file write texfh "\end{table}" _n _n
@@ -648,8 +761,9 @@ putexcel L1 = "classify_design"
 putexcel M1 = "Subtype"
 putexcel N1 = "sketch_design"
 putexcel O1 = "Match?"
+putexcel P1 = "Notes"
 
-putexcel A1:O1, bold border(bottom)
+putexcel A1:P1, bold border(bottom)
 
 * Data rows
 forvalues i = 1/`n_papers' {
@@ -680,6 +794,9 @@ forvalues i = 1/`n_papers' {
     else {
         putexcel O`row' = "NO"
     }
+
+    * Notes
+    putexcel P`row' = "`r_note_`i''"
 }
 
 putexcel save

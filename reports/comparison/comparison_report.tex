@@ -34,7 +34,10 @@ Outcome (Y) & \texttt{gdpk\_diffswd\_good} \\
 \end{table}
 
 \begin{center}
-\textit{[Histogram not available]}
+\fbox{\parbox{0.85\textwidth}{\small
+\textit{Histogram not available.}\\[0.3em]
+\textbf{Reason:} Panel structure incompatible with TWFE weight decomposition (rc=402)
+}}
 \end{center}
 \vspace{1em}
 
@@ -52,6 +55,8 @@ Design & \textcolor{mismatch}{Other} & \textcolor{mismatch}{SFSD} \\
 $\Sigma$ positive & . & \\
 $\Sigma$ negative & . & \\
 \% Negative & .\% & \\
+\addlinespace
+\multicolumn{3}{p{10cm}}{\small\textit{Note: Panel structure incompatible with TWFE weight decomposition (rc=402)}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -73,10 +78,11 @@ Outcome (Y) & \texttt{logTotal} \\
 \end{tabular}
 \end{table}
 
-\begin{center}
-\textit{[Histogram not available]}
-\end{center}
-\vspace{1em}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{histograms/hist_2.png}
+\caption*{TWFE weight distribution — Zhang and Zhu (2011)}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -87,11 +93,11 @@ Outcome (Y) & \texttt{logTotal} \\
 \midrule
 Design & \textcolor{match}{Other} & \textcolor{match}{Other} \\
 \addlinespace
-\# Positive weights & . & \\
-\# Negative weights & . & \\
-$\Sigma$ positive & . & \\
-$\Sigma$ negative & . & \\
-\% Negative & .\% & \\
+\# Positive weights & 54246 & \\
+\# Negative weights & 63537 & \\
+$\Sigma$ positive & 1.7943 & \\
+$\Sigma$ negative & -0.7943 & \\
+\% Negative & 53.9\% & \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -156,7 +162,10 @@ Outcome (Y) & \texttt{logapt\_sqm} \\
 \end{table}
 
 \begin{center}
-\textit{[Histogram not available]}
+\fbox{\parbox{0.85\textwidth}{\small
+\textit{Histogram not available.}\\[0.3em]
+\textbf{Reason:} Panel structure incompatible with TWFE weight decomposition (rc=402)
+}}
 \end{center}
 \vspace{1em}
 
@@ -167,13 +176,16 @@ Outcome (Y) & \texttt{logapt\_sqm} \\
 \toprule
  & \textbf{classify\_design.ado} & \textbf{sketch\_did\_design.do} \\
 \midrule
-Design & \textcolor{mismatch}{HAD} & \textcolor{mismatch}{SFSD} \\
+Design & \textcolor{match}{SFSD} & \textcolor{match}{SFSD} \\
+Subtype & SSFSD & --- \\
 \addlinespace
 \# Positive weights & . & \\
 \# Negative weights & . & \\
 $\Sigma$ positive & . & \\
 $\Sigma$ negative & . & \\
 \% Negative & .\% & \\
+\addlinespace
+\multicolumn{3}{p{10cm}}{\small\textit{Note: Panel structure incompatible with TWFE weight decomposition (rc=402)}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -196,7 +208,10 @@ Outcome (Y) & \texttt{Dl\_vmt\_IH} \\
 \end{table}
 
 \begin{center}
-\textit{[Histogram not available]}
+\fbox{\parbox{0.85\textwidth}{\small
+\textit{Histogram not available.}\\[0.3em]
+\textbf{Reason:} Panel structure incompatible with TWFE weight decomposition (rc=402)
+}}
 \end{center}
 \vspace{1em}
 
@@ -214,6 +229,8 @@ Design & \textcolor{mismatch}{Other} & \textcolor{mismatch}{SFSD} \\
 $\Sigma$ positive & . & \\
 $\Sigma$ negative & . & \\
 \% Negative & .\% & \\
+\addlinespace
+\multicolumn{3}{p{10cm}}{\small\textit{Note: Panel structure incompatible with TWFE weight decomposition (rc=402)}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -317,11 +334,13 @@ Outcome (Y) & \texttt{wagediff} \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{histograms/hist_8.png}
-\caption*{TWFE weight distribution — Forman et al. (2012)}
-\end{figure}
+\begin{center}
+\fbox{\parbox{0.85\textwidth}{\small
+\textit{Histogram not available.}\\[0.3em]
+\textbf{Reason:} Weights file created but all weights are zero/missing — degenerate panel (rc=109)
+}}
+\end{center}
+\vspace{1em}
 
 \begin{table}[H]
 \centering
@@ -337,6 +356,8 @@ Design & \textcolor{mismatch}{HAD} & \textcolor{mismatch}{SFSD} \\
 $\Sigma$ positive & . & \\
 $\Sigma$ negative & . & \\
 \% Negative & .\% & \\
+\addlinespace
+\multicolumn{3}{p{10cm}}{\small\textit{Note: Weights file created but all weights are zero/missing — degenerate panel (rc=109)}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -983,7 +1004,10 @@ Outcome (Y) & \texttt{E} \\
 \end{table}
 
 \begin{center}
-\textit{[Histogram not available]}
+\fbox{\parbox{0.85\textwidth}{\small
+\textit{Histogram not available.}\\[0.3em]
+\textbf{Reason:} Panel structure incompatible with TWFE weight decomposition (rc=402)
+}}
 \end{center}
 \vspace{1em}
 
@@ -1001,6 +1025,8 @@ Design & \textcolor{match}{Other} & \textcolor{match}{Other} \\
 $\Sigma$ positive & . & \\
 $\Sigma$ negative & . & \\
 \% Negative & .\% & \\
+\addlinespace
+\multicolumn{3}{p{10cm}}{\small\textit{Note: Panel structure incompatible with TWFE weight decomposition (rc=402)}} \\
 \bottomrule
 \end{tabular}
 \end{table}
