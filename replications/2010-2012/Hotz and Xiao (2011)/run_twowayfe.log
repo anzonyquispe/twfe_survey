@@ -1,0 +1,1062 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Hotz and Xiao (2011)/run_twowayfe.log
+  log type:  text
+ opened on:   2 Jul 2026, 07:41:32
+
+. 
+. * ===========================================================================
+> ==
+. * STEP 1: Load panel_GTD.dta
+. * ===========================================================================
+> ==
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 1: DATA PREPARATION"
+  STEP 1: DATA PREPARATION
+
+. di "============================================================"
+============================================================
+
+. 
+. use "$datadir/panel_GTD.dta", clear
+
+. 
+. di "Panel obs: " _N
+Panel obs: 153
+
+. 
+. * Panel structure
+. qui tab num_st
+
+. local n_groups = r(r)
+
+. qui tab year
+
+. local n_years = r(r)
+
+. di "States (G): " `n_groups'
+States (G): 51
+
+. di "Years (T): " `n_years'
+Years (T): 3
+
+. di "Panel: " `n_groups' " x " `n_years' " = " `n_groups' * `n_years'
+Panel: 51 x 3 = 153
+
+. 
+. di _n "--- Treatment 1: scrat (staff-child ratio) ---"
+
+--- Treatment 1: scrat (staff-child ratio) ---
+
+. sum scrat, detail
+
+     D: Staff-child ratio index (avg across age groups)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     .0830688              0
+10%     .0925926              0       Obs                 153
+25%     .1106838              0       Sum of wgt.         153
+
+50%     .1361111                      Mean           .1295967
+                        Largest       Std. dev.      .0348767
+75%          .15       .1833333
+90%     .1710317       .1833333       Variance       .0012164
+95%         .175       .1850427       Skewness      -1.242142
+99%     .1850427       .1958333       Kurtosis       6.013993
+
+. 
+. di _n "--- Treatment 2: educ (education index) ---"
+
+--- Treatment 2: educ (education index) ---
+
+. sum educ, detail
+
+             D: Education requirement index (avg
+                      director+teacher)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs                 153
+25%         6.25              0       Sum of wgt.         153
+
+50%           12                      Mean           9.779412
+                        Largest       Std. dev.      5.058453
+75%         13.5             15
+90%           14             16       Variance       25.58795
+95%           15             16       Skewness      -.9488725
+99%           16             16       Kurtosis       2.480636
+
+. 
+. di _n "--- Outcome: estab (nonemployer establishments, 1000s) ---"
+
+--- Outcome: estab (nonemployer establishments, 1000s) ---
+
+. sum estab, detail
+
+       Y: Number of nonemployer establishments (1000s)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         .436            .17
+ 5%        1.062           .436
+10%        1.235            .51       Obs                 153
+25%        2.464           .614       Sum of wgt.         153
+
+50%         4.96                      Mean           7.840967
+                        Largest       Std. dev.      8.205453
+75%       10.936         26.293
+90%       15.746         29.171       Variance       67.32945
+95%       23.606         52.313       Skewness       2.705143
+99%       52.313         54.181       Kurtosis       13.78748
+
+. 
+. * ===========================================================================
+> ==
+. * STEP 2: Replicate nonemployer regressions
+. * ===========================================================================
+> ==
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 2: REGRESSION REPLICATION"
+  STEP 2: REGRESSION REPLICATION
+
+. di "  nonemployer_analysis.do Module 1 (state-level)"
+  nonemployer_analysis.do Module 1 (state-level)
+
+. di "============================================================"
+============================================================
+
+. 
+. local idv "pct_black pct_hisp hh_size ln_m_inc college ln_under5 pct_fh_c pct
+> _f_nwork pct_unemploy pct_whome long_comm pct_rural"
+
+. 
+. * --- Spec A: scrat + educ + demographics + year FE + state FE (vars_dc5) ---
+. di _n "--- Spec A: areg estab scrat educ `idv' year1992 year1997, absorb(num_
+> st) cluster(year_st) ---"
+
+--- Spec A: areg estab scrat educ pct_black pct_hisp hh_size ln_m_inc college l
+> n_under5 pct_fh_c pct_f_nwork pct_unemploy pct_whome long_comm pct_rural year
+> 1992 year1997, absorb(num_st) cluster(year_st) ---
+
+. areg estab scrat educ `idv' year1992 year1997, absorb(num_st) cluster(year_st
+> )
+
+Linear regression, absorbing indicators             Number of obs     =    153
+Absorbed variable: num_st                           No. of categories =     51
+                                                    F(16, 152)        =   7.56
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.9198
+                                                    Adj R-squared     = 0.8582
+                                                    Root MSE          = 3.0899
+
+                              (Std. err. adjusted for 153 clusters in year_st)
+------------------------------------------------------------------------------
+             |               Robust
+       estab | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       scrat |  -21.92756   8.192574    -2.68   0.008    -38.11357   -5.741537
+        educ |  -.1398741   .0846652    -1.65   0.101    -.3071466    .0273985
+   pct_black |   51.77064   55.40127     0.93   0.352     -57.6853    161.2266
+    pct_hisp |    49.8413   51.61133     0.97   0.336    -52.12689    151.8095
+     hh_size |   9.483356   19.94064     0.48   0.635    -29.91325    48.87996
+    ln_m_inc |  -.2801345    .412137    -0.68   0.498    -1.094391    .5341221
+     college |   40.95239   40.41561     1.01   0.313    -38.89648    120.8013
+   ln_under5 |   .0048308   .0158863     0.30   0.761    -.0265558    .0362174
+    pct_fh_c |  -58.18219   157.4944    -0.37   0.712    -369.3428    252.9785
+ pct_f_nwork |   12.35317    32.0339     0.39   0.700    -50.93602    75.64236
+pct_unemploy |  -28.78834   51.76152    -0.56   0.579    -131.0533    73.47658
+   pct_whome |   126.6606   79.16242     1.60   0.112    -29.74007    283.0614
+   long_comm |  -118.7187   61.70993    -1.92   0.056    -240.6386    3.201264
+   pct_rural |  -15.61984   11.59965    -1.35   0.180    -38.53719    7.297514
+    year1992 |   5.764156   .7581756     7.60   0.000     4.266233    7.262079
+    year1997 |     11.694   9.260799     1.26   0.209     -6.60251     29.9905
+       _cons |  -1.153045   44.06459    -0.03   0.979    -88.21119     85.9051
+------------------------------------------------------------------------------
+
+. 
+. local beta_scrat_a  = _b[scrat]
+
+. local se_scrat_a    = _se[scrat]
+
+. local beta_educ_a   = _b[educ]
+
+. local se_educ_a     = _se[educ]
+
+. local n_a           = e(N)
+
+. local r2_a          = e(r2)
+
+. 
+. local t_scrat_a = `beta_scrat_a' / `se_scrat_a'
+
+. local stars_scrat_a = ""
+
+. if abs(`t_scrat_a') > 2.576      local stars_scrat_a = "***"
+
+. else if abs(`t_scrat_a') > 1.960 local stars_scrat_a = "**"
+
+. else if abs(`t_scrat_a') > 1.645 local stars_scrat_a = "*"
+
+. 
+. local t_educ_a = `beta_educ_a' / `se_educ_a'
+
+. local stars_educ_a = ""
+
+. if abs(`t_educ_a') > 2.576      local stars_educ_a = "***"
+
+. else if abs(`t_educ_a') > 1.960 local stars_educ_a = "**"
+
+. else if abs(`t_educ_a') > 1.645 local stars_educ_a = "*"
+
+. 
+. di "  beta(scrat)  = " %9.4f `beta_scrat_a' " `stars_scrat_a'  (se = " %9.4f 
+> `se_scrat_a' ")"
+  beta(scrat)  =  -21.9276 ***  (se =    8.1926)
+
+. di "  beta(educ)   = " %9.4f `beta_educ_a'  " `stars_educ_a'   (se = " %9.4f 
+> `se_educ_a'  ")"
+  beta(educ)   =   -0.1399 *   (se =    0.0847)
+
+. di "  N            = " `n_a'
+  N            = 153
+
+. di "  R2           = " %6.4f `r2_a'
+  R2           = 0.9198
+
+. 
+. * --- Spec B: no demographics (stripped TWFE) ---
+. di _n "--- Spec B: areg estab scrat educ year1992 year1997, absorb(num_st) cl
+> uster(year_st) ---"
+
+--- Spec B: areg estab scrat educ year1992 year1997, absorb(num_st) cluster(yea
+> r_st) ---
+
+. areg estab scrat educ year1992 year1997, absorb(num_st) cluster(year_st)
+
+Linear regression, absorbing indicators             Number of obs     =    153
+Absorbed variable: num_st                           No. of categories =     51
+                                                    F(4, 152)         =  23.97
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.9106
+                                                    Adj R-squared     = 0.8613
+                                                    Root MSE          = 3.0557
+
+                              (Std. err. adjusted for 153 clusters in year_st)
+------------------------------------------------------------------------------
+             |               Robust
+       estab | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       scrat |   -17.3229    7.19471    -2.41   0.017    -31.53744   -3.108351
+        educ |  -.2014006   .0869068    -2.32   0.022     -.373102   -.0296993
+    year1992 |   5.845862   .7481644     7.81   0.000     4.367718    7.324006
+    year1997 |   5.940448   .8314896     7.14   0.000     4.297679    7.583217
+       _cons |   8.126767   .5044544    16.11   0.000      7.13012    9.123415
+------------------------------------------------------------------------------
+
+. 
+. local beta_scrat_b  = _b[scrat]
+
+. local se_scrat_b    = _se[scrat]
+
+. local beta_educ_b   = _b[educ]
+
+. local se_educ_b     = _se[educ]
+
+. local n_b           = e(N)
+
+. local r2_b          = e(r2)
+
+. 
+. local t_scrat_b = `beta_scrat_b' / `se_scrat_b'
+
+. local stars_scrat_b = ""
+
+. if abs(`t_scrat_b') > 2.576      local stars_scrat_b = "***"
+
+. else if abs(`t_scrat_b') > 1.960 local stars_scrat_b = "**"
+
+. else if abs(`t_scrat_b') > 1.645 local stars_scrat_b = "*"
+
+. 
+. local t_educ_b = `beta_educ_b' / `se_educ_b'
+
+. local stars_educ_b = ""
+
+. if abs(`t_educ_b') > 2.576      local stars_educ_b = "***"
+
+. else if abs(`t_educ_b') > 1.960 local stars_educ_b = "**"
+
+. else if abs(`t_educ_b') > 1.645 local stars_educ_b = "*"
+
+. 
+. di "  beta(scrat)  = " %9.4f `beta_scrat_b' " `stars_scrat_b'"
+  beta(scrat)  =  -17.3229 **
+
+. di "  beta(educ)   = " %9.4f `beta_educ_b'  " `stars_educ_b'"
+  beta(educ)   =   -0.2014 **
+
+. 
+. * ===========================================================================
+> ==
+. * STEP 3: twowayfeweights decomposition
+. * ===========================================================================
+> ==
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION"
+  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di "  Y = estab, G = num_st, T = year, D = scrat"
+  Y = estab, G = num_st, T = year, D = scrat
+
+. di "  other_treatments = educ"
+  other_treatments = educ
+
+. di "============================================================"
+============================================================
+
+. 
+. * --- 3a. feTR ---
+. di _n "--- feTR decomposition ---"
+
+--- feTR decomposition ---
+
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights estab num_st year scrat, type(feTR) other_treatme
+> nts(educ) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to -17.3229, estimates the sum of several term
+> s.
+
+The first term is a weighted sum of 149 ATTs of the treatment.
+60 ATTs receive a positive weight, and 89 receive a negative weight.
+------------------------------------------------
+Treat. var: scrat       # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        60          2.3833      
+Negative weights        89          -1.3833     
+------------------------------------------------
+Total                   149         1.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 129 ATTs of treatment 1 included in the othe
+> r_treatments option.
+49 ATTs receive a positive weight, and 80 receive a negative weight.
+------------------------------------------------
+Other treat.: educ      # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        49          113.9325    
+Negative weights        80          -113.9325   
+------------------------------------------------
+Total                   129         0.0000      
+------------------------------------------------
+
+
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
+
+. local twfe_rc = _rc
+
+. 
+. local fetr_ok = 0
+
+. local fetr_beta = .
+
+. local fetr_npos = .
+
+. local fetr_nneg = .
+
+. local fetr_sumpos = .
+
+. local fetr_sumneg = .
+
+. local fetr_sens1 = .
+
+. local fetr_sens2 = .
+
+. 
+. if `twfe_rc' == 0 {
+.     local fetr_ok = 1
+.     cap local fetr_beta    = e(beta)
+.     cap local fetr_npos    = el(e(M),1,1)
+.     cap local fetr_nneg    = el(e(M),2,1)
+.     cap local fetr_sumpos  = el(e(M),1,2)
+.     cap local fetr_sumneg  = el(e(M),2,2)
+.     cap local fetr_sens1   = e(lb_se_te)
+.     cap local fetr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     di "  twowayfeweights returned rc=`twfe_rc', trying fallback..."
+.     cap local fetr_beta    = scalar(beta)
+.     cap local fetr_npos    = scalar(nplus)
+.     cap local fetr_nneg    = scalar(nminus)
+.     cap local fetr_sumpos  = scalar(sumplus)
+.     cap local fetr_sumneg  = scalar(summinus)
+.     if `fetr_npos' != . & `fetr_nneg' != . {
+.         local fetr_ok = 1
+.         di "  Fallback OK"
+.     }
+.     else {
+.         di "  Fallback FAILED"
+.     }
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     local fetr_ntot = `fetr_npos' + `fetr_nneg'
+.     if `fetr_ntot' > 0 {
+.         local fetr_pneg = 100 * `fetr_nneg' / `fetr_ntot'
+.     }
+.     else {
+.         local fetr_pneg = 0
+.     }
+.     di _n "--- feTR Summary ---"
+
+--- feTR Summary ---
+.     di "  beta       = " %12.6f `fetr_beta'
+  beta       =   -17.322895
+.     di "  Pos weights: " %9.0f `fetr_npos'
+  Pos weights:         .
+.     di "  Neg weights: " %9.0f `fetr_nneg'
+  Neg weights:         .
+.     di "  % Negative:  " %5.1f `fetr_pneg' "%"
+  % Negative:      .%
+.     di "  Sum pos w:   " %9.4f `fetr_sumpos'
+  Sum pos w:           .
+.     di "  Sum neg w:   " %9.4f `fetr_sumneg'
+  Sum neg w:           .
+.     if `fetr_sens1' != . di "  min sigma for zero:  " %9.4f `fetr_sens1'
+.     if `fetr_sens2' != . di "  min sigma for opp:   " %9.4f `fetr_sens2'
+. }
+
+. else {
+.     di "feTR FAILED completely with rc=`twfe_rc'"
+. }
+
+. 
+. * --- 3b. fdTR ---
+. di _n "--- fdTR decomposition ---"
+
+--- fdTR decomposition ---
+
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights estab num_st year scrat, type(fdTR) other_treatme
+> nts(educ) summary_measures
+When the other_treatments option is specified, you need to specify the type(feT
+> R) option.
+
+. local twfe_rc_fd = _rc
+
+. 
+. local fdtr_ok = 0
+
+. local fdtr_beta = .
+
+. local fdtr_npos = .
+
+. local fdtr_nneg = .
+
+. local fdtr_sumpos = .
+
+. local fdtr_sumneg = .
+
+. local fdtr_sens1 = .
+
+. local fdtr_sens2 = .
+
+. 
+. if `twfe_rc_fd' == 0 {
+.     local fdtr_ok = 1
+.     cap local fdtr_beta    = e(beta)
+.     cap local fdtr_npos    = el(e(M),1,1)
+.     cap local fdtr_nneg    = el(e(M),2,1)
+.     cap local fdtr_sumpos  = el(e(M),1,2)
+.     cap local fdtr_sumneg  = el(e(M),2,2)
+.     cap local fdtr_sens1   = e(lb_se_te)
+.     cap local fdtr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     di "  twowayfeweights fdTR returned rc=`twfe_rc_fd', trying fallback..."
+.     cap local fdtr_beta    = scalar(beta)
+.     cap local fdtr_npos    = scalar(nplus)
+.     cap local fdtr_nneg    = scalar(nminus)
+.     cap local fdtr_sumpos  = scalar(sumplus)
+.     cap local fdtr_sumneg  = scalar(summinus)
+.     if `fdtr_npos' != . & `fdtr_nneg' != . {
+.         local fdtr_ok = 1
+.         di "  Fallback OK"
+.     }
+.     else {
+.         di "  Fallback FAILED"
+.     }
+. }
+
+. 
+. if `fdtr_ok' == 1 {
+.     local fdtr_ntot = `fdtr_npos' + `fdtr_nneg'
+.     if `fdtr_ntot' > 0 {
+.         local fdtr_pneg = 100 * `fdtr_nneg' / `fdtr_ntot'
+.     }
+.     else {
+.         local fdtr_pneg = 0
+.     }
+.     di _n "--- fdTR Summary ---"
+
+--- fdTR Summary ---
+.     di "  beta       = " %12.6f `fdtr_beta'
+  beta       =   -17.322895
+.     di "  Pos weights: " %9.0f `fdtr_npos'
+  Pos weights:         .
+.     di "  Neg weights: " %9.0f `fdtr_nneg'
+  Neg weights:         .
+.     di "  % Negative:  " %5.1f `fdtr_pneg' "%"
+  % Negative:      .%
+.     di "  Sum pos w:   " %9.4f `fdtr_sumpos'
+  Sum pos w:           .
+.     di "  Sum neg w:   " %9.4f `fdtr_sumneg'
+  Sum neg w:           .
+.     if `fdtr_sens1' != . di "  min sigma for zero:  " %9.4f `fdtr_sens1'
+.     if `fdtr_sens2' != . di "  min sigma for opp:   " %9.4f `fdtr_sens2'
+. }
+
+. else {
+.     di "fdTR FAILED completely with rc=`twfe_rc_fd'"
+. }
+
+. 
+. * ===========================================================================
+> ==
+. * STEP 3c: classify_design
+. * ===========================================================================
+> ==
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3c: CLASSIFY DESIGN"
+  STEP 3c: CLASSIFY DESIGN
+
+. di "============================================================"
+============================================================
+
+. 
+. use "$datadir/panel_GTD.dta", clear
+
+. classify_design num_st year scrat
+
+===== classify_design =====
+  Group  : num_st
+  Time   : year
+  Treat  : scrat
+(99 missing values generated)
+
+Your dataset corresponds to Design SFSD (subtype: RSFSD).
+  Switch-timing varies unconditionally but is constant within _D_g1.
+
+. 
+. local design  "`r(design)'"
+
+. local subtype "`r(subtype)'"
+
+. di _n "Design:  `design'"
+
+Design:  SFSD
+
+. di "Subtype: `subtype'"
+Subtype: RSFSD
+
+. 
+. * ===========================================================================
+> ==
+. * STEP 4: LaTeX output
+. * ===========================================================================
+> ==
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 4: LaTeX OUTPUT"
+  STEP 4: LaTeX OUTPUT
+
+. di "============================================================"
+============================================================
+
+. 
+. * --- Table replication ---
+. cap file close texfile
+
+. file open texfile using "$texdir/table_replication.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hotz
+    and Xiao (2011)/table_replication.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Replication of Hotz and Xiao (2011), Nonemployer
+>  Analysis}" _n
+
+. file write texfile "\label{tab:hotz_xiao_nonemp}" _n
+
+. file write texfile "\begin{adjustbox}{max width=\textwidth}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & (1) & (2) \\" _n
+
+. file write texfile " & No Controls & With Controls \\" _n
+
+. file write texfile "\midrule" _n
+
+. 
+. * scrat rows
+. file write texfile "Staff-child ratio (scrat)"
+
+. file write texfile " & " %9.4f (`beta_scrat_b') "`stars_scrat_b'"
+
+. file write texfile " & " %9.4f (`beta_scrat_a') "`stars_scrat_a'"
+
+. file write texfile " \\" _n
+
+. file write texfile " & (" %9.4f (`se_scrat_b') ")"
+
+. file write texfile " & (" %9.4f (`se_scrat_a') ")"
+
+. file write texfile " \\" _n
+
+. 
+. file write texfile "\addlinespace" _n
+
+. 
+. * educ rows
+. file write texfile "Education index (educ)"
+
+. file write texfile " & " %9.4f (`beta_educ_b') "`stars_educ_b'"
+
+. file write texfile " & " %9.4f (`beta_educ_a') "`stars_educ_a'"
+
+. file write texfile " \\" _n
+
+. file write texfile " & (" %9.4f (`se_educ_b') ")"
+
+. file write texfile " & (" %9.4f (`se_educ_a') ")"
+
+. file write texfile " \\" _n
+
+. 
+. file write texfile "\midrule" _n
+
+. 
+. * Controls/FE indicators
+. file write texfile "State FE & Yes & Yes \\" _n
+
+. file write texfile "Year dummies & Yes & Yes \\" _n
+
+. file write texfile "Demographics & No & Yes \\" _n
+
+. 
+. file write texfile "\midrule" _n
+
+. 
+. * N and R2
+. file write texfile "N & " %9.0f (`n_b') " & " %9.0f (`n_a') " \\" _n
+
+. file write texfile "$R^2$ & " %6.4f (`r2_b') " & " %6.4f (`r2_a') " \\" _n
+
+. 
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\multicolumn{3}{p{0.85\linewidth}}{\footnotesize" _n
+
+. file write texfile "\textit{Notes:} State-level nonemployer analysis. " _n
+
+. file write texfile "Dependent variable: number of nonemployer child care esta
+> blishments (thousands). " _n
+
+. file write texfile "Standard errors clustered by state-year in parentheses. "
+>  _n
+
+. file write texfile "Demographics: \% black, \% Hispanic, household size, medi
+> an income, " _n
+
+. file write texfile "\% college, under-5 population, \% female-headed w/childr
+> en, " _n
+
+. file write texfile "\% female not working, \% unemployed, \% work-at-home, " 
+> _n
+
+. file write texfile "long commute, \% rural. " _n
+
+. file write texfile "*** $p<0.01$, ** $p<0.05$, * $p<0.10$.}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{adjustbox}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table_replication.tex"
+  Saved: table_replication.tex
+
+. 
+. * --- twowayfeweights table ---
+. cap file close texfile
+
+. file open texfile using "$texdir/table_twowayfeweights.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hotz
+    and Xiao (2011)/table_twowayfeweights.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{TWFE Weight Decomposition: Hotz and Xiao (2011)}
+> " _n
+
+. file write texfile "\label{tab:hotz_xiao_weights}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & feTR & fdTR \\" _n
+
+. file write texfile "\midrule" _n
+
+. 
+. * beta
+. if `fetr_ok' == 1 {
+.     file write texfile "$\hat{\beta}_{fe}$ & " %9.4f (`fetr_beta') " & "
+. }
+
+. else {
+.     file write texfile "$\hat{\beta}_{fe}$ & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.4f (`fdtr_beta') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Positive weights
+. if `fetr_ok' == 1 {
+.     file write texfile "Positive weights & " %9.0f (`fetr_npos') " & "
+. }
+
+. else {
+.     file write texfile "Positive weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.0f (`fdtr_npos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Negative weights
+. if `fetr_ok' == 1 {
+.     file write texfile "Negative weights & " %9.0f (`fetr_nneg') " & "
+. }
+
+. else {
+.     file write texfile "Negative weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.0f (`fdtr_nneg') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * % Negative
+. if `fetr_ok' == 1 {
+.     file write texfile "\% Negative & " %5.1f (`fetr_pneg') "\% & "
+. }
+
+. else {
+.     file write texfile "\% Negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %5.1f (`fdtr_pneg') "\% \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Sum weights
+. if `fetr_ok' == 1 {
+.     file write texfile "$\sum w^+$ & " %9.4f (`fetr_sumpos') " & "
+. }
+
+. else {
+.     file write texfile "$\sum w^+$ & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.4f (`fdtr_sumpos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 & `fetr_sumneg' != . {
+.     file write texfile "$\sum w^-$ & $-$" %9.4f (abs(`fetr_sumneg')) " & "
+. }
+
+. else {
+.     file write texfile "$\sum w^-$ & --- & "
+. }
+
+. if `fdtr_ok' == 1 & `fdtr_sumneg' != . {
+.     file write texfile "$-$" %9.4f (abs(`fdtr_sumneg')) " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. file write texfile "\midrule" _n
+
+. 
+. * Sensitivity measures
+. if `fetr_sens1' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize Min $\sigma(\Delta)$
+>  for $\beta_{fe}=0$: " %9.4f (`fetr_sens1') "} \\" _n
+. }
+
+. if `fetr_sens2' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize Min $\sigma(\Delta)$
+>  for opposite sign: " %9.4f (`fetr_sens2') "} \\" _n
+. }
+
+. 
+. file write texfile "\addlinespace" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Design classification: `
+> design'" _n
+
+. if "`subtype'" != "" {
+.     file write texfile " (`subtype')" _n
+. }
+
+. file write texfile "} \\" _n
+
+. 
+. file write texfile "\midrule" _n
+
+. file write texfile "\multicolumn{3}{p{0.85\linewidth}}{\footnotesize" _n
+
+. file write texfile "Spec: state FE + year FE. " _n
+
+. file write texfile "$Y$ = nonemployer establishments (1000s). " _n
+
+. file write texfile "$D$ = staff-child ratio index (continuous). " _n
+
+. file write texfile "Other treatment: education index. " _n
+
+. file write texfile "$G$ = state. $T$ = year (1987, 1992, 1997).}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table_twowayfeweights.tex"
+  Saved: table_twowayfeweights.tex
+
+. 
+. * --- Master LaTeX document ---
+. cap file close texfile
+
+. file open texfile using "$texdir/hotz_xiao_tables.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hotz
+    and Xiao (2011)/hotz_xiao_tables.tex not found)
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage[margin=1in]{geometry}" _n
+
+. file write texfile "\usepackage{booktabs,caption,adjustbox,amsmath,amsfonts}"
+>  _n
+
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justifica
+> tion=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. 
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Hotz and Xiao (2011)}\\" _n
+
+. file write texfile "{\large The Role of Minimum Quality Standards}" _n
+
+. file write texfile "{\large in the Child Care Market}\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}, 101(5), 1
+> 775--1805}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. 
+. file write texfile "\vspace{1em}" _n _n
+
+. 
+. file write texfile "\input{table_replication}" _n _n
+
+. file write texfile "\input{table_twowayfeweights}" _n _n
+
+. 
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: hotz_xiao_tables.tex"
+  Saved: hotz_xiao_tables.tex
+
+. 
+. * ===========================================================================
+> ==
+. * STEP 5: Final summary
+. * ===========================================================================
+> ==
+. di _n "============================================================"
+
+============================================================
+
+. di "  FINAL SUMMARY: Hotz and Xiao (2011)"
+  FINAL SUMMARY: Hotz and Xiao (2011)
+
+. di "============================================================"
+============================================================
+
+. di "  Nonemployer Analysis (state-level)"
+  Nonemployer Analysis (state-level)
+
+. di "------------------------------------------------------------"
+------------------------------------------------------------
+
+. di "  Spec A (with controls):"
+  Spec A (with controls):
+
+. di "    scrat: beta = " %9.4f `beta_scrat_a' " `stars_scrat_a'  (se = " %9.4f
+>  `se_scrat_a' ")"
+    scrat: beta =  -21.9276 ***  (se =    8.1926)
+
+. di "    educ:  beta = " %9.4f `beta_educ_a'  " `stars_educ_a'   (se = " %9.4f
+>  `se_educ_a'  ")"
+    educ:  beta =   -0.1399 *   (se =    0.0847)
+
+. di "  Spec B (no controls):"
+  Spec B (no controls):
+
+. di "    scrat: beta = " %9.4f `beta_scrat_b' " `stars_scrat_b'  (se = " %9.4f
+>  `se_scrat_b' ")"
+    scrat: beta =  -17.3229 **  (se =    7.1947)
+
+. di "    educ:  beta = " %9.4f `beta_educ_b'  " `stars_educ_b'   (se = " %9.4f
+>  `se_educ_b'  ")"
+    educ:  beta =   -0.2014 **   (se =    0.0869)
+
+. di "  N = " `n_a' " (" `n_groups' " states x " `n_years' " years)"
+  N = 153 (51 states x 3 years)
+
+. di "------------------------------------------------------------"
+------------------------------------------------------------
+
+. di "  twowayfeweights:"
+  twowayfeweights:
+
+. if `fetr_ok' {
+.     di "    feTR: " %9.0f `fetr_npos' " pos, " %9.0f `fetr_nneg' " neg (" %5.
+> 1f `fetr_pneg' "% negative)"
+    feTR:         . pos,         . neg (    .% negative)
+.     di "          Sum pos: " %9.4f `fetr_sumpos' "  Sum neg: " %9.4f `fetr_su
+> mneg'
+          Sum pos:         .  Sum neg:         .
+. }
+
+. else {
+.     di "    feTR: FAILED"
+. }
+
+. if `fdtr_ok' {
+.     di "    fdTR: " %9.0f `fdtr_npos' " pos, " %9.0f `fdtr_nneg' " neg (" %5.
+> 1f `fdtr_pneg' "% negative)"
+    fdTR:         . pos,         . neg (    .% negative)
+.     di "          Sum pos: " %9.4f `fdtr_sumpos' "  Sum neg: " %9.4f `fdtr_su
+> mneg'
+          Sum pos:         .  Sum neg:         .
+. }
+
+. else {
+.     di "    fdTR: FAILED"
+. }
+
+. di "------------------------------------------------------------"
+------------------------------------------------------------
+
+. di "  Design: `design'"
+  Design: SFSD
+
+. if "`subtype'" != "" di "  Subtype: `subtype'"
+  Subtype: RSFSD
+
+. di "============================================================"
+============================================================
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Hotz and Xiao (2011)/run_twowayfe.log
+  log type:  text
+ closed on:   2 Jul 2026, 07:41:35
+-------------------------------------------------------------------------------

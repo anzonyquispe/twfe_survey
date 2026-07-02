@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\caption{TWFE Weight Decomposition: Pierce and Schott (2016)}
+\label{tab:pierce_schott_weights}
+\begin{tabular}{lcc}
+\toprule
+ & feTR & fdTR \\
+\midrule
+$\hat{\beta}_{fe}$ &   -0.8341 & --- \\
+Positive weights &      1344 & --- \\
+Negative weights &       917 & --- \\
+\% Negative &  40.6\% & --- \\
+$\sum w^+$ &    1.4089 & --- \\
+$\sum w^-$ & $-$   0.4089 & --- \\
+\midrule
+\multicolumn{3}{l}{\footnotesize Min $\sigma(\Delta)$ for $\beta_{fe}=0$:    0.3720} \\
+\multicolumn{3}{l}{\footnotesize Min $\sigma(\Delta)$ for opposite sign:    0.7444} \\
+\addlinespace
+\multicolumn{3}{l}{\footnotesize Design classification: HAD
+} \\
+\midrule
+\multicolumn{3}{p{0.85\linewidth}}{\footnotesize
+Spec: industry family FE + year FE. 
+$Y$ = log employment (NBER-CES).
+$D$ = NTR Gap $\times$ Post (continuous).
+$G$ = industry family. $T$ = year (1990--2007).
+Weighted by 1990 employment.}
+\end{tabular}
+\end{table}

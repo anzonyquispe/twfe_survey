@@ -222,7 +222,7 @@ papers = [
         "G": "num_st (state)", "T": "year (1987, 1992, 1997)", "D": "scrat (staff-child ratio), educ (education index)", "Y": "estab (nonemployer establishments)",
         "G_d": "SI", "T_d": "SI", "D_d": "SI", "Y_d": "SI",
         "estado": "Replicado",
-        "nota": "panel_GTD.dta construido en data/. 153 obs (51 estados x 3 anos). Usa datos publicos: reg.dta + nonemp_st_w1987.dta + c1987/92/97_state_clean.dta. Spec: areg estab scrat educ [controls] year1992 year1997, absorb(num_st) cluster(year_st).",
+        "nota": "Pipeline completo. 153 obs (51 estados x 3 anos). twowayfeweights feTR: 60 pos / 89 neg (59.7% negative). Design: SFSD (RSFSD). Spec: areg estab scrat educ [controls] year1992 year1997, absorb(num_st) cluster(year_st). PDF compilado.",
     },
 
     # --- RESTRINGIDO (Wave 1) ---
@@ -461,7 +461,7 @@ papers = [
         "G": "fam50 (industry family)", "T": "year (1990-2007)", "D": "s1999 (NTR gap), s1999_post = s1999 x post(>=2001)", "Y": "lemp (log employment, NBER-CES)",
         "G_d": "SI", "T_d": "SI", "D_d": "SI", "Y_d": "SI",
         "estado": "Replicado",
-        "nota": "panel_GTD.dta construido en data/. 5814 obs (323 industries x 18 anos). Y usa NBER-CES public data (naics5809.dta) en lugar de Census LBD (restringido). Misma estructura TWFE, magnitudes difieren. Spec: areg lemp s1999_post d???? [aw=emp1990], a(fam50) cl(fam50) robust. Controles disponibles: lkl, lsl, contract, dr, atp, ntr, mem, sfw_mwt_sum_new.",
+        "nota": "Pipeline completo. 5814 obs (323 industries x 18 anos). twowayfeweights feTR: 1344 pos / 917 neg (40.6% negative). Design: HAD. Y usa NBER-CES public data (naics5809.dta). Spec: areg lemp s1999_post d???? [aw=emp1990], a(fam50) cl(fam50) robust. PDF compilado.",
     },
 
     # --- RESTRINGIDO (Wave 2) ---

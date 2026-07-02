@@ -1,0 +1,1189 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hotz 
+> and Xiao (2011)/build_panel_GTD.log
+  log type:  text
+ opened on:   1 Jul 2026, 22:48:44
+
+. 
+. * ===========================================================================
+> =
+. * STEP 0: Describe key datasets
+. * ===========================================================================
+> =
+. 
+. di "=== DESCRIBING reg.dta ==="
+=== DESCRIBING reg.dta ===
+
+. use "`regdir'/reg.dta", clear
+
+. describe
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Hotz and Xiao (2011)/Hotz_Xiao_20051172_data_programs/data/Regulation_data/r
+> eg.dta
+ Observations:           707                  
+    Variables:           113                  
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+year            float   %9.0g                 
+state           str12   %12s                  
+staname         str20   %20s                  
+ageddc          float   %9.0g                 
+agedfh          float   %9.0g                 
+preddc          float   %9.0g                 
+predfh          float   %9.0g                 
+edddc           float   %9.0g                 
+eddfh           float   %9.0g                 
+cdhrsddc        float   %9.0g                 
+cdhrsdfh        float   %9.0g                 
+expddc          float   %9.0g                 
+expdfh          float   %9.0g                 
+cda             float   %9.0g                 
+ongoddc         float   %9.0g                 
+ongodfh         float   %9.0g                 
+ongohddc        float   %9.0g                 
+ongohdfh        float   %9.0g                 
+healdc          float   %9.0g                 
+healfh          float   %9.0g                 
+crimdc          float   %9.0g                 
+crimfh          float   %9.0g                 
+agetdc          float   %9.0g                 
+pretdc          float   %9.0g                 
+edtdc           float   %9.0g                 
+cdhrstdc        float   %9.0g                 
+exptdc          float   %9.0g                 
+ongotdc         float   %9.0g                 
+ongohtdc        float   %9.0g                 
+ageadc          float   %9.0g                 
+preadc          float   %9.0g                 
+edadc           float   %9.0g                 
+cdhrsadc        float   %9.0g                 
+expadc          float   %9.0g                 
+ongoadc         float   %9.0g                 
+ongohadc        float   %9.0g                 
+aiddc           float   %9.0g                 
+aidfh           float   %9.0g                 
+curricdc        float   %9.0g                 
+curricfh        float   %9.0g                 
+equipdc         float   %9.0g                 
+equipfh         float   %9.0g                 
+punishdc        float   %9.0g                 
+punishfh        float   %9.0g                 
+pickupdc        float   %9.0g                 
+pickupfh        float   %9.0g                 
+fooddc          float   %9.0g                 
+foodfh          float   %9.0g                 
+immundc         float   %9.0g                 
+immunfh         float   %9.0g                 
+sickdc          float   %9.0g                 
+sickfh          float   %9.0g                 
+inftdc          float   %9.0g                 
+inftfh          float   %9.0g                 
+outftdc         float   %9.0g                 
+outftfh         float   %9.0g                 
+firedc          float   %9.0g                 
+firefh          float   %9.0g                 
+fencedc         float   %9.0g                 
+fencefh         float   %9.0g                 
+sizetfh         float   %9.0g                 
+sizemfh         float   %9.0g                 
+size0dc         float   %9.0g                 
+size0fh         float   %9.0g                 
+size1dc         float   %9.0g                 
+size1fh         float   %9.0g                 
+size2dc         float   %9.0g                 
+size2fh         float   %9.0g                 
+size3dc         float   %9.0g                 
+size3fh         float   %9.0g                 
+size4dc         float   %9.0g                 
+size4fh         float   %9.0g                 
+size5dc         float   %9.0g                 
+size5fh         float   %9.0g                 
+rat0dc          float   %9.0g                 
+rat0fh          float   %9.0g                 
+rat1dc          float   %9.0g                 
+rat1fh          float   %9.0g                 
+rat2dc          float   %9.0g                 
+rat2fh          float   %9.0g                 
+rat3dc          float   %9.0g                 
+rat3fh          float   %9.0g                 
+rat4dc          float   %9.0g                 
+rat4fh          float   %9.0g                 
+rat5dc          float   %9.0g                 
+rat5fh          float   %9.0g                 
+visitdc         float   %9.0g                 
+visitfh         float   %9.0g                 
+insurdc         float   %9.0g                 
+insurfh         float   %9.0g                 
+inspdc          float   %9.0g                 
+inspfh          float   %9.0g                 
+unanndc         float   %9.0g                 
+unannfh         float   %9.0g                 
+finedc          float   %9.0g                 
+finefh          float   %9.0g                 
+revokedc        float   %9.0g                 
+revokefh        float   %9.0g                 
+trandc          float   %9.0g                 
+tranfh          float   %9.0g                 
+facildc         float   %9.0g                 
+facilfh         float   %9.0g                 
+sizetgh         float   %9.0g                 
+sizemgh         float   %9.0g                 
+ghisdc          float   %9.0g                 
+ghisfh          float   %9.0g                 
+ghisoth         float   %9.0g                 
+feefh           float   %9.0g                 
+feeamtfh        float   %9.0g                 
+renewfh         float   %9.0g                 
+feedc           float   %9.0g                 
+feeamtdc        float   %9.0g                 
+renewdc         float   %9.0g                 
+-------------------------------------------------------------------------------
+Sorted by: 
+
+. list state year edddc edtdc edadc rat0dc rat1dc inspdc visitdc crimdc aiddc i
+> n 1/10
+
+     +-----------------------------------------------------------------+
+  1. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   83 |    12 |    12 |     8 |      6 |      6 |      2 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            0        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  2. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   84 |    12 |    12 |     8 |      6 |      6 |      2 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            0        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  3. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   85 |    12 |    12 |     8 |      6 |      6 |      2 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            0        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  4. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   86 |    12 |    12 |     8 |      6 |      6 |      2 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            1        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  5. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   87 |    12 |    12 |     8 |      6 |      6 |      2 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            1        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  6. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   88 |    12 |    12 |     8 |      6 |      8 |      1 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            1        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  7. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   89 |    12 |    12 |     8 |      6 |      8 |      1 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            1        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  8. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   90 |    12 |    12 |     8 |      6 |      8 |      1 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            1        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  9. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   91 |    12 |    12 |     8 |      6 |      8 |      1 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            1        |           0        |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+ 10. | state | year | edddc | edtdc | edadc | rat0dc | rat1dc | inspdc |
+     |    AL |   92 |    12 |    12 |     8 |      6 |      8 |      1 |
+     |----------------------+------------------------------------------|
+     |       visitdc        |       crimdc        |       aiddc        |
+     |             1        |            1        |           0        |
+     +-----------------------------------------------------------------+
+
+. 
+. di "=== DESCRIBING nonemp_st_w1987.dta ==="
+=== DESCRIBING nonemp_st_w1987.dta ===
+
+. use "`nempdir'/nonemp_st_w1987.dta", clear
+
+. describe
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Hotz and Xiao (2011)/Hotz_Xiao_20051172_data_programs/data/Childcare_nonempl
+> oyer_data/nonemp_st_w1987.dta
+ Observations:           153                  
+    Variables:            10                  23 Jan 2007 17:12
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+num_st          byte    %8.0g                 ST
+naics           str4    %9s                   NAICS
+estabf          str1    %9s                   ESTABF
+estab           long    %12.0g                ESTAB
+ecvaluef        str1    %9s                   ECVALUEF
+ecvalue         long    %12.0g                ECVALUE
+year            int     %9.0g                 
+st_name         str20   %20s                  
+state           str2    %9s                   
+sic             int     %8.0g                 SIC
+-------------------------------------------------------------------------------
+Sorted by: 
+
+. list in 1/10
+
+     +-------------------------------------------------------------+
+  1. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |      1 |  6244 |        |  4312 |          |   39346 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |                  Alabama     |        AL     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  2. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |      2 |  6244 |        |  2106 |          |   20376 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |                   Alaska     |        AK     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  3. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |      4 |  6244 |        |  8443 |          |   67613 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |                  Arizona     |        AZ     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  4. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |      5 |  6244 |        |  3574 |          |   27079 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |                 Arkansas     |        AR     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  5. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |      6 |  6244 |        | 54181 |          |  581494 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |               California     |        CA     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  6. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |      8 |  6244 |        | 10936 |          |  110380 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |                 Colorado     |        CO     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  7. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |      9 |  6244 |        |  5881 |          |   76158 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |              Connecticut     |        CT     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  8. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |     10 |  6244 |        |  1828 |          |   26139 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |                 Delaware     |        DE     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+  9. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |     11 |  6244 |        |   632 |          |    5252 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |     District_of_Columbia     |        DC     |       .      |
+     +-------------------------------------------------------------+
+
+     +-------------------------------------------------------------+
+ 10. | num_st | naics | estabf | estab | ecvaluef | ecvalue | year |
+     |     12 |  6244 |        | 13850 |          |  145291 | 1997 |
+     |-------------------------------------------------------------|
+     |                  st_name     |     state     |     sic      |
+     |                  Florida     |        FL     |       .      |
+     +-------------------------------------------------------------+
+
+. 
+. di "=== DESCRIBING c1987_state_clean.dta ==="
+=== DESCRIBING c1987_state_clean.dta ===
+
+. use "`nempdir'/c1987_state_clean.dta", clear
+
+. describe
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Hotz and Xiao (2011)/Hotz_Xiao_20051172_data_programs/data/Childcare_nonempl
+> oyer_data/c1987_state_clean.dta
+ Observations:            51                  
+    Variables:            25                  3 Oct 2007 11:54
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+num_st          byte    %10.0g                
+pop             long    %12.0g                
+age_1_2         long    %12.0g                
+age_3_4         long    %12.0g                
+m_income        long    %12.0g                
+pct_rural       float   %9.0g                 
+pct_black       float   %9.0g                 
+pct_hisp        float   %9.0g                 
+under5          float   %9.0g                 
+n_infant        float   %9.0g                 
+n_schage        float   %9.0g                 
+hh_size         float   %9.0g                 
+pct_fh_c        float   %9.0g                 
+pct_over55      float   %9.0g                 
+pct_freign      float   %9.0g                 
+mobility        float   %9.0g                 
+long_comm       float   %9.0g                 
+pct_whome       float   %9.0g                 
+college         float   %9.0g                 
+pct_unemploy    float   %9.0g                 
+pct_nolabor     float   %9.0g                 
+f_parttime      float   %9.0g                 
+pct_f_nwork     float   %9.0g                 
+pct_pvty        float   %9.0g                 
+year            float   %9.0g                 
+-------------------------------------------------------------------------------
+Sorted by: num_st  year
+
+. list in 1/5
+
+     +------------------------------------------------------------------------+
+  1. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      1 |  4040587 |  119496 |  113128 |    23597 | .3966928 |  .252375 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .0058355  |  280785  |    48161  |   480619  |  2.682977  |    .07057  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .2353897  | .0107739  | .0872706  | .2786387  | .0179155  |  .2691678  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     |  .067843  |  .3892885  |   .029105  |  .4298903  |  .1790864  |  1987  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  2. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      2 |   550043 |   23196 |   21788 |    41408 | .3257563 | .0403514 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .0325502  |   54618  |     9634  |    76021  |  2.899541  |  .0702214  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .1081602  | .0451128  | .2131604  |  .141541  | .0418788  |    .42648  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0802396  |  .2527669  |  .0376235  |  .2431723  |   .087095  |  1987  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  3. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      4 |  3665228 |  122831 |  116478 |    27540 | .1249999 | .0300287 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .1856987  |  290422  |    51113  |   432274  |  2.671673  |  .0622392  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .2216352  | .0759039  | .1925506  | .2820273  | .0300362  |  .3871419  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0706607  |  .3705499  |  .0280147  |   .397399  |  .1539773  |  1987  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  4. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      5 |  2350725 |   69391 |   66533 |    21147 | .4647617 | .1588676 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .0083319  |  164060  |    28136  |   282131  |  2.636332  |  .0626188  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .2457268  | .0105784  | .1099835  | .2203473  | .0280891  |  .2551963  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0669163  |  .4016014  |  .0297737  |  .4310485  |   .185938  |  1987  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  5. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      6 | 29760021 | 1018750 |  934140 |    35798 | .0735263 | .0738832 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .2539498  | 2376474  |   423584  |  3378255  |  2.861623  |  .0636266  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .1929212  | .2170303  | .0721175  |  .344375  | .0324863  |  .3789157  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0652892  |  .3301715  |  .0312093  |   .379854  |  .1218946  |  1987  |
+     +------------------------------------------------------------------------+
+
+. 
+. di "=== DESCRIBING c1992_state_clean.dta ==="
+=== DESCRIBING c1992_state_clean.dta ===
+
+. use "`nempdir'/c1992_state_clean.dta", clear
+
+. describe
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Hotz and Xiao (2011)/Hotz_Xiao_20051172_data_programs/data/Childcare_nonempl
+> oyer_data/c1992_state_clean.dta
+ Observations:            51                  
+    Variables:            25                  3 Oct 2007 12:01
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+num_st          byte    %10.0g                
+pop             long    %12.0g                
+age_1_2         long    %12.0g                
+age_3_4         long    %12.0g                
+m_income        long    %12.0g                
+pct_rural       float   %9.0g                 
+pct_black       float   %9.0g                 
+pct_hisp        float   %9.0g                 
+under5          float   %9.0g                 
+n_infant        float   %9.0g                 
+n_schage        float   %9.0g                 
+hh_size         float   %9.0g                 
+pct_fh_c        float   %9.0g                 
+pct_over55      float   %9.0g                 
+pct_freign      float   %9.0g                 
+mobility        float   %9.0g                 
+long_comm       float   %9.0g                 
+pct_whome       float   %9.0g                 
+college         float   %9.0g                 
+pct_unemploy    float   %9.0g                 
+pct_nolabor     float   %9.0g                 
+f_parttime      float   %9.0g                 
+pct_f_nwork     float   %9.0g                 
+pct_pvty        float   %9.0g                 
+year            float   %9.0g                 
+-------------------------------------------------------------------------------
+Sorted by: num_st  year
+
+. list in 1/5
+
+     +------------------------------------------------------------------------+
+  1. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      1 |  4040587 |  119496 |  113128 |    23597 | .3966928 |  .252375 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .0058355  |  280785  |    48161  |   480619  |  2.682977  |    .07057  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .2353897  | .0107739  | .0872706  | .2786387  | .0179155  |  .2691678  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     |  .067843  |  .3892885  |   .029105  |  .4298903  |  .1790864  |  1992  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  2. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      2 |   550043 |   23196 |   21788 |    41408 | .3257563 | .0403514 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .0325502  |   54618  |     9634  |    76021  |  2.899541  |  .0702214  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .1081602  | .0451128  | .2131604  |  .141541  | .0418788  |    .42648  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0802396  |  .2527669  |  .0376235  |  .2431723  |   .087095  |  1992  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  3. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      4 |  3665228 |  122831 |  116478 |    27540 | .1249999 | .0300287 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .1856987  |  290422  |    51113  |   432274  |  2.671673  |  .0622392  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .2216352  | .0759039  | .1925506  | .2820273  | .0300362  |  .3871419  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0706607  |  .3705499  |  .0280147  |   .397399  |  .1539773  |  1992  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  4. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      5 |  2350725 |   69391 |   66533 |    21147 | .4647617 | .1588676 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .0083319  |  164060  |    28136  |   282131  |  2.636332  |  .0626188  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .2457268  | .0105784  | .1099835  | .2203473  | .0280891  |  .2551963  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0669163  |  .4016014  |  .0297737  |  .4310485  |   .185938  |  1992  |
+     +------------------------------------------------------------------------+
+
+     +------------------------------------------------------------------------+
+  5. | num_st |      pop | age_1_2 | age_3_4 | m_income | pct_ru~l | pct_bl~k |
+     |      6 | 29760021 | 1018750 |  934140 |    35798 | .0735263 | .0738832 |
+     |------------------------------------------------------------------------|
+     | pct_hisp  |  under5  | n_infant  | n_schage  |   hh_size  |  pct_fh_c  |
+     | .2539498  | 2376474  |   423584  |  3378255  |  2.861623  |  .0636266  |
+     |-----------+-----------------------------------------------+------------|
+     | pct_o~55  | pct_fr~n  | mobility  | long_c~m  | pct_wh~e  |   college  |
+     | .1929212  | .2170303  | .0721175  |  .344375  | .0324863  |  .3789157  |
+     |-----------+------------------------------------------------------------|
+     | pct_un~y  |  pct_no~r  |  f_part~e  |  pct_f_~k  |  pct_pvty  |  year  |
+     | .0652892  |  .3301715  |  .0312093  |   .379854  |  .1218946  |  1992  |
+     +------------------------------------------------------------------------+
+
+. 
+. di "=== DESCRIBING c1997_state_clean.dta ==="
+=== DESCRIBING c1997_state_clean.dta ===
+
+. use "`nempdir'/c1997_state_clean.dta", clear
+
+. describe
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Hotz and Xiao (2011)/Hotz_Xiao_20051172_data_programs/data/Childcare_nonempl
+> oyer_data/c1997_state_clean.dta
+ Observations:            51                  
+    Variables:            29                  3 Oct 2007 11:56
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+num_st          byte    %10.0g                
+pop             long    %12.0g                Total population: Total
+hh_size         float   %9.0g                 Households: Average household
+                                                size
+m_income        long    %12.0g                Households: Median household
+                                                income in 1999
+pct_rural       float   %9.0g                 
+pct_black       float   %9.0g                 
+pct_hisp        float   %9.0g                 
+under5          float   %9.0g                 
+n_infant        float   %9.0g                 
+n_toddler       float   %9.0g                 
+n_presch        float   %9.0g                 
+age_1_2         float   %9.0g                 
+age_3_4         float   %9.0g                 
+n_schage        float   %9.0g                 
+pct_freign      float   %9.0g                 
+mobility        float   %9.0g                 
+pct_fh_c        float   %9.0g                 
+pct_over60      float   %9.0g                 
+long_comm       float   %9.0g                 
+pct_whome       float   %9.0g                 
+pct_nursery     float   %9.0g                 
+pct_kdgarden    float   %9.0g                 
+college         float   %9.0g                 
+pct_unemploy    float   %9.0g                 
+pct_nolabor     float   %9.0g                 
+f_parttime      float   %9.0g                 
+pct_f_nwork     float   %9.0g                 
+pct_pvty        float   %9.0g                 
+year            float   %9.0g                 
+-------------------------------------------------------------------------------
+Sorted by: num_st  year
+
+. list in 1/5
+
+     +-----------------------------------------------------------------+
+  1. | num_st |      pop | hh_size | m_income  | pct_ru~l  | pct_bl~k  |
+     |      1 |  4447100 |    2.49 |    34135  |  .445585  | .2599289  |
+     |-----------------------------------------------------------------|
+     | pct_hisp |  under5 | n_infant | n_todd~r | n_presch  | age_1_2  |
+     | .0170516 |  295992 |    59101 |   176986 |   120589  |  117998  |
+     |--------------------+----------+----------+----------------------|
+     | age_3_4 | n_schage | pct_fr~n | mobility | pct_fh_c | pct_o~60  |
+     |  118893 |   510860 | .0197369 | .0785622 | .0812035 | .3090537  |
+     |-----------------------------------------------------------------|
+     | long_c~m | pct_wh~e | pct_nu~y | pct_kd~n |  college | pct_un~y |
+     | .3166657 | .0206848 | .0175324 | .0154272 | .3265315 | .0615723 |
+     |-----------------------------------------------------------------|
+     |  pct_no~r   |  f_part~e   |  pct_f_~k   |  pct_pvty   |  year   |
+     |  .4026535   |  .0286938   |  .4182877   |   .156978   |  1997   |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  2. | num_st |      pop | hh_size | m_income  | pct_ru~l  | pct_bl~k  |
+     |      2 |   626932 |    2.74 |    51571  | .3429032  | .0347518  |
+     |-----------------------------------------------------------------|
+     | pct_hisp |  under5 | n_infant | n_todd~r | n_presch  | age_1_2  |
+     | .0412357 |   47591 |     9361 |    28368 |    19891  |   18870  |
+     |--------------------+----------+----------+----------------------|
+     | age_3_4 | n_schage | pct_fr~n | mobility | pct_fh_c | pct_o~60  |
+     |   19360 |    89023 | .0592887 |  .164836 | .0778114 | .1720578  |
+     |-----------------------------------------------------------------|
+     | long_c~m | pct_wh~e | pct_nu~y | pct_kd~n |  college | pct_un~y |
+     | .1635805 | .0412186 | .0180376 | .0168255 |  .446938 | .0855889 |
+     |-----------------------------------------------------------------|
+     |  pct_no~r   |  f_part~e   |  pct_f_~k   |  pct_pvty   |  year   |
+     |  .2869924   |  .0408076   |  .2649325   |  .0918792   |  1997   |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  3. | num_st |      pop | hh_size | m_income  | pct_ru~l  | pct_bl~k  |
+     |      4 |  5130632 |    2.64 |    40558  | .1183322  | .0309656  |
+     |-----------------------------------------------------------------|
+     | pct_hisp |  under5 | n_infant | n_todd~r | n_presch  | age_1_2  |
+     | .2525258 |  382386 |    77421 |   228405 |   153315  |  152415  |
+     |--------------------+----------+----------+----------------------|
+     | age_3_4 | n_schage | pct_fr~n | mobility | pct_fh_c | pct_o~60  |
+     |  152550 |   617494 | .1278952 | .1675713 | .0681161 | .3099688  |
+     |-----------------------------------------------------------------|
+     | long_c~m | pct_wh~e | pct_nu~y | pct_kd~n |  college | pct_un~y |
+     | .3362924 | .0367165 |  .016707 | .0158927 | .4153893 | .0558694 |
+     |-----------------------------------------------------------------|
+     |  pct_no~r   |  f_part~e   |  pct_f_~k   |  pct_pvty   |  year   |
+     |  .3890455   |  .0288863   |  .3995481   |   .136176   |  1997   |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  4. | num_st |      pop | hh_size | m_income  | pct_ru~l  | pct_bl~k  |
+     |      5 |  2673400 |    2.49 |    32182  |  .475634  | .1567106  |
+     |-----------------------------------------------------------------|
+     | pct_hisp |  under5 | n_infant | n_todd~r | n_presch  | age_1_2  |
+     | .0324927 |  181585 |    36065 |   108888 |    72592  |   72490  |
+     |--------------------+----------+----------+----------------------|
+     | age_3_4 | n_schage | pct_fr~n | mobility | pct_fh_c | pct_o~60  |
+     |   73030 |   305358 | .0275642 | .1011554 | .0736303 | .3220306  |
+     |-----------------------------------------------------------------|
+     | long_c~m | pct_wh~e | pct_nu~y | pct_kd~n |  college | pct_un~y |
+     | .2591869 | .0259555 |  .016898 | .0147126 | .3152472 | .0606349 |
+     |-----------------------------------------------------------------|
+     |  pct_no~r   |  f_part~e   |  pct_f_~k   |  pct_pvty   |  year   |
+     |  .3939253   |  .0298473   |  .4022355   |  .1540275   |  1997   |
+     +-----------------------------------------------------------------+
+
+     +-----------------------------------------------------------------+
+  5. | num_st |      pop | hh_size | m_income  | pct_ru~l  | pct_bl~k  |
+     |      6 | 33871648 |    2.87 |    47493  | .0554078  | .0668371  |
+     |-----------------------------------------------------------------|
+     | pct_hisp |  under5 | n_infant | n_todd~r | n_presch  | age_1_2  |
+     |  .323768 | 2486981 |   483143 |  1480413 |  1054830  |  975923  |
+     |--------------------+----------+----------+----------------------|
+     | age_3_4 | n_schage | pct_fr~n | mobility | pct_fh_c | pct_o~60  |
+     | 1027915 |  4271047 | .2617013 | .0461209 | .0725659 | .2867295  |
+     |-----------------------------------------------------------------|
+     | long_c~m | pct_wh~e | pct_nu~y | pct_kd~n |  college | pct_un~y |
+     | .3778647 | .0383493 |  .016873 |  .017098 | .3999968 | .0694882 |
+     |-----------------------------------------------------------------|
+     |  pct_no~r   |  f_part~e   |  pct_f_~k   |  pct_pvty   |  year   |
+     |  .3757701   |  .0345585   |  .3947824   |  .1389401   |  1997   |
+     +-----------------------------------------------------------------+
+
+. 
+. * ===========================================================================
+> =
+. * STEP 1: Process regulation data (from nonemployer_analysis.do lines 23-103)
+. * ===========================================================================
+> =
+. 
+. use "`regdir'/reg.dta", clear
+
+. rename state st
+
+. 
+. * Fix year coding
+. forvalues y=83/96 {
+  2.         replace year=19`y' if year==`y'
+  3. }
+(49 real changes made)
+(49 real changes made)
+(50 real changes made)
+(49 real changes made)
+(50 real changes made)
+(51 real changes made)
+(51 real changes made)
+(51 real changes made)
+(51 real changes made)
+(52 real changes made)
+(51 real changes made)
+(51 real changes made)
+(51 real changes made)
+(51 real changes made)
+
+. replace year=1997 if year==1996
+(51 real changes made)
+
+. replace year=1987 if year==1986 & st=="WA"
+(1 real change made)
+
+. 
+. * Keep only the 3 Census years
+. keep if year==1987 | year==1992 | year==1997
+(553 observations deleted)
+
+. drop if st=="CWLA"
+(1 observation deleted)
+
+. sort st year
+
+. 
+. * Fill in WA 1987 from Aizer data
+. replace edddc=0 if year==1987 & st=="WA"
+(0 real changes made)
+
+. replace edtdc=0 if year==1987 & st=="WA"
+(0 real changes made)
+
+. replace edadc=0 if year==1987 & st=="WA"
+(0 real changes made)
+
+. replace rat0dc=4 if year==1987 & st=="WA"
+(1 real change made)
+
+. replace rat1dc=7 if year==1987 & st=="WA"
+(0 real changes made)
+
+. replace rat2dc=10 if year==1987 & st=="WA"
+(0 real changes made)
+
+. replace rat3dc=10 if year==1987 & st=="WA"
+(0 real changes made)
+
+. replace rat4dc=10 if year==1987 & st=="WA"
+(0 real changes made)
+
+. replace rat5dc=10 if year==1987 & st=="WA"
+(0 real changes made)
+
+. 
+. * Construct staff-child ratio index (D variable #1)
+. foreach i of numlist 0(1)5 {
+  2.         replace rat`i'dc=. if rat`i'dc==99
+  3.         gen scrat`i'dc=0 if rat`i'dc==.
+  4.         replace scrat`i'dc=1/rat`i'dc if rat`i'dc!=.
+  5. }
+(1 real change made, 1 to missing)
+(148 missing values generated)
+(148 real changes made)
+(1 real change made, 1 to missing)
+(148 missing values generated)
+(148 real changes made)
+(1 real change made, 1 to missing)
+(149 missing values generated)
+(149 real changes made)
+(1 real change made, 1 to missing)
+(149 missing values generated)
+(149 real changes made)
+(1 real change made, 1 to missing)
+(149 missing values generated)
+(149 real changes made)
+(1 real change made, 1 to missing)
+(149 missing values generated)
+(149 real changes made)
+
+. gen scrat=(scrat0dc+scrat1dc+scrat2dc+scrat3dc+scrat4dc+scrat5dc)/6
+
+. gen no_scrat=(scrat==0)
+
+. gen no_scrat0dc=(scrat0dc==0)
+
+. 
+. * Construct education index (D variable #2)
+. replace edddc=0 if edddc==.
+(7 real changes made)
+
+. replace edtdc=0 if edtdc==.
+(7 real changes made)
+
+. replace edadc=0 if edadc==.
+(7 real changes made)
+
+. gen educ=(edddc+edtdc)/2
+
+. gen no_educ=(educ==0)
+
+. gen no_edddc=(edddc==0)
+
+. 
+. * Additional MQS variables
+. replace inspdc=0 if inspdc==.
+(11 real changes made)
+
+. replace visitdc=0 if visitdc==.
+(2 real changes made)
+
+. replace crimdc=0 if crimdc==.
+(0 real changes made)
+
+. replace aiddc=0 if aiddc==.
+(3 real changes made)
+
+. replace cdhrsddc=0 if cdhrsddc==.
+(7 real changes made)
+
+. replace cdhrsddc=cdhrsddc/100
+(102 real changes made)
+
+. replace expddc=0 if expddc==.
+(7 real changes made)
+
+. replace ongoddc=0 if ongoddc==.
+(8 real changes made)
+
+. replace ongohddc=0 if ongohddc==.
+(8 real changes made)
+
+. replace cdhrstdc=0 if cdhrstdc==.
+(7 real changes made)
+
+. replace cdhrstdc=cdhrstdc/100
+(49 real changes made)
+
+. 
+. * Time dummies
+. gen year1992=(year==1992)
+
+. gen year1997=(year==1997)
+
+. 
+. save "`outdir'/reg_processed.dta", replace
+(file C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hotz and
+    Xiao (2011)/reg_processed.dta not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hotz and
+    Xiao (2011)/reg_processed.dta saved
+
+. 
+. * ===========================================================================
+> =
+. * STEP 2: Merge with nonemployer data (Y variables)
+. * ===========================================================================
+> =
+. 
+. use "`nempdir'/nonemp_st_w1987.dta", clear
+
+. keep estab ecvalue year state num_st
+
+. rename state st
+
+. sort st year
+
+. 
+. merge st year using "`outdir'/reg_processed.dta"
+(you are using old merge syntax; see [D] merge for new syntax)
+(variable year was int, now float to accommodate using data's values)
+(variable st was str2, now str12 to accommodate using data's values)
+
+. drop if _merge==2
+(0 observations deleted)
+
+. drop _merge
+
+. 
+. * ===========================================================================
+> =
+. * STEP 3: Merge demographics (control variables)
+. * ===========================================================================
+> =
+. 
+. sort num_st year
+
+. merge num_st year using "`nempdir'/c1987_state_clean.dta"
+(you are using old merge syntax; see [D] merge for new syntax)
+
+. drop if _merge==2
+(0 observations deleted)
+
+. drop _merge
+
+. 
+. sort num_st year
+
+. merge num_st year using "`nempdir'/c1992_state_clean.dta", update
+(you are using old merge syntax; see [D] merge for new syntax)
+
+. drop if _merge==2
+(0 observations deleted)
+
+. drop _merge
+
+. 
+. sort num_st year
+
+. merge num_st year using "`nempdir'/c1997_state_clean.dta", update
+(you are using old merge syntax; see [D] merge for new syntax)
+(variable age_1_2 was long, now double to accommodate using data's values)
+(variable age_3_4 was long, now double to accommodate using data's values)
+
+. drop if _merge==2
+(0 observations deleted)
+
+. drop _merge
+
+. 
+. * ===========================================================================
+> =
+. * STEP 4: Generate analysis variables (from nonemployer_analysis.do)
+. * ===========================================================================
+> =
+. 
+. * Scale establishment count
+. replace estab=estab/1000
+variable estab was long now double
+(153 real changes made)
+
+. 
+. * Y variable: establishments per under-5 population
+. gen estab_over_under5=estab/(under5/1000)
+
+. 
+. * CPI adjustment for economic value
+. scalar cpi97 = 160.5
+
+. scalar cpi92 = 140.3
+
+. scalar cpi87 = 113.6
+
+. replace ecvalue=ecvalue*cpi97/cpi87 if year==1987
+variable ecvalue was long now double
+(51 real changes made)
+
+. replace ecvalue=ecvalue*cpi97/cpi92 if year==1992
+(51 real changes made)
+
+. replace ecvalue=ecvalue*cpi97/cpi97 if year==1997
+(0 real changes made)
+
+. replace ecvalue=ecvalue/1000
+(153 real changes made)
+
+. gen ecvalue_per_estab=ecvalue/estab
+
+. 
+. * Demographic controls (scaled as in original code)
+. gen ln_m_inc=m_income/1000
+
+. gen ln_under5=under5/1000
+
+. gen pct_child=under5/pop
+
+. 
+. * MQS interactions with income
+. gen scrat_incm=scrat*ln_m_inc
+
+. gen no_scrat_incm=no_scrat*ln_m_inc
+
+. gen educ_incm=educ*ln_m_inc
+
+. gen no_educ_incm=no_educ*ln_m_inc
+
+. gen scrat0dc_incm=scrat0dc*ln_m_inc
+
+. gen no_scrat0dc_incm=no_scrat0dc*ln_m_inc
+
+. gen edddc_incm=edddc*ln_m_inc
+
+. gen no_edddc_incm=no_edddc*ln_m_inc
+
+. 
+. * MQS interactions with poverty
+. gen scrat_pvty=scrat*pct_pvty
+
+. gen no_scrat_pvty=no_scrat*pct_pvty
+
+. gen educ_pvty=educ*pct_pvty
+
+. gen no_educ_pvty=no_educ*pct_pvty
+
+. gen scrat0dc_pvty=scrat0dc*pct_pvty
+
+. gen no_scrat0dc_pvty=no_scrat0dc*pct_pvty
+
+. gen edddc_pvty=edddc*pct_pvty
+
+. gen no_edddc_pvty=no_edddc*pct_pvty
+
+. 
+. * Clustering variable
+. gen year_st=year+0.01*num_st
+
+. 
+. * ===========================================================================
+> =
+. * STEP 5: Create panel_GTD.dta with clear labels
+. * ===========================================================================
+> =
+. 
+. * Label key variables for the TWFE survey
+. label var num_st      "G: State identifier"
+
+. label var year        "T: Year (1987, 1992, 1997)"
+
+. label var year1992    "T: Year 1992 dummy"
+
+. label var year1997    "T: Year 1997 dummy"
+
+. label var scrat       "D: Staff-child ratio index (avg across age groups)"
+
+. label var educ        "D: Education requirement index (avg director+teacher)"
+
+. label var no_scrat    "D: No staff-child ratio requirement (dummy)"
+
+. label var no_educ     "D: No education requirement (dummy)"
+
+. label var scrat0dc    "D: Staff-child ratio for age 0-11 months"
+
+. label var edddc       "D: Education required for director (years)"
+
+. label var inspdc      "D: Number of annual inspections"
+
+. label var visitdc     "D: Parental free access required (dummy)"
+
+. label var aiddc       "D: First-aid certification required (dummy)"
+
+. label var crimdc      "D: Criminal background check required (dummy)"
+
+. label var estab       "Y: Number of nonemployer establishments (1000s)"
+
+. label var estab_over_under5 "Y: Establishments per under-5 population"
+
+. label var ecvalue     "Y: Economic value of establishments (CPI-adj, 1000s)"
+
+. label var ecvalue_per_estab "Y: Economic value per establishment"
+
+. label var st          "State abbreviation"
+
+. 
+. * Keep relevant variables
+. keep num_st st year year1992 year1997 year_st ///
+>      scrat no_scrat educ no_educ scrat0dc no_scrat0dc edddc no_edddc ///
+>      inspdc visitdc aiddc crimdc cdhrsddc expddc ongoddc ongohddc ///
+>      estab estab_over_under5 ecvalue ecvalue_per_estab ///
+>      pct_black pct_hisp hh_size ln_m_inc college ln_under5 ///
+>      pct_fh_c pct_f_nwork pct_unemploy pct_whome long_comm pct_rural pct_pvty
+>  ///
+>      scrat_incm no_scrat_incm educ_incm no_educ_incm ///
+>      scrat0dc_incm no_scrat0dc_incm edddc_incm no_edddc_incm ///
+>      scrat_pvty no_scrat_pvty educ_pvty no_educ_pvty ///
+>      scrat0dc_pvty no_scrat0dc_pvty edddc_pvty no_edddc_pvty
+
+. 
+. order num_st st year year1992 year1997 ///
+>       estab estab_over_under5 ecvalue ecvalue_per_estab ///
+>       scrat educ no_scrat no_educ scrat0dc edddc
+
+. 
+. sort num_st year
+
+. 
+. di "=== PANEL SUMMARY ==="
+=== PANEL SUMMARY ===
+
+. di "Observations: " _N
+Observations: 153
+
+. tab year
+
+    T: Year |
+     (1987, |
+1992, 1997) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1987 |         51       33.33       33.33
+       1992 |         51       33.33       66.67
+       1997 |         51       33.33      100.00
+------------+-----------------------------------
+      Total |        153      100.00
+
+. su estab scrat educ no_scrat no_educ
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+       estab |        153    7.840967    8.205453        .17     54.181
+       scrat |        153    .1295967    .0348767          0   .1958333
+        educ |        153    9.779412    5.058453          0         16
+    no_scrat |        153    .0261438    .1600868          0          1
+     no_educ |        153    .1568627    .3648656          0          1
+
+. 
+. save "`outdir'/panel_GTD.dta", replace
+(file C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hotz and
+    Xiao (2011)/panel_GTD.dta not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hotz and
+    Xiao (2011)/panel_GTD.dta saved
+
+. 
+. di "=== PANEL_GTD.DTA SAVED SUCCESSFULLY ==="
+=== PANEL_GTD.DTA SAVED SUCCESSFULLY ===
+
+. di "Location: `outdir'/panel_GTD.dta"
+Location: C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hotz and
+>  Xiao (2011)/panel_GTD.dta
+
+. di ""
+
+
+. di "TWFE Specification (from nonemployer_analysis.do):"
+TWFE Specification (from nonemployer_analysis.do):
+
+. di "  areg estab scrat educ [controls] year1992 year1997, absorb(num_st) clus
+> ter(year_st)"
+  areg estab scrat educ [controls] year1992 year1997, absorb(num_st) cluster(ye
+> ar_st)
+
+. di ""
+
+
+. di "Where:"
+Where:
+
+. di "  Y = estab (nonemployer establishments, 1000s)"
+  Y = estab (nonemployer establishments, 1000s)
+
+. di "  D = scrat (staff-child ratio), educ (education index)"
+  D = scrat (staff-child ratio), educ (education index)
+
+. di "  G = num_st (state FE)"
+  G = num_st (state FE)
+
+. di "  T = year (1987, 1992, 1997)"
+  T = year (1987, 1992, 1997)
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hotz 
+> and Xiao (2011)/build_panel_GTD.log
+  log type:  text
+ closed on:   1 Jul 2026, 22:48:44
+-------------------------------------------------------------------------------

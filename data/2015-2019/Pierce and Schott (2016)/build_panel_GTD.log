@@ -1,0 +1,840 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Pierc
+> e and Schott (2016)/build_panel_GTD.log
+  log type:  text
+ opened on:   1 Jul 2026, 23:07:42
+
+. 
+. * ===========================================================================
+> =
+. * STEP 1: Load NBER-CES and map to industry families
+. *         (Following data_create.do lines 270-282)
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 1: Loading NBER-CES and mapping to industry families ==="
+=== STEP 1: Loading NBER-CES and mapping to industry families ===
+
+. 
+. use "`datadir'/naics5809.dta", clear
+
+. keep year naics emp prode cap piinv
+
+. 
+. * Real capital stock (following data_create.do: gen rk=cap/piinv)
+. gen rk = cap/piinv
+(429 missing values generated)
+
+. 
+. * Rename for concordance merge (concordance uses n6, not naics)
+. rename naics n6
+
+. 
+. * Merge with industry family concordance
+. sort n6
+
+. merge m:1 n6 using "`datadir'/bbg_fam_drop_50_n6_2.dta"
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           579
+        from master                         0  (_merge==1)
+        from using                        579  (_merge==2)
+
+    Matched                            24,596  (_merge==3)
+    -----------------------------------------
+
+. di "=== Concordance merge results ==="
+=== Concordance merge results ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+         Using only (2) |        579        2.30        2.30
+            Matched (3) |     24,596       97.70      100.00
+------------------------+-----------------------------------
+                  Total |     25,175      100.00
+
+. drop if _merge == 2
+(579 observations deleted)
+
+. keep if _merge == 3
+(0 observations deleted)
+
+. drop _merge
+
+. 
+. * Keep only constant manufacturing industries
+. keep if con50 == 1
+(260 observations deleted)
+
+. 
+. * Keep analysis years (1990-2007, same as original)
+. keep if year >= 1990 & year <= 2007
+(15,912 observations deleted)
+
+. 
+. di "=== After filtering: con50==1, years 1990-2007 ==="
+=== After filtering: con50==1, years 1990-2007 ===
+
+. di "Observations: " _N
+Observations: 8424
+
+. tab year
+
+     Year - |
+ranges from |
+    1958 to |
+       2009 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1990 |        468        5.56        5.56
+       1991 |        468        5.56       11.11
+       1992 |        468        5.56       16.67
+       1993 |        468        5.56       22.22
+       1994 |        468        5.56       27.78
+       1995 |        468        5.56       33.33
+       1996 |        468        5.56       38.89
+       1997 |        468        5.56       44.44
+       1998 |        468        5.56       50.00
+       1999 |        468        5.56       55.56
+       2000 |        468        5.56       61.11
+       2001 |        468        5.56       66.67
+       2002 |        468        5.56       72.22
+       2003 |        468        5.56       77.78
+       2004 |        468        5.56       83.33
+       2005 |        468        5.56       88.89
+       2006 |        468        5.56       94.44
+       2007 |        468        5.56      100.00
+------------+-----------------------------------
+      Total |      8,424      100.00
+
+. 
+. * ===========================================================================
+> =
+. * STEP 2: Collapse to industry family × year level
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 2: Collapsing to fam50 × year ==="
+=== STEP 2: Collapsing to fam50 × year ===
+
+. 
+. collapse (sum) emp prode rk, by(fam50 year)
+
+. 
+. * Generate Y variable: log employment
+. gen lemp = ln(emp)
+(28 missing values generated)
+
+. 
+. * Generate capital-labor and skill-labor ratios (controls)
+. gen lkl = ln(rk/emp)
+(28 missing values generated)
+
+. gen lsl = ln((emp - prode)/emp)
+(28 missing values generated)
+
+. 
+. di "=== Industry-year panel ==="
+=== Industry-year panel ===
+
+. di "Observations: " _N
+Observations: 7128
+
+. di "Unique industries: "
+Unique industries: 
+
+. egen _tag = tag(fam50)
+
+. count if _tag == 1
+  396
+
+. drop _tag
+
+. tab year
+
+     Year - |
+ranges from |
+    1958 to |
+       2009 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1990 |        396        5.56        5.56
+       1991 |        396        5.56       11.11
+       1992 |        396        5.56       16.67
+       1993 |        396        5.56       22.22
+       1994 |        396        5.56       27.78
+       1995 |        396        5.56       33.33
+       1996 |        396        5.56       38.89
+       1997 |        396        5.56       44.44
+       1998 |        396        5.56       50.00
+       1999 |        396        5.56       55.56
+       2000 |        396        5.56       61.11
+       2001 |        396        5.56       66.67
+       2002 |        396        5.56       72.22
+       2003 |        396        5.56       77.78
+       2004 |        396        5.56       83.33
+       2005 |        396        5.56       88.89
+       2006 |        396        5.56       94.44
+       2007 |        396        5.56      100.00
+------------+-----------------------------------
+      Total |      7,128      100.00
+
+. 
+. * ===========================================================================
+> =
+. * STEP 3: Generate 1990 initial values for weights and controls
+. *         (Following data_create.do lines 491-498)
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 3: Generating 1990 initial values ==="
+=== STEP 3: Generating 1990 initial values ===
+
+. 
+. foreach y in emp lkl lsl {
+  2.         gen _tmp = `y' if year == 1990
+  3.         egen `y'1990 = max(_tmp), by(fam50)
+  4.         drop _tmp
+  5. }
+(6,732 missing values generated)
+(6,736 missing values generated)
+(72 missing values generated)
+(6,736 missing values generated)
+(72 missing values generated)
+
+. 
+. di "=== Weight variable emp1990 ==="
+=== Weight variable emp1990 ===
+
+. su emp1990
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     emp1990 |      7,128    41.61894    67.32861          0      651.3
+
+. 
+. * ===========================================================================
+> =
+. * STEP 4: Merge NTR gap treatment variable (D)
+. *         (Following data_create.do lines 413-416)
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 4: Merging NTR gap (treatment variable) ==="
+=== STEP 4: Merging NTR gap (treatment variable) ===
+
+. 
+. merge m:1 fam50 using "`datadir'/gaps_by_naics6_20150722_fam50.dta", ///
+>         keepusing(s1999 s1990 wgap_offd31999 iodown31999 nntr1999 nntr1990)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           376
+        from master                         0  (_merge==1)
+        from using                        376  (_merge==2)
+
+    Matched                             7,128  (_merge==3)
+    -----------------------------------------
+
+. di "=== NTR gap merge results ==="
+=== NTR gap merge results ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+         Using only (2) |        376        5.01        5.01
+            Matched (3) |      7,128       94.99      100.00
+------------------------+-----------------------------------
+                  Total |      7,504      100.00
+
+. drop if _merge == 2
+(376 observations deleted)
+
+. drop _merge
+
+. 
+. di "=== Treatment variable s1999 (NTR gap) ==="
+=== Treatment variable s1999 (NTR gap) ===
+
+. su s1999 wgap_offd31999
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+       s1999 |      6,732    .3259963    .1446631   .0033333         .8
+wgap_o~31999 |      7,128    .1103431    .0389124   .0317363   .2269982
+
+. 
+. * ===========================================================================
+> =
+. * STEP 5: Merge control variables from robustness files
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 5: Merging control variables ==="
+=== STEP 5: Merging control variables ===
+
+. 
+. * 5a. Applied NTR tariff rate (time-varying, fam50 × year)
+. sort fam50 year
+
+. merge 1:1 fam50 year using "`datadir'/robustness_ntr_fam50_true_adj.dta", ///
+>         keepusing(ntr dntr)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         7,711
+        from master                         0  (_merge==1)
+        from using                      7,711  (_merge==2)
+
+    Matched                             7,128  (_merge==3)
+    -----------------------------------------
+
+. di "=== NTR tariff merge ==="
+=== NTR tariff merge ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+         Using only (2) |      7,711       51.96       51.96
+            Matched (3) |      7,128       48.04      100.00
+------------------------+-----------------------------------
+                  Total |     14,839      100.00
+
+. drop if _merge == 2
+(7,711 observations deleted)
+
+. drop _merge
+
+. 
+. * 5b. Union membership (time-varying, fam50 × year)
+. sort fam50 year
+
+. merge 1:1 fam50 year using "`datadir'/robustness_union_fam50.dta", ///
+>         keepusing(mem cov)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                        21,013
+        from master                         0  (_merge==1)
+        from using                     21,013  (_merge==2)
+
+    Matched                             7,128  (_merge==3)
+    -----------------------------------------
+
+. di "=== Union merge ==="
+=== Union merge ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+         Using only (2) |     21,013       74.67       74.67
+            Matched (3) |      7,128       25.33      100.00
+------------------------+-----------------------------------
+                  Total |     28,141      100.00
+
+. drop if _merge == 2
+(21,013 observations deleted)
+
+. drop _merge
+
+. 
+. * 5c. Contractibility (time-invariant, fam50 level)
+. merge m:1 fam50 using "`datadir'/robustness_contract_fam50.dta", ///
+>         keepusing(contract)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           385
+        from master                         0  (_merge==1)
+        from using                        385  (_merge==2)
+
+    Matched                             7,128  (_merge==3)
+    -----------------------------------------
+
+. di "=== Contract merge ==="
+=== Contract merge ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+         Using only (2) |        385        5.12        5.12
+            Matched (3) |      7,128       94.88      100.00
+------------------------+-----------------------------------
+                  Total |      7,513      100.00
+
+. drop if _merge == 2
+(385 observations deleted)
+
+. drop _merge
+
+. 
+. * 5d. Chinese tariff changes (time-varying, fam50 × year)
+. sort fam50 year
+
+. merge 1:1 fam50 year using "`datadir'/robustness_chn_tariff_fam50_true.dta", 
+> ///
+>         keepusing(r dr)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         8,388
+        from master                       900  (_merge==1)
+        from using                      7,488  (_merge==2)
+
+    Matched                             6,228  (_merge==3)
+    -----------------------------------------
+
+. di "=== Chinese tariff merge ==="
+=== Chinese tariff merge ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |        900        6.16        6.16
+         Using only (2) |      7,488       51.23       57.39
+            Matched (3) |      6,228       42.61      100.00
+------------------------+-----------------------------------
+                  Total |     14,616      100.00
+
+. drop if _merge == 2
+(7,488 observations deleted)
+
+. drop _merge
+
+. 
+. * 5e. Antidumping/trade protection (time-varying, fam50 × year)
+. sort fam50 year
+
+. merge 1:1 fam50 year using "`datadir'/robustness_matp_fam50.dta", ///
+>         keepusing(atp)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                        20,989
+        from master                         0  (_merge==1)
+        from using                     20,989  (_merge==2)
+
+    Matched                             7,128  (_merge==3)
+    -----------------------------------------
+
+. replace atp = 0 if atp == .
+(26,172 real changes made)
+
+. di "=== ATP merge ==="
+=== ATP merge ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+         Using only (2) |     20,989       74.65       74.65
+            Matched (3) |      7,128       25.35      100.00
+------------------------+-----------------------------------
+                  Total |     28,117      100.00
+
+. drop if _merge == 2
+(20,989 observations deleted)
+
+. drop _merge
+
+. 
+. * 5f. MFA quota exposure (time-varying, fam50 × year)
+. sort fam50 year
+
+. merge 1:1 fam50 year using "`datadir'/robustness_mfa_fam50_yr.dta", ///
+>         keepusing(sfw_mwt_sum_new)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         2,015
+        from master                       920  (_merge==1)
+        from using                      1,095  (_merge==2)
+
+    Matched                             6,208  (_merge==3)
+    -----------------------------------------
+
+. replace sfw_mwt_sum_new = 0 if sfw_mwt_sum_new == .
+(920 real changes made)
+
+. di "=== MFA merge ==="
+=== MFA merge ===
+
+. tab _merge
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |        920       11.19       11.19
+         Using only (2) |      1,095       13.32       24.50
+            Matched (3) |      6,208       75.50      100.00
+------------------------+-----------------------------------
+                  Total |      8,223      100.00
+
+. drop if _merge == 2
+(1,095 observations deleted)
+
+. drop _merge
+
+. 
+. * ===========================================================================
+> =
+. * STEP 6: Generate treatment interactions and time dummies
+. *         (Following data_create.do lines 566-581)
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 6: Generating treatment × post and year dummies ==="
+=== STEP 6: Generating treatment × post and year dummies ===
+
+. 
+. * Post-PNTR dummy
+. gen post = (year >= 2001)
+
+. 
+. * Treatment × post (the key DID variable)
+. gen s1999_post = s1999 * post
+(396 missing values generated)
+
+. 
+. * Control × post interactions (for Table 1 cols 2-3)
+. gen lkl1990_post = lkl1990 * post
+(72 missing values generated)
+
+. gen lsl1990_post = lsl1990 * post
+(72 missing values generated)
+
+. gen contract_post = contract * post
+
+. gen dr_post = dr * post
+(900 missing values generated)
+
+. gen atp_post = atp * post
+
+. 
+. * Year dummies (d1991-d2007; 1990 is omitted base year)
+. forvalues y = 1991/2007 {
+  2.         gen d`y' = (year == `y')
+  3. }
+
+. 
+. * ===========================================================================
+> =
+. * STEP 7: Restrict to regression sample
+. *         (Following data_create.do lines 617-636)
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 7: Restricting to regression sample ==="
+=== STEP 7: Restricting to regression sample ===
+
+. 
+. * Require all key variables non-missing
+. gen _complete = 1
+
+. foreach x in s1999 ntr contract dr lkl lsl mem {
+  2.         replace _complete = 0 if `x' == .
+  3. }
+(396 real changes made)
+(9 real changes made)
+(0 real changes made)
+(594 real changes made)
+(12 real changes made)
+(0 real changes made)
+(191 real changes made)
+
+. egen _ti = total(_complete), by(fam50)
+
+. di "=== Completeness check ==="
+=== Completeness check ===
+
+. tab _ti
+
+        _ti |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        990       13.89       13.89
+          5 |        270        3.79       17.68
+         11 |         36        0.51       18.18
+         15 |         18        0.25       18.43
+         18 |      5,814       81.57      100.00
+------------+-----------------------------------
+      Total |      7,128      100.00
+
+. * Keep industries with all 18 years complete
+. keep if _ti == 18
+(1,314 observations deleted)
+
+. drop _complete _ti
+
+. 
+. di "=== Final regression sample ==="
+=== Final regression sample ===
+
+. di "Observations: " _N
+Observations: 5814
+
+. egen _tag = tag(fam50)
+
+. di "Unique industries: "
+Unique industries: 
+
+. count if _tag == 1
+  323
+
+. drop _tag
+
+. 
+. * ===========================================================================
+> =
+. * STEP 8: Label and save panel_GTD.dta
+. * ===========================================================================
+> =
+. 
+. di "=== STEP 8: Labeling and saving ==="
+=== STEP 8: Labeling and saving ===
+
+. 
+. * Label key TWFE variables
+. label var fam50         "G: Industry family (absorbed FE)"
+
+. label var year          "T: Year (1990-2007)"
+
+. label var post          "T: Post-PNTR dummy (year >= 2001)"
+
+. label var lemp          "Y: Log employment (NBER-CES, 1000s)"
+
+. label var emp           "Y: Employment level (NBER-CES, 1000s)"
+
+. label var s1999         "D: NTR gap as of 1999 (treatment intensity)"
+
+. label var s1999_post    "D×T: NTR gap × post (main DID variable)"
+
+. label var emp1990       "W: Employment weight (1990 level)"
+
+. label var lkl           "X: Log capital-labor ratio (time-varying)"
+
+. label var lsl           "X: Log skill-labor ratio (time-varying)"
+
+. label var lkl1990       "X: Log capital-labor ratio (1990 value)"
+
+. label var lsl1990       "X: Log skill-labor ratio (1990 value)"
+
+. label var lkl1990_post  "X: Capital-labor 1990 × post"
+
+. label var lsl1990_post  "X: Skill-labor 1990 × post"
+
+. label var contract      "X: Contractibility index"
+
+. label var contract_post "X: Contractibility × post"
+
+. label var dr            "X: Change in Chinese tariff"
+
+. label var dr_post       "X: Chinese tariff change × post"
+
+. label var atp           "X: Antidumping/trade protection"
+
+. label var atp_post      "X: ATP × post"
+
+. label var ntr           "X: Applied NTR tariff rate"
+
+. label var mem           "X: Union membership rate"
+
+. label var sfw_mwt_sum_new "X: MFA quota exposure"
+
+. label var wgap_offd31999 "D: NTR gap (off-diagonal, 1999)"
+
+. label var nntr1999      "D: Non-NTR tariff rate (1999)"
+
+. 
+. * Order variables logically
+. order fam50 year post lemp emp s1999 s1999_post emp1990 ///
+>       lkl lsl lkl1990 lsl1990 lkl1990_post lsl1990_post ///
+>       contract contract_post dr dr_post atp atp_post ///
+>       ntr mem sfw_mwt_sum_new wgap_offd31999 nntr1999
+
+. 
+. sort fam50 year
+
+. 
+. * ===========================================================================
+> =
+. * PANEL SUMMARY
+. * ===========================================================================
+> =
+. 
+. di ""
+
+
+. di "=========================================="
+==========================================
+
+. di "=== PANEL SUMMARY ==="
+=== PANEL SUMMARY ===
+
+. di "=========================================="
+==========================================
+
+. di "Observations: " _N
+Observations: 5814
+
+. tab year
+
+    T: Year |
+(1990-2007) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1990 |        323        5.56        5.56
+       1991 |        323        5.56       11.11
+       1992 |        323        5.56       16.67
+       1993 |        323        5.56       22.22
+       1994 |        323        5.56       27.78
+       1995 |        323        5.56       33.33
+       1996 |        323        5.56       38.89
+       1997 |        323        5.56       44.44
+       1998 |        323        5.56       50.00
+       1999 |        323        5.56       55.56
+       2000 |        323        5.56       61.11
+       2001 |        323        5.56       66.67
+       2002 |        323        5.56       72.22
+       2003 |        323        5.56       77.78
+       2004 |        323        5.56       83.33
+       2005 |        323        5.56       88.89
+       2006 |        323        5.56       94.44
+       2007 |        323        5.56      100.00
+------------+-----------------------------------
+      Total |      5,814      100.00
+
+. su lemp s1999 s1999_post emp1990 lkl1990 lsl1990
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        lemp |      5,814    3.003063    1.103583  -.3566749   6.478971
+       s1999 |      5,814     .322052    .1451032   .0033333        .77
+  s1999_post |      5,814    .1252425    .1812214          0        .77
+     emp1990 |      5,814    41.94613    64.05373        1.4      651.3
+     lkl1990 |      5,814    4.336417    .8650582   2.166476   6.954286
+-------------+---------------------------------------------------------
+     lsl1990 |      5,814   -1.316389    .4064929  -2.858111  -.3976656
+
+. 
+. di ""
+
+
+. di "=== Treatment variable distribution ==="
+=== Treatment variable distribution ===
+
+. su s1999, detail
+
+         D: NTR gap as of 1999 (treatment intensity)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .0259762       .0033333
+ 5%     .0744438       .0033333
+10%     .1172964       .0033333       Obs               5,814
+25%     .2242404       .0033333       Sum of wgt.       5,814
+
+50%     .3356428                      Mean            .322052
+                        Largest       Std. dev.      .1451032
+75%           .4            .77
+90%     .4825385            .77       Variance       .0210549
+95%        .5936            .77       Skewness       .1417351
+99%      .658375            .77       Kurtosis        3.06882
+
+. 
+. di ""
+
+
+. di "=== Employment summary ==="
+=== Employment summary ===
+
+. su emp lemp emp1990
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+         emp |      5,814    37.69933    57.45245         .7      651.3
+        lemp |      5,814    3.003063    1.103583  -.3566749   6.478971
+     emp1990 |      5,814    41.94613    64.05373        1.4      651.3
+
+. 
+. save "`outdir'/panel_GTD.dta", replace
+(file C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Pierce and
+    Schott (2016)/panel_GTD.dta not found)
+file C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Pierce and
+    Schott (2016)/panel_GTD.dta saved
+
+. 
+. di ""
+
+
+. di "=== PANEL_GTD.DTA SAVED SUCCESSFULLY ==="
+=== PANEL_GTD.DTA SAVED SUCCESSFULLY ===
+
+. di "Location: `outdir'/panel_GTD.dta"
+Location: C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Pierce a
+> nd Schott (2016)/panel_GTD.dta
+
+. di ""
+
+
+. di "TWFE Specification (from results_main.do Table 1):"
+TWFE Specification (from results_main.do Table 1):
+
+. di "  Col 1: areg lemp s1999_post d???? [aw=emp1990], a(fam50) cl(fam50) robu
+> st"
+  Col 1: areg lemp s1999_post d???? [aw=emp1990], a(fam50) cl(fam50) robust
+
+. di "  Col 2: areg lemp s1999_post lkl1990_post lsl1990_post d???? [aw=emp1990
+> ], a(fam50) cl(fam50) robust"
+  Col 2: areg lemp s1999_post lkl1990_post lsl1990_post d???? [aw=emp1990], a(f
+> am50) cl(fam50) robust
+
+. di "  Col 3: areg lemp s1999_post lkl1990_post lsl1990_post contract_post dr_
+> post"
+  Col 3: areg lemp s1999_post lkl1990_post lsl1990_post contract_post dr_post
+
+. di "         atp_post sfw_mwt_sum_new ntr mem d???? [aw=emp1990], a(fam50) cl
+> (fam50) robust"
+         atp_post sfw_mwt_sum_new ntr mem d???? [aw=emp1990], a(fam50) cl(fam50
+> ) robust
+
+. di ""
+
+
+. di "Where:"
+Where:
+
+. di "  Y = lemp (log employment from NBER-CES public data)"
+  Y = lemp (log employment from NBER-CES public data)
+
+. di "  D = s1999 (NTR gap as of 1999), s1999_post = s1999 * (year>=2001)"
+  D = s1999 (NTR gap as of 1999), s1999_post = s1999 * (year>=2001)
+
+. di "  G = fam50 (industry family FE, absorbed)"
+  G = fam50 (industry family FE, absorbed)
+
+. di "  T = year dummies d1991-d2007 (base: 1990)"
+  T = year dummies d1991-d2007 (base: 1990)
+
+. di "  W = emp1990 (analytic weight)"
+  W = emp1990 (analytic weight)
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Pierc
+> e and Schott (2016)/build_panel_GTD.log
+  log type:  text
+ closed on:   1 Jul 2026, 23:07:42
+-------------------------------------------------------------------------------
