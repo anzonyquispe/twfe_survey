@@ -1,0 +1,23 @@
+----------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/replications/all_replications.log
+  log type:  text
+ opened on:  24 Jun 2026, 11:58:08
+
+. 
+. ** Acemoglu 20111 panelgtd is perfect
+. global outdir   "$twfe_root/replications/2010-2012/Acemoglu et al. (2011)"
+
+. 
+end of do-file
+
+. help did_multiplegt_dyn
+
+. do "/var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//SD39892.000000"
+
+. clear all
+
+. cd "/Users/anzony.quisperojas/Documents/GitHub/DCDH_TODO"
+/Users/anzony.quisperojas/Documents/GitHub/DCDH_TODO
+
+. capture log close

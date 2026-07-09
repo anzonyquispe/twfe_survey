@@ -1,0 +1,22 @@
+	(1)	(2)	(3)	(4)	(5)	(6)
+					unconstrained	unconstrained
+	unconstrained	unconstrained	unconstrained	unconstrained	sunk_hs4_coeff_stat_t	sunk_hs4_coeff_stat_t
+	sunk_hs4_coeff_stat_t	sunk_hs4_coeff_stat_t	sunk_hs4_coeff_stat_t	sunk_hs4_coeff_stat_t	tercile 1	tercile~ 1
+	tercile 1	tercile~ 1	tercile 1	tercile~ 1	POOL	POOL
+	CHINA	CHINA	EU	EU	hs6 fe/cluster	hs6 fe/cluster
+VARIABLES	section fe	section fe	section fe	section fe	ctry*section FE	ctry*section FE
+						
+unc_pre	0.0363	0.816***	0.492	-0.336		
+	[0.313]	[0.263]	[0.302]	[0.241]		
+dif_advalorem_mfn_5	-2.659	-7.703	5.845	-12.43***	-1.150	-9.563**
+	[11.49]	[5.805]	[6.075]	[3.166]	[5.881]	[3.876]
+USA_unc_pre					-0.444	1.144***
+					[0.409]	[0.315]
+Constant	0.454**	0.373	0.360	0.797	1.432***	0.703***
+	[0.227]	[0.326]	[0.311]	[0.530]	[0.196]	[0.174]
+						
+Observations	975	1,945	975	1,945	1,950	3,890
+R-squared	0.047	0.037	0.066	0.050	0.032	0.035
+Number of hs6					975	1,945
+Robust standard errors in brackets						
+*** p<0.01, ** p<0.05, * p<0.1						

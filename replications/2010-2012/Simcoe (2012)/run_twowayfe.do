@@ -17,8 +17,22 @@ set more off
 cap log close _all
 
 * ---------- Paths ---------------------------------------------------------
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Simcoe (2012)/SSOCommittees-DataFiles"
-global outdir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Simcoe (2012)"
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global datadir "$twfe_root/data/2010-2012/Simcoe (2012)/SSOCommittees-DataFiles"
+global outdir  "$twfe_root/replications/2010-2012/Simcoe (2012)"
 
 cap log using "$outdir/run_twowayfe_detail.log", text replace name(detail)
 
@@ -122,6 +136,55 @@ gen match_samp2 = ((yhat > lbar2) & (yhat < ubar2))
 
 drop lbar2 ubar2 yhat
 
+
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = techarea       (technology area)
+  T = pubCohort      (publication cohort, 1993-2003)
+  D = st_stbafl1yr   (Suit-share x S-track interaction)
+  Y = ttlDur         (total duration)
+==============================================================================*/
+
+di _n "=============================================="
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "=============================================="
+
+preserve
+keep if ((strfc|nsrfc) & cSample==1)
+keep wg techarea pubCohort st_stbafl1yr ttlDur  strfc stbafl1yr nsrfc st_othDum stbafl1yr lwgipr othDum  st_lwgipr cSample wg lsize lcmsgs lwgidnow aut2 aut3 st_lsize st_lcmsgs st_lwgidnow st_aut2 st_aut3
+
+order wg techarea pubCohort st_stbafl1yr ttlDur  strfc stbafl1yr nsrfc st_othDum stbafl1yr lwgipr othDum  st_lwgipr cSample wg lsize lcmsgs lwgidnow aut2 aut3 st_lsize st_lcmsgs st_lwgidnow st_aut2 st_aut3
+
+label variable wg      "G: commette group"
+label variable techarea      "FE: Technology area"
+label variable pubCohort     "T: Publication cohort (1993-2003)"
+label variable st_stbafl1yr  "D: Suit-share x S-track"
+label variable ttlDur        "Y: Total duration"
+
+rename wg G
+rename techarea FE
+rename pubCohort T
+rename st_stbafl1yr D
+rename strfc TR_GR
+rename stbafl1yr DOSE
+rename ttlDur Y
+egen aux = group(T)
+replace T = aux
+drop aux
+
+save "$outdir/panel_GTD.dta", replace
+
+restore
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = techarea, T = pubCohort, D = st_stbafl1yr"
+
+cap log close detail
+
+
+
+stop
 * ==========================================================================
 *  3. TABLE 4 REPLICATION — Cols 1, 2, 3
 * ==========================================================================
@@ -134,7 +197,7 @@ di    "=============================================="
 
 * --- Col 1: Full OLS Diff-in-diffs ---
 di _n ">>> Col 1: Full OLS <<<"
-qui xi: reg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum ///
+xi: reg ttlDur st_stbafl1yr st_lwgipr st_othDum stbafl1yr lwgipr othDum ///
     `st_controls' `controls' i.techarea i.pubCohort strfc ///
     if ((strfc|nsrfc) & cSample==1), cluster(wg)
 est store col1
@@ -461,28 +524,3 @@ di _n "=============================================="
 di    "  DONE — all files written to $outdir"
 di    "=============================================="
 
-
-/*==============================================================================
-  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
-  G = techarea       (technology area)
-  T = pubCohort      (publication cohort, 1993-2003)
-  D = st_stbafl1yr   (Suit-share x S-track interaction)
-  Y = ttlDur         (total duration)
-==============================================================================*/
-
-di _n "=============================================="
-di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
-di "=============================================="
-
-keep techarea pubCohort st_stbafl1yr ttlDur
-
-label variable techarea      "G: Technology area"
-label variable pubCohort     "T: Publication cohort (1993-2003)"
-label variable st_stbafl1yr  "D: Suit-share x S-track"
-label variable ttlDur        "Y: Total duration"
-
-save "$outdir/panel_GTD.dta", replace
-di "  -> panel_GTD.dta saved with " _N " observations"
-di "  G = techarea, T = pubCohort, D = st_stbafl1yr"
-
-cap log close detail

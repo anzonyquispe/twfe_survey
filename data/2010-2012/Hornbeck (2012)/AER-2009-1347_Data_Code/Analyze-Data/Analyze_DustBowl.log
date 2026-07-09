@@ -1,0 +1,1332 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/data/2010-2012/Hornbeck (2012)/AER-2009-1347_Data_Code/Analyze-Data/Analyze_Dus
+> tBowl.log
+  log type:  text
+ opened on:  22 Jun 2026, 15:00:11
+
+. 
+. *declare temporary datasets
+. tempfile /*sample counties*/ db_sample /*bank data*/ pre_merge_bank pre_merge_bank2 pre_merge_ICPSR_data bank_analysis pre_interaction_bank pre_i
+> nteraction_ICPSR pre_regression_bank /*appendix data*/ climateiv
+
+. 
+. *set directory to current folder, which contains all of the needed data
+. *cd " "
+. 
+. 
+. 
+. ***********************************************************************************
+. ***                                                                                                                                              
+>                ***
+. ***                             Clean the data                                                                                                  *
+> **
+. ***                                                                                                                                              
+>                ***
+. ***********************************************************************************
+. 
+. 
+. *import the DustBowl county-year panel dataset that uses 1910 boundaries
+. use DustBowl_All_base1910.dta, clear
+
+. 
+. *** create sample ***
+.         /*keep only the 12 Dust Bowl states*/
+.         keep if state==8|state==19|state==20|state==27|state==30|state==31|state==35|state==38|state==40|state==46|state==48|state==56
+(35,833 observations deleted)
+
+.         drop if year==1935
+(946 observations deleted)
+
+. 
+. *** IDs ***
+. sort fips year
+
+.         /*for any county-year pairs missing a county acres value, assign the nearest value for the county*/
+.         by fips: replace county_acres = county_acres[_n+1] if county_acres==.
+(16 real changes made)
+
+.         by fips: replace county_acres = county_acres[_n+1] if county_acres==.
+(10 real changes made)
+
+.         by fips: replace county_acres = county_acres[_n-1] if county_acres==.
+(46 real changes made)
+
+. 
+. /*create state names*/
+. gen     sname = "Colorado" if state==8
+(15,075 missing values generated)
+
+. replace sname = "Iowa" if state==19
+(1,683 real changes made)
+
+. replace sname = "Kansas" if state==20
+(1,786 real changes made)
+
+. replace sname = "Minnesota" if state==27
+variable sname was str8 now str9
+(1,462 real changes made)
+
+. replace sname = "Montana" if state==30
+(493 real changes made)
+
+. replace sname = "Nebraska" if state==31
+(1,565 real changes made)
+
+. replace sname = "New Mexico" if state==35
+variable sname was str9 now str10
+(443 real changes made)
+
+. replace sname = "North Dakota" if state==38
+variable sname was str10 now str12
+(834 real changes made)
+
+. replace sname = "Oklahoma" if state==40
+(1,293 real changes made)
+
+. replace sname = "South Dakota" if state==46
+(1,095 real changes made)
+
+. replace sname = "Texas" if state==48
+(4,166 real changes made)
+
+. replace sname = "Wyoming" if state==56
+(255 real changes made)
+
+. 
+. *** Generate outcome and control variables ***
+.         /*farmland*/
+.                 /*restrict sample to only county-year pairs with data on acres of farmland*/
+.                 drop if farmland==.
+(82 observations deleted)
+
+.                 /*create fraction of county-year pair acres that are farmland*/
+.                 gen farmland_a = farmland/county_acres
+(2 missing values generated)
+
+.         /*cropland*/
+.                 /*create fraction of farmland that is cropland*/
+.                 gen cropland_f = cropland/farmland
+(2,710 missing values generated)
+
+.                 /*create fraction of cropland that is fallow-- for only counties with more than 1000 acres of cropland*/
+.                 gen fallow_c = cropland_fallow/cropland if cropland>1000
+(5,788 missing values generated)
+
+.         /*farm size*/
+.                 /*create average farm size variable*/
+.                 gen avsize = farmland/farms
+(5 missing values generated)
+
+.                 /*create farms per acre */
+.                 gen farms_a = farms/county_acres
+(2 missing values generated)
+
+.         /*population*/  
+.                 /*create population per acre*/
+.                 gen population_a = population/county_acres
+(6,603 missing values generated)
+
+.                 /*create fraction of population that lives in rural areas*/
+.                 gen fraction_rural = population_rural/population
+(8,475 missing values generated)
+
+.                 /*create fraction of population that lives on a farm*/
+.                 gen fraction_farm = population_farm/population
+(11,308 missing values generated)
+
+.         /*value of farms*/
+.                 /*create log of value of farm land and buildings per acre*/
+.                 gen value_landbuildings_f = ln(value_landbuildings/farmland)
+(953 missing values generated)
+
+.                 /*Drop two outlier errors*/
+.                 replace value_landbuildings_f = . if value_landbuildings_f<-1
+(2 real changes made, 2 to missing)
+
+.                 /*create log of value of farmland per acre*/
+.                 gen value_land_f = ln(value_land/farmland)
+(12,243 missing values generated)
+
+.                 /*revenue*/
+.                 /*fill in missing value of animal products using 1940 base*/
+.                 replace value_animalproducts = value_animalproducts_base1940 if (year==1920|year==1925|year==1930)&value_animalproducts==.
+(149 real changes made)
+
+.                 replace value_all = value_crops+value_animalproducts if (year==1920|year==1925|year==1930)&value_all==.
+(149 real changes made)
+
+.                 /*create log of revenue of farmland per acre*/
+.                 gen value_revenue_f = ln(value_all/farmland)
+(963 missing values generated)
+
+. 
+.                 /*acres of crops*/
+.                 /*all corn*/
+.                 egen corn_a = rsum(corn_grain_a corn_silage_a)
+
+.                 /*all grains*/
+.                 egen obr_a = rsum(oats_a barley_a rye_a)
+
+.                 /*create fraction of cropland in each particular crop*/
+.                 foreach i of varlist hay_a wheat_a corn_a cotton_a obr_a {
+  2.                         gen `i'_c = `i'/cropland if cropland>1000
+  3.                         replace `i'_c = 0 if `i'_c==.
+  4.                 }
+(3,754 missing values generated)
+(3,754 real changes made)
+(3,251 missing values generated)
+(3,251 real changes made)
+(2,802 missing values generated)
+(2,802 real changes made)
+(7,651 missing values generated)
+(7,651 real changes made)
+(2,802 missing values generated)
+(2,802 real changes made)
+
+.         /*livestock per acre*/
+.         foreach i of varlist cows pigs chickens {
+  2.                 gen `i'_a = `i'/county_acres
+  3.         replace `i'_a = 0 if `i'_a==.
+  4.         }
+(74 missing values generated)
+(74 real changes made)
+(408 missing values generated)
+(408 real changes made)
+(2,721 missing values generated)
+(2,721 real changes made)
+
+.         /*make tenant farmland all the farmland that's not owned or managed*/
+.         replace farmland_tenant = farmland-farmland_own-farmland_manager if farmland_tenant==.
+(1,124 real changes made)
+
+.         
+. 
+. ***********************************************************************************
+. ***                                                                                                                                              
+>                ***
+. ***                             Finalize the sample                                                                                             *
+> **
+. ***                                                                                                                                              
+>                ***
+. ***********************************************************************************
+.         
+. *** Balance sample and key variables ***        
+.                 replace cropland = . if year > 1974
+(3,921 real changes made, 3,921 to missing)
+
+.                 replace value_crops=. if year>1964
+(6,311 real changes made, 6,311 to missing)
+
+.                 replace pasture = . if year>1964
+(4,623 real changes made, 4,623 to missing)
+
+.                 replace population = . if year==1997
+(931 real changes made, 931 to missing)
+
+.                 replace value_revenue_f = . if year==1997
+(933 real changes made, 933 to missing)
+
+.                 replace value_landbuildings_f = . if year==1974
+(940 real changes made, 940 to missing)
+
+.                 replace value_all = . if year==1997
+(933 real changes made, 933 to missing)
+
+.                 replace value_landbuildings = . if year==1974
+(940 real changes made, 940 to missing)
+
+.                 
+.                 /*count the number of years for which we have data for each county on the following variables:*/
+.                 sort fips
+
+.                         /*value of all land and buildings*/
+.                         by fips: egen balance_value_landbuildings_f= count(value_landbuildings_f)
+
+.                         drop if balance_value_landbuildings_f!=15
+(428 observations deleted)
+
+.                         /*revenue*/
+.                         by fips: egen balance_value_revenue_f = count(value_revenue_f)
+
+.                         drop if balance_value_revenue_f!=15
+(67 observations deleted)
+
+.                         /*cropland*/
+.                         by fips: egen balance_cropland = count(cropland)
+
+.                         drop if balance_cropland!=10
+(204 observations deleted)
+
+.                         /*population*/
+.                         by fips: egen balance_population = count(population)
+
+.                         drop if balance_population!=9
+(0 observations deleted)
+
+.                         /*rural population*/
+.                         by fips: egen balance_population_rural = count(population_rural)
+
+.                         drop if balance_population_rural!=8
+(17 observations deleted)
+
+.                         drop balance_value_landbuildings_f balance_value_revenue_f balance_cropland balance_population balance_population_rural
+
+.                         
+. *** Drop "Non-Plains" counties in these states
+.                 drop if frac_grassland_tot <.5
+(1,971 observations deleted)
+
+. *** Drop non-contiguous counties failing the grassland restriction
+.                 drop if fips == 48043 | fips == 48243 | fips == 35013 | fips == 35017 | fips == 30007
+(85 observations deleted)
+
+. 
+. *** create dataset with two variables: fips and sample flag
+. preserve
+
+. keep if year==1930
+(12,462 observations deleted)
+
+. gen db_sample = 1
+
+. keep fips db_sample
+
+. save `db_sample', replace 
+(file /var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//S_24177.000001 not found)
+file /var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//S_24177.000001 saved as .dta format
+
+. /*output vector of counties in sample -- currently commented out*/
+. *outsheet using db_sample.csv, comma replace
+. restore
+
+. 
+. ***************************************************************************************************
+. ****                                                                                                                                             
+>                                        ***
+. ****                    Construct dummy and weighting variable for analysis                                                             ***
+. ****                                                                                                                                             
+>                                        ***
+. ***************************************************************************************************
+. 
+. *** Generate weights - based on 1930 farmland acres and population ***
+. gen farmland_w = farmland if year==1930
+(12,462 missing values generated)
+
+. gen population_w = population if year==1930
+(12,462 missing values generated)
+
+. sort fips year
+
+. by fips: egen farmland_weight = max(farmland_w)
+
+. drop farmland_w
+
+. by fips: egen population_weight = max(population_w)
+
+. drop population_w
+
+. 
+. *** Generate dummy variables ***
+.         /*state-year ID variable*/
+.         gen double id_stateyear = state*10000+year
+
+. 
+.         /*erosion-by-year*/
+.                 /*medium erosion*/
+.                 foreach year of numlist 1910 1920 1925 1930 1940 1945 1950 1954 1959 1964 1969 1974 1978 1982 1987 1992 1997 {
+  2.                         gen byte m1_1_`year' = 0
+  3.                         replace m1_1_`year'=m1_1 if year==`year'
+  4.                 }
+variable m1_1_1910 was byte now float
+(688 real changes made)
+variable m1_1_1920 was byte now float
+(688 real changes made)
+variable m1_1_1925 was byte now float
+(688 real changes made)
+variable m1_1_1930 was byte now float
+(688 real changes made)
+variable m1_1_1940 was byte now float
+(688 real changes made)
+variable m1_1_1945 was byte now float
+(688 real changes made)
+variable m1_1_1950 was byte now float
+(688 real changes made)
+variable m1_1_1954 was byte now float
+(688 real changes made)
+variable m1_1_1959 was byte now float
+(688 real changes made)
+variable m1_1_1964 was byte now float
+(688 real changes made)
+variable m1_1_1969 was byte now float
+(688 real changes made)
+variable m1_1_1974 was byte now float
+(688 real changes made)
+variable m1_1_1978 was byte now float
+(688 real changes made)
+variable m1_1_1982 was byte now float
+(688 real changes made)
+variable m1_1_1987 was byte now float
+(688 real changes made)
+variable m1_1_1992 was byte now float
+(688 real changes made)
+variable m1_1_1997 was byte now float
+(686 real changes made)
+
+.                 /*high erosion*/
+.                 foreach year of numlist 1910 1920 1925 1930 1940 1945 1950 1954 1959 1964 1969 1974 1978 1982 1987 1992 1997 {
+  2.                         gen byte m1_2_`year' = 0
+  3.                         replace m1_2_`year'=m1_2 if year==`year'
+  4.                 }
+variable m1_2_1910 was byte now float
+(314 real changes made)
+variable m1_2_1920 was byte now float
+(314 real changes made)
+variable m1_2_1925 was byte now float
+(314 real changes made)
+variable m1_2_1930 was byte now float
+(314 real changes made)
+variable m1_2_1940 was byte now float
+(314 real changes made)
+variable m1_2_1945 was byte now float
+(314 real changes made)
+variable m1_2_1950 was byte now float
+(314 real changes made)
+variable m1_2_1954 was byte now float
+(314 real changes made)
+variable m1_2_1959 was byte now float
+(314 real changes made)
+variable m1_2_1964 was byte now float
+(314 real changes made)
+variable m1_2_1969 was byte now float
+(314 real changes made)
+variable m1_2_1974 was byte now float
+(314 real changes made)
+variable m1_2_1978 was byte now float
+(314 real changes made)
+variable m1_2_1982 was byte now float
+(314 real changes made)
+variable m1_2_1987 was byte now float
+(314 real changes made)
+variable m1_2_1992 was byte now float
+(314 real changes made)
+variable m1_2_1997 was byte now float
+(314 real changes made)
+
+. 
+. *** Save dataset ***
+. save preanalysis_1910.dta, replace
+file preanalysis_1910.dta saved
+
+. clear
+
+. 
+end of do-file
+
+. tab year
+no variables defined
+r(111);
+
+. do "/var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//SD24177.000000"
+
+. use preanalysis_1910.dta, clear
+
+. 
+end of do-file
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1910 |        779        5.88        5.88
+       1920 |        779        5.88       11.77
+       1925 |        779        5.88       17.65
+       1930 |        779        5.88       23.53
+       1940 |        779        5.88       29.42
+       1945 |        779        5.88       35.30
+       1950 |        779        5.88       41.18
+       1954 |        779        5.88       47.07
+       1959 |        779        5.88       52.95
+       1964 |        779        5.88       58.83
+       1969 |        779        5.88       64.72
+       1974 |        779        5.88       70.60
+       1978 |        779        5.88       76.48
+       1982 |        779        5.88       82.37
+       1987 |        779        5.88       88.25
+       1992 |        779        5.88       94.13
+       1997 |        777        5.87      100.00
+------------+-----------------------------------
+      Total |     13,241      100.00
+
+. sum m1_2 if year == 1910
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        m1_2 |        779    .1533555    .2697548          0          1
+
+. sum m1_2 if year == 1930
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        m1_2 |        779    .1533555    .2697548          0          1
+
+. hist m1_2 
+(bin=41, start=0, width=.02439024)
+
+. hist  m1_2 if year == 1910
+(bin=27, start=0, width=.03703704)
+
+. xtset fips year
+
+Panel variable: fips (unbalanced)
+ Time variable: year, 1910 to 1997, but with gaps
+         Delta: 1 unit
+
+. gen lagm1_2 = L.m1_2
+(13,241 missing values generated)
+
+. egen time = group(year)
+
+. xtset fips time
+
+Panel variable: fips (unbalanced)
+ Time variable: time, 1 to 17
+         Delta: 1 unit
+
+. drop lagm1_2
+
+. gen lagm1_2 = L.m1_2
+(779 missing values generated)
+
+. hist  m1_2 if year == 1920 & lagm1_2 == 0
+(bin=1, start=0, width=1)
+
+. tab  m1_2 if year == 1920 & lagm1_2 == 0
+
+       m1_2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        465      100.00      100.00
+------------+-----------------------------------
+      Total |        465      100.00
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1910 |        779        5.88        5.88
+       1920 |        779        5.88       11.77
+       1925 |        779        5.88       17.65
+       1930 |        779        5.88       23.53
+       1940 |        779        5.88       29.42
+       1945 |        779        5.88       35.30
+       1950 |        779        5.88       41.18
+       1954 |        779        5.88       47.07
+       1959 |        779        5.88       52.95
+       1964 |        779        5.88       58.83
+       1969 |        779        5.88       64.72
+       1974 |        779        5.88       70.60
+       1978 |        779        5.88       76.48
+       1982 |        779        5.88       82.37
+       1987 |        779        5.88       88.25
+       1992 |        779        5.88       94.13
+       1997 |        777        5.87      100.00
+------------+-----------------------------------
+      Total |     13,241      100.00
+
+. 
+. tab  m1_2 if year == 1940 & lagm1_2 == 0
+
+       m1_2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        465      100.00      100.00
+------------+-----------------------------------
+      Total |        465      100.00
+
+. 
+. 
+. gen lag4m1_2 = L4.m1_2
+(3,116 missing values generated)
+
+. tab  m1_2 if year == 1940 & lag4m1_2 == 0
+
+       m1_2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        465      100.00      100.00
+------------+-----------------------------------
+      Total |        465      100.00
+
+. tab  m1_2 if year == 1969 & lag4m1_2 == 0
+
+       m1_2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        465      100.00      100.00
+------------+-----------------------------------
+      Total |        465      100.00
+
+. tab  m1_2 if year == 1997 & lag4m1_2 == 0
+
+       m1_2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        463      100.00      100.00
+------------+-----------------------------------
+      Total |        463      100.00
+
+. tab  m1_2 if year == 1940 & lagm1_2 > 0
+
+       m1_2 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+   8.66e-06 |          1        0.32        0.32
+   .0000621 |          1        0.32        0.64
+   .0001652 |          1        0.32        0.96
+   .0002097 |          1        0.32        1.27
+   .0010074 |          1        0.32        1.59
+    .001046 |          1        0.32        1.91
+   .0019356 |          1        0.32        2.23
+   .0022538 |          1        0.32        2.55
+   .0028161 |          1        0.32        2.87
+   .0037937 |          1        0.32        3.18
+   .0043391 |          1        0.32        3.50
+   .0049681 |          1        0.32        3.82
+   .0055335 |          1        0.32        4.14
+   .0057722 |          1        0.32        4.46
+   .0067613 |          1        0.32        4.78
+   .0077686 |          1        0.32        5.10
+   .0083568 |          1        0.32        5.41
+    .008721 |          1        0.32        5.73
+   .0088227 |          1        0.32        6.05
+   .0094748 |          1        0.32        6.37
+   .0101952 |          1        0.32        6.69
+   .0113372 |          1        0.32        7.01
+   .0124424 |          1        0.32        7.32
+   .0139744 |          1        0.32        7.64
+   .0147573 |          1        0.32        7.96
+    .015377 |          1        0.32        8.28
+   .0184636 |          1        0.32        8.60
+   .0193851 |          1        0.32        8.92
+   .0194416 |          1        0.32        9.24
+   .0203829 |          1        0.32        9.55
+   .0204402 |          1        0.32        9.87
+   .0311914 |          1        0.32       10.19
+   .0345263 |          1        0.32       10.51
+   .0347854 |          1        0.32       10.83
+   .0369167 |          1        0.32       11.15
+   .0392099 |          1        0.32       11.46
+   .0393881 |          1        0.32       11.78
+   .0407409 |          1        0.32       12.10
+   .0412747 |          1        0.32       12.42
+   .0447261 |          1        0.32       12.74
+   .0486887 |          1        0.32       13.06
+   .0490292 |          1        0.32       13.38
+   .0503111 |          1        0.32       13.69
+   .0505461 |          1        0.32       14.01
+   .0509048 |          1        0.32       14.33
+   .0548453 |          1        0.32       14.65
+   .0567671 |          1        0.32       14.97
+   .0568095 |          1        0.32       15.29
+   .0578142 |          1        0.32       15.61
+   .0594532 |          1        0.32       15.92
+   .0611421 |          1        0.32       16.24
+   .0619061 |          1        0.32       16.56
+   .0620493 |          1        0.32       16.88
+   .0622147 |          1        0.32       17.20
+   .0625043 |          1        0.32       17.52
+   .0658981 |          1        0.32       17.83
+   .0662009 |          1        0.32       18.15
+   .0676385 |          1        0.32       18.47
+    .069428 |          1        0.32       18.79
+   .0698741 |          1        0.32       19.11
+   .0706356 |          1        0.32       19.43
+   .0712792 |          1        0.32       19.75
+   .0724235 |          1        0.32       20.06
+   .0735049 |          1        0.32       20.38
+   .0754787 |          1        0.32       20.70
+   .0764623 |          1        0.32       21.02
+   .0785397 |          1        0.32       21.34
+   .0807514 |          1        0.32       21.66
+   .0808397 |          1        0.32       21.97
+   .0830669 |          1        0.32       22.29
+   .0833244 |          1        0.32       22.61
+   .0838144 |          1        0.32       22.93
+   .0838588 |          1        0.32       23.25
+   .0845417 |          1        0.32       23.57
+   .0849384 |          1        0.32       23.89
+   .0870488 |          1        0.32       24.20
+   .0889159 |          1        0.32       24.52
+   .0916134 |          1        0.32       24.84
+   .0927246 |          1        0.32       25.16
+   .0954125 |          1        0.32       25.48
+   .0968963 |          1        0.32       25.80
+   .0980186 |          1        0.32       26.11
+   .0989125 |          1        0.32       26.43
+   .1029499 |          1        0.32       26.75
+    .106152 |          1        0.32       27.07
+   .1087938 |          1        0.32       27.39
+   .1131609 |          1        0.32       27.71
+   .1136531 |          1        0.32       28.03
+   .1149119 |          1        0.32       28.34
+   .1211915 |          1        0.32       28.66
+   .1240079 |          1        0.32       28.98
+   .1254512 |          1        0.32       29.30
+   .1278082 |          1        0.32       29.62
+   .1294891 |          1        0.32       29.94
+   .1300735 |          1        0.32       30.25
+    .136276 |          1        0.32       30.57
+   .1401047 |          1        0.32       30.89
+    .141369 |          1        0.32       31.21
+   .1462308 |          1        0.32       31.53
+   .1504958 |          1        0.32       31.85
+   .1519365 |          1        0.32       32.17
+   .1585538 |          1        0.32       32.48
+   .1586458 |          1        0.32       32.80
+   .1614104 |          1        0.32       33.12
+   .1629036 |          1        0.32       33.44
+   .1653485 |          1        0.32       33.76
+   .1679265 |          1        0.32       34.08
+   .1679495 |          1        0.32       34.39
+    .170921 |          1        0.32       34.71
+   .1803596 |          1        0.32       35.03
+   .1874055 |          1        0.32       35.35
+   .1886984 |          1        0.32       35.67
+   .1957156 |          1        0.32       35.99
+   .1958975 |          1        0.32       36.31
+   .1965949 |          1        0.32       36.62
+   .1969324 |          1        0.32       36.94
+    .198185 |          1        0.32       37.26
+   .1994532 |          1        0.32       37.58
+   .2006249 |          1        0.32       37.90
+   .2006711 |          1        0.32       38.22
+   .2019313 |          1        0.32       38.54
+   .2021658 |          1        0.32       38.85
+   .2026013 |          1        0.32       39.17
+   .2027317 |          1        0.32       39.49
+   .2077147 |          1        0.32       39.81
+   .2146299 |          1        0.32       40.13
+   .2161106 |          1        0.32       40.45
+   .2165404 |          1        0.32       40.76
+   .2254384 |          1        0.32       41.08
+   .2277392 |          1        0.32       41.40
+   .2287897 |          1        0.32       41.72
+   .2323394 |          1        0.32       42.04
+   .2356144 |          1        0.32       42.36
+   .2448353 |          1        0.32       42.68
+   .2465838 |          1        0.32       42.99
+   .2469251 |          1        0.32       43.31
+   .2592713 |          1        0.32       43.63
+   .2655683 |          1        0.32       43.95
+   .2683506 |          1        0.32       44.27
+   .2685621 |          1        0.32       44.59
+   .2695527 |          1        0.32       44.90
+   .2699684 |          1        0.32       45.22
+   .2734472 |          1        0.32       45.54
+    .274572 |          1        0.32       45.86
+   .2824468 |          1        0.32       46.18
+   .2832421 |          1        0.32       46.50
+   .2853262 |          1        0.32       46.82
+   .2877771 |          1        0.32       47.13
+   .2896737 |          1        0.32       47.45
+   .2948077 |          1        0.32       47.77
+   .2982768 |          1        0.32       48.09
+   .2991301 |          1        0.32       48.41
+   .3084099 |          1        0.32       48.73
+   .3114124 |          1        0.32       49.04
+   .3118516 |          1        0.32       49.36
+   .3119233 |          1        0.32       49.68
+   .3129966 |          1        0.32       50.00
+   .3188424 |          1        0.32       50.32
+    .319312 |          1        0.32       50.64
+   .3234347 |          1        0.32       50.96
+   .3240809 |          1        0.32       51.27
+   .3250518 |          1        0.32       51.59
+   .3306926 |          1        0.32       51.91
+   .3346389 |          1        0.32       52.23
+    .339742 |          1        0.32       52.55
+   .3435814 |          1        0.32       52.87
+   .3443826 |          1        0.32       53.18
+   .3447905 |          1        0.32       53.50
+   .3473617 |          1        0.32       53.82
+    .350242 |          1        0.32       54.14
+   .3512766 |          1        0.32       54.46
+   .3535761 |          1        0.32       54.78
+   .3583963 |          1        0.32       55.10
+    .361164 |          1        0.32       55.41
+   .3654619 |          1        0.32       55.73
+   .3717272 |          1        0.32       56.05
+   .3797706 |          1        0.32       56.37
+   .3826341 |          1        0.32       56.69
+    .386657 |          1        0.32       57.01
+   .3959821 |          1        0.32       57.32
+   .3961149 |          1        0.32       57.64
+    .398175 |          1        0.32       57.96
+   .4005705 |          1        0.32       58.28
+    .408795 |          1        0.32       58.60
+   .4096971 |          1        0.32       58.92
+   .4109163 |          1        0.32       59.24
+   .4117655 |          1        0.32       59.55
+   .4158171 |          1        0.32       59.87
+   .4158553 |          1        0.32       60.19
+   .4209283 |          1        0.32       60.51
+     .42198 |          1        0.32       60.83
+   .4238124 |          1        0.32       61.15
+   .4291319 |          1        0.32       61.46
+   .4433309 |          1        0.32       61.78
+   .4501846 |          1        0.32       62.10
+     .45371 |          1        0.32       62.42
+    .455706 |          1        0.32       62.74
+   .4597671 |          1        0.32       63.06
+    .462173 |          1        0.32       63.38
+   .4640775 |          1        0.32       63.69
+   .4645806 |          1        0.32       64.01
+   .4705721 |          1        0.32       64.33
+   .4752859 |          1        0.32       64.65
+   .4759927 |          1        0.32       64.97
+   .4844872 |          1        0.32       65.29
+   .4861516 |          1        0.32       65.61
+   .4875733 |          1        0.32       65.92
+   .4881067 |          1        0.32       66.24
+   .4919051 |          1        0.32       66.56
+   .4919972 |          1        0.32       66.88
+   .4943067 |          1        0.32       67.20
+   .4981114 |          1        0.32       67.52
+   .5360596 |          1        0.32       67.83
+    .536221 |          1        0.32       68.15
+   .5368255 |          1        0.32       68.47
+   .5373048 |          1        0.32       68.79
+   .5409027 |          1        0.32       69.11
+   .5555491 |          1        0.32       69.43
+   .5585716 |          1        0.32       69.75
+   .5594093 |          1        0.32       70.06
+   .5659499 |          1        0.32       70.38
+   .5692565 |          1        0.32       70.70
+   .5772569 |          1        0.32       71.02
+   .5776629 |          1        0.32       71.34
+   .5825955 |          1        0.32       71.66
+   .5845644 |          1        0.32       71.97
+   .5894347 |          1        0.32       72.29
+   .5972409 |          1        0.32       72.61
+   .6015507 |          1        0.32       72.93
+   .6080405 |          1        0.32       73.25
+   .6114028 |          1        0.32       73.57
+   .6137243 |          1        0.32       73.89
+   .6219282 |          1        0.32       74.20
+   .6224335 |          1        0.32       74.52
+   .6260474 |          1        0.32       74.84
+   .6286997 |          1        0.32       75.16
+   .6300707 |          1        0.32       75.48
+   .6301413 |          1        0.32       75.80
+   .6302634 |          1        0.32       76.11
+   .6332252 |          1        0.32       76.43
+    .642237 |          1        0.32       76.75
+    .644363 |          1        0.32       77.07
+   .6478496 |          1        0.32       77.39
+   .6534781 |          1        0.32       77.71
+   .6577415 |          1        0.32       78.03
+   .6584311 |          1        0.32       78.34
+   .6764558 |          1        0.32       78.66
+   .6785941 |          1        0.32       78.98
+   .6797577 |          1        0.32       79.30
+   .6833999 |          1        0.32       79.62
+   .6869339 |          1        0.32       79.94
+   .6907259 |          1        0.32       80.25
+   .6966951 |          1        0.32       80.57
+   .6992099 |          1        0.32       80.89
+   .7047998 |          1        0.32       81.21
+   .7105172 |          1        0.32       81.53
+   .7189572 |          1        0.32       81.85
+   .7268615 |          1        0.32       82.17
+   .7337419 |          1        0.32       82.48
+   .7376058 |          1        0.32       82.80
+   .7400585 |          1        0.32       83.12
+      .7491 |          1        0.32       83.44
+     .74951 |          1        0.32       83.76
+   .7537816 |          1        0.32       84.08
+   .7578988 |          1        0.32       84.39
+   .7591724 |          1        0.32       84.71
+   .7656167 |          1        0.32       85.03
+     .77446 |          1        0.32       85.35
+    .774627 |          1        0.32       85.67
+   .7783662 |          1        0.32       85.99
+   .7818902 |          1        0.32       86.31
+   .7878819 |          1        0.32       86.62
+   .7955468 |          1        0.32       86.94
+   .7963769 |          1        0.32       87.26
+   .8153561 |          1        0.32       87.58
+   .8252826 |          1        0.32       87.90
+   .8328041 |          1        0.32       88.22
+   .8365794 |          1        0.32       88.54
+    .842678 |          1        0.32       88.85
+   .8504717 |          1        0.32       89.17
+   .8592004 |          1        0.32       89.49
+   .8608691 |          1        0.32       89.81
+   .8626407 |          1        0.32       90.13
+   .8627461 |          1        0.32       90.45
+   .8649143 |          1        0.32       90.76
+   .8754824 |          1        0.32       91.08
+   .8861044 |          1        0.32       91.40
+   .8885076 |          1        0.32       91.72
+   .8995896 |          1        0.32       92.04
+   .9013535 |          1        0.32       92.36
+   .9054528 |          1        0.32       92.68
+   .9131498 |          1        0.32       92.99
+   .9181404 |          1        0.32       93.31
+   .9240192 |          1        0.32       93.63
+   .9257361 |          1        0.32       93.95
+   .9433402 |          1        0.32       94.27
+   .9452918 |          1        0.32       94.59
+   .9470728 |          1        0.32       94.90
+   .9488945 |          1        0.32       95.22
+   .9716482 |          1        0.32       95.54
+   .9718855 |          1        0.32       95.86
+   .9902713 |          1        0.32       96.18
+   .9935452 |          1        0.32       96.50
+    .995331 |          1        0.32       96.82
+   .9990983 |          1        0.32       97.13
+   .9998348 |          1        0.32       97.45
+          1 |          8        2.55      100.00
+------------+-----------------------------------
+      Total |        314      100.00
+
+. use "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey/replications/2010-2012/Dinkelman (2011)/panel_GTD.dta", clear
+
+. tab year
+
+    T: Year |
+(1996/2001) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1996 |      1,816       50.00       50.00
+       2001 |      1,816       50.00      100.00
+------------+-----------------------------------
+      Total |      3,632      100.00
+
+. tab d
+variable d not found
+r(111);
+
+. tab D
+
+         D: |
+Electrifica |
+       tion |
+   (binary) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      3,267       89.95       89.95
+          1 |        365       10.05      100.00
+------------+-----------------------------------
+      Total |      3,632      100.00
+
+. tab D if year == 199
+no observations
+
+. tab D if year == 1996
+
+         D: |
+Electrifica |
+       tion |
+   (binary) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      1,816      100.00      100.00
+------------+-----------------------------------
+      Total |      1,816      100.00
+
+. use "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey/replications/2015-2019/Burgess et al. (2015)/panel_GTD_table1.dta"
+
+. tab president
+
+         D: |
+President's |
+   coethnic |
+(non-binary |
+          ) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      1,690       84.12       84.12
+          1 |        319       15.88      100.00
+------------+-----------------------------------
+      Total |      2,009      100.00
+
+. tab year
+
+    T: Year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1963 |         41        2.04        2.04
+       1964 |         41        2.04        4.08
+       1965 |         41        2.04        6.12
+       1966 |         41        2.04        8.16
+       1967 |         41        2.04       10.20
+       1968 |         41        2.04       12.24
+       1969 |         41        2.04       14.29
+       1970 |         41        2.04       16.33
+       1971 |         41        2.04       18.37
+       1972 |         41        2.04       20.41
+       1973 |         41        2.04       22.45
+       1974 |         41        2.04       24.49
+       1975 |         41        2.04       26.53
+       1976 |         41        2.04       28.57
+       1977 |         41        2.04       30.61
+       1978 |         41        2.04       32.65
+       1979 |         41        2.04       34.69
+       1980 |         41        2.04       36.73
+       1981 |         41        2.04       38.78
+       1982 |         41        2.04       40.82
+       1983 |         41        2.04       42.86
+       1984 |         41        2.04       44.90
+       1985 |         41        2.04       46.94
+       1986 |         41        2.04       48.98
+       1987 |         41        2.04       51.02
+       1988 |         41        2.04       53.06
+       1989 |         41        2.04       55.10
+       1990 |         41        2.04       57.14
+       1991 |         41        2.04       59.18
+       1992 |         41        2.04       61.22
+       1993 |         41        2.04       63.27
+       1994 |         41        2.04       65.31
+       1995 |         41        2.04       67.35
+       1996 |         41        2.04       69.39
+       1997 |         41        2.04       71.43
+       1998 |         41        2.04       73.47
+       1999 |         41        2.04       75.51
+       2000 |         41        2.04       77.55
+       2001 |         41        2.04       79.59
+       2002 |         41        2.04       81.63
+       2003 |         41        2.04       83.67
+       2004 |         41        2.04       85.71
+       2005 |         41        2.04       87.76
+       2006 |         41        2.04       89.80
+       2007 |         41        2.04       91.84
+       2008 |         41        2.04       93.88
+       2009 |         41        2.04       95.92
+       2010 |         41        2.04       97.96
+       2011 |         41        2.04      100.00
+------------+-----------------------------------
+      Total |      2,009      100.00
+
+. tab  president if year == 1963
+
+         D: |
+President's |
+   coethnic |
+(non-binary |
+          ) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |         34       82.93       82.93
+          1 |          7       17.07      100.00
+------------+-----------------------------------
+      Total |         41      100.00
+
+. tab year president
+
+           |    D: President's
+           | coethnic (non-binary)
+   T: Year |         0          1 |     Total
+-----------+----------------------+----------
+      1963 |        34          7 |        41 
+      1964 |        34          7 |        41 
+      1965 |        34          7 |        41 
+      1966 |        34          7 |        41 
+      1967 |        34          7 |        41 
+      1968 |        34          7 |        41 
+      1969 |        34          7 |        41 
+      1970 |        34          7 |        41 
+      1971 |        34          7 |        41 
+      1972 |        34          7 |        41 
+      1973 |        34          7 |        41 
+      1974 |        34          7 |        41 
+      1975 |        34          7 |        41 
+      1976 |        34          7 |        41 
+      1977 |        34          7 |        41 
+      1978 |        34          7 |        41 
+      1979 |        35          6 |        41 
+      1980 |        35          6 |        41 
+      1981 |        35          6 |        41 
+      1982 |        35          6 |        41 
+      1983 |        35          6 |        41 
+      1984 |        35          6 |        41 
+      1985 |        35          6 |        41 
+      1986 |        35          6 |        41 
+      1987 |        35          6 |        41 
+      1988 |        35          6 |        41 
+      1989 |        35          6 |        41 
+      1990 |        35          6 |        41 
+      1991 |        35          6 |        41 
+      1992 |        35          6 |        41 
+      1993 |        35          6 |        41 
+      1994 |        35          6 |        41 
+      1995 |        35          6 |        41 
+      1996 |        35          6 |        41 
+      1997 |        35          6 |        41 
+      1998 |        35          6 |        41 
+      1999 |        35          6 |        41 
+      2000 |        35          6 |        41 
+      2001 |        35          6 |        41 
+      2002 |        35          6 |        41 
+      2003 |        34          7 |        41 
+      2004 |        34          7 |        41 
+      2005 |        34          7 |        41 
+      2006 |        34          7 |        41 
+      2007 |        34          7 |        41 
+      2008 |        34          7 |        41 
+      2009 |        34          7 |        41 
+      2010 |        34          7 |        41 
+      2011 |        34          7 |        41 
+-----------+----------------------+----------
+     Total |     1,690        319 |     2,009 
+
+. exit
+--Break--
+r(1);
+
+. use "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey/data/2015-2019/Donaldson (2018)/web_materials/Data/maps/RAIL-dummies.dta"
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1850 |        477        0.93        0.93
+       1851 |        477        0.93        1.87
+       1852 |        477        0.93        2.80
+       1853 |        477        0.93        3.74
+       1854 |        477        0.93        4.67
+       1855 |        477        0.93        5.61
+       1856 |        477        0.93        6.54
+       1857 |        477        0.93        7.48
+       1858 |        477        0.93        8.41
+       1859 |        477        0.93        9.35
+       1860 |        477        0.93       10.28
+       1861 |        477        0.93       11.21
+       1862 |        477        0.93       12.15
+       1863 |        477        0.93       13.08
+       1864 |        477        0.93       14.02
+       1865 |        477        0.93       14.95
+       1866 |        477        0.93       15.89
+       1867 |        477        0.93       16.82
+       1868 |        477        0.93       17.76
+       1869 |        477        0.93       18.69
+       1870 |        477        0.93       19.63
+       1871 |        477        0.93       20.56
+       1872 |        477        0.93       21.50
+       1873 |        477        0.93       22.43
+       1874 |        477        0.93       23.36
+       1875 |        477        0.93       24.30
+       1876 |        477        0.93       25.23
+       1877 |        477        0.93       26.17
+       1878 |        477        0.93       27.10
+       1879 |        477        0.93       28.04
+       1880 |        477        0.93       28.97
+       1881 |        477        0.93       29.91
+       1882 |        477        0.93       30.84
+       1883 |        477        0.93       31.78
+       1884 |        477        0.93       32.71
+       1885 |        477        0.93       33.64
+       1886 |        477        0.93       34.58
+       1887 |        477        0.93       35.51
+       1888 |        477        0.93       36.45
+       1889 |        477        0.93       37.38
+       1890 |        477        0.93       38.32
+       1891 |        477        0.93       39.25
+       1892 |        477        0.93       40.19
+       1893 |        477        0.93       41.12
+       1894 |        477        0.93       42.06
+       1895 |        477        0.93       42.99
+       1896 |        477        0.93       43.93
+       1897 |        477        0.93       44.86
+       1898 |        477        0.93       45.79
+       1899 |        477        0.93       46.73
+       1900 |        477        0.93       47.66
+       1901 |        477        0.93       48.60
+       1902 |        477        0.93       49.53
+       1903 |        477        0.93       50.47
+       1904 |        477        0.93       51.40
+       1905 |        477        0.93       52.34
+       1906 |        477        0.93       53.27
+       1907 |        477        0.93       54.21
+       1908 |        477        0.93       55.14
+       1909 |        477        0.93       56.07
+       1910 |        477        0.93       57.01
+       1911 |        477        0.93       57.94
+       1912 |        477        0.93       58.88
+       1913 |        477        0.93       59.81
+       1914 |        477        0.93       60.75
+       1915 |        477        0.93       61.68
+       1916 |        477        0.93       62.62
+       1917 |        477        0.93       63.55
+       1918 |        477        0.93       64.49
+       1919 |        477        0.93       65.42
+       1920 |        477        0.93       66.36
+       1921 |        477        0.93       67.29
+       1922 |        477        0.93       68.22
+       1923 |        477        0.93       69.16
+       1924 |        477        0.93       70.09
+       1925 |        477        0.93       71.03
+       1926 |        477        0.93       71.96
+       1927 |        477        0.93       72.90
+       1928 |        477        0.93       73.83
+       1929 |        477        0.93       74.77
+       1930 |        477        0.93       75.70
+       1931 |        477        0.93       76.64
+       1932 |        477        0.93       77.57
+       1933 |        477        0.93       78.50
+       1934 |        477        0.93       79.44
+       1935 |        477        0.93       80.37
+       1936 |        477        0.93       81.31
+       1937 |        477        0.93       82.24
+       1938 |        477        0.93       83.18
+       1939 |        477        0.93       84.11
+       1940 |        477        0.93       85.05
+       1941 |        477        0.93       85.98
+       1942 |        477        0.93       86.92
+       1943 |        477        0.93       87.85
+       1944 |        477        0.93       88.79
+       1945 |        477        0.93       89.72
+       1946 |        477        0.93       90.65
+       1947 |        477        0.93       91.59
+       1948 |        477        0.93       92.52
+       1949 |        477        0.93       93.46
+       1950 |        477        0.93       94.39
+       1951 |        477        0.93       95.33
+       1952 |        477        0.93       96.26
+       1953 |        477        0.93       97.20
+       1954 |        477        0.93       98.13
+       1955 |        477        0.93       99.07
+       1956 |        477        0.93      100.00
+------------+-----------------------------------
+      Total |     51,039      100.00
+
+. tab year RAIL
+
+           |         RAIL
+      year |         0          1 |     Total
+-----------+----------------------+----------
+      1850 |       477          0 |       477 
+      1851 |       477          0 |       477 
+      1852 |       477          0 |       477 
+      1853 |       476          1 |       477 
+      1854 |       475          2 |       477 
+      1855 |       471          6 |       477 
+      1856 |       467         10 |       477 
+      1857 |       467         10 |       477 
+      1858 |       465         12 |       477 
+      1859 |       460         17 |       477 
+      1860 |       454         23 |       477 
+      1861 |       438         39 |       477 
+      1862 |       429         48 |       477 
+      1863 |       425         52 |       477 
+      1864 |       419         58 |       477 
+      1865 |       414         63 |       477 
+      1866 |       412         65 |       477 
+      1867 |       404         73 |       477 
+      1868 |       403         74 |       477 
+      1869 |       393         84 |       477 
+      1870 |       389         88 |       477 
+      1871 |       387         90 |       477 
+      1872 |       380         97 |       477 
+      1873 |       373        104 |       477 
+      1874 |       366        111 |       477 
+      1875 |       361        116 |       477 
+      1876 |       354        123 |       477 
+      1877 |       349        128 |       477 
+      1878 |       337        140 |       477 
+      1879 |       334        143 |       477 
+      1880 |       324        153 |       477 
+      1881 |       314        163 |       477 
+      1882 |       307        170 |       477 
+      1883 |       301        176 |       477 
+      1884 |       284        193 |       477 
+      1885 |       279        198 |       477 
+      1886 |       270        207 |       477 
+      1887 |       257        220 |       477 
+      1888 |       249        228 |       477 
+      1889 |       232        245 |       477 
+      1890 |       223        254 |       477 
+      1891 |       218        259 |       477 
+      1892 |       217        260 |       477 
+      1893 |       212        265 |       477 
+      1894 |       207        270 |       477 
+      1895 |       201        276 |       477 
+      1896 |       197        280 |       477 
+      1897 |       192        285 |       477 
+      1898 |       184        293 |       477 
+      1899 |       179        298 |       477 
+      1900 |       174        303 |       477 
+      1901 |       170        307 |       477 
+      1902 |       167        310 |       477 
+      1903 |       160        317 |       477 
+      1904 |       158        319 |       477 
+      1905 |       155        322 |       477 
+      1906 |       153        324 |       477 
+      1907 |       149        328 |       477 
+      1908 |       147        330 |       477 
+      1909 |       145        332 |       477 
+      1910 |       144        333 |       477 
+      1911 |       141        336 |       477 
+      1912 |       140        337 |       477 
+      1913 |       133        344 |       477 
+      1914 |       130        347 |       477 
+      1915 |       129        348 |       477 
+      1916 |       127        350 |       477 
+      1917 |       125        352 |       477 
+      1918 |       124        353 |       477 
+      1919 |       124        353 |       477 
+      1920 |       124        353 |       477 
+      1921 |       124        353 |       477 
+      1922 |       123        354 |       477 
+      1923 |       122        355 |       477 
+      1924 |       122        355 |       477 
+      1925 |       122        355 |       477 
+      1926 |       121        356 |       477 
+      1927 |       117        360 |       477 
+      1928 |       115        362 |       477 
+      1929 |       115        362 |       477 
+      1930 |       114        363 |       477 
+      1931 |       113        364 |       477 
+      1932 |       113        364 |       477 
+      1933 |       113        364 |       477 
+      1934 |       113        364 |       477 
+      1935 |       113        364 |       477 
+      1936 |       113        364 |       477 
+      1937 |       113        364 |       477 
+      1938 |       112        365 |       477 
+      1939 |       112        365 |       477 
+      1940 |       112        365 |       477 
+      1941 |       112        365 |       477 
+      1942 |       112        365 |       477 
+      1943 |       112        365 |       477 
+      1944 |       112        365 |       477 
+      1945 |       112        365 |       477 
+      1946 |       112        365 |       477 
+      1947 |       112        365 |       477 
+      1948 |       112        365 |       477 
+      1949 |       111        366 |       477 
+      1950 |       111        366 |       477 
+      1951 |       111        366 |       477 
+      1952 |       108        369 |       477 
+      1953 |       108        369 |       477 
+      1954 |       106        371 |       477 
+      1955 |       106        371 |       477 
+      1956 |       105        372 |       477 
+-----------+----------------------+----------
+     Total |    24,483     26,556 |    51,039 
+
+. do "/var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//SD24177.000000"
+
+. /*==============================================================================
+>   ACEMOGLU, CANTONI, JOHNSON & ROBINSON (2011)
+>   "The Consequences of Radical Reform: The French Revolution"
+>   American Economic Review, 101(7), 3286-3307
+> 
+>   Pipeline: STEP 1 Data → STEP 2 Table 3 → STEP 3 twowayfeweights → STEP 4 LaTeX
+> 
+>   dCDH Web Appendix #14: Table 3, Regression 1 (FE), sharp design, feTR
+>   "The stable groups assumption is satisfied as there are several polities
+>    that did not experience any year of French presence."
+> 
+>   Specification (Table 3 Col 1):
+>     urbrate_jt = α_j + γ_t + Σ_s β_s × fpresence_j × I(t=s) + ε_jt
+>     Sample: westelbe==1, [aweight=totalpop1750], cluster(id)
+> 
+>   Panel: 13 polities × ~5.7 years ≈ 74 obs (West of Elbe, weighted)
+>          19 polities × ~5.7 years ≈ 109 obs (All, weighted)
+> ==============================================================================*/
+. 
+. clear all
+
+. set more off
+
+. cap log close _all

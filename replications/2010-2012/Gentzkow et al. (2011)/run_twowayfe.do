@@ -19,10 +19,25 @@ clear all
 set more off
 cap log close _all
 
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
 * --- Paths ---
-global datadir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Gentzkow et al. (2011)/20091316_data"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Gentzkow et al. (2011)"
-global texdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2010-2012/Gentzkow et al. (2011)"
+global datadir  "$twfe_root/data/2010-2012/Gentzkow et al. (2011)/20091316_data"
+global outdir   "$twfe_root/replications/2010-2012/Gentzkow et al. (2011)"
+global texdir   "$twfe_root/latex/2010-2012/Gentzkow et al. (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 set more off
@@ -356,16 +371,61 @@ di "============================================================"
   Y = prestout     (presidential turnout)
 ==============================================================================*/
 
+
+
+* --- Load custom ado files and parameters ---
+adopath + "$datadir/external"
+
+* Manual globals from input_param.txt (loadglob fails in modern Stata)
+global samplestart 1872
+global sampleend 1928
+global datastart 1868
+global dataend 2004
+global maxpolyorder 3
+global maxwindow 1
+global maxhorizon 40
+global localgraphwindow 6
+global panelvar "cnty90"
+global yearvar "year"
+global delta 4
+global polymidpoint .5
+global maxchange -9999
+global demolist "D_ishare_foreign D_ishare_manuf D_ishare_male D_ishare_urb D_ishare_town D_ishare_white D_ilog_manufout_ctrl"
+global misdemolist "mis_D_ishare_foreign mis_D_ishare_manuf mis_D_ishare_male mis_D_ishare_urb mis_D_ishare_town mis_D_ishare_white mis_D_ilog_manufout_ctrl"
+
+
+use "$datadir/temp/voting_cnty_clean.dta", clear
+
+
 di _n "============================================================"
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "============================================================"
+define_event x, changein(numdailies) maxchange($maxchange) window(1)
 
-keep cnty90 year numdailies prestout
+egen aux = group(year)
+replace year = aux
+drop aux 
+xtset cnty90 year
+sort cnty90 year
+gen Y = D.prestout
+keep if mainsample
+
+keep cnty90 year numdailies Y styr x_0 
 
 label variable cnty90      "G: County ID (1990 boundaries)"
 label variable year        "T: Election year"
-label variable numdailies  "D: Number of daily newspapers"
-label variable prestout    "Y: Presidential turnout"
+label variable x_0  "D: Any daily newspapers"
+label variable Y    "Y: First difference Presidential turnout"
+label variable styr    "STY: State X Year"
+
+
+
+rename cnty90 G
+rename x_0 D
+rename year T
+rename styr FE1
+
+
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

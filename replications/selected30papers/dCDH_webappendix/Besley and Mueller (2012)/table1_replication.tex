@@ -1,0 +1,24 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Table 1---Benchmark Results (Besley \& Mueller, 2012)}
+\begin{tabular}{l*{3}{c}}
+\toprule
+            &\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+            &        b/se   &        b/se   &        b/se   \\
+\midrule
+Killings (L1, norm.)&     -0.0133** &               &     -0.0107*  \\
+            &   (0.00492)   &               &   (0.00493)   \\
+Killings (L2, norm.)&               &     -0.0187***&               \\
+            &               &   (0.00361)   &               \\
+ln(unemployment)&               &               &     -0.1414***\\
+            &               &               &   (0.04083)   \\
+\midrule
+R-squared   &       0.987   &       0.988   &       0.986   \\
+Observations&        1049   &        1049   &         932   \\
+Region FE   &         Yes   &         Yes   &         Yes   \\
+Time FE     &         Yes   &         Yes   &         Yes   \\
+Region trends&          No   &          No   &          No   \\
+\bottomrule
+\multicolumn{4}{p{0.9\textwidth}}{\footnotesize Dependent variable: ln(house price).  Panel: 11 regions of Northern Ireland, quarterly 1984:IV--2009:I.  All killings variables normalized by their standard deviation.  Standard errors clustered by region in parentheses.  *** p$<$0.01, ** p$<$0.05, * p$<$0.1.}\\
+\end{tabular}
+\end{table}

@@ -27,9 +27,24 @@ set more off
 set matsize 5000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Hornbeck (2012)"
+
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global paperdir "$twfe_root/data/2010-2012/Hornbeck (2012)"
 global datadir  "$paperdir/AER-2009-1347_Data_Code/Analyze-Data"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Hornbeck (2012)"
+global outdir   "$twfe_root/replications/2010-2012/Hornbeck (2012)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -487,12 +502,85 @@ di _n "=============================================="
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "=============================================="
 
-keep fips year D_high_post value_landbuildings_f
+
+
+use "$datadir/preanalysis_1910.dta", clear
+//
+// gen m1_1_1950_1954 = 0
+// 	replace m1_1_1950_1954 = m1_1_1950 if year==1950
+// 	replace m1_1_1950_1954 = m1_1_1954 if year==1954
+// 	gen m1_1_1959_1969 = 0
+// 	replace m1_1_1959_1969 = m1_1_1959 if year==1959
+// 	replace m1_1_1959_1969 = m1_1_1964 if year==1964
+// 	replace m1_1_1959_1969 = m1_1_1969 if year==1969
+// 	gen m1_1_1978_1992 = 0
+// 	replace m1_1_1978_1992 = m1_1_1978 if year==1978
+// 	replace m1_1_1978_1992 = m1_1_1982 if year==1982
+// 	replace m1_1_1978_1992 = m1_1_1987 if year==1987
+// 	replace m1_1_1978_1992 = m1_1_1992 if year==1992
+//	
+// 	/*high erosion*/
+// 	gen m1_2_1950_1954 = 0
+// 	replace m1_2_1950_1954 = m1_2_1950 if year==1950
+// 	replace m1_2_1950_1954 = m1_2_1954 if year==1954
+// 	gen m1_2_1959_1969 = 0
+// 	replace m1_2_1959_1969 = m1_2_1959 if year==1959
+// 	replace m1_2_1959_1969 = m1_2_1964 if year==1964
+// 	replace m1_2_1959_1969 = m1_2_1969 if year==1969
+// 	gen m1_2_1978_1992 = 0
+// 	replace m1_2_1978_1992 = m1_2_1978 if year==1978
+// 	replace m1_2_1978_1992 = m1_2_1982 if year==1982
+// 	replace m1_2_1978_1992 = m1_2_1987 if year==1987
+// 	replace m1_2_1978_1992 = m1_2_1992 if year==1992
+//	
+// gen dvalue_landbuildings_f = value_landbuildings_f - ycl_value_landbuildings_f
+//
+// sum m1_1_1940 m1_1_1945 m1_1_1950_1954 m1_1_1959_1969 m1_1_1978_1992 m1_2_1940 m1_2_1945 m1_2_1950_1954 m1_2_1959_1969 m1_2_1978_1992 
+//
+// areg dvalue_landbuildings_f	m1_1_1940 m1_1_1945 m1_1_1950_1954 m1_1_1959_1969 m1_1_1978_1992 m1_2_1940 m1_2_1945 m1_2_1950_1954 m1_2_1959_1969 m1_2_1978_1992  [aweight=farmland_weight], absorb(id_stateyear) cluster(fips)
+//
+// gen yr1940 = 0
+// replace yr1940 = 1 if year ==  1940
+//
+//
+// gen yr1945 = 0
+// replace  yr1945 = 1 if year ==  1945
+//
+//
+//
+// gen yr1950_1954 = (m1_1_1950_1954 > 0)
+// gen yr1959_1969 = (m1_2_1959_1969 > 0)
+// gen yr1978_1992 = (m1_1_1978_1992 > 0)
+//
+//	
+//	
+// reghdfe dvalue_landbuildings_f c.yr1940#c.m1_1 c.yr1945#c.m1_1 c.yr1950_1954#c.m1_1 c.yr1959_1969#c.m1_1 c.yr1978_1992#c.m1_1 ///
+// 								c.yr1940#c.m1_2 c.yr1945#c.m1_2 c.yr1950_1954#c.m1_2 c.yr1959_1969#c.m1_2 c.yr1978_1992#c.m1_2 [aweight=farmland_weight], absorb(id_stateyear) cluster(fips)
+//
+//
+//								
+// areg dvalue_landbuildings_f c.yr1940#c.m1_1 c.yr1945#c.m1_1 c.yr1950_1954#c.m1_1 c.yr1959_1969#c.m1_1 c.yr1978_1992#c.m1_1 ///
+// 								c.yr1940#c.m1_2 c.yr1945#c.m1_2 c.yr1950_1954#c.m1_2 c.yr1959_1969#c.m1_2 c.yr1978_1992#c.m1_2 [aweight=farmland_weight], absorb(id_stateyear) cluster(fips) 
+//
+//	
+gen D_high_post = m1_2 * (year > 1930)
+gen D_med_post  = m1_1 * (year > 1930)
+							
+								
+keep fips year D_high_post value_landbuildings_f D_med_post farmland_weight
 
 label variable fips                   "G: County FIPS code"
 label variable year                   "T: Census year (1910-1997)"
 label variable D_high_post            "D: High erosion x post-1930"
 label variable value_landbuildings_f  "Y: Log farm land+buildings value"
+
+
+rename fips G
+rename year T
+rename  D_high_post D
+rename value_landbuildings_f Y
+
+
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

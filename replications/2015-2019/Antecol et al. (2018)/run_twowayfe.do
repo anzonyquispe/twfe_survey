@@ -25,9 +25,22 @@ set more off
 cap log close _all
 
 * --- Paths ---
-global datadir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Antecol et al. (2018)/data"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Antecol et al. (2018)"
-global texdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2015-2019/Antecol et al. (2018)"
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global datadir  "$twfe_root/data/2015-2019/Antecol et al. (2018)/data"
+global outdir   "$twfe_root/replications/2015-2019/Antecol et al. (2018)"
+global texdir   "$twfe_root/latex/2015-2019/Antecol et al. (2018)"
 
 cap log using "$outdir/run_twowayfe_detail.log", text replace name(detail)
 
@@ -100,6 +113,38 @@ local ulist phd_rank phd_rank_miss post_doc ug_students grad_students ///
     faculty full_av_salary assist_av_salary revenue female_ratio ///
     full_ratio faculty_miss revenue_miss female_ratio_miss full_ratio_miss
 local plist focs f_focs gncs f_gncs focs0 f_focs0 gncs0 f_gncs0
+
+gen any_gender_tenure = (gncs + focs)>0
+gen D = female* any_gender_tenure
+
+bys pol_u pol_job_start: egen meanY_male = mean(tenure_policy_school) if female == 0
+bys pol_u pol_job_start: egen meanY_male_aux = mean( meanY_male )
+
+replace meanY_male = meanY_male_aux if meanY_male == .
+replace meanY_male = 0 if meanY_male == .
+
+bys pol_u: egen meanY_female =  mean(tenure_policy_school) if female == 1
+bys pol_u pol_job_start: egen meanY_female_aux = mean( meanY_female )
+replace meanY_female = meanY_female_aux if meanY_female == .
+replace meanY_female = 0 if meanY_female == .
+
+gen diff_male_female = meanY_male - meanY_female
+count if diff_male_female == .
+
+did_multiplegt_dyn tenure_policy_school pol_u pol_job_start any_gender_tenure, effects(2)
+gen aux = 1
+
+collapse (mean) any_gender_tenure tenure_policy_school (sum ) aux, by(pol_job_start pol_u )
+
+rename any_gender_tenure D
+rename tenure_policy_school Y
+rename pol_job_start T
+rename pol_u G
+rename aux WEIGHTS
+save "$outdir/panel_GTD.dta", replace
+
+
+did_multiplegt_dyn tenure_policy_school pol_u pol_job_start any_gender_tenure , effects(2) weight(aux)
 
 xi: reg tenure_policy_school `plist' `ulist' ///
     i.pol_job_start*i.female i.female*i.pol_u, cluster(pol_u)

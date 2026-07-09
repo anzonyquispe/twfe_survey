@@ -1,0 +1,19 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Table 4---Effects of Electrification on Female Employment (Dinkelman, 2011)}
+\begin{tabular}{l*{4}{c}}
+\toprule
+            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(7)}\\
+            &        b/se   &        b/se   &        b/se   &        b/se   \\
+\midrule
+Electrification (T)&     -0.0042   &      0.0001   &      0.0246   &      0.0903*  \\
+            &    (0.0050)   &    (0.0047)   &    (0.0449)   &    (0.0544)   \\
+\midrule
+Observations&        1816   &        1816   &        1816   &        1816   \\
+Controls    &          No   &         Yes   &          No   &         Yes   \\
+District FE &          No   &         Yes   &          No   &         Yes   \\
+Method      &         OLS   &         OLS   &          IV   &          IV   \\
+\bottomrule
+\multicolumn{5}{l}{\footnotesize Dependent variable: change in female employment rate (1996--2001).  Sample: 1{,}816 communities (largearea==1).  Instrument for IV: mean terrain gradient (mean\\_grad\\_new).  Standard errors clustered by place in parentheses.  *** p$<$0.01, ** p$<$0.05, * p$<$0.1.}\\
+\end{tabular}
+\end{table}

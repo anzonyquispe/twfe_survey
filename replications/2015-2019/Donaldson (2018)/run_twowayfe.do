@@ -22,7 +22,25 @@ di _n "============================================================"
 di "  STEP 1: DATA PREPARATION"
 di "============================================================"
 
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Donaldson (2018)/web_materials"
+
+
+* --- Paths ---
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
+global datadir "$twfe_root/data/2015-2019/Donaldson (2018)/web_materials"
+global outdir "$twfe_root/replications/2015-2019/Donaldson (2018)"
 
 use "$datadir/Data/income/income.dta", clear
 sort distid year
@@ -437,8 +455,12 @@ label variable year          "T: Year"
 label variable RAIL          "D: Railroad access (binary)"
 label variable ln_realincome "Y: Log real agricultural income"
 
-local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Donaldson (2018)"
-save "`outdir'/panel_GTD.dta", replace
+rename distid G
+rename year T
+rename RAIL D
+rename ln_realincome Y
+
+save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
 di "  G = distid, T = year, D = RAIL"
 

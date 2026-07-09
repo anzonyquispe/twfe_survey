@@ -1,0 +1,1107 @@
+-----------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/run_twowayfe.log
+  log type:  text
+ opened on:  20 Apr 2026, 16:22:16
+
+. 
+. * Install packages if needed
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. * Helper program: significance stars
+. cap program drop _stars
+
+. program define _stars, rclass
+  1.     args b se
+  2.     local s ""
+  3.     if `se' > 0 & `se' < . {
+  4.         local t = abs(`b'/`se')
+  5.         if `t' > 2.576      local s "***"
+  6.         else if `t' > 1.960 local s "**"
+  7.         else if `t' > 1.645 local s "*"
+  8.     }
+  9.     return local s "`s'"
+ 10. end
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1: DATA PREPARATION
+>   Follows original Analyze_DustBowl.do variable creation pipeline:
+>   1. Keep 12 Dust Bowl states, drop 1935
+>   2. Create outcome: value_landbuildings_f = ln(value_landbuildings/farmland)
+>   3. Balance sample (15 years of non-missing outcome)
+>   4. Drop non-Plains counties (frac_grassland_tot < 0.5)
+>   5. Create farmland_weight (1930 farmland acres)
+>   6. Create id_stateyear
+>   7. Create time-varying treatment D_post
+> ==============================================================================*/
+. 
+. use "$datadir/DustBowl_All_base1910.dta", clear
+
+. 
+. di _n "=== RAW DATA SUMMARY ==="
+
+=== RAW DATA SUMMARY ===
+
+. di "Observations: " _N
+Observations: 52874
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/AER-2009-1347_Data_Code/Anal
+> yze-Data/DustBowl_All_base1910.dta
+ Observations:        52,874                  
+    Variables:            89                  18 Jul 2011 16:06
+Sorted by: fips  year
+
+. 
+. * Keep only 12 Dust Bowl states (following original code line 45)
+. keep if state==8|state==19|state==20|state==27|state==30|state==31| ///
+>         state==35|state==38|state==40|state==46|state==48|state==56
+(35,833 observations deleted)
+
+. 
+. * Drop year 1935 (not used in main analysis)
+. drop if year == 1935
+(946 observations deleted)
+
+. 
+. * Drop missing farmland (line 72)
+. drop if farmland == .
+(82 observations deleted)
+
+. 
+. * Fill in missing county_acres (lines 51-53)
+. sort fips year
+
+. by fips: replace county_acres = county_acres[_n+1] if county_acres==.
+(8 real changes made)
+
+. by fips: replace county_acres = county_acres[_n+1] if county_acres==.
+(0 real changes made)
+
+. by fips: replace county_acres = county_acres[_n-1] if county_acres==.
+(29 real changes made)
+
+. 
+. * Create outcome variable: log value of farmland+buildings per acre (line 94)
+. gen value_landbuildings_f = ln(value_landbuildings/farmland)
+(953 missing values generated)
+
+. * Drop outlier errors (line 96)
+. replace value_landbuildings_f = . if value_landbuildings_f < -1
+(2 real changes made, 2 to missing)
+
+. 
+. * Balance sample: need 15 years of non-missing value_landbuildings_f
+. * (following original lines 131-158, simplified)
+. replace value_landbuildings_f = . if year==1974
+(940 real changes made, 940 to missing)
+
+. sort fips
+
+. by fips: egen balance_vlf = count(value_landbuildings_f)
+
+. drop if balance_vlf != 15
+(428 observations deleted)
+
+. drop balance_vlf
+
+. 
+. * Drop non-Plains counties (line 161)
+. cap drop if frac_grassland_tot < .5
+
+. * Drop non-contiguous counties (line 163)
+. cap drop if fips==48043 | fips==48243 | fips==35013 | fips==35017 | fips==30007
+
+. 
+. * Generate farmland weight: 1930 baseline farmland acres (lines 182-186)
+. gen farmland_w = farmland if year==1930
+(12,558 missing values generated)
+
+. sort fips year
+
+. by fips: egen farmland_weight = max(farmland_w)
+
+. drop farmland_w
+
+. 
+. * Generate state x year ID (line 192)
+. gen double id_stateyear = state*10000 + year
+
+. 
+. di _n "--- Panel structure ---"
+
+--- Panel structure ---
+
+. qui tab fips
+
+. di "Counties (G): " r(r)
+Counties (G): 785
+
+. qui tab year
+
+. di "Years (T): " r(r)
+Years (T): 17
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1910 |        785        5.88        5.88
+       1920 |        785        5.88       11.77
+       1925 |        785        5.88       17.65
+       1930 |        785        5.88       23.53
+       1940 |        785        5.88       29.42
+       1945 |        785        5.88       35.30
+       1950 |        785        5.88       41.18
+       1954 |        785        5.88       47.07
+       1959 |        785        5.88       52.95
+       1964 |        785        5.88       58.83
+       1969 |        785        5.88       64.72
+       1974 |        785        5.88       70.60
+       1978 |        785        5.88       76.48
+       1982 |        785        5.88       82.37
+       1987 |        785        5.88       88.25
+       1992 |        785        5.88       94.13
+       1997 |        783        5.87      100.00
+------------+-----------------------------------
+      Total |     13,343      100.00
+
+. di ""
+
+
+. di "--- Erosion variables (treatment) ---"
+--- Erosion variables (treatment) ---
+
+. di "m1_0 = share in LOW erosion (<25% topsoil loss)"
+m1_0 = share in LOW erosion (<25% topsoil loss)
+
+. di "m1_1 = share in MEDIUM erosion (25-75% topsoil loss)"
+m1_1 = share in MEDIUM erosion (25-75% topsoil loss)
+
+. di "m1_2 = share in HIGH erosion (>75% topsoil loss)"
+m1_2 = share in HIGH erosion (>75% topsoil loss)
+
+. summ m1_0 m1_1 m1_2
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        m1_0 |     13,343    .3674429    .3674809  -1.03e-07          1
+        m1_1 |     13,343    .4803509     .353944          0          1
+        m1_2 |     13,343    .1522062    .2689051          0          1
+
+. di ""
+
+
+. di "--- Outcome: value_landbuildings_f (log value farmland+buildings/acre) ---"
+--- Outcome: value_landbuildings_f (log value farmland+buildings/acre) ---
+
+. summ value_landbuildings_f
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+value_land~f |     11,775    4.632896    1.360325   .9046342   8.659949
+
+. di ""
+
+
+. di "--- Weight: farmland_weight (county farmland acres, 1930) ---"
+--- Weight: farmland_weight (county farmland acres, 1930) ---
+
+. summ farmland_weight
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+farmland_w~t |     13,343    553886.7      526334   42072.42    6159509
+
+. 
+. * --- Create time-varying treatment ---
+. * D_post = m1_2 * I(year > 1930): captures post-Dust Bowl effect
+. * of high erosion intensity
+. gen D_high_post = m1_2 * (year > 1930)
+
+. gen D_med_post  = m1_1 * (year > 1930)
+
+. label var D_high_post "High erosion x post-1930"
+
+. label var D_med_post  "Medium erosion x post-1930"
+
+. 
+. di _n "--- Time-varying treatment summary ---"
+
+--- Time-varying treatment summary ---
+
+. di "D_high_post (m1_2 * I(year>1930)):"
+D_high_post (m1_2 * I(year>1930)):
+
+. tab year, summ(D_high_post)
+
+            | Summary of High erosion x post-1930
+       year |        Mean   Std. dev.       Freq.
+------------+------------------------------------
+       1910 |           0           0         785
+       1920 |           0           0         785
+       1925 |           0           0         785
+       1930 |           0           0         785
+       1940 |   .15218339    .2690527         785
+       1945 |   .15218339    .2690527         785
+       1950 |   .15218339    .2690527         785
+       1954 |   .15218339    .2690527         785
+       1959 |   .15218339    .2690527         785
+       1964 |   .15218339    .2690527         785
+       1969 |   .15218339    .2690527         785
+       1974 |   .15218339    .2690527         785
+       1978 |   .15218339    .2690527         785
+       1982 |   .15218339    .2690527         785
+       1987 |   .15218339    .2690527         785
+       1992 |   .15218339    .2690527         785
+       1997 |    .1525721    .2692863         783
+------------+------------------------------------
+      Total |   .11639297   .24385353      13,343
+
+. di ""
+
+
+. di "D_med_post (m1_1 * I(year>1930)):"
+D_med_post (m1_1 * I(year>1930)):
+
+. tab year, summ(D_med_post)
+
+            |     Summary of Medium erosion x
+            |              post-1930
+       year |        Mean   Std. dev.       Freq.
+------------+------------------------------------
+       1910 |           0           0         785
+       1920 |           0           0         785
+       1925 |           0           0         785
+       1930 |           0           0         785
+       1940 |   .48035657   .35413136         785
+       1945 |   .48035657   .35413136         785
+       1950 |   .48035657   .35413136         785
+       1954 |   .48035657   .35413136         785
+       1959 |   .48035657   .35413136         785
+       1964 |   .48035657   .35413136         785
+       1969 |   .48035657   .35413136         785
+       1974 |   .48035657   .35413136         785
+       1978 |   .48035657   .35413136         785
+       1982 |   .48035657   .35413136         785
+       1987 |   .48035657   .35413136         785
+       1992 |   .48035657   .35413136         785
+       1997 |   .48025985   .35455771         783
+------------+------------------------------------
+      Total |   .36730888   .37057132      13,343
+
+. 
+. * --- Sample restriction: keep counties with non-missing weight ---
+. drop if farmland_weight == . | farmland_weight == 0
+(0 observations deleted)
+
+. qui tab fips
+
+. di _n "After sample restrictions: " _N " obs, " r(r) " counties"
+
+After sample restrictions: 13343 obs, 785 counties
+
+. 
+. 
+. /*==============================================================================
+>   STEP 2: TABLE 2 -- SHORT/LONG-RUN AGRICULTURAL ADJUSTMENTS
+> 
+>   Simplified TWFE specification (county + year FE):
+>     Y_ct = alpha_c + gamma_t + beta_h * D_high_post_ct
+>                               + beta_m * D_med_post_ct + eps_ct
+> 
+>   Notes: The full paper spec uses state x year FE, baseline controls
+>   interacted with year, and lagged controls. The simplified version
+>   below is for twowayfeweights decomposition.
+> 
+>   Also run the full paper spec for comparison (areg with id_stateyear).
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 2: AGRICULTURAL ADJUSTMENTS"
+TABLE 2: AGRICULTURAL ADJUSTMENTS
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- Panel A: Simplified TWFE (county + year FE) ---
+. di _n "--- Simplified TWFE (county + year FE) ---"
+
+--- Simplified TWFE (county + year FE) ---
+
+. di "  Used for twowayfeweights decomposition"
+  Used for twowayfeweights decomposition
+
+. xtreg value_landbuildings_f D_high_post D_med_post i.year ///
+>     [aweight=farmland_weight], fe i(fips) cluster(fips)
+
+Fixed-effects (within) regression               Number of obs     =     11,775
+Group variable: fips                            Number of groups  =        785
+
+R-squared:                                      Obs per group:
+     Within  = 0.9490                                         min =         15
+     Between = 0.0015                                         avg =       15.0
+     Overall = 0.6786                                         max =         15
+
+                                                F(16,784)         =    4675.07
+corr(u_i, Xb) = -0.0114                         Prob > F          =     0.0000
+
+                                 (Std. err. adjusted for 785 clusters in fips)
+------------------------------------------------------------------------------
+             |               Robust
+value_land~f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ D_high_post |  -.1610949    .057511    -2.80   0.005    -.2739887   -.0482012
+  D_med_post |   .2637776    .051835     5.09   0.000     .1620257    .3655295
+             |
+        year |
+       1920  |   .5398648   .0231395    23.33   0.000      .494442    .5852876
+       1925  |   .2541281   .0250178    10.16   0.000     .2050183     .303238
+       1930  |   .1923361   .0277025     6.94   0.000     .1379562     .246716
+       1940  |   -.463847   .0408981   -11.34   0.000    -.5441298   -.3835642
+       1945  |  -.1387114   .0405457    -3.42   0.001    -.2183024   -.0591203
+       1950  |   .4382894   .0388318    11.29   0.000     .3620628     .514516
+       1954  |   .6750684   .0395406    17.07   0.000     .5974505    .7526864
+       1959  |   .9643708   .0396759    24.31   0.000     .8864873    1.042254
+       1964  |   1.234038   .0388202    31.79   0.000     1.157834    1.310242
+       1969  |   1.525787   .0377789    40.39   0.000     1.451627    1.599946
+       1978  |   2.680561   .0360424    74.37   0.000      2.60981    2.751312
+       1982  |    2.95955   .0400156    73.96   0.000        2.881    3.038101
+       1987  |   2.670772   .0400704    66.65   0.000     2.592114     2.74943
+       1992  |   2.725706   .0379516    71.82   0.000     2.651208    2.800205
+             |
+       _cons |   3.172029   .0218192   145.38   0.000     3.129198     3.21486
+-------------+----------------------------------------------------------------
+     sigma_u |  .72112015
+     sigma_e |  .27516363
+         rho |  .87290364   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. local b_h1  = _b[D_high_post]
+
+. local se_h1 = _se[D_high_post]
+
+. local b_m1  = _b[D_med_post]
+
+. local se_m1 = _se[D_med_post]
+
+. local nn_1  = e(N)
+
+. local ng_1  = e(N_g)
+
+. di "  beta(D_high_post) = " %7.3f `b_h1' " (" %5.3f `se_h1' ")"
+  beta(D_high_post) =  -0.161 (0.058)
+
+. di "  beta(D_med_post)  = " %7.3f `b_m1' " (" %5.3f `se_m1' ")"
+  beta(D_med_post)  =   0.264 (0.052)
+
+. di "  N = " `nn_1' ", counties = " `ng_1'
+  N = 11775, counties = 785
+
+. 
+. * --- Panel B: Same without weights ---
+. di _n "--- Simplified TWFE, unweighted ---"
+
+--- Simplified TWFE, unweighted ---
+
+. xtreg value_landbuildings_f D_high_post D_med_post i.year, ///
+>     fe i(fips) cluster(fips)
+
+Fixed-effects (within) regression               Number of obs     =     11,775
+Group variable: fips                            Number of groups  =        785
+
+R-squared:                                      Obs per group:
+     Within  = 0.9442                                         min =         15
+     Between = 0.0021                                         avg =       15.0
+     Overall = 0.6788                                         max =         15
+
+                                                F(16,784)         =    5510.30
+corr(u_i, Xb) = -0.0113                         Prob > F          =     0.0000
+
+                                 (Std. err. adjusted for 785 clusters in fips)
+------------------------------------------------------------------------------
+             |               Robust
+value_land~f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ D_high_post |   -.204512   .0539593    -3.79   0.000    -.3104338   -.0985903
+  D_med_post |   .2234384   .0463821     4.82   0.000     .1323907    .3144862
+             |
+        year |
+       1920  |   .6324241   .0123323    51.28   0.000     .6082159    .6566322
+       1925  |   .3715258   .0115297    32.22   0.000     .3488931    .3941585
+       1930  |   .3072378   .0129404    23.74   0.000     .2818359    .3326398
+       1940  |  -.3281988   .0339833    -9.66   0.000    -.3949077   -.2614898
+       1945  |  -.0064765   .0334242    -0.19   0.846     -.072088    .0591351
+       1950  |   .5299864   .0329854    16.07   0.000     .4652363    .5947366
+       1954  |   .7631406   .0338259    22.56   0.000     .6967405    .8295406
+       1959  |   1.041283   .0340551    30.58   0.000     .9744329    1.108133
+       1964  |   1.300525   .0345694    37.62   0.000     1.232665    1.368384
+       1969  |   1.600559    .033738    47.44   0.000     1.534332    1.666787
+       1978  |   2.759042   .0323938    85.17   0.000     2.695453     2.82263
+       1982  |   3.024842   .0333464    90.71   0.000     2.959383    3.090301
+       1987  |   2.714929   .0350139    77.54   0.000     2.646197    2.783661
+       1992  |   2.794174   .0333118    83.88   0.000     2.728783    2.859565
+             |
+       _cons |   3.410012   .0143478   237.67   0.000     3.381847    3.438176
+-------------+----------------------------------------------------------------
+     sigma_u |  .72115997
+     sigma_e |  .28354056
+         rho |  .86611212   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. local b_h2  = _b[D_high_post]
+
+. local se_h2 = _se[D_high_post]
+
+. local b_m2  = _b[D_med_post]
+
+. local se_m2 = _se[D_med_post]
+
+. local nn_2  = e(N)
+
+. di "  beta(D_high_post) = " %7.3f `b_h2' " (" %5.3f `se_h2' ")"
+  beta(D_high_post) =  -0.205 (0.054)
+
+. di "  beta(D_med_post)  = " %7.3f `b_m2' " (" %5.3f `se_m2' ")"
+  beta(D_med_post)  =   0.223 (0.046)
+
+. 
+. * --- Panel C: Full paper spec with state x year FE ---
+. di _n "--- Full paper spec (state x year FE) ---"
+
+--- Full paper spec (state x year FE) ---
+
+. cap confirm variable id_stateyear
+
+. if !_rc {
+.     areg value_landbuildings_f D_high_post D_med_post ///
+>         [aweight=farmland_weight], absorb(id_stateyear) cluster(fips)
+(sum of wgt is 7,390,509,929.004)
+
+Linear regression, absorbing indicators             Number of obs     = 11,775
+Absorbed variable: id_stateyear                     No. of categories =    180
+                                                    F(2, 784)         =   2.66
+                                                    Prob > F          = 0.0705
+                                                    R-squared         = 0.8599
+                                                    Adj R-squared     = 0.8577
+                                                    Root MSE          = 0.5295
+
+                                 (Std. err. adjusted for 785 clusters in fips)
+------------------------------------------------------------------------------
+             |               Robust
+value_land~f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ D_high_post |  -.0741773   .1079384    -0.69   0.492    -.2860599    .1377052
+  D_med_post |   .0938764    .079996     1.17   0.241    -.0631552     .250908
+       _cons |   4.305179   .0457128    94.18   0.000     4.215445    4.394913
+------------------------------------------------------------------------------
+.     local b_h3  = _b[D_high_post]
+.     local se_h3 = _se[D_high_post]
+.     local b_m3  = _b[D_med_post]
+.     local se_m3 = _se[D_med_post]
+.     local nn_3  = e(N)
+.     di "  beta(D_high_post) = " %7.3f `b_h3' " (" %5.3f `se_h3' ")"
+  beta(D_high_post) =  -0.074 (0.108)
+.     di "  beta(D_med_post)  = " %7.3f `b_m3' " (" %5.3f `se_m3' ")"
+  beta(D_med_post)  =   0.094 (0.080)
+. }
+
+. else {
+.     di "  id_stateyear not found - skipping state x year FE spec"
+.     local b_h3  = .
+.     local se_h3 = .
+.     local b_m3  = .
+.     local se_m3 = .
+.     local nn_3  = .
+. }
+
+. 
+. * --- Panel D: High erosion only (no medium) ---
+. di _n "--- TWFE with high erosion only ---"
+
+--- TWFE with high erosion only ---
+
+. xtreg value_landbuildings_f D_high_post i.year ///
+>     [aweight=farmland_weight], fe i(fips) cluster(fips)
+
+Fixed-effects (within) regression               Number of obs     =     11,775
+Group variable: fips                            Number of groups  =        785
+
+R-squared:                                      Obs per group:
+     Within  = 0.9479                                         min =         15
+     Between = 0.0051                                         avg =       15.0
+     Overall = 0.6800                                         max =         15
+
+                                                F(15,784)         =    5054.45
+corr(u_i, Xb) = -0.0064                         Prob > F          =     0.0000
+
+                                 (Std. err. adjusted for 785 clusters in fips)
+------------------------------------------------------------------------------
+             |               Robust
+value_land~f | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ D_high_post |  -.2617016   .0531753    -4.92   0.000    -.3660845   -.1573187
+             |
+        year |
+       1920  |   .5398648   .0231386    23.33   0.000     .4944439    .5852856
+       1925  |   .2541281   .0250168    10.16   0.000     .2050203     .303236
+       1930  |   .1923361   .0277013     6.94   0.000     .1379585    .2467137
+       1940  |  -.3297477   .0311358   -10.59   0.000    -.3908671   -.2686283
+       1945  |  -.0046121   .0319058    -0.14   0.885    -.0672431    .0580189
+       1950  |   .5723886     .02901    19.73   0.000     .5154421    .6293351
+       1954  |   .8091677   .0279477    28.95   0.000     .7543065    .8640289
+       1959  |    1.09847   .0261077    42.07   0.000     1.047221    1.149719
+       1964  |   1.368137   .0269901    50.69   0.000     1.315156    1.421119
+       1969  |   1.659886   .0257838    64.38   0.000     1.609273    1.710499
+       1978  |   2.814661   .0244336   115.20   0.000     2.766698    2.862623
+       1982  |    3.09365   .0274193   112.83   0.000     3.039826    3.147474
+       1987  |   2.804871   .0296314    94.66   0.000     2.746705    2.863038
+       1992  |   2.859806   .0272361   105.00   0.000     2.806341     2.91327
+             |
+       _cons |   3.172029   .0223719   141.79   0.000     3.128113    3.215945
+-------------+----------------------------------------------------------------
+     sigma_u |  .71844685
+     sigma_e |  .27798697
+         rho |  .86978226   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. local b_h4  = _b[D_high_post]
+
+. local se_h4 = _se[D_high_post]
+
+. local nn_4  = e(N)
+
+. di "  beta(D_high_post) = " %7.3f `b_h4' " (" %5.3f `se_h4' ")"
+  beta(D_high_post) =  -0.262 (0.053)
+
+. 
+. 
+. /*==============================================================================
+>   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+> 
+>   feTR: Y = value_landbuildings_f, G = fips, T = year
+>   D = D_high_post (= m1_2 * I(year > 1930))
+>   other_treatments: D_med_post (= m1_1 * I(year > 1930))
+> 
+>   Sharp-like design: many counties with 0% land in high erosion (D=0 always)
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TWOWAYFEWEIGHTS DECOMPOSITION"
+TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- A1: feTR with D_high_post, weighted ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A1: feTR -- D_high_post, weighted by farmland"
+A1: feTR -- D_high_post, weighted by farmland
+
+. di    "=============================================="
+==============================================
+
+. di "  Y = value_landbuildings_f, G = fips, T = year"
+  Y = value_landbuildings_f, G = fips, T = year
+
+. di "  D = D_high_post, other = D_med_post"
+  D = D_high_post, other = D_med_post
+
+. di ""
+
+
+. cap noisily twowayfeweights value_landbuildings_f fips year D_high_post, ///
+>     type(feTR) other_treatments(D_med_post) ///
+>     weight(farmland_weight) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to -0.1611, estimates the sum of several terms.
+
+The first term is a weighted sum of 3454 ATTs of the treatment.
+2717 ATTs receive a positive weight, and 737 receive a negative weight.
+------------------------------------------------
+Treat. var: D_high_post # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        2717        1.0096      
+Negative weights        737         -0.0096     
+------------------------------------------------
+Total                   3454        1.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 7634 ATTs of treatment 1 included in the other_treatments option.
+2464 ATTs receive a positive weight, and 5170 receive a negative weight.
+------------------------------------------------
+Other treat.: D_med_post# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        2464        0.4280      
+Negative weights        5170        -0.4280     
+------------------------------------------------
+Total                   7634        0.0000      
+------------------------------------------------
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. * --- A2: feTR with D_high_post only, weighted ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A2: feTR -- D_high_post only (no other_treatments)"
+A2: feTR -- D_high_post only (no other_treatments)
+
+. di    "=============================================="
+==============================================
+
+. cap noisily twowayfeweights value_landbuildings_f fips year D_high_post, ///
+>     type(feTR) weight(farmland_weight) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to -0.2617, estimates a weighted sum of 3454 ATTs. 
+2442 ATTs receive a positive weight, and 1012 receive a negative weight.
+------------------------------------------------
+Treat. var: D_high_post # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        2442        1.0081      
+Negative weights        1012        -0.0081     
+------------------------------------------------
+Total                   3454        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =   -0.2617
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.4239
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:    7.5676
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. * --- A3: feTR unweighted ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A3: feTR -- D_high_post, unweighted"
+A3: feTR -- D_high_post, unweighted
+
+. di    "=============================================="
+==============================================
+
+. cap noisily twowayfeweights value_landbuildings_f fips year D_high_post, ///
+>     type(feTR) other_treatments(D_med_post) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to -0.2045, estimates the sum of several terms.
+
+The first term is a weighted sum of 3454 ATTs of the treatment.
+2629 ATTs receive a positive weight, and 825 receive a negative weight.
+------------------------------------------------
+Treat. var: D_high_post # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        2629        1.0066      
+Negative weights        825         -0.0066     
+------------------------------------------------
+Total                   3454        1.0000      
+------------------------------------------------
+
+The next term is a weighted sum of 7634 ATTs of treatment 1 included in the other_treatments option.
+2376 ATTs receive a positive weight, and 5258 receive a negative weight.
+------------------------------------------------
+Other treat.: D_med_post# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        2376        0.3993      
+Negative weights        5258        -0.3993     
+------------------------------------------------
+Total                   7634        0.0000      
+------------------------------------------------
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. 
+. /*==============================================================================
+>   STEP 4: LATEX TABLES
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "LaTeX TABLE EXPORT"
+LaTeX TABLE EXPORT
+
+. di    "=============================================="
+==============================================
+
+. 
+. * ===== TABLE 2 (Simplified) =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table2_simplified.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Table 2---Effects of Dust Bowl Erosion on Land Values (Simplified TWFE)}" _n
+
+. file write texfile "\label{tab:table2}" _n
+
+. file write texfile "\begin{tabular}{lcccc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & Weighted & Unweighted & State\$\times\$Year FE & High only \\\\" _n
+
+. file write texfile " & (1) & (2) & (3) & (4) \\\\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "\multicolumn{5}{l}{\textit{Dep.\ var.: ln(value farmland + buildings / acre)}} \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. * High erosion row
+. local bh1 : di %7.3f `b_h1'
+
+. local bh1 = strtrim("`bh1'")
+
+. _stars `b_h1' `se_h1'
+
+. local sh1 "`r(s)'"
+
+. local bh2 : di %7.3f `b_h2'
+
+. local bh2 = strtrim("`bh2'")
+
+. _stars `b_h2' `se_h2'
+
+. local sh2 "`r(s)'"
+
+. local bh4 : di %7.3f `b_h4'
+
+. local bh4 = strtrim("`bh4'")
+
+. _stars `b_h4' `se_h4'
+
+. local sh4 "`r(s)'"
+
+. 
+. if `b_h3' < . {
+.     local bh3 : di %7.3f `b_h3'
+.     local bh3 = strtrim("`bh3'")
+.     _stars `b_h3' `se_h3'
+.     local sh3 "`r(s)'"
+. }
+
+. else {
+.     local bh3 "--"
+.     local sh3 ""
+. }
+
+. 
+. file write texfile "High erosion \$\times\$ post-1930"
+
+. file write texfile " & `bh1'`sh1' & `bh2'`sh2' & `bh3'`sh3' & `bh4'`sh4' \\\\" _n
+
+. 
+. * SEs
+. local seh1 : di %7.3f `se_h1'
+
+. local seh1 = strtrim("`seh1'")
+
+. local seh2 : di %7.3f `se_h2'
+
+. local seh2 = strtrim("`seh2'")
+
+. local seh4 : di %7.3f `se_h4'
+
+. local seh4 = strtrim("`seh4'")
+
+. 
+. if `se_h3' < . {
+.     local seh3 : di %7.3f `se_h3'
+.     local seh3 = strtrim("`seh3'")
+. }
+
+. else {
+.     local seh3 "--"
+. }
+
+. 
+. file write texfile " & (`seh1') & (`seh2') & (`seh3') & (`seh4') \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. * Medium erosion row
+. local bm1 : di %7.3f `b_m1'
+
+. local bm1 = strtrim("`bm1'")
+
+. _stars `b_m1' `se_m1'
+
+. local sm1 "`r(s)'"
+
+. local bm2 : di %7.3f `b_m2'
+
+. local bm2 = strtrim("`bm2'")
+
+. _stars `b_m2' `se_m2'
+
+. local sm2 "`r(s)'"
+
+. 
+. if `b_m3' < . {
+.     local bm3 : di %7.3f `b_m3'
+.     local bm3 = strtrim("`bm3'")
+.     _stars `b_m3' `se_m3'
+.     local sm3 "`r(s)'"
+. }
+
+. else {
+.     local bm3 "--"
+.     local sm3 ""
+. }
+
+. 
+. file write texfile "Medium erosion \$\times\$ post-1930"
+
+. file write texfile " & `bm1'`sm1' & `bm2'`sm2' & `bm3'`sm3' & \\\\" _n
+
+. 
+. local sem1 : di %7.3f `se_m1'
+
+. local sem1 = strtrim("`sem1'")
+
+. local sem2 : di %7.3f `se_m2'
+
+. local sem2 = strtrim("`sem2'")
+
+. 
+. if `se_m3' < . {
+.     local sem3 : di %7.3f `se_m3'
+.     local sem3 = strtrim("`sem3'")
+. }
+
+. else {
+.     local sem3 "--"
+. }
+
+. 
+. file write texfile " & (`sem1') & (`sem2') & (`sem3') & \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. file write texfile "County FE & Y & Y & & Y \\\\" _n
+
+. file write texfile "Year FE & Y & Y & & Y \\\\" _n
+
+. file write texfile "State \$\times\$ Year FE & & & Y & \\\\" _n
+
+. file write texfile "Weighted (farmland) & Y & & Y & Y \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. local nfmt : di %6.0fc `nn_1'
+
+. local nfmt = strtrim("`nfmt'")
+
+. local gfmt : di %6.0fc `ng_1'
+
+. local gfmt = strtrim("`gfmt'")
+
+. file write texfile "Observations & `nfmt' & `nfmt' & `nfmt' & `nfmt' \\\\" _n
+
+. file write texfile "Counties & `gfmt' & `gfmt' & `gfmt' & `gfmt' \\\\" _n
+
+. 
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\multicolumn{5}{p{0.95\linewidth}}{\footnotesize" _n
+
+. file write texfile " \textit{Notes:} Simplified two-way FE regressions for weight decomposition." _n
+
+. file write texfile " Full paper uses state\$\times\$year FE and 1930 baseline controls." _n
+
+. file write texfile " High/Medium erosion = share of county land in high/medium erosion areas" _n
+
+. file write texfile " (from 1930s Soil Conservation Service maps)." _n
+
+. file write texfile " Robust standard errors clustered by county in parentheses." _n
+
+. file write texfile " *** Significant at 1\%, ** 5\%, * 10\%.}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table2_simplified.tex created"
+  -> table2_simplified.tex created
+
+. 
+. * ===== TWOWAYFEWEIGHTS SUMMARY =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table_twowayfeweights.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}"
+>  _n
+
+. file write texfile "\label{tab:twowayfe}" _n
+
+. file write texfile "\begin{tabular}{lc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 2, simplified (feTR)}} \\\\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "Regression type & Fixed effects (feTR) \\\\" _n
+
+. file write texfile "Dependent variable & ln(farmland value / acre) \\\\" _n
+
+. file write texfile "Treatment variable & High erosion share \$\times\$ post-1930 \\\\" _n
+
+. file write texfile "Other treatment & Medium erosion share \$\times\$ post-1930 \\\\" _n
+
+. file write texfile "Group (G) & County (FIPS) \\\\" _n
+
+. file write texfile "Time (T) & Year (1910--1997) \\\\" _n
+
+. file write texfile "Design & Fuzzy (erosion varies within county) \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weight distribution}} \\\\" _n
+
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table_twowayfeweights.tex created"
+  -> table_twowayfeweights.tex created
+
+. 
+. * ===== MASTER DOCUMENT =====
+. cap file close texfile
+
+. file open texfile using "$outdir/hornbeck_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write texfile "\geometry{margin=1in}" _n
+
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justification=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Hornbeck (2012)}\\\\" _n
+
+. file write texfile "{\large The Enduring Impact of the American Dust Bowl:}\\\\" _n
+
+. file write texfile "{\large Short- and Long-Run Adjustments to}\\\\" _n
+
+. file write texfile "{\large Environmental Catastrophe}\\\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}, 102(4), 1477--1507}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. file write texfile "\vspace{1em}" _n _n
+
+. file write texfile "\input{table2_simplified}" _n _n
+
+. file write texfile "\input{table_twowayfeweights}" _n _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  -> hornbeck_tables.tex created"
+  -> hornbeck_tables.tex created
+
+. 
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "ALL DONE - Hornbeck (2012)"
+ALL DONE - Hornbeck (2012)
+
+. di    "=============================================="
+==============================================
+
+. di "Output files:"
+Output files:
+
+. di "  1. $outdir/table2_simplified.tex"
+  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/table2_simplified.tex
+
+. di "  2. $outdir/table_twowayfeweights.tex"
+  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/table_twowayfeweights.tex
+
+. di "  3. $outdir/hornbeck_tables.tex (compilable master)"
+  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/hornbeck_tables.tex (compilable master)
+
+. di "  4. $outdir/run_twowayfe.log"
+  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/run_twowayfe.log
+
+. di "=============================================="
+==============================================
+
+. 
+. log close _all
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Hornbeck (2012)/run_twowayfe.log
+  log type:  text
+ closed on:  20 Apr 2026, 16:22:18
+-----------------------------------------------------------------------------------------------------------------

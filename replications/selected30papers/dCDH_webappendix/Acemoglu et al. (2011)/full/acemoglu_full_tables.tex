@@ -1,0 +1,65 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,adjustbox}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Acemoglu, Cantoni, Johnson \& Robinson (2011)}\\
+{\large The Consequences of Radical Reform: The French Revolution}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 101(7), 3286--3307}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Full replication.
+Tables 2--6 replicated from the original do-file using 2 datasets.
+Table 4 Column 8 (Arellano-Bond GMM) omitted from LaTeX due to
+\texttt{outreg2}/\texttt{xtabond2} incompatibility (regression ran successfully in log).
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 3 -- Panel Fixed Effects: Urbanization}
+
+Panel FE regressions of urbanization rate on French presence interacted
+with year dummies. Columns vary by sample (West of Elbe vs.\ All Germany)
+and weighting (population-weighted vs.\ unweighted).
+
+\vspace{1em}
+\input{table3_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 4 -- Robustness}
+
+Robustness checks for Table 3 Column 1. Columns add covariate interactions
+(protestant, latitude, longitude, distance to Paris, territories, initial urbanization).
+
+\vspace{1em}
+\input{table4_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 5 -- Agriculture and Industry}
+
+Cross-sectional regressions of agriculture/industry employment shares
+on French presence, by year. West of Elbe and full sample.
+
+\vspace{1em}
+\input{table5_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 6 -- Instrumental Variables}
+
+IV regressions using years of French institutional reform as instrument
+for French presence.
+
+\vspace{1em}
+\input{table6_full}
+
+\end{document}

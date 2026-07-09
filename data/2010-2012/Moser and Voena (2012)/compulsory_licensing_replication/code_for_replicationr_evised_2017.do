@@ -18,7 +18,7 @@ codebook patnum if germany==1
 codebook patnum if usa==0 & germany==0
 
 ****** TABLE 2********
-use "chem_patents_maindataset.dta"
+use "chem_patents_maindataset.dta", clear
 
 forvalues x=1876/1939 {
 	gen td_`x'=0

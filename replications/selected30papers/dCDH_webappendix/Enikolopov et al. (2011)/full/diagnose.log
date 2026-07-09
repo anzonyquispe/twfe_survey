@@ -1,0 +1,119 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Enikolopov et al. (2011)/full/diagnose.log
+  log type:  text
+ opened on:   6 May 2026, 01:37:17
+
+. cd "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Enikolopov e
+> t al. (2011)/Replication"
+C:\Users\Usuario\Documents\GitHub\twfe_survey\data\2010-2012\Enikolopov et al. 
+> (2011)\Replication
+
+. use "NTV_Aggregate_Data.dta", clear
+
+. describe, short
+
+Contains data from NTV_Aggregate_Data.dta
+ Observations:         3,580                  
+    Variables:            49                  9 Dec 2010 17:07
+Sorted by: 
+
+. di _n "--- Key variables ---"
+
+--- Key variables ---
+
+. ds *population* *wage* *Watch* *NTV* *region* *tik*
+populat~1996  wage98_ln     Watch_OLS     NTV1999
+populat~1998  wage96_ln     Watch_probit  region
+wage98        wage97_ln     NTV1997       tik_id
+
+. di _n "--- Variable list ---"
+
+--- Variable list ---
+
+. describe
+
+Contains data from NTV_Aggregate_Data.dta
+ Observations:         3,580                  
+    Variables:            49                  9 Dec 2010 17:07
+                                              (_dta has notes)
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+city_id         double  %10.0g                Locality ID
+region          float   %8.0g                 Region ID
+tik_id          long    %8.0g                 Electoral district ID
+population1996  double  %10.0g                Population in 1996, thousands
+doctors_pc1996  double  %10.0g                Doctors per 10000, 1996
+nurses1996      double  %10.0g                Nurses per 10000, 1996
+population1998  double  %10.0g                Population in 1998, thousands
+doctors_pc1998  double  %10.0g                Doctors per 10000, 1998
+nurses1998      double  %10.0g                Nurses per 10000, 1998
+logpop98        float   %9.0g                 Log (population), 1998
+retired98       float   %9.0g                 Retired people, % 1998
+unempl98        float   %9.0g                 Unemployed, % 1998
+pop_change98    float   %9.0g                 Population change, % 1998
+farmers98       float   %9.0g                 Population employed in farms, %
+                                                1998
+migr98          float   %9.0g                 Migration rate, % 1998
+crime_rate98    float   %9.0g                 Crime rate, per 10000 1998
+pension98       float   %9.0g                 Average pension, in thousands of
+                                                rubles, 1998
+wage98          float   %9.0g                 Average wage, in thousands of
+                                                rubles, 1998
+wage98_ln       float   %9.0g                 Ln of Average wage, in thousands
+                                                of rubles, 1998
+Gorod           float   %9.0g                 City dummy
+NTV1997         byte    %8.0g                 NTV transmitter in 1997
+NTV1999         byte    %8.0g                 NTV transmitter in 1999
+Votes_KPRF_1999 float   %9.0g                 Vote for KPRF (Communists), %,
+                                                1999
+Votes_Edin~1999 float   %9.0g                 Vote for Unity, %, 1999
+Votes_OVR_1999  float   %9.0g                 Vote for OVR(Fartherland - All
+                                                Russia), %, 1999
+Votes_SPS_1999  float   %9.0g                 Vote for SPS(Union of Right
+                                                Forces), %, 1999
+Votes_LDPR_1999 float   %9.0g                 Vote for LDPR (Bloc of
+                                                Zhirinovsky), %, 1999
+Votes_Yabl~1999 float   %9.0g                 Vote for Yabloko, %, 1999
+Votes_KPRF_1995 float   %9.0g                 Vote for KPRF (Communists), %,
+                                                1995
+Votes_LDPR_1995 float   %9.0g                 Vote for LDPR, %, 1995
+Votes_NDR_1995  float   %9.0g                 Vote for NDR (Our Home is
+                                                Russia), %, 1995
+Votes_Yabl~1995 float   %9.0g                 Vote for Yabloko, %, 1995
+Votes_DVR_1995  float   %9.0g                 Democratic Russia's Choice, %,
+                                                1995
+Votes_SPS_2003  float   %9.0g                 Vote for SPS(Union of Right
+                                                Forces), %, 2003
+Votes_Yabl~2003 float   %9.0g                 Vote for Yabloko, %, 2003
+Votes_LDPR_2003 float   %9.0g                 Vote for LDPR (Bloc of
+                                                Zhirinovsky), %, 2003
+Votes_Edin~2003 float   %9.0g                 Vote for United Russia, %, 2003
+Votes_KPRF_2003 float   %9.0g                 Vote for KPRF (Communists), %,
+                                                2003
+Turnout_2003    float   %9.0g                 Voter turnout, %, 2003
+Turnout1995     float   %9.0g                 Voter turnout, %, 1995
+Turnout1999     float   %9.0g                 Voter turnout, %, 1999
+tvmaxtvflossp~A float   %9.0g                 Signal strength, free space
+tvmaxtveloss5~A float   %9.0g                 Signal strength, terrain adjusted
+logpop96        float   %9.0g                 Log (population), 1996
+wage96_ln       float   %9.0g                 Ln of Average wage, in thousands
+                                                of rubles, 1996
+logpop97        float   %9.0g                 Log (population), 1997
+wage97_ln       float   %9.0g                 Ln of Average wage, in thousands
+                                                of rubles, 1997
+Watch_OLS       float   %9.0g                 Fitted values
+Watch_probit    float   %9.0g                 Pr(NTV_received)
+-------------------------------------------------------------------------------
+Sorted by: 
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Enikolopov et al. (2011)/full/diagnose.log
+  log type:  text
+ closed on:   6 May 2026, 01:37:17
+-------------------------------------------------------------------------------

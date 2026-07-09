@@ -1,4 +1,5 @@
 /*==============================================================================
+
   WANG (2011) - "State Misallocation and Housing Prices:
   Theory and Evidence from China"
   AER, 101(5), 2081-2107
@@ -26,9 +27,23 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Wang (2011)"
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global paperdir "$twfe_root/data/2010-2012/Wang (2011)"
 global datadir  "$paperdir/aer_wang_data_files"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Wang (2011)"
+global outdir   "$twfe_root/replications/2010-2012/Wang (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -48,6 +63,108 @@ if _rc ssc install twowayfeweights, replace
 ==============================================================================*/
 
 use "$datadir/data_aersubmit.dta", clear
+
+
+
+
+use data_aersubmit.dta, clear
+
+***			***
+*** Table 2 ***
+***			***
+
+* estimate the degree of mismatch
+
+sort hhidc year id
+* Table 2, Column 1
+xi: regress logapt_rentval logwage_broadhh_ logtot_assets age_head age_head2 age_head3 eduyr_head i.province*i.year if year<=1993 & apt_nonmrkt==0 & (hhidc!=hhidc[_n-1] | year!=year[_n-1]), cluster(hhidc)
+predict pred_logapt_rentval if year<=1993 & (hhidc!=hhidc[_n-1] | year!=year[_n-1]), xb
+
+* Table 2 Column 2
+xi: regress logapt_rentval logwage_broadhh_ logtot_assets  age_head age_head2 age_head3 eduyr_head i.province*i.year if year>1993 & apt_nonmrkt93==0 & (hhidc!=hhidc[_n-1] | year!=year[_n-1]), cluster(hhidc)
+predict postpred_logapt_rentval if year>1993 & (hhidc!=hhidc[_n-1] | year!=year[_n-1]), xb
+
+gen log_mismatch_post = postpred_logapt_rentval - logapt_rentval
+gen log_mismatch = pred_logapt_rentval - logapt_rentval  
+
+***			***
+*** Table 3 ***
+***			***
+
+* Table 3 Column 1 *
+sum log_mismatch if apt_nonmrkt==1
+sum log_mismatch if apt_nonmrkt==0
+regress log_mismatch apt_nonmrkt 
+
+* Table 3 Column 2 *
+sum log_mismatch_post if apt_nonmrkt93==1
+sum log_mismatch_post if apt_nonmrkt93==0
+regress log_mismatch_post apt_nonmrkt93 
+
+gen mpre = log_mismatch if year<=1993
+
+bysort hhidc: egen log_mismatchpre = mean(mpre)
+gen mpre_aptnon = log_mismatch if year<=1993 & apt_nonmrkt==1
+bysort province: egen log_mismatchpre_prov = mean(mpre_aptnon)
+
+bysort province year: egen logapt_rentval_prov = mean(logapt_rentval)
+drop mpre* 
+
+sort hhidc year id
+
+
+***		    ***
+*** Table 4 ***
+***			***
+
+
+gen abs_mismatch = abs(log_mismatchpre)
+
+* Table 4, Column 1
+xi:dprobit move_attrit abs_mismatch age_head age_head2 eduyr_head i.year i.province if hhidc==hhidc[_n-1] & year!=year[_n-1] & apt_nonmrkt[_n-1]==1 & regime2==0,cluster(hhidc) 
+
+* Table 4, Column 2
+xi:dprobit move_attrit abs_mismatch age_head age_head2 eduyr_head i.year i.province if (hhidc!=hhidc[_n-1] | year!=year[_n-1]) & apt_nonmrkt93==1 & regime2==1,cluster(hhidc) 
+
+
+
+***			***
+*** Table 5 ***
+***			***
+
+* Table 5 Column 1 
+xi: regress logapt_sqm i.regime2*log_mismatchpre  logwage_broadhh logtot_assets  age_head age_head2 age_head3 eduyr_head  i.province*i.year if (hhidc!=hhidc[_n-1] | year!=year[_n-1]) & apt_nonmrkt93==1, cluster(hhidc) vce(bootstrap, reps(200))
+
+
+keep if (hhidc!=hhidc[_n-1] | year!=year[_n-1]) & apt_nonmrkt93==1
+egen province_num = group(province)
+gen post_mismatch = regime2*log_mismatchpre
+keep province_num year post_mismatch logapt_sqm ///
+        logwage_broadhh logtot_assets regime2 log_mismatchpre ///
+        age_head age_head2 age_head3 eduyr_head hhidc
+
+label variable province_num   "G: Province numeric ID"
+label variable year           "T: Survey year (1989-2004)"
+label variable post_mismatch  "D: Post x Mismatch interaction"
+label variable logapt_sqm     "Y: Log apartment size (sqm)"
+label variable hhidc "Household ID"
+rename province_num G
+rename year T
+rename logapt_sqm Y
+rename post_mismatch D
+rename hhidc cluster
+egen aux = group(T)
+replace T = aux
+drop aux
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = province_num, T = year, D = post_mismatch"
+
+log close _all
+
+
+
 
 sort hhidc year id
 
@@ -114,7 +231,15 @@ gen first_hhyr = (hhidc!=hhidc[_n-1] | year!=year[_n-1])
   Sample: apt_nonmrkt93==1 & first obs per household-year
   SE: clustered by household (paper uses bootstrap 200 reps)
 ==============================================================================*/
+reghdfe logapt_sqm i.regime2##c.log_mismatchpre logwage_broadhh logtot_assets ///
+        age_head age_head2 age_head3 eduyr_head, absorb(i.year i.province#i.year) 
 
+regress logapt_sqm i.regime2##c.log_mismatchpre ///
+        i.year i.province#i.year ///
+		logwage_broadhh logtot_assets ///
+        age_head age_head2 age_head3 eduyr_head ///
+        if first_hhyr==1 & apt_nonmrkt93==1, cluster(hhidc) noconst
+		
 di _n "=============================================="
 di    "TABLE 5 PANEL A: PARSIMONIOUS SPECIFICATION"
 di    "=============================================="
@@ -575,12 +700,22 @@ di _n "=============================================="
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "=============================================="
 
-keep province_num year post_mismatch logapt_sqm
+keep province_num year post_mismatch logapt_sqm ///
+        logwage_broadhh logtot_assets ///
+        age_head age_head2 age_head3 eduyr_head
 
 label variable province_num   "G: Province numeric ID"
 label variable year           "T: Survey year (1989-2004)"
 label variable post_mismatch  "D: Post x Mismatch interaction"
 label variable logapt_sqm     "Y: Log apartment size (sqm)"
+
+rename province_num G
+rename year T
+rename logapt_sqm Y
+rename post_mismatch D
+egen aux = group(T)
+replace T = aux
+drop aux
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

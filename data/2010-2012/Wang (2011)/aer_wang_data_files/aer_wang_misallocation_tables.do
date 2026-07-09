@@ -1,6 +1,6 @@
 * Stata do file for results in "State Misallocation and Housing Prices: Theory and Evidence from China" 
 
-use data_aersubmit.dta
+use data_aersubmit.dta, clear
 
 ***			***
 *** Table 2 ***

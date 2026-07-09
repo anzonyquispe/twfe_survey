@@ -1,0 +1,36 @@
+\begin{table}[htbp]
+\centering
+\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}
+\label{tab:simcoe_twfe}
+\begin{tabular}{lcc}
+\toprule
+ & Col 1 (techarea) & Col 3 (WG) \\
+\midrule
+\multicolumn{3}{l}{\textit{Panel A: Specification}} \\[3pt]
+Regression type & OLS & FE \\
+Dependent variable & \multicolumn{2}{c}{Total days} \\
+Treatment variable & \multicolumn{2}{c}{Suit-share $\times$ S-track} \\
+Group FE & Tech area & Working group \\
+Time FE  & \multicolumn{2}{c}{Publication cohort} \\[6pt]
+\multicolumn{3}{l}{\textit{Panel B: Weight Decomposition}} \\[3pt]
+$\hat{\beta}_{TWFE}$ &     2.6339 &     2.8841 \\
+\# positive weights & 27 & 137 \\
+\# negative weights & 32 & 130 \\
+\% negative weights &  54.2\% &  48.7\% \\[6pt]
+\multicolumn{3}{l}{\textit{Panel C: Classification (dCDH Web Appendix)}} \\[3pt]
+Design & \multicolumn{2}{c}{Sharp} \\
+Stable groups & \multicolumn{2}{c}{Not satisfied} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\textit{Notes:} Panel B reports the weight decomposition of the TWFE estimator 
+following de Chaisemartin \& D'Haultf\oe uille (2020). 
+The treatment variable is Suit-share $\times$ S-track (continuous). 
+Negative weights indicate the TWFE coefficient may not recover 
+a convex combination of causal effects under heterogeneous treatment effects. 
+Col 1 uses technology area as group FE; Col 3 uses working group FE.
+\end{minipage}
+\end{table}

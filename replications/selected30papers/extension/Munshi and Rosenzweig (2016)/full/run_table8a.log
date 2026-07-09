@@ -1,0 +1,57 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Munshi and Rosenzweig (2016)/full/run_table8a.log
+  log type:  text
+ opened on:   4 May 2026, 17:00:37
+
+. 
+. #delimit ;
+delimiter now ;
+. use "$datadir/table8a.dta", clear ;
+
+. di _n "--- Table 8a, Row 1 ---" ;
+
+--- Table 8a, Row 1 ---
+
+. cgmwildboot dpout10     pdinc10 pjdincx10 mark3d jmark3d  share71 jshare71,  
+>  cluster(state) bootcluster(state) seed(999);
+Initial estimtation does not work with cgmreg. Try
+cgmreg by itself to see what the problem is.
+
+. di _n "--- Table 8a, Row 2 ---" ;
+
+--- Table 8a, Row 2 ---
+
+. cgmwildboot dpout10     pdinc10 pjdincx10 mark3d jmark3d  share71 jshare71,  
+>  cluster(state) bootcluster(state) seed(999) null(0 0 . . . .);
+Initial estimtation does not work with cgmreg. Try
+cgmreg by itself to see what the problem is.
+
+. di _n "--- Table 8a, Row 3 ---" ;
+
+--- Table 8a, Row 3 ---
+
+. cgmwildboot dpoutvb5     pdinc5 pjdincx5 mark3d jmark3d  share71 jshare71,   
+> cluster(state) bootcluster(state) seed(999);
+Initial estimtation does not work with cgmreg. Try
+cgmreg by itself to see what the problem is.
+
+. di _n "--- Table 8a, Row 4 ---" ;
+
+--- Table 8a, Row 4 ---
+
+. cgmwildboot dpoutvb5     pdinc5 pjdincx5 mark3d jmark3d  share71 jshare71,   
+> cluster(state) bootcluster(state) seed(999) null(0 0 . . . .);
+Initial estimtation does not work with cgmreg. Try
+cgmreg by itself to see what the problem is.
+
+. #delimit cr
+delimiter now cr
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-20
+> 19/Munshi and Rosenzweig (2016)/full/run_table8a.log
+  log type:  text
+ closed on:   4 May 2026, 17:00:37
+-------------------------------------------------------------------------------

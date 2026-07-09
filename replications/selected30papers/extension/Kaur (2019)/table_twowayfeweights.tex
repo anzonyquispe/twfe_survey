@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{TWFE Weight Decomposition: Kaur (2019)}
+\label{tab:kaur_weights}
+\begin{tabular}{lc}
+\hline\hline
+ & feTR \\
+\hline
+$\hat{\beta}_{TWFE}$ & 0.0213 \\
+Positive weights & 1,712 \\
+Negative weights & 20 \\
+\% Negative & 1.2\% \\
+$\Sigma$ positive & 1.0025 \\
+$\Sigma$ negative & $-$0.0025 \\
+\hline
+\multicolumn{2}{l}{\footnotesize Spec: \texttt{reg lwage i.dist i.year amons80 bmons20, cluster(regionyr)}} \\
+\multicolumn{2}{l}{\footnotesize Panel: 240 districts $\times$ 32 years (1956--1987). Treatment: rainfall shock (binary).} \\
+\multicolumn{2}{l}{\footnotesize \texttt{other\_treatments(bmons20)} included in feTR decomposition.} \\
+\multicolumn{2}{l}{\footnotesize fdTR: N/A (\texttt{other\_treatments} incompatible with fdTR).} \\
+\hline\hline
+\end{tabular}
+\end{table}

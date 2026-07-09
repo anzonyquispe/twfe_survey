@@ -1,0 +1,863 @@
+-----------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/run_twowayfe.log
+  log type:  text
+ opened on:  17 Apr 2026, 00:23:49
+
+. 
+. * Install packages if needed
+. cap which estout
+
+. if _rc ssc install estout, replace
+
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1: IMPORT AND CLEAN DATA
+> ==============================================================================*/
+. 
+. import delimited using "$datadir/MainData.txt", delimiter(" ") clear
+(encoding automatically selected: ISO-8859-2)
+(14 vars, 79,888 obs)
+
+. 
+. * Check variable names
+. desc
+
+Contains data
+ Observations:        79,888                  
+    Variables:            14                  
+-----------------------------------------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-----------------------------------------------------------------------------------------------------------------
+product         long    %12.0g                Product
+country         str10   %10s                  Country
+mfn             str17   %17s                  MFN
+bnd             str6    %9s                   BND
+wmfn            str17   %17s                  WMFN
+wbnd            str6    %9s                   WBND
+import          str16   %16s                  Import
+price2          str18   %18s                  Price2
+price3          str19   %19s                  Price3
+price4          str19   %19s                  Price4
+price6          str20   %20s                  Price6
+mismatch        str16   %16s                  MisMatch
+herf            str18   %18s                  Herf
+share           str20   %20s                  
+-----------------------------------------------------------------------------------------------------------------
+Sorted by: 
+     Note: Dataset has changed since last saved.
+
+. 
+. * Handle NA values - some columns may be imported as strings due to "NA"
+. * Force destring all numeric variables
+. foreach var of varlist mfn bnd wmfn wbnd import mismatch herf share {
+  2.     cap confirm string variable `var'
+  3.     if !_rc {
+  4.         destring `var', replace force
+  5.     }
+  6. }
+mfn: contains nonnumeric characters; replaced as double
+(3515 missing values generated)
+bnd: contains nonnumeric characters; replaced as double
+(3474 missing values generated)
+wmfn: contains nonnumeric characters; replaced as double
+(22989 missing values generated)
+wbnd: contains nonnumeric characters; replaced as double
+(23017 missing values generated)
+import: contains nonnumeric characters; replaced as double
+(35076 missing values generated)
+mismatch: contains nonnumeric characters; replaced as double
+(35076 missing values generated)
+herf: contains nonnumeric characters; replaced as double
+(38139 missing values generated)
+share: contains nonnumeric characters; replaced as double
+(304 missing values generated)
+
+. 
+. * Create dependent variable: TariffFinal = WBND if available, else BND
+. gen TariffFinal = wbnd
+(23,017 missing values generated)
+
+. replace TariffFinal = bnd if TariffFinal == .
+(19,543 real changes made)
+
+. label var TariffFinal "WTO Final Bound Rate"
+
+. 
+. * Create base tariff: TariffBase = WMFN if available, else MFN
+. gen TariffBase = wmfn
+(22,989 missing values generated)
+
+. replace TariffBase = mfn if TariffBase == .
+(19,474 real changes made)
+
+. label var TariffBase "Pre-accession MFN Tariff"
+
+. 
+. * Create import in millions (matching R code: Import/1000)
+. gen Import_M = import / 1000
+(35,076 missing values generated)
+
+. label var Import_M "Imports (millions)"
+
+. 
+. * Create HS2 code (first 2 digits of 6-digit HS product code)
+. gen HS2 = floor(product / 10000)
+
+. label var HS2 "HS2 Industry Code"
+
+. 
+. * Create MisMatch in millions (for Table 4 extension)
+. gen MisMatch_M = mismatch / 1000
+(35,076 missing values generated)
+
+. label var MisMatch_M "Outsiders' Imports (millions)"
+
+. 
+. * Display raw data summary
+. summ product TariffFinal TariffBase Import_M HS2
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     product |     79,888      549230    271516.3      10111     970600
+ TariffFinal |     76,414    12.87013    11.58991          0        200
+  TariffBase |     76,373    9.789988    11.07314          0        180
+    Import_M |     44,812    4.284408    50.76701        .01   5788.079
+         HS2 |     79,888     54.7833    27.11138          1         97
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1b: SAMPLE RESTRICTIONS (matching Basic1.R)
+> ==============================================================================*/
+. 
+. * Drop observations without tariff bindings
+. drop if bnd == .
+(3,474 observations deleted)
+
+. 
+. * Drop if Import is missing or <= 0
+. drop if Import_M == . | Import_M <= 0
+(33,585 observations deleted)
+
+. 
+. * Drop if TariffFinal or TariffBase missing
+. drop if TariffFinal == .
+(0 observations deleted)
+
+. drop if TariffBase == .
+(108 observations deleted)
+
+. 
+. * Drop HS2 industries with <= 2 observations
+. bysort HS2: gen nobs_hs2 = _N
+
+. drop if nobs_hs2 <= 2
+(0 observations deleted)
+
+. drop nobs_hs2
+
+. 
+. * Encode Country as numeric
+. encode country, gen(country_num)
+
+. 
+. * Summary after cleaning
+. di _n "=== SAMPLE AFTER CLEANING ==="
+
+=== SAMPLE AFTER CLEANING ===
+
+. tab country_num
+
+    Country |      Freq.     Percent        Cum.
+------------+-----------------------------------
+    Albania |      2,200        5.15        5.15
+    Armenia |      1,235        2.89        8.04
+   Cambodia |      1,648        3.86       11.90
+      China |      4,646       10.88       22.77
+    Ecuador |      3,610        8.45       31.22
+    Estonia |      3,650        8.54       39.77
+    Georgia |      1,404        3.29       43.05
+     Jordan |      3,343        7.83       50.88
+ Kyrgyzstan |      1,596        3.74       54.61
+     Latvia |      3,258        7.63       62.24
+  Lithuania |      3,521        8.24       70.48
+  Macedonia |      2,658        6.22       76.70
+    Moldova |      1,882        4.41       81.11
+      Nepal |      1,535        3.59       84.70
+       Oman |      2,838        6.64       91.35
+     Panama |      3,697        8.65      100.00
+------------+-----------------------------------
+      Total |     42,721      100.00
+
+. tab HS2
+
+        HS2 |
+   Industry |
+       Code |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |         95        0.22        0.22
+          2 |        272        0.64        0.86
+          3 |        384        0.90        1.76
+          4 |        254        0.59        2.35
+          5 |         70        0.16        2.52
+          6 |         75        0.18        2.69
+          7 |        325        0.76        3.45
+          8 |        342        0.80        4.25
+          9 |        220        0.51        4.77
+         10 |        154        0.36        5.13
+         11 |        229        0.54        5.66
+         12 |        253        0.59        6.26
+         13 |         76        0.18        6.43
+         14 |         27        0.06        6.50
+         15 |        386        0.90        7.40
+         16 |        240        0.56        7.96
+         17 |        141        0.33        8.29
+         18 |        127        0.30        8.59
+         19 |        178        0.42        9.01
+         20 |        410        0.96        9.97
+         21 |        162        0.38       10.35
+         22 |        217        0.51       10.85
+         23 |        151        0.35       11.21
+         24 |        100        0.23       11.44
+         25 |        427        1.00       12.44
+         26 |        112        0.26       12.70
+         27 |        330        0.77       13.48
+         28 |        977        2.29       15.76
+         29 |      1,531        3.58       19.35
+         30 |        364        0.85       20.20
+         31 |        225        0.53       20.73
+         32 |        483        1.13       21.86
+         33 |        327        0.77       22.62
+         34 |        270        0.63       23.25
+         35 |        136        0.32       23.57
+         36 |         83        0.19       23.77
+         37 |        302        0.71       24.47
+         38 |        469        1.10       25.57
+         39 |      1,371        3.21       28.78
+         40 |        642        1.50       30.28
+         41 |        247        0.58       30.86
+         42 |        198        0.46       31.32
+         43 |         99        0.23       31.56
+         44 |        520        1.22       32.77
+         45 |         37        0.09       32.86
+         46 |         20        0.05       32.91
+         47 |        116        0.27       33.18
+         48 |      1,184        2.77       35.95
+         49 |        201        0.47       36.42
+         50 |         47        0.11       36.53
+         51 |        277        0.65       37.18
+         52 |      1,067        2.50       39.68
+         53 |        135        0.32       39.99
+         54 |        648        1.52       41.51
+         55 |      1,042        2.44       43.95
+         56 |        244        0.57       44.52
+         57 |        225        0.53       45.05
+         58 |        350        0.82       45.87
+         59 |        236        0.55       46.42
+         60 |        203        0.48       46.89
+         61 |        982        2.30       49.19
+         62 |      1,222        2.86       52.05
+         63 |        469        1.10       53.15
+         64 |        359        0.84       53.99
+         65 |         63        0.15       54.14
+         66 |         45        0.11       54.24
+         67 |         29        0.07       54.31
+         68 |        498        1.17       55.48
+         69 |        306        0.72       56.19
+         70 |        510        1.19       57.39
+         71 |        285        0.67       58.05
+         72 |      1,201        2.81       60.86
+         73 |      1,342        3.14       64.01
+         74 |        375        0.88       64.88
+         75 |         58        0.14       65.02
+         76 |        403        0.94       65.96
+         78 |         52        0.12       66.08
+         79 |         67        0.16       66.24
+         80 |         33        0.08       66.32
+         81 |        111        0.26       66.58
+         82 |        544        1.27       67.85
+         83 |        377        0.88       68.73
+         84 |      5,665       13.26       81.99
+         85 |      2,829        6.62       88.62
+         86 |        188        0.44       89.06
+         87 |        920        2.15       91.21
+         88 |        142        0.33       91.54
+         89 |        147        0.34       91.89
+         90 |      1,588        3.72       95.60
+         91 |        298        0.70       96.30
+         92 |        116        0.27       96.57
+         93 |        129        0.30       96.88
+         94 |        487        1.14       98.02
+         95 |        377        0.88       98.90
+         96 |        422        0.99       99.89
+         97 |         49        0.11      100.00
+------------+-----------------------------------
+      Total |     42,721      100.00
+
+. summ TariffFinal TariffBase Import_M
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+ TariffFinal |     42,721    13.05481    11.34108          0        200
+  TariffBase |     42,721    10.33588    11.61388          0        180
+    Import_M |     42,721    4.083665    50.60592        .01   5788.079
+
+. di "Number of observations: " _N
+Number of observations: 42721
+
+. 
+. 
+. /*==============================================================================
+>   STEP 2: TABLE 3A OLS REGRESSIONS
+>   Equation (15a): τ_gc^WTO = α_G + α_c + β₁ τ_gc^BR + β₂ V_gc^BR + ε_gc
+>   R: lm(TariffFinal ~ Import + TariffBase + as.factor(HS) + as.factor(Country) - 1)
+>   Stata: reg ... ibn.HS2 i.country_num, noconstant vce(robust)
+>   noconstant + ibn gives uncentered R², matching R's lm(... -1)
+>   Paper Table 3A: R²=0.804 for All, 0.763 for HS0, etc.
+> ==============================================================================*/
+. 
+. set matsize 2000
+set matsize ignored.
+    Matrix sizes are no longer limited by c(matsize) in modern Statas.  Matrix sizes are now limited by edition
+    of Stata.  See limits for more details.
+
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 3A: OLS REGRESSIONS"
+TABLE 3A: OLS REGRESSIONS
+
+. di    "=============================================="
+==============================================
+
+. 
+. * Helper program: compute significance stars from t-stat
+. cap program drop _stars
+
+. program define _stars, rclass
+  1.     args b se
+  2.     local s ""
+  3.     if `se' > 0 & `se' < . {
+  4.         local t = abs(`b'/`se')
+  5.         if `t' > 2.576      local s "***"
+  6.         else if `t' > 1.960 local s "**"
+  7.         else if `t' > 1.645 local s "*"
+  8.     }
+  9.     return local s "`s'"
+ 10. end
+
+. 
+. * Industry labels
+. local lab0  "All"
+
+. local lab1  "HS0"
+
+. local lab2  "HS1"
+
+. local lab3  "HS2"
+
+. local lab4  "HS3"
+
+. local lab5  "HS4"
+
+. local lab6  "HS5"
+
+. local lab7  "HS6"
+
+. local lab8  "HS7"
+
+. local lab9  "HS8"
+
+. local lab10 "HS9"
+
+. 
+. * Industry product code bounds
+. local lo0 = 0
+
+. local hi0 = 1000000
+
+. forvalues j = 1/10 {
+  2.     local lo`j' = (`j' - 1) * 100000
+  3.     local hi`j' = `j' * 100000
+  4. }
+
+. 
+. * Initialize result storage
+. forvalues k = 0/10 {
+  2.     local b1_`k' = .
+  3.     local se1_`k' = .
+  4.     local b2_`k' = .
+  5.     local se2_`k' = .
+  6.     local r2_`k' = .
+  7.     local nn_`k' = 0
+  8. }
+
+. 
+. * --- Run regressions: All + 10 industries ---
+. forvalues k = 0/10 {
+  2.     * Build if-condition (empty for All)
+.     if `k' == 0 {
+  3.         local ifcond ""
+  4.     }
+  5.     else {
+  6.         local ifcond "if product >= `lo`k'' & product < `hi`k''"
+  7.     }
+  8. 
+.     di _n "--- `lab`k'' ---"
+  9.     qui count `ifcond'
+ 10.     local nn_`k' = r(N)
+ 11. 
+.     if `nn_`k'' > 20 {
+ 12.         * Check TariffBase variance for subsample
+.         qui summ TariffBase `ifcond'
+ 13.         local tvar = r(Var)
+ 14.         local has_base = (`tvar' > 0)
+ 15. 
+.         if `has_base' {
+ 16.             cap noisily qui reg TariffFinal Import_M TariffBase ///
+>                 ibn.HS2 i.country_num `ifcond', noconstant vce(robust)
+ 17.         }
+ 18.         else {
+ 19.             cap noisily qui reg TariffFinal Import_M ///
+>                 ibn.HS2 i.country_num `ifcond', noconstant vce(robust)
+ 20.         }
+ 21. 
+.         if !_rc & e(N) > 0 {
+ 22.             if `has_base' {
+ 23.                 local b1_`k' = _b[TariffBase]
+ 24.                 local se1_`k' = _se[TariffBase]
+ 25.             }
+ 26.             local b2_`k' = _b[Import_M]
+ 27.             local se2_`k' = _se[Import_M]
+ 28.             local r2_`k' = e(r2)
+ 29.             local nn_`k' = e(N)
+ 30. 
+.             if `has_base' {
+ 31.                 di "  beta1 (TariffBase): " %9.4f `b1_`k'' " (" %7.4f `se1_`k'' ")"
+ 32.             }
+ 33.             di "  beta2 (Import_M):   " %9.4f `b2_`k'' " (" %7.4f `se2_`k'' ")"
+ 34.             di "  R2:                 " %9.3f `r2_`k''
+ 35.             di "  N:                  " %9,0gc `nn_`k''
+ 36.         }
+ 37.         else {
+ 38.             di "  Regression failed"
+ 39.             local nn_`k' = 0
+ 40.         }
+ 41.     }
+ 42.     else {
+ 43.         di "  Insufficient observations (`nn_`k'')"
+ 44.         local nn_`k' = 0
+ 45.     }
+ 46. }
+
+--- All ---
+  beta1 (TariffBase):    0.3702 ( 0.0174)
+  beta2 (Import_M):     -0.0044 ( 0.0008)
+  R2:                     0.804
+  N:                     42.721
+
+--- HS0 ---
+  beta1 (TariffBase):    0.3750 ( 0.0284)
+  beta2 (Import_M):     -0.0733 ( 0.0338)
+  R2:                     0.763
+  N:                      2.037
+
+--- HS1 ---
+  beta1 (TariffBase):    0.2226 ( 0.0311)
+  beta2 (Import_M):     -0.0476 ( 0.0104)
+  R2:                     0.783
+  N:                      1.811
+
+--- HS2 ---
+  beta1 (TariffBase):    0.6502 ( 0.0707)
+  beta2 (Import_M):     -0.0001 ( 0.0015)
+  R2:                     0.651
+  N:                      4.417
+
+--- HS3 ---
+  beta1 (TariffBase):    0.2679 ( 0.0162)
+  beta2 (Import_M):     -0.0044 ( 0.0008)
+  R2:                     0.868
+  N:                      4.030
+
+--- HS4 ---
+  beta1 (TariffBase):    0.3285 ( 0.0142)
+  beta2 (Import_M):     -0.0059 ( 0.0017)
+  R2:                     0.918
+  N:                      3.264
+
+--- HS5 ---
+  beta1 (TariffBase):    0.3136 ( 0.0104)
+  beta2 (Import_M):     -0.0055 ( 0.0015)
+  R2:                     0.955
+  N:                      4.271
+
+--- HS6 ---
+  beta1 (TariffBase):    0.1342 ( 0.0144)
+  beta2 (Import_M):     -0.0134 ( 0.0044)
+  R2:                     0.974
+  N:                      4.176
+
+--- HS7 ---
+  beta1 (TariffBase):    0.3705 ( 0.0185)
+  beta2 (Import_M):     -0.0111 ( 0.0025)
+  R2:                     0.906
+  N:                      4.293
+
+--- HS8 ---
+  beta1 (TariffBase):    0.4013 ( 0.0159)
+  beta2 (Import_M):     -0.0044 ( 0.0006)
+  R2:                     0.872
+  N:                     10.956
+
+--- HS9 ---
+  beta1 (TariffBase):    0.3715 ( 0.0176)
+  beta2 (Import_M):     -0.0112 ( 0.0063)
+  R2:                     0.886
+  N:                      3.466
+
+. 
+. * --- Verification against paper ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "VERIFICATION vs Paper Table 3A (OLS)"
+VERIFICATION vs Paper Table 3A (OLS)
+
+. di    "=============================================="
+==============================================
+
+. di "Sample   Our_R2   Paper_R2   Our_beta2   Paper_beta2"
+Sample   Our_R2   Paper_R2   Our_beta2   Paper_beta2
+
+. di "All    " %7.3f `r2_0' "    0.804    " %9.4f `b2_0' "    -0.0044"
+All      0.804    0.804      -0.0044    -0.0044
+
+. di "HS0    " %7.3f `r2_1' "    0.763    " %9.4f `b2_1' "    -0.0733"
+HS0      0.763    0.763      -0.0733    -0.0733
+
+. di "HS1    " %7.3f `r2_2' "    0.783    " %9.4f `b2_2' "    -0.0476"
+HS1      0.783    0.783      -0.0476    -0.0476
+
+. di "HS2    " %7.3f `r2_3' "    0.651    " %9.4f `b2_3' "    -0.0001"
+HS2      0.651    0.651      -0.0001    -0.0001
+
+. di "HS3    " %7.3f `r2_4' "    0.868    " %9.4f `b2_4' "    -0.0044"
+HS3      0.868    0.868      -0.0044    -0.0044
+
+. di "HS4    " %7.3f `r2_5' "    0.919    " %9.4f `b2_5' "    -0.0059"
+HS4      0.918    0.919      -0.0059    -0.0059
+
+. di "HS5    " %7.3f `r2_6' "    0.955    " %9.4f `b2_6' "    -0.0055"
+HS5      0.955    0.955      -0.0055    -0.0055
+
+. di "HS6    " %7.3f `r2_7' "    0.974    " %9.4f `b2_7' "    -0.0134"
+HS6      0.974    0.974      -0.0134    -0.0134
+
+. di "HS7    " %7.3f `r2_8' "    0.906    " %9.4f `b2_8' "    -0.0111"
+HS7      0.906    0.906      -0.0111    -0.0111
+
+. di "HS8    " %7.3f `r2_9' "    0.872    " %9.4f `b2_9' "    -0.0044"
+HS8      0.872    0.872      -0.0044    -0.0044
+
+. di "HS9    " %7.3f `r2_10' "    0.886    " %9.4f `b2_10' "    -0.0112"
+HS9      0.886    0.886      -0.0112    -0.0112
+
+. 
+. 
+. /*==============================================================================
+>   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+>   Y = TariffFinal, G = HS2, T = country_num, D = Import_M
+>   Controls = TariffBase
+>   Type = feTR (fixed effects, continuous treatment)
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TWOWAYFEWEIGHTS DECOMPOSITION"
+TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di    "=============================================="
+==============================================
+
+. 
+. di _n "--- Type: feTR (Fixed Effects) ---"
+
+--- Type: feTR (Fixed Effects) ---
+
+. cap noisily twowayfeweights TariffFinal HS2 country_num Import_M, ///
+>     type(feTR) controls(TariffBase)
+The treatment variable in the regression varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) apply to two-way fixed effects regressions
+with a group * period level treatment.
+The command will replace the treatment by its average value in each group * period.
+The results below apply to the two-way fixed effects regression with that treatment variable.
+
+The control variable 1 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 1 by its average value in each group * period cell.
+The results below apply to the regression with control variable 1 averaged at the group * period level.
+
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to -0.0048, estimates a weighted sum of 1476 ATTs. 
+1038 ATTs receive a positive weight, and 438 receive a negative weight.
+------------------------------------------------
+Treat. var: Import_M    # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        1038        1.0563      
+Negative weights        438         -0.0563     
+------------------------------------------------
+Total                   1476        1.0000      
+------------------------------------------------
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. 
+. * Capture results if available
+. cap local tw_npos = e(num_pos_weights)
+
+. cap local tw_nneg = e(num_neg_weights)
+
+. 
+. di _n "--- Type: fdTR (First Differences) ---"
+
+--- Type: fdTR (First Differences) ---
+
+. cap noisily twowayfeweights TariffFinal HS2 country_num Import_M, ///
+>     type(fdTR) controls(TariffBase)
+invalid syntax
+
+. 
+. 
+. /*==============================================================================
+>   STEP 4: LATEX TABLE (AER format matching Paper Table 3A)
+>   Layout: Row per sample (All, HS0-HS9), Columns: Sample, N, β₁, β₂, R²
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "LaTeX TABLE EXPORT"
+LaTeX TABLE EXPORT
+
+. di    "=============================================="
+==============================================
+
+. 
+. cap file close texfile
+
+. file open texfile using "$outdir/table3a.tex", write replace
+(file C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/table3a.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\small" _n
+
+. file write texfile "\caption{Table 3A---Baseline Results}" _n
+
+. file write texfile "\label{tab:table3a}" _n
+
+. file write texfile "\begin{tabular}{lrccc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile "& & \multicolumn{3}{c}{OLS} \\" _n
+
+. file write texfile "\cmidrule(lr){3-5}" _n
+
+. file write texfile "Sample & Observations & \$\hat{\beta}_1\$ & \$\hat{\beta}_2\$ & R\$^2\$ \\" _n
+
+. file write texfile "\midrule" _n
+
+. 
+. forvalues k = 0/10 {
+  2.     if `nn_`k'' > 0 {
+  3.         * Format N with comma
+.         local nfmt : di %12,0gc `nn_`k''
+  4.         local nfmt = strtrim("`nfmt'")
+  5. 
+.         * Format R²
+.         local r2fmt : di %5.3f `r2_`k''
+  6.         local r2fmt = strtrim("`r2fmt'")
+  7. 
+.         * Format and star beta1 (TariffBase)
+.         if `b1_`k'' != . {
+  8.             local b1fmt : di %7.4f `b1_`k''
+  9.             local b1fmt = strtrim("`b1fmt'")
+ 10.             local se1fmt : di %7.4f `se1_`k''
+ 11.             local se1fmt = strtrim("`se1fmt'")
+ 12.             _stars `b1_`k'' `se1_`k''
+ 13.             local s1 "`r(s)'"
+ 14.         }
+ 15.         else {
+ 16.             local b1fmt "---"
+ 17.             local se1fmt "---"
+ 18.             local s1 ""
+ 19.         }
+ 20. 
+.         * Format and star beta2 (Import_M)
+.         local b2fmt : di %7.4f `b2_`k''
+ 21.         local b2fmt = strtrim("`b2fmt'")
+ 22.         local se2fmt : di %7.4f `se2_`k''
+ 23.         local se2fmt = strtrim("`se2fmt'")
+ 24.         _stars `b2_`k'' `se2_`k''
+ 25.         local s2 "`r(s)'"
+ 26. 
+.         * Write coefficient row
+.         file write texfile "`lab`k'' & `nfmt' & `b1fmt'`s1' & `b2fmt'`s2' & `r2fmt' \\" _n
+ 27. 
+.         * Write SE row
+.         if "`b1fmt'" != "---" {
+ 28.             file write texfile " & & (`se1fmt') & (`se2fmt') & \\" _n
+ 29.         }
+ 30.         else {
+ 31.             file write texfile " & & --- & (`se2fmt') & \\" _n
+ 32.         }
+ 33. 
+.         * Spacing between rows
+.         if `k' == 0 {
+ 34.             file write texfile "\addlinespace[6pt]" _n
+ 35.         }
+ 36.         else if `k' < 10 {
+ 37.             file write texfile "\addlinespace" _n
+ 38.         }
+ 39.     }
+ 40. }
+
+. 
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\multicolumn{5}{p{0.95\linewidth}}{\footnotesize" _n
+
+. file write texfile " \textit{Notes:} Standard errors are in parentheses" _n
+
+. file write texfile " (heteroskedasticity-robust)." _n
+
+. file write texfile " Industry fixed effects, \$\alpha_G\$, are at the" _n
+
+. file write texfile " two-digit HS product level." _n
+
+. file write texfile " Country fixed effects, \$\alpha_c\$, included for all estimates." _n
+
+. file write texfile " \$\hat{\beta}_1\$: pre-accession MFN tariff." _n
+
+. file write texfile " \$\hat{\beta}_2\$: import value (millions)." _n
+
+. file write texfile " Equation: \$\tau_{gc}^{WTO} = \alpha_G + \alpha_c" _n
+
+. file write texfile " + \beta_1 \tau_{gc}^{BR} + \beta_2 V_{gc}^{BR} + \epsilon_{gc}\$." _n
+
+. file write texfile " *** Significant at the 1 percent level," _n
+
+. file write texfile " ** 5 percent level, * 10 percent level.}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table3a.tex created"
+  -> table3a.tex created
+
+. 
+. 
+. * --- Master document ---
+. cap file close texfile
+
+. file open texfile using "$outdir/bagwell_staiger_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write texfile "\geometry{margin=1in}" _n
+
+. file write texfile "\captionsetup{labelsep=emdash, font=normalsize, justification=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Bagwell \& Staiger (2011)}\\" _n
+
+. file write texfile "{\large What Do Trade Negotiators Negotiate About?}\\" _n
+
+. file write texfile "{\large Empirical Evidence from the World Trade Organization}\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}, 101(4), 1238--1273}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. file write texfile "\vspace{1em}" _n _n
+
+. 
+. file write texfile "\input{table3a}" _n _n
+
+. 
+. file write texfile "\end{document}" _n
+
+. file close texfile
+
+. 
+. di "  -> bagwell_staiger_tables.tex created"
+  -> bagwell_staiger_tables.tex created
+
+. 
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "ALL DONE - Bagwell & Staiger (2011)"
+ALL DONE - Bagwell & Staiger (2011)
+
+. di    "=============================================="
+==============================================
+
+. di "Output files:"
+Output files:
+
+. di "  1. $outdir/table3a.tex"
+  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/table3a.tex
+
+. di "  2. $outdir/bagwell_staiger_tables.tex (compilable)"
+  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/bagwell_staiger_tables.tex (com
+> pilable)
+
+. di "  3. $outdir/run_twowayfe.log"
+  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/run_twowayfe.log
+
+. di "=============================================="
+==============================================
+
+. 
+. log close _all
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Bagwell and Staiger (2011)/run_twowayfe.log
+  log type:  text
+ closed on:  17 Apr 2026, 00:23:55
+-----------------------------------------------------------------------------------------------------------------

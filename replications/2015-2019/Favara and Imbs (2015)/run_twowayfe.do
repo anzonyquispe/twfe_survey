@@ -22,8 +22,27 @@ clear all
 set more off
 cap log close _all
 
+
+
+* --- Paths ---
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
 * ─── STEP 1: Load and merge data ─────────────────────────────────────────────
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Favara and Imbs/20121416_1data/data"
+global datadir "$twfe_root/data/2015-2019/Favara and Imbs/20121416_1data/data"
+global outdir "$twfe_root/replications/2015-2019/Favara and Imbs (2015)"
+
 
 use "$datadir/hmda.dta", clear
 merge 1:1 county year using "$datadir/hp_dereg_controls.dta", nogen keep(1 3)
@@ -444,20 +463,26 @@ di _n "============================================================"
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "============================================================"
 
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Favara and Imbs/20121416_1data/data"
+
 use "$datadir/hmda.dta", clear
 merge 1:1 county year using "$datadir/hp_dereg_controls.dta", nogen keep(1 3)
 merge 1:1 county year using "$datadir/call.dta", nogen keep(1 3)
 
-keep county year state_n Linter_bra Dl_nloans_b
+keep county year state_n Linter_bra Dl_nloans_b LDl_nloans_b $D_control
 
 label variable county      "G: County FIPS"
 label variable year        "T: Year (1994-2005)"
 label variable Linter_bra  "D: Lagged interstate branching deregulation (binary)"
 label variable Dl_nloans_b "Y: Delta log # mortgage originations (commercial banks)"
 
-local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Favara and Imbs (2015)"
-save "`outdir'/panel_GTD.dta", replace
+rename county G
+rename year T
+rename Linter_bra D
+rename Dl_nloans_b Y
+
+order Y G T D
+
+save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
 di "  G = county, T = year, D = Linter_bra"
 

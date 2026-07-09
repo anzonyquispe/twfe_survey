@@ -1,0 +1,4 @@
+\contentsline {section}{\numberline {1}Table 3 -- Panel Fixed Effects: Urbanization}{2}{}%
+\contentsline {section}{\numberline {2}Table 4 -- Robustness}{3}{}%
+\contentsline {section}{\numberline {3}Table 5 -- Agriculture and Industry}{4}{}%
+\contentsline {section}{\numberline {4}Table 6 -- Instrumental Variables}{5}{}%

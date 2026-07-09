@@ -1,0 +1,1259 @@
+----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/reports/sketch2_all.log
+  log type:  text
+ opened on:   3 Jul 2026, 11:07:30
+
+. 
+. * --------------------------------------------------------------------------
+. * Load ado
+. * --------------------------------------------------------------------------
+. do "$twfe_root/classify_sketch2.ado"
+
+. *! classify_sketch2 v0.3 (2026-07-02)
+. *! Classify a (Y, G, T, D) panel by attempting to run the estimators.
+. *!
+. *! Algorithm:
+. *!   1. Run did_multiplegt_dyn Y G T D.
+. *!        Check e(N_effect_1): must be non-missing and > 0.
+. *!   2. If OK → compute V(Fg|Fg<=T), V(D_g1), binary, absorbing:
+. *!        3. V==0, V_Dg1==0, binary globally          → CLA
+. *!        4. V==0, V_Dg1==0, non-binary at switch date → HAD with stayers
+. *!        5. V>0,  binary & absorbing                  → SAD
+. *!        6. (none of 3-5)                             → SFSD
+. *!   7. If e(N_effect_1) missing/0 or dyn failed →
+. *!        run did_multiplegt_dyn, continuous(1); check e(N_effect_1) > 0.
+. *!        If OK → SFSD.
+. *!   8. If continuous also fails & V==0 & V_Dg1==0 → run did_had (noisily,
+. *!        for quasi-stayer test). If OK → HAD w/o stayers.
+. *!   9. Otherwise → OTHER.
+. *!
+. *! Syntax:  classify_sketch2 Y G T D
+. *!   T is grouped (normalised to consecutive integers) before any analysis.
+. *!
+. *! Returns (via r()):
+. *!   r(design)      "CLA"|"SAD"|"HAD with stayers"|"SFSD"|"HAD w/o stayers"|"OTHER"
+. *!   r(estimator)   "did_multiplegt_dyn"|"did_had"|""
+. *!   r(had_stayers) 1 if HAD detected after dropping stayers, else 0
+. *!   r(design_code) 1=CLA  2=SAD  3=HAD-with-stayers  4=SFSD(dyn)
+. *!                  5=SFSD(continuous)  6=HAD-w/o-stayers  8=OTHER
+. 
+. program define classify_sketch2, rclass
+  1.     version 13
+  2.     syntax varlist(min=4 max=4 numeric)
+  3. 
+.     tokenize `varlist'
+  4.     local Y  "`1'"
+  5.     local G  "`2'"
+  6.     local T  "`3'"
+  7.     local D  "`4'"
+  8. 
+.     di _n as text "===== classify_sketch2 ====="
+  9.     di    as text "  Y=`Y'  G=`G'  T=`T'  D=`D'"
+ 10. 
+.     preserve
+ 11.         
+.         * -----------------------------------------------------------------------
+.     * 0. Normalize T to consecutive integers (always done first)
+.     * -----------------------------------------------------------------------
+.     tempvar __Tnorm
+ 12.     qui egen `__Tnorm' = group(`T')
+ 13.     qui replace `T' = `__Tnorm'
+ 14.     drop `__Tnorm'
+ 15. 
+.     * -----------------------------------------------------------------------
+.     * 1. Prepare working dataset
+.     * -----------------------------------------------------------------------
+.     keep `Y' `G' `T' `D'
+ 16.     drop if missing(`G') | missing(`T')
+ 17. 
+.     * -----------------------------------------------------------------------
+.     * 0b. Ensure unique G-T pairs (collapse to means if not)
+.     * -----------------------------------------------------------------------
+.     cap isid `G' `T'
+ 18.     if _rc {
+ 19.         di as text "  [Note] Not unique by `G' `T' — collapsing to group-time means."
+ 20.         collapse (mean) `Y' `D', by(`G' `T')
+ 21.     }
+ 22. 
+.     
+.     qui sum `T'
+ 23.     local Tmax   = r(max)
+ 24.     local Tplus1 = r(max) + 1
+ 25.     local Tmin   = r(min)
+ 26. 
+.     * -----------------------------------------------------------------------
+.     * 2. Baseline treatment D_g1 (D at Tmin per group)
+.     * -----------------------------------------------------------------------
+.     tempvar __d1 __Dg1
+ 27.     qui bysort `G': egen `__Dg1' = min(`D')
+ 28. 
+.     * -----------------------------------------------------------------------
+.     * 3. Fg: first T where D changes from baseline (Tplus1 if never)
+.     * -----------------------------------------------------------------------
+.     tempvar __tc __Fg
+ 29.     qui gen `__tc' = `T' if `D' != . & `D' != `__Dg1'
+ 30.     qui replace `__tc' = `Tplus1' if missing(`__tc')
+ 31.     qui bysort `G': egen `__Fg' = min(`__tc')
+ 32.         bysort `G': egen Fgaux = mean(`__Fg')
+ 33.         replace `__Fg' = Fgaux if `__Fg' == . // Same Fg to all g's
+ 34.         replace `__Fg' = `Tmax' + 1 if `__Fg' == . // Never switchers
+ 35.     drop `__tc' Fgaux
+ 36. 
+.     * -----------------------------------------------------------------------
+.     * 4. D_Fg: treatment value at switch date
+.     * -----------------------------------------------------------------------
+.     tempvar __dFgtmp __DFg
+ 37.     qui gen  `__dFgtmp' = `D' if `T' == `__Fg'
+ 38.     qui bysort `G': egen `__DFg' = min(`__dFgtmp') // Same D_Fg to all switchers g
+ 39.     drop `__dFgtmp'
+ 40. 
+.     * -----------------------------------------------------------------------
+.     * 5. Group-level summary statistics (one obs per group)
+.     * -----------------------------------------------------------------------
+.     tempvar __first
+ 41.     qui bysort `G': gen `__first' = (_n == 1)
+ 42. 
+.     * V(Fg | Fg <= Tmax): variance of Fg among switchers, group-level
+.     qui sum `__Fg' if `__first' & `__Fg' <= `Tmax' // we are working with switchers and only one observation per group
+ 43.     local n_switchers = r(N)
+ 44.     local V_Fg_cond   = r(Var)
+ 45.     local t_star      = cond(r(N) > 0, r(mean), `Tplus1')
+ 46. 
+.     * V(D_g1): variance of baseline treatment, group-level (all groups)
+.     qui sum `__Dg1' if `__first'
+ 47.     local V_Dg1 = r(Var)
+ 48. 
+.     * V(D_g1 | switchers): variance of Dg1 among switchers only (Fg <= Tmax)
+.     qui sum `__Dg1' if `__first' & `__Fg' <= `Tmax'
+ 49.     local V_Dg1_sw   = cond(missing(r(Var)), 0, r(Var))
+ 50.     local Dg1_sw_val = r(mean)          // common baseline value when V==0
+ 51. 
+.     * At least one non-switcher (Fg > Tmax) has Dg1 == Dg1_sw_val
+.     if missing(`Dg1_sw_val') {
+ 52.         local Dg1_ns_match = 0          // no switchers → condition fails
+ 53.     }
+ 54.     else {
+ 55.         qui count if `__first' & `__Fg' > `Tmax' ///
+>             & !missing(`__Dg1') & abs(`__Dg1' - `Dg1_sw_val') <= 1e-8
+ 56.         local Dg1_ns_match = (r(N) > 0)
+ 57.     }
+ 58. 
+.     * Binary: D takes only {d_min, d_max} across ALL observations FORCING TO TAKE ONLY TWO VALUES
+.         * THIS COULD BE FROM 4 TO 9 OR 5 TO 8 WE ARE NOT EXPLICITLY ASSUMING 0 AND 1
+.     qui sum `D'
+ 59.     local d_max = r(max)
+ 60.     local d_min = r(min)
+ 61.     tempvar __bchk
+ 62.     qui gen `__bchk' = (`D' == `d_max' | `D' == `d_min') if !missing(`D')
+ 63.     qui sum `__bchk'
+ 64.     local binary = (r(mean) == 1)
+ 65.     drop `__bchk'
+ 66. 
+.     * Binary at switch date: D takes only 2 values at T == t_star
+.     qui sum `D' if `T' == `t_star'
+ 67.     if r(N) == 0 {
+ 68.         local binary_at_switch = 1
+ 69.     }
+ 70.     else {
+ 71.         local d_max_ts = r(max)
+ 72.         local d_min_ts = r(min)
+ 73.         tempvar __bchk_ts
+ 74.         qui gen `__bchk_ts' = (`D'==`d_max_ts' | `D'==`d_min_ts') ///
+>             if `T' == `t_star' & !missing(`D')
+ 75.         qui sum `__bchk_ts'
+ 76.         local binary_at_switch = (r(mean) == 1)
+ 77.         drop `__bchk_ts'
+ 78.     }
+ 79. 
+.     * Absorbing: after Fg, D stays at D_Fg
+.     tempvar __abs_chk
+ 80.     qui gen `__abs_chk' = (`D' == `__DFg') if `T' > `__Fg' & !missing(`D') & !missing(`__DFg')
+ 81.     qui sum `__abs_chk' if !missing(`__DFg')
+ 82.     local absorbing = cond(missing(r(min)), 1, r(min) == 1)
+ 83.     drop `__abs_chk'
+ 84. 
+.     * ---- Drop working variables: leave only Y G T D for estimators --------
+.     drop `__first' `__Fg' `__Dg1' `__DFg'
+ 85. 
+.     * ---- Diagnostics -------------------------------------------------------
+.     di as text "  n_switchers    = `n_switchers'"
+ 86.     di as text "  V(Fg|Fg<=T)    = `V_Fg_cond'"
+ 87.     di as text "  V(D_g1) all    = `V_Dg1'"
+ 88.     di as text "  V(D_g1|sw)     = `V_Dg1_sw'  (switchers only)"
+ 89.     di as text "  Dg1_sw_val     = `Dg1_sw_val'"
+ 90.     di as text "  Dg1_ns_match   = `Dg1_ns_match'  (>=1 non-switcher has Dg1=Dg1_sw_val)"
+ 91.     di as text "  binary (all)   = `binary'"
+ 92.     di as text "  binary at t*   = `binary_at_switch'  (t*=`t_star')"
+ 93.     di as text "  absorbing      = `absorbing'"
+ 94. 
+.     * -----------------------------------------------------------------------
+.     * Classification: driven by whether estimators run
+.     * -----------------------------------------------------------------------
+.     local __design      ""
+ 95.     local __estimator   ""
+ 96.     local __had_stayers  0
+ 97.     local __design_code  8
+ 98. 
+.     * ======================== Step 1: run dyn (no options) ==================
+.     di _n as text "  [Step 1] did_multiplegt_dyn `Y' `G' `T' `D' ..."
+ 99.     ereturn clear
+100.     cap qui did_multiplegt_dyn `Y' `G' `T' `D'
+101.     local __rc_dyn = _rc
+102. 
+.     local __dyn_ok = 0
+103.     if `__rc_dyn' == 0 {
+104.         local __N1_dyn = e(N_effect_1)
+105.         if !missing(`__N1_dyn') & `__N1_dyn' > 0 {
+106.             di as text "           → OK  (e(N_effect_1)=`__N1_dyn')"
+107.             local __dyn_ok = 1
+108.         }
+109.         else {
+110.             di as text "           → ran but e(N_effect_1) missing or 0 — treated as failed"
+111.         }
+112.     }
+113.     else {
+114.         di as text "           → FAILED (rc=`__rc_dyn')"
+115.     }
+116. 
+.     if `__dyn_ok' {
+117. 
+.         * --- Condition 3: CLA -----------------------------------------------
+.         if `V_Fg_cond' == 0 & `V_Dg1' == 0 & `binary' {
+118.             di _n as result "Design CLA: V(Fg|Fg<=T)=0, V(D_g1)=0, binary treatment."
+119.             local __design      "CLA"
+120.             local __estimator   "did_multiplegt_dyn"
+121.             local __design_code  1
+122.         }
+123.         * --- Condition 4: HAD with stayers -----------------------------------
+.         * V(Fg|Fg<=T)==0         : all switchers share the same switch date t*
+.         * V(Dg1|sw)==0           : switchers all start from the same baseline
+.         * Dg1_ns_match==1        : at least one non-switcher has Dg1 = Dg1_sw_val
+.         * !binary_at_switch      : treatment at t* is not binary (multi-valued)
+.         else if `V_Fg_cond' == 0 & `V_Dg1_sw' == 0 & `Dg1_ns_match' & !`binary_at_switch' {
+124.             di _n as result ///
+>                 "Design HAD with stayers: V(Fg|Fg<=T)=0, V(Dg1|sw)=0, " ///
+>                 "non-switchers share Dg1=`Dg1_sw_val', non-binary at t*=`t_star'."
+125.             local __design      "HAD with stayers"
+126.             local __estimator   "did_had"
+127.             local __had_stayers  1
+128.             local __design_code  3
+129.         }
+130.         * --- Condition 5: SAD -----------------------------------------------
+.         else if `V_Fg_cond' > 0 & `binary' & `absorbing' {
+131.             di _n as result ///
+>                 "Design SAD: V(Fg|Fg<=T)>0, binary and absorbing treatment."
+132.             local __design      "SAD"
+133.             local __estimator   "did_multiplegt_dyn"
+134.             local __design_code  2
+135.         }
+136.         * --- Condition 6: SFSD (generic) ------------------------------------
+.         else {
+137.             di _n as result ///
+>                 "Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met."
+138.             local __design      "SSFSD"
+139.             local __estimator   "did_multiplegt_dyn"
+140.             local __design_code  4
+141.         }
+142.     }
+143. 
+.     * ======================== dyn failed / N_effect_1 invalid → Step 7 ======
+.     else {
+144. 
+.         * --- Step 7: continuous(1) ------------------------------------------
+.         di _n as text "  [Step 7] did_multiplegt_dyn `Y' `G' `T' `D', continuous(1) ..."
+145.         ereturn clear
+146.         cap qui did_multiplegt_dyn `Y' `G' `T' `D', continuous(1)
+147.         local __rc_cont = _rc
+148. 
+.         local __cont_ok = 0
+149.         if `__rc_cont' == 0 {
+150.             local __N1_cont = e(N_effect_1)
+151.             if !missing(`__N1_cont') & `__N1_cont' > 0 {
+152.                 di as text "           → OK  (e(N_effect_1)=`__N1_cont')"
+153.                 local __cont_ok = 1
+154.             }
+155.             else {
+156.                 di as text "           → ran but e(N_effect_1) missing or 0 — treated as failed"
+157.             }
+158.         }
+159.         else {
+160.             di as text "           → FAILED (rc=`__rc_cont')"
+161.         }
+162. 
+.         if `__cont_ok' {
+163.             di _n as result ///
+>                 "Design SFSD (continuous): did_multiplegt_dyn continuous(1) ran."
+164.             local __design      "SFSD"
+165.             local __estimator   "did_multiplegt_dyn"
+166.             local __design_code  5
+167.         }
+168. 
+.         * ======================== continuous also failed =====================
+.         else {
+169. 
+.             * --- Step 8: HAD w/o stayers ------------------------------------
+.                         * We  should conditioning the Dg1 only for  -- only switchers  have V(Dg1 = 0 | Fg<= Tmax)
+.                         * For every g such that Fg >= Tmax Dg1 == Dg'1 where g' are those that Fg <= Tmax
+.                 
+.             if `V_Fg_cond' == 0 & `V_Dg1' == 0 {
+170.                 di _n as text ///
+>                     "  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ..."
+171.                 di    as text ///
+>                     "           did_had `Y' `G' `T' `D' (output shown for quasi-stayer test):"
+172.                 cap noisily did_had `Y' `G' `T' `D'
+173.                 local __rc_had = _rc
+174.                                 local neffec = e(estimates)[1, 5]
+175.                                 local hadpass = cond(`neffec' > 0  & `neffec' != . , 1, 0)
+176. 
+.                 if `hadpass' == 1 {
+177.                     di _n as result "Design HAD w/o stayers: did_had ran."
+178.                     local __design      "HAD w/o stayers"
+179.                     local __estimator   "did_had"
+180.                     local __had_stayers  0
+181.                     local __design_code  6
+182.                 }
+183.                 else {
+184.                     di as text "           did_had → FAILED (rc=`__rc_had')"
+185.                     di _n as result "Design OTHER: did_had did not run."
+186.                     local __design      "OTHER"
+187.                     local __estimator   ""
+188.                     local __design_code  8
+189.                 }
+190.             }
+191. 
+.             * --- Step 9: V conditions not met → OTHER -----------------------
+.             else {
+192.                 di _n as result ///
+>                     "Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran."
+193.                 local __design      "OTHER"
+194.                 local __estimator   ""
+195.                 local __design_code  8
+196.             }
+197.         }
+198.     }
+199. 
+.     * -----------------------------------------------------------------------
+.     * Exit
+.     * -----------------------------------------------------------------------
+.     restore
+200. 
+.     di _n as result "========================================="
+201.     di    as result "  CLASSIFICATION : `__design' (code=`__design_code')"
+202.     di    as result "  ESTIMATOR      : `__estimator'"
+203.     di    as result "========================================="
+204. 
+.     return local  design       "`__design'"
+205.     return local  estimator    "`__estimator'"
+206.     return scalar had_stayers   = `__had_stayers'
+207.     return scalar design_code   = `__design_code'
+208. 
+. end
+
+. 
+end of do-file
+
+. adopath + "$twfe_root"
+  [1]  (BASE)      "/Applications/StataNow/ado/base/"
+  [2]  (SITE)      "/Applications/StataNow/ado/site/"
+  [3]              "."
+  [4]  (PERSONAL)  "/Users/anzony.quisperojas/Documents/Stata/ado/personal/"
+  [5]  (PLUS)      "/Users/anzony.quisperojas/Library/Application Support/Stata/ado/plus/"
+  [6]  (OLDPLACE)  "~/ado/"
+  [7]              "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey/data/2010-2012/Gentzkow et al. (2011)/20091316_data/external"
+  [8]              "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+
+. 
+. global panels_GTD "$twfe_root/panels_GTD"
+
+. 
+. * --------------------------------------------------------------------------
+. * Paper list
+. * --------------------------------------------------------------------------
+. 
+. * Wave 1: 2010–2012  (Acemoglu, Bagwell, Simcoe excluded)
+. local waves1   "2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010
+> -2012"
+
+. local folders1 `""Algan and Cahuc (2010)" "Baum-SnowandLutz(2011)" "Besley and Mueller (2012)" "Dinkelman (2011)" "Duranton and Turner (2011
+> )" "Enikolopov et al. (2011)" "Faye and Niehaus (2012)" "Forman et al. (2012)" "Gentzkow et al. (2011)" "Hornbeck (2012)" "Moser and Voena (
+> 2012)" "Wang (2011)" "Zhang and Zhu (2011)""'
+
+. local n1 = 13
+
+. 
+. * Wave 2: 2015–2019
+. local waves2   "2015-2019 2015-2019 2015-2019 2015-2019 2015-2019 2015-2019 2015-2019 2015-2019"
+
+. local folders2 `""Antecol et al. (2018)" "Berman et al. (2017)" "Burgess et al. (2015)" "Donaldson (2018)" "Favara and Imbs (2015)" "Fetzer 
+> (2019)" "Kaur (2019)" "Suárez Serrato and Zidar (2016)""'
+
+. local n2 = 8
+
+. 
+. * --------------------------------------------------------------------------
+. * postfile: one row per paper
+. * --------------------------------------------------------------------------
+. tempfile tmp
+
+. postfile handle         ///
+>     str60  paper        ///
+>     str10  wave         ///
+>     str30  design       ///
+>     int    design_code  ///
+>     byte   had_stayers  ///
+>     str30  estimator    ///
+>     using `tmp', replace
+(file /var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//S_06260.000001 not found)
+
+. 
+. * --- Wave 1 ---------------------------------------------------------------
+. forvalues i = 1/`n1' {
+  2.     local wave   : word `i' of `waves1'
+  3.     local folder : word `i' of `folders1'
+  4.     local dta    "$panels_GTD/`wave'/`folder'/panel_GTD.dta"
+  5. 
+.     di _n as text "================================================================"
+  6.     di    as text "  [`i'/21] `folder' (`wave')"
+  7.     di    as text "================================================================"
+  8. 
+.     local des   "FAILED"
+  9.     local est   ""
+ 10.     local code  = -1
+ 11.     local hs    = 0
+ 12. 
+.     cap noisily {
+ 13.         use "`dta'", clear
+ 14.         classify_sketch2 Y G T D
+ 15.         local des  "`r(design)'"
+ 16.         local est  "`r(estimator)'"
+ 17.         local code  = r(design_code)
+ 18.         local hs    = r(had_stayers)
+ 19.     }
+ 20.     if _rc {
+ 21.         di as error "  --> classify_sketch2 failed (rc=`_rc')"
+ 22.         local des   "FAILED"
+ 23.         local est   ""
+ 24.         local code  = -1
+ 25.         local hs    = 0
+ 26.     }
+ 27. 
+.     post handle ("`folder'") ("`wave'") ("`des'") (`code') (`hs') ("`est'")
+ 28. }
+
+================================================================
+  [1/21] Algan and Cahuc (2010) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 23
+  V(Fg|Fg<=T)    = .2213438735177866
+  V(D_g1) all    = .0117143978621974
+  V(D_g1|sw)     = .0120226088314299  (switchers only)
+  Dg1_sw_val     = -.0717514299018227
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.304347826086957)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran.
+
+=========================================
+  CLASSIFICATION : OTHER (code=8)
+  ESTIMATOR      : 
+=========================================
+
+================================================================
+  [2/21] Baum-SnowandLutz(2011) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 92
+  V(Fg|Fg<=T)    = .2828475871954133
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=2.739130434782609)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=156)
+
+Design SAD: V(Fg|Fg<=T)>0, binary and absorbing treatment.
+
+=========================================
+  CLASSIFICATION : SAD (code=2)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [3/21] Besley and Mueller (2012) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 11
+  V(Fg|Fg<=T)    = 97.25454545454545
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=6.363636363636363)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=19)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [4/21] Dinkelman (2011) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 365
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=2)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=1816)
+
+Design CLA: V(Fg|Fg<=T)=0, V(D_g1)=0, binary treatment.
+
+=========================================
+  CLASSIFICATION : CLA (code=1)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [5/21] Duranton and Turner (2011) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 226
+  V(Fg|Fg<=T)    = .2504031465093412
+  V(D_g1) all    = .0380119973892259
+  V(D_g1|sw)     = .0382990995784282  (switchers only)
+  Dg1_sw_val     = -.075918104796283
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.526548672566372)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=4)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [6/21] Enikolopov et al. (2011) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 2292
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=2)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ...
+           did_had Y G T D (output shown for quasi-stayer test):
+
+
+----------------------------------------------------------------------------------------------------------------
+                                    Effect Estimates                                              QUG* Test
+------------------------------------------------------------------------------------------ ---------------------
+
+             |  Estimate         SE      LB CI      UB CI          N         BW    N in BW          T      p-val 
+-------------+--------------------------------------------------------------------------------------------------
+    Effect_1 | -44.45653   310.9978  -725.7894   493.2995       1948    .378065         21   51.51582   .0190419 
+----------------------------------------------------------------------------------------------------------------
+                                                                                          *Quasi-untreated group
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+Design HAD w/o stayers: did_had ran.
+
+=========================================
+  CLASSIFICATION : HAD w/o stayers (code=6)
+  ESTIMATOR      : did_had
+=========================================
+
+================================================================
+  [7/21] Faye and Niehaus (2012) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 355
+  V(Fg|Fg<=T)    = 59.96021325694279
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=11.30985915492958)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=7220)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [8/21] Forman et al. (2012) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 1478
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=2)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ...
+           did_had Y G T D (output shown for quasi-stayer test):
+
+NOTE: 1266 groups are untreated at period two
+no observations
+variable __00000B not found
+invalid syntax
+  --> classify_sketch2 failed (rc=)
+
+================================================================
+  [9/21] Gentzkow et al. (2011) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 1154
+  V(Fg|Fg<=T)    = 18.15835188439171
+  V(D_g1) all    = .5463117540281603
+  V(D_g1|sw)     = .5280603233821498  (switchers only)
+  Dg1_sw_val     = -1.011265164644714
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=3.888214904679376)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=4694)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [10/21] Hornbeck (2012) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 314
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=5)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=779)
+
+Design HAD with stayers: V(Fg|Fg<=T)=0, V(Dg1|sw)=0, non-switchers share Dg1=0, non-binary at t*=5.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+================================================================
+  [11/21] Moser and Voena (2012) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 336
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=45)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=7248)
+
+Design CLA: V(Fg|Fg<=T)=0, V(D_g1)=0, binary treatment.
+
+=========================================
+  CLASSIFICATION : CLA (code=1)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [12/21] Wang (2011) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+  [Note] Not unique by G T — collapsing to group-time means.
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 8
+  V(Fg|Fg<=T)    = 2.571428571428572
+  V(D_g1) all    = .0117382219615345
+  V(D_g1|sw)     = .0117382219615345  (switchers only)
+  Dg1_sw_val     = -.0705489525571465
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=2.5)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran.
+
+=========================================
+  CLASSIFICATION : OTHER (code=8)
+  ESTIMATOR      : 
+=========================================
+
+================================================================
+  [13/21] Zhang and Zhu (2011) (2010-2012)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 929
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=5)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=1707)
+
+Design HAD with stayers: V(Fg|Fg<=T)=0, V(Dg1|sw)=0, non-switchers share Dg1=0, non-binary at t*=5.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+. 
+. * --- Wave 2 ---------------------------------------------------------------
+. forvalues i = 1/`n2' {
+  2.     local wave   : word `i' of `waves2'
+  3.     local folder : word `i' of `folders2'
+  4.     local dta    "$panels_GTD/`wave'/`folder'/panel_GTD.dta"
+  5.     local j = `n1' + `i'
+  6. 
+.     di _n as text "================================================================"
+  7.     di    as text "  [`j'/21] `folder' (`wave')"
+  8.     di    as text "================================================================"
+  9. 
+.     local des   "FAILED"
+ 10.     local est   ""
+ 11.     local code  = -1
+ 12.     local hs    = 0
+ 13. 
+.     cap noisily {
+ 14.         use "`dta'", clear
+ 15.         classify_sketch2 Y G T D
+ 16.         local des  "`r(design)'"
+ 17.         local est  "`r(estimator)'"
+ 18.         local code  = r(design_code)
+ 19.         local hs    = r(had_stayers)
+ 20.     }
+ 21.     if _rc {
+ 22.         di as error "  --> classify_sketch2 failed (rc=`_rc')"
+ 23.         local des   "FAILED"
+ 24.         local est   ""
+ 25.         local code  = -1
+ 26.         local hs    = 0
+ 27.     }
+ 28. 
+.     post handle ("`folder'") ("`wave'") ("`des'") (`code') (`hs') ("`est'")
+ 29. }
+
+================================================================
+  [14/21] Antecol et al. (2018) (2015-2019)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 37
+  V(Fg|Fg<=T)    = 31.85435435435435
+  V(D_g1) all    = .0399659863945578
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=5.081081081081081)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=53)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [15/21] Berman et al. (2017) (2015-2019)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 76
+  V(Fg|Fg<=T)    = .0954385964912281
+  V(D_g1) all    = 1.083540737825857
+  V(D_g1|sw)     = 27.65982110702401  (switchers only)
+  Dg1_sw_val     = 10.88508799828981
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.105263157894737)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → OK  (e(N_effect_1)=10164)
+
+Design SFSD (continuous): did_multiplegt_dyn continuous(1) ran.
+
+=========================================
+  CLASSIFICATION : SFSD (code=5)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [16/21] Burgess et al. (2015) (2015-2019)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 13
+  V(Fg|Fg<=T)    = 68.92307692307692
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=8.384615384615385)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=34)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [17/21] Donaldson (2018) (2015-2019)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 66
+  V(Fg|Fg<=T)    = 144.7452214452214
+  V(D_g1) all    = .2314299738219895
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=24.46969696969697)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=90)
+
+Design SAD: V(Fg|Fg<=T)>0, binary and absorbing treatment.
+
+=========================================
+  CLASSIFICATION : SAD (code=2)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [18/21] Favara and Imbs (2015) (2015-2019)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 916
+  V(Fg|Fg<=T)    = 1.996778581143962
+  V(D_g1) all    = .0009541984732824
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=5.67467248908297)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=3922)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [19/21] Fetzer (2019) (2015-2019)
+================================================================
+(Written by R.              )
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(11 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 378
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=12)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ...
+           did_had Y G T D (output shown for quasi-stayer test):
+
+
+----------------------------------------------------------------------------------------------------------------
+                                    Effect Estimates                                              QUG* Test
+------------------------------------------------------------------------------------------ ---------------------
+
+             |  Estimate         SE      LB CI      UB CI          N         BW    N in BW          T      p-val 
+-------------+--------------------------------------------------------------------------------------------------
+    Effect_1 |  .0175015   .0907514  -.1171762   .2385629        127        324         21   40.16667   .0242915 
+----------------------------------------------------------------------------------------------------------------
+                                                                                          *Quasi-untreated group
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+Design HAD w/o stayers: did_had ran.
+
+=========================================
+  CLASSIFICATION : HAD w/o stayers (code=6)
+  ESTIMATOR      : did_had
+=========================================
+
+================================================================
+  [20/21] Kaur (2019) (2015-2019)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 238
+  V(Fg|Fg<=T)    = 17.08016877637131
+  V(D_g1) all    = .0082984658298466
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=4)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=831)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [21/21] Suárez Serrato and Zidar (2016) (2015-2019)
+================================================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+  [Note] Not unique by G T — collapsing to group-time means.
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 48
+  V(Fg|Fg<=T)    = .2442375886524823
+  V(D_g1) all    = .0000426083776293
+  V(D_g1|sw)     = .0000426083776293  (switchers only)
+  Dg1_sw_val     = -.0132818754209438
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.604166666666667)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran.
+
+=========================================
+  CLASSIFICATION : OTHER (code=8)
+  ESTIMATOR      : 
+=========================================
+
+. 
+. postclose handle
+
+. 
+. * --------------------------------------------------------------------------
+. * Build final dataset
+. * --------------------------------------------------------------------------
+. use `tmp', clear
+
+. 
+. label define design_lbl     ///
+>     1  "CLA"                ///
+>     2  "SAD"                ///
+>     3  "HAD with stayers"   ///
+>     4  "SSFSD"              ///
+>     5  "SFSD"               ///
+>     6  "HAD w/o stayers"    ///
+>     8  "OTHER"              ///
+>     -1 "FAILED", replace
+
+. label values design_code design_lbl
+
+. 
+. label var paper        "Paper name"
+
+. label var wave         "Publication wave"
+
+. label var design       "classify_sketch2: design label"
+
+. label var design_code  "classify_sketch2: design code (1=CLA 2=SAD 3=HAD-stayers 4=SSFSD 5=SFSD 6=HAD 8=OTHER)"
+note: label truncated to 80 characters
+
+. label var had_stayers  "1 if HAD with stayers"
+
+. label var estimator    "Recommended estimator"
+
+. 
+. sort wave paper
+
+. save "$twfe_root/reports/sketch2_results.dta", replace
+(file /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/reports/sketch2_results.dta not found)
+file /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/reports/sketch2_results.dta saved
+
+. 
+. * --------------------------------------------------------------------------
+. * Summary
+. * --------------------------------------------------------------------------
+. di _n as text "================================================================"
+
+================================================================
+
+. di    as text "  RESULTS: classify_sketch2 — 21 papers"
+  RESULTS: classify_sketch2 — 21 papers
+
+. di    as text "================================================================"
+================================================================
+
+. list paper wave design design_code, sep(0) noobs abbrev(30)
+
+  +-----------------------------------------------------------------------------------+
+  |                           paper        wave             design        design_code |
+  |-----------------------------------------------------------------------------------|
+  |          Algan and Cahuc (2010)   2010-2012              OTHER              OTHER |
+  |          Baum-SnowandLutz(2011)   2010-2012                SAD                SAD |
+  |       Besley and Mueller (2012)   2010-2012              SSFSD              SSFSD |
+  |                Dinkelman (2011)   2010-2012                CLA                CLA |
+  |      Duranton and Turner (2011)   2010-2012              SSFSD              SSFSD |
+  |        Enikolopov et al. (2011)   2010-2012    HAD w/o stayers    HAD w/o stayers |
+  |         Faye and Niehaus (2012)   2010-2012              SSFSD              SSFSD |
+  |            Forman et al. (2012)   2010-2012             FAILED             FAILED |
+  |          Gentzkow et al. (2011)   2010-2012              SSFSD              SSFSD |
+  |                 Hornbeck (2012)   2010-2012   HAD with stayers   HAD with stayers |
+  |          Moser and Voena (2012)   2010-2012                CLA                CLA |
+  |                     Wang (2011)   2010-2012              OTHER              OTHER |
+  |            Zhang and Zhu (2011)   2010-2012   HAD with stayers   HAD with stayers |
+  |           Antecol et al. (2018)   2015-2019              SSFSD              SSFSD |
+  |            Berman et al. (2017)   2015-2019               SFSD               SFSD |
+  |           Burgess et al. (2015)   2015-2019              SSFSD              SSFSD |
+  |                Donaldson (2018)   2015-2019                SAD                SAD |
+  |          Favara and Imbs (2015)   2015-2019              SSFSD              SSFSD |
+  |                   Fetzer (2019)   2015-2019    HAD w/o stayers    HAD w/o stayers |
+  |                     Kaur (2019)   2015-2019              SSFSD              SSFSD |
+  | Suárez Serrato and Zidar (2016)   2015-2019              OTHER              OTHER |
+  +-----------------------------------------------------------------------------------+
+
+. 
+. di _n as text "Counts by design:"
+
+Counts by design:
+
+. tab design, sort
+
+classify_sketch2: design label |      Freq.     Percent        Cum.
+-------------------------------+-----------------------------------
+                         SSFSD |          8       38.10       38.10
+                         OTHER |          3       14.29       52.38
+                           CLA |          2        9.52       61.90
+               HAD w/o stayers |          2        9.52       71.43
+              HAD with stayers |          2        9.52       80.95
+                           SAD |          2        9.52       90.48
+                        FAILED |          1        4.76       95.24
+                          SFSD |          1        4.76      100.00
+-------------------------------+-----------------------------------
+                         Total |         21      100.00
+
+. 
+. di _n "Results saved to: $twfe_root/reports/sketch2_results.dta"
+
+Results saved to: /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/reports/sketch2_results.dta
+
+. cap log close

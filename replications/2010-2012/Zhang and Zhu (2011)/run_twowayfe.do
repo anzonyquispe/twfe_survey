@@ -19,9 +19,24 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Zhang and Zhu (2011)"
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
+global paperdir "$twfe_root/data/2010-2012/Zhang and Zhu (2011)"
 global datadir  "$paperdir/AER-2009_0165.R1_data"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Zhang and Zhu (2011)"
+global outdir   "$twfe_root/replications/2010-2012/Zhang and Zhu (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -398,16 +413,32 @@ di _n "=============================================="
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "=============================================="
 
+
+
+
 * Recreate week_num (lost after preserve/restore in STEP 2)
 gen week_num = week + 5
-replace week_num = week + 4 if week > 0
 
-keep id week_num after logTotal
+keep id week_num  social_participation_after after logTotal social_participation age agesqr
 
 label variable id        "G: Contributor ID"
 label variable week_num  "T: Week number (1-8)"
-label variable after     "D: Post-block binary"
+label variable social_participation_after     "D: Post X Treat social_participation"
 label variable logTotal  "Y: Log total contributions"
+
+label variable after "Post Treatment"  
+label variable social_participation "Dose of Treatment "
+local variable age  "Age"
+local variable agesqr "AgeSq"
+	
+rename id G
+rename week_num T
+rename social_participation_after D
+rename logTotal Y
+rename after Post
+rename social_participation TR
+rename age control1
+rename agesqr control2
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

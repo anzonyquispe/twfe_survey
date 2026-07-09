@@ -19,6 +19,27 @@ Impact of the American Dust Bowl:  Short and Long-run Adjustments to Environment
 ***********************************************************************************
 */
 
+
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global paperdir "$twfe_root/data/2010-2012/Hornbeck (2012)"
+global datadir  "$paperdir/AER-2009-1347_Data_Code/Analyze-Data"
+global outdir   "$twfe_root/replications/2010-2012/Hornbeck (2012)"
+
+cd "$datadir"
+
 *set log
 log using Analyze_DustBowl.log, replace
 

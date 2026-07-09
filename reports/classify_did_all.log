@@ -1,0 +1,2551 @@
+----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/reports/classify_did_all.log
+  log type:  text
+ opened on:   3 Jul 2026, 11:02:16
+
+. 
+. * --------------------------------------------------------------------------
+. * Load ados
+. * --------------------------------------------------------------------------
+. do "$twfe_root/classify_did.ado"
+
+. *! classify_did v0.2 (2026-07-01)
+. *! Classify a (G, T, D) panel into: CLA, SAD, SSFSD, SFSD, HAD, SSD, OTHER
+. *!
+. *! Syntax:  classify_did Y G T D [, book(#)]
+. *!   Y       = outcome (display only; not used for classification)
+. *!   G       = group identifier
+. *!   T       = time identifier (need not be consecutive; normalised internally)
+. *!   D       = treatment variable (numeric)
+. *!   book(1) = textbook mode (DEFAULT). Before classifying SSFSD/SFSD, drops
+. *!             pure-control stayers (d_baseline==0 & Fg==Tplus1) and tests
+. *!             whether the remaining switchers form a HAD design.  If yes,
+. *!             returns "HAD" with r(had_stayers)==1.  Set book(0) to skip.
+. *!
+. *! Returns (via r()):
+. *!   r(design)      - "CLA"|"SAD"|"SSFSD"|"SFSD"|"HAD"|"SSD"|"OTHER"
+. *!   r(estimator)   - "did_multiplegt_dyn"|"did_had"|"did_multiplegt_stat"
+. *!   r(had_stayers) - 1 if classified as HAD via the stayer-drop path, else 0
+. *!   r(design_code) - numeric scalar encoding the classification:
+. *!                      1=CLA  2=SAD  3=HAD-with-stayers  4=SSFSD
+. *!                      5=SFSD  6=HAD-w/o-stayers  7=SSD  8=OTHER
+. *!
+. *! Notes:
+. *!   - Prints Clement's sketch_did_design messages verbatim.
+. *!   - Always-treated groups (d_baseline>0) excluded from sd_Fg (Option B).
+. *!   - HAD condition (revised): sd_first_change>0 AND exactly one unique D
+. *!     value before t* per group (constant pre-treatment at any level).
+. *!   - Dataset is fully preserved; no variables added to the caller's data.
+. 
+. program define classify_did, rclass
+  1.     version 13
+  2.     syntax varlist(min=4 max=4 numeric) [, BOOK(integer 1)]
+  3. 
+.     tokenize `varlist'
+  4.     local Y  "`1'"
+  5.     local G  "`2'"
+  6.     local T  "`3'"
+  7.     local D  "`4'"
+  8. 
+.     di _n as text "===== classify_did ====="
+  9.     di    as text "  Outcome: `Y'"
+ 10.     di    as text "  Group  : `G'"
+ 11.     di    as text "  Time   : `T'"
+ 12.     di    as text "  Treat  : `D'"
+ 13.     if `book' di as text "  Mode   : book=1 (HAD-with-stayers check ON)"
+ 14.     else      di as text "  Mode   : book=0 (HAD-with-stayers check OFF)"
+ 15. 
+.     preserve
+ 16. 
+.     * --- Keep only needed variables; drop missing IDs ---
+.     keep `Y' `G' `T' `D'
+ 17.     drop if missing(`G') | missing(`T')
+ 18. 
+.     * --- Normalize G and T to consecutive integer indices ---
+.     egen __G = group(`G')
+ 19.     egen __T = group(`T')
+ 20.     gen  __D  = `D'
+ 21.     drop `G' `T' `D'
+ 22.     * (keep `Y' in the working dataset for potential future use; not used in classification)
+. 
+.     * --- Balance the panel (Clement step 1) ---
+.     fillin __G __T
+ 23.     capture drop _fillin
+ 24. 
+.     * --- Scalar bounds ---
+.     qui sum __T
+ 25.     scalar __Tplus1 = r(max) + 1
+ 26.     scalar __Tmin   = r(min)
+ 27. 
+.     * --- Drop groups whose treatment is always missing ---
+.     gen __tdnm = __T * (__D != .) + __Tplus1 * (__D == .)
+ 28.     bysort __G: egen __firstt_dnm = min(__tdnm)
+ 29.     drop if __firstt_dnm == __Tplus1
+ 30.     drop __tdnm __firstt_dnm
+ 31. 
+.     * --- Baseline treatment: D at first observed period per group ---
+.     gen  __dbase_tmp = __D if __T == __Tmin
+ 32.     bysort __G: egen __d_baseline = min(__dbase_tmp)
+ 33.     drop __dbase_tmp
+ 34. 
+.     * --- Always-treated flag (d_baseline > 0) [Option B] ---
+.     gen __always_treated = (__d_baseline > 0)
+ 35. 
+.     * --- Fg: first T where D changes from baseline (Tplus1 if never) ---
+.     gen  __tc = __T if __D != . & __D != __d_baseline
+ 36.     replace __tc = __Tplus1 if missing(__tc)
+ 37.     bysort __G: egen __Fg = min(__tc)
+ 38.     drop __tc
+ 39. 
+.     * --- d_Fg and first_change ---
+.     gen  __d_Fg_tmp = __D if __T == __Fg
+ 40.     bysort __G: egen __d_Fg = min(__d_Fg_tmp)
+ 41.     drop __d_Fg_tmp
+ 42.     gen __first_change = __d_Fg - __d_baseline
+ 43. 
+.     * --- Drop groups where D missing just before Fg (Clement step) ---
+.     gen  __dmiss = (__D == .) if __T == __Fg - 1
+ 44.     bysort __G: egen __dmiss_atFgm1 = min(__dmiss)
+ 45.     drop if __dmiss_atFgm1 == 1
+ 46.     drop __dmiss __dmiss_atFgm1
+ 47. 
+.     * ---------------------------------------------------------------
+.     * sd_Fg: SD of Fg among non-always-treated groups (Option B).
+.     * Fallback: if ALL non-always-treated groups are never-switchers
+.     * (Fg = Tplus1 for every one of them), the treatment variation lives
+.     * entirely inside the always-treated groups (e.g. a continuous dose
+.     * that varies within treated units over time, with pure-control units
+.     * at D = 0 forever).  In that case we include all groups.
+.     * ---------------------------------------------------------------
+.     qui sum __Fg if __always_treated == 0
+ 48.     if r(N) == 0 {
+ 49.         di _n as result "All groups are always-treated (d_baseline > 0). Design: OTHER."
+ 50.         restore
+ 51.         return local  design       "OTHER"
+ 52.         return local  estimator    "did_multiplegt_stat"
+ 53.         return scalar had_stayers  = 0
+ 54.         return scalar design_code  = 8
+ 55.         exit
+ 56.     }
+ 57.     scalar __sd_Fg    = cond(missing(r(sd)),   0, r(sd))
+ 58.     scalar __Fg_notAT = cond(missing(r(mean)), __Tplus1, r(mean))
+ 59. 
+.     * Scalar flag: 1 = fell back to including AT groups in the analysis
+.     scalar __incl_AT = 0
+ 60. 
+.     if __sd_Fg == 0 & abs(__Fg_notAT - __Tplus1) < 1e-6 {
+ 61.         * All non-always-treated groups never switch — include AT groups.
+.         di _n as text ///
+>             "(Note: all non-always-treated groups are never-switchers. " ///
+>             "Including always-treated groups in the classification.)"
+ 62.         scalar __incl_AT = 1
+ 63.         qui sum __Fg
+ 64.         scalar __sd_Fg = cond(missing(r(sd)), 0, r(sd))
+ 65.     }
+ 66. 
+.     * ---------------------------------------------------------------
+.     * Result locals (accumulated through nested ifs; single exit point)
+.     * ---------------------------------------------------------------
+.     local __design      ""
+ 67.     local __estimator   ""
+ 68.     local __had_stayers 0
+ 69. 
+.     * ==============================================================
+.     * BRANCH A: sd_Fg == 0  (same timing or nobody switches)
+.     * ==============================================================
+.     if __sd_Fg == 0 {
+ 70. 
+.         qui sum __Fg if __always_treated == 0, meanonly
+ 71.         scalar __Fg_val = r(mean)
+ 72.         local __Fg_disp = string(scalar(__Fg_val), "%g")
+ 73. 
+.         * Clement's message
+.         di _n as text ///
+>             "Your design is not a Staggered First Switch Design: all groups " ///
+>             "experience their first treatment change at period `__Fg_disp'. " ///
+>             "You cannot use the did_multiplegt_dyn package to estimate the treatment's effect."
+ 74. 
+.         * ----- A1: Nobody ever switches -----
+.         if __Fg_val == __Tplus1 {
+ 75.             di _n as result "No group ever switches treatment. Design: OTHER."
+ 76.             local __design    "OTHER"
+ 77.             local __estimator "did_multiplegt_stat"
+ 78.         }
+ 79.         else {
+ 80.             * Some groups switch (all at the same date t* = __Fg_val)
+. 
+.             * sd_first_change among non-always-treated
+.             qui sum __first_change if __always_treated == 0
+ 81.             scalar __sd_fc = cond(missing(r(sd)), 0, r(sd))
+ 82. 
+.             * Clement's HAD / not-HAD messages
+.             if __sd_fc > 0 {
+ 83.                 di _n as text ///
+>                     "All groups experience their first treatment change at period " ///
+>                     "`__Fg_disp', but the magnitude of that change varies across groups. " ///
+>                     "Then, your design is an Heterogeneous Adoption Design. You may be able " ///
+>                     "to use the did_had package to estimate the treatment's effect, " ///
+>                     "see Chapter 7 of the DID textbook of de Chaisemartin and D'Haultfoeuille " ///
+>                     "for further details."
+ 84.             }
+ 85.             else {
+ 86.                 di _n as text ///
+>                     "All groups experience their first treatment change at period " ///
+>                     "`__Fg_disp', and the magnitude of that change does not vary across groups. " ///
+>                     "Then, your design is not an Heterogeneous Adoption Design, so you cannot " ///
+>                     "use the did_had package to estimate the treatment's effect."
+ 87.             }
+ 88. 
+.             * ----- A2: HAD check (REVISED condition) -----
+.             * sd_first_change > 0  AND  each group has exactly 1 unique D value before t*
+.             if __sd_fc > 0 {
+ 89.                 scalar __t_star = __Fg_val
+ 90. 
+.                 * Count distinct D values per group in pre-treatment periods
+.                 gen  __pre_D    = __D if __T < __t_star & __always_treated == 0
+ 91.                 bysort __G __pre_D: gen __pdrk = _n
+ 92.                 gen  __isfirst  = (__pdrk == 1 & !missing(__pre_D))
+ 93.                 bysort __G: egen __n_uniq_pre = total(__isfirst)
+ 94.                 drop __pre_D __pdrk __isfirst
+ 95. 
+.                 qui sum __n_uniq_pre if __always_treated == 0
+ 96.                 * had_ok: every group has exactly 1 unique pre-treatment D value
+.                 scalar __had_ok = (!missing(r(min)) & r(max) <= 1 & r(min) >= 1)
+ 97.                 drop __n_uniq_pre
+ 98. 
+.                 if __had_ok {
+ 99.                     di _n as result ///
+>                         "Your dataset corresponds to Design HAD " ///
+>                         "(Heterogeneous Adoption Design)."
+100.                     di    as text  ///
+>                         "  Common treatment date t* = `__Fg_disp'." ///
+>                         "  Pre-treatment D is constant within each group (any level)."
+101.                     local __design    "HAD"
+102.                     local __estimator "did_had"
+103.                 }
+104.             }
+105. 
+.             * ----- A3: SSD check (only if not already classified) -----
+.             if "`__design'" == "" {
+106. 
+.                 qui xtset __G __T
+107.                 gen __fd_D   = __D - L.__D
+108.                 gen __fd_abs = abs(__fd_D)
+109.                 bysort __T: egen __min_sw = min(__fd_abs)
+110.                 bysort __T: egen __max_sw = max(__fd_abs)
+111.                 gen __sw_stay = (__max_sw > 0 & __min_sw == 0)
+112.                 qui sum __sw_stay
+113.                 scalar __ssd = r(max)
+114.                 drop __fd_D __fd_abs __min_sw __max_sw __sw_stay
+115. 
+.                 if __ssd == 1 {
+116.                     di _n as text ///
+>                         "Your design is a Switchers and Stayers Design: there is at least " ///
+>                         "one pair of consecutive time periods (t-1, t) between which there " ///
+>                         "is at least one switcher, whose treatment changes, and one stayer, " ///
+>                         "whose treatment does not change. Then, if you are ready to assume " ///
+>                         "that lagged treatments do not affect the current outcome beyond a " ///
+>                         "pre-determined lag, you can use the did_multiplegt_stat package to " ///
+>                         "estimate the treatment's effect. See Section 8.4 of the DID textbook " ///
+>                         "of de Chaisemartin and D'Haultfoeuille for further details."
+117.                     di _n as result ///
+>                         "Your dataset corresponds to Design SSD " ///
+>                         "(Switchers and Stayers Design)."
+118.                     local __design    "SSD"
+119.                     local __estimator "did_multiplegt_stat"
+120.                 }
+121.                 else {
+122.                     di _n as text ///
+>                         "Your design is not a Switchers and Stayers Design: there is no pair " ///
+>                         "of consecutive time periods (t-1, t) between which there is at least " ///
+>                         "one switcher, whose treatment changes, and one stayer, whose treatment " ///
+>                         "does not change. Then, you cannot use the did_multiplegt_stat package " ///
+>                         "to estimate the treatment's effect."
+123.                     di _n as result "Design: OTHER."
+124.                     local __design    "OTHER"
+125.                     local __estimator "did_multiplegt_stat"
+126.                 }
+127.             }
+128.         }
+129.     }
+130. 
+.     * ==============================================================
+.     * BRANCH B: sd_Fg > 0  (staggered timing across groups)
+.     * ==============================================================
+.     else {
+131. 
+.         * Check binary: D takes only {d_min, d_max} values
+.         qui sum __D
+132.         scalar __d_max = r(max)
+133.         scalar __d_min = r(min)
+134.         gen __bin_chk = (__D == __d_max | __D == __d_min) if !missing(__D)
+135.         qui sum __bin_chk
+136.         scalar __binary = (r(mean) == 1)
+137.         drop __bin_chk
+138. 
+.         * Check absorbing: D stays at d_Fg for all t > Fg
+.         gen __abs_chk = (__D == __d_Fg) if __T > __Fg & !missing(__D)
+139.         qui sum __abs_chk
+140.         scalar __absorbing = cond(missing(r(min)), 1, r(min) == 1)
+141.         drop __abs_chk
+142. 
+.         * Clement's staggered message
+.         di _n as text ///
+>             "Your design is a Staggered First Switch Design, where groups " ///
+>             "experience their first treatment change at different points in time. " ///
+>             "You can use the did_multiplegt_dyn package to estimate the treatment's effect, " ///
+>             "see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuille " ///
+>             "for further details. If you are ready to assume that lagged treatments do not " ///
+>             "affect the current outcome beyond a pre-determined lag, you can also use the " ///
+>             "did_multiplegt_stat package, see Section 8.4 of the DID textbook."
+143. 
+.         * ----- B1: Binary AND absorbing -----
+.         if __binary == 1 & __absorbing == 1 {
+144. 
+.             * sd of Fg among switchers only (Fg < Tplus1)
+.             * Respect the __incl_AT fallback: include AT groups if flagged.
+.             if __incl_AT {
+145.                 qui sum __Fg if __Fg < __Tplus1
+146.             }
+147.             else {
+148.                 qui sum __Fg if __Fg < __Tplus1 & __always_treated == 0
+149.             }
+150.             scalar __sd_Fg_sw = cond(missing(r(sd)), 0, r(sd))
+151. 
+.             if __sd_Fg_sw == 0 {
+152.                 * All switchers adopt at the same date → CLA (stayers exist since sd_Fg > 0)
+.                 di _n as text ///
+>                     "Your design is a Classical DID Design, with an absorbing and binary " ///
+>                     "treatment, and no variation in treatment timing. You can use a static " ///
+>                     "TWFE regression and/or an event-study TWFE regression to estimate the " ///
+>                     "treatment's effect, see Chapter 3 of the DID textbook of de Chaisemartin " ///
+>                     "and D'Haultfoeuille for further details."
+153.                 di _n as result ///
+>                     "Your dataset corresponds to Design CLA (Classical DID)."
+154.                 di    as text ///
+>                     "  Note: CLA requires untreated/never-treated control groups. " ///
+>                     "  Verify their presence before using did_multiplegt_dyn without controls."
+155.                 local __design    "CLA"
+156.                 local __estimator "did_multiplegt_dyn"
+157.             }
+158.             else {
+159.                 * Switchers have different adoption dates → SAD
+.                 di _n as text ///
+>                     "Your design is a Staggered Adoption Design, with an absorbing and binary " ///
+>                     "treatment, and variation in treatment timing. You can for instance use the " ///
+>                     "csdid, did_multiplegt_dyn, or did2s package to estimate the treatment's " ///
+>                     "effect, see Chapter 6 of the DID textbook of de Chaisemartin and " ///
+>                     "D'Haultfoeuille for further details."
+160.                 di _n as result ///
+>                     "Your dataset corresponds to Design SAD (Staggered Adoption Design)."
+161.                 local __design    "SAD"
+162.                 local __estimator "did_multiplegt_dyn"
+163.             }
+164.         }
+165. 
+.         * ----- B2: Non-binary or non-absorbing (SFSD branch) -----
+.         else {
+166. 
+.             * ----- B2a: HAD-with-stayers check (book=1 only) ----------------
+.             * Logic: pure-control stayers (d_baseline==0 & Fg==Tplus1) may be
+.             * hiding a HAD structure among the switchers.  Drop them temporarily
+.             * and test HAD conditions on the remaining groups.
+.             if `book' {
+167. 
+.                 gen __is_stayer = (__d_baseline == 0 & __Fg == __Tplus1)
+168. 
+.                 * sd_Fg among non-stayers (all obs, repeated per T — only the
+.                 * == 0 / > 0 distinction matters)
+.                 qui sum __Fg if !__is_stayer
+169.                 scalar __sd_Fg_ns   = cond(missing(r(sd)),   0, r(sd))
+170.                 scalar __Fg_mean_ns = cond(missing(r(mean)), __Tplus1, r(mean))
+171. 
+.                 if __sd_Fg_ns == 0 & __Fg_mean_ns < __Tplus1 {
+172.                     * All non-stayers switch at the same date → HAD candidate
+. 
+.                     qui sum __first_change if !__is_stayer
+173.                     scalar __sd_fc_ns = cond(missing(r(sd)), 0, r(sd))
+174. 
+.                     if __sd_fc_ns > 0 {
+175.                         * Heterogeneous doses → check unique pre-treatment D per group
+.                         scalar __t_star_ns = __Fg_mean_ns
+176.                         local  __ts_disp   = string(scalar(__t_star_ns), "%g")
+177. 
+.                         gen  __pre_D_ns = __D if __T < __t_star_ns & !__is_stayer
+178.                         bysort __G __pre_D_ns: gen __pdrk_ns = _n
+179.                         gen  __isfirst_ns  = (__pdrk_ns == 1 & !missing(__pre_D_ns))
+180.                         bysort __G: egen __n_uniq_pre_ns = total(__isfirst_ns)
+181.                         drop __pre_D_ns __pdrk_ns __isfirst_ns
+182. 
+.                         qui sum __n_uniq_pre_ns if !__is_stayer
+183.                         scalar __had_ok_ns = (!missing(r(min)) & r(max) <= 1 & r(min) >= 1)
+184.                         drop __n_uniq_pre_ns
+185. 
+.                         if __had_ok_ns {
+186.                             di _n as result ///
+>                                 "Your dataset corresponds to Design HAD with Stayers."
+187.                             di    as text ///
+>                                 "  Common treatment date t* = `__ts_disp'."
+188.                             di    as text ///
+>                                 "  Pure-control stayers (d_baseline=0, never-switchers) " ///
+>                                 "are present but the switchers satisfy HAD conditions."
+189.                             di    as text ///
+>                                 "  Recommended estimator: did_had."
+190.                             local __design      "HAD"
+191.                             local __estimator   "did_had"
+192.                             local __had_stayers  1
+193.                         }
+194.                     }
+195.                 }
+196.                 drop __is_stayer
+197.             }
+198. 
+.             * ----- B2b: SSFSD vs SFSD (runs when book=0 OR HAD not detected) -
+.             if "`__design'" == "" {
+199. 
+.             * Within-baseline-treatment SD of Fg (SSFSD vs SFSD/continuous)
+.             * Note: include all groups here (not just non-always-treated) so the
+.             * "groups with same d_baseline share a switch date" pattern is detectable.
+.             bysort __d_baseline: egen __sd_Fg_dbase = sd(__Fg)
+200.             qui sum __sd_Fg_dbase
+201.             scalar __sd_Fg_dbase_val = cond(missing(r(mean)), 0, r(mean))
+202.             drop __sd_Fg_dbase
+203. 
+.             if __sd_Fg_dbase_val == 0 {
+204.                 * Groups with same d_baseline all switch at same date → continuous option
+.                 di _n as text ///
+>                     "While your design is a Staggered First Switch Design, where groups " ///
+>                     "experience their first treatment change at different points in time, " ///
+>                     "groups with the same period-one treatment all experience their first " ///
+>                     "treatment change at the same date, perhaps because the period-one " ///
+>                     "treatment is a continuously distributed variable (groups all have " ///
+>                     "different period-one treatments). Then, you can still use the " ///
+>                     "did_multiplegt_dyn package to estimate the treatment's effect, but " ///
+>                     "you need to specify the continuous option, see Section 8.3.5.1 of " ///
+>                     "the DID textbook of de Chaisemartin and D'Haultfoeuille."
+205.                 di _n as result ///
+>                     "Your dataset corresponds to Design SFSD (Relaxed SFSD)."
+206.                 local __design    "SFSD"
+207.                 local __estimator "did_multiplegt_dyn"
+208.             }
+209.             else {
+210.                 * Variation in Fg within baseline groups → Strict SFSD
+.                 di _n as result ///
+>                     "Your dataset corresponds to Design SSFSD (Strict Staggered First Switch Design)."
+211.                 di    as text ///
+>                     "  Use did_multiplegt_dyn. Switch timing varies " ///
+>                     "  within groups that share the same baseline treatment."
+212.                 local __design    "SSFSD"
+213.                 local __estimator "did_multiplegt_dyn"
+214.             }
+215. 
+.             }  /* end if "`__design'" == "" (B2b SSFSD/SFSD block) */
+216.         }
+217.     }
+218. 
+.     * ---------------------------------------------------------------
+.     * Single exit point: restore dataset and return results
+.     * ---------------------------------------------------------------
+.     restore
+219. 
+.     * --- Full design label and numeric code (computed at single exit point) --
+.     * r(design) carries all information: HAD is split into "HAD with stayers"
+.     * vs "HAD w/o stayers" so callers can use it directly in tables / Excel.
+.     local __design_label "`__design'"
+220.     if "`__design'" == "HAD" & `__had_stayers'   local __design_label "HAD with stayers"
+221.     if "`__design'" == "HAD" & !`__had_stayers'  local __design_label "HAD w/o stayers"
+222. 
+.     local __design_code = 8
+223.     if "`__design'" == "CLA"                     local __design_code = 1
+224.     if "`__design'" == "SAD"                     local __design_code = 2
+225.     if "`__design_label'" == "HAD with stayers"  local __design_code = 3
+226.     if "`__design'" == "SSFSD"                   local __design_code = 4
+227.     if "`__design'" == "SFSD"                    local __design_code = 5
+228.     if "`__design_label'" == "HAD w/o stayers"   local __design_code = 6
+229.     if "`__design'" == "SSD"                     local __design_code = 7
+230.     * (OTHER stays 8)
+. 
+.     di _n as result "========================================="
+231.     di    as result "  CLASSIFICATION : `__design_label' (code=`__design_code')"
+232.     di    as result "  ESTIMATOR      : `__estimator'"
+233.     di    as result "========================================="
+234. 
+.     return local  design       "`__design_label'"
+235.     return local  estimator    "`__estimator'"
+236.     return scalar had_stayers   = `__had_stayers'
+237.     return scalar design_code   = `__design_code'
+238. 
+. end
+
+. 
+end of do-file
+
+. do "$twfe_root/classify_sketch2.ado"
+
+. *! classify_sketch2 v0.3 (2026-07-02)
+. *! Classify a (Y, G, T, D) panel by attempting to run the estimators.
+. *!
+. *! Algorithm:
+. *!   1. Run did_multiplegt_dyn Y G T D.
+. *!        Check e(N_effect_1): must be non-missing and > 0.
+. *!   2. If OK → compute V(Fg|Fg<=T), V(D_g1), binary, absorbing:
+. *!        3. V==0, V_Dg1==0, binary globally          → CLA
+. *!        4. V==0, V_Dg1==0, non-binary at switch date → HAD with stayers
+. *!        5. V>0,  binary & absorbing                  → SAD
+. *!        6. (none of 3-5)                             → SFSD
+. *!   7. If e(N_effect_1) missing/0 or dyn failed →
+. *!        run did_multiplegt_dyn, continuous(1); check e(N_effect_1) > 0.
+. *!        If OK → SFSD.
+. *!   8. If continuous also fails & V==0 & V_Dg1==0 → run did_had (noisily,
+. *!        for quasi-stayer test). If OK → HAD w/o stayers.
+. *!   9. Otherwise → OTHER.
+. *!
+. *! Syntax:  classify_sketch2 Y G T D
+. *!   T is grouped (normalised to consecutive integers) before any analysis.
+. *!
+. *! Returns (via r()):
+. *!   r(design)      "CLA"|"SAD"|"HAD with stayers"|"SFSD"|"HAD w/o stayers"|"OTHER"
+. *!   r(estimator)   "did_multiplegt_dyn"|"did_had"|""
+. *!   r(had_stayers) 1 if HAD detected after dropping stayers, else 0
+. *!   r(design_code) 1=CLA  2=SAD  3=HAD-with-stayers  4=SFSD(dyn)
+. *!                  5=SFSD(continuous)  6=HAD-w/o-stayers  8=OTHER
+. 
+. program define classify_sketch2, rclass
+  1.     version 13
+  2.     syntax varlist(min=4 max=4 numeric)
+  3. 
+.     tokenize `varlist'
+  4.     local Y  "`1'"
+  5.     local G  "`2'"
+  6.     local T  "`3'"
+  7.     local D  "`4'"
+  8. 
+.     di _n as text "===== classify_sketch2 ====="
+  9.     di    as text "  Y=`Y'  G=`G'  T=`T'  D=`D'"
+ 10. 
+.     preserve
+ 11.         
+.         * -----------------------------------------------------------------------
+.     * 0. Normalize T to consecutive integers (always done first)
+.     * -----------------------------------------------------------------------
+.     tempvar __Tnorm
+ 12.     qui egen `__Tnorm' = group(`T')
+ 13.     qui replace `T' = `__Tnorm'
+ 14.     drop `__Tnorm'
+ 15. 
+.     * -----------------------------------------------------------------------
+.     * 1. Prepare working dataset
+.     * -----------------------------------------------------------------------
+.     keep `Y' `G' `T' `D'
+ 16.     drop if missing(`G') | missing(`T')
+ 17. 
+.     * -----------------------------------------------------------------------
+.     * 0b. Ensure unique G-T pairs (collapse to means if not)
+.     * -----------------------------------------------------------------------
+.     cap isid `G' `T'
+ 18.     if _rc {
+ 19.         di as text "  [Note] Not unique by `G' `T' — collapsing to group-time means."
+ 20.         collapse (mean) `Y' `D', by(`G' `T')
+ 21.     }
+ 22. 
+.     
+.     qui sum `T'
+ 23.     local Tmax   = r(max)
+ 24.     local Tplus1 = r(max) + 1
+ 25.     local Tmin   = r(min)
+ 26. 
+.     * -----------------------------------------------------------------------
+.     * 2. Baseline treatment D_g1 (D at Tmin per group)
+.     * -----------------------------------------------------------------------
+.     tempvar __d1 __Dg1
+ 27.     qui bysort `G': egen `__Dg1' = min(`D')
+ 28. 
+.     * -----------------------------------------------------------------------
+.     * 3. Fg: first T where D changes from baseline (Tplus1 if never)
+.     * -----------------------------------------------------------------------
+.     tempvar __tc __Fg
+ 29.     qui gen `__tc' = `T' if `D' != . & `D' != `__Dg1'
+ 30.     qui replace `__tc' = `Tplus1' if missing(`__tc')
+ 31.     qui bysort `G': egen `__Fg' = min(`__tc')
+ 32.         bysort `G': egen Fgaux = mean(`__Fg')
+ 33.         replace `__Fg' = Fgaux if `__Fg' == . // Same Fg to all g's
+ 34.         replace `__Fg' = `Tmax' + 1 if `__Fg' == . // Never switchers
+ 35.     drop `__tc' Fgaux
+ 36. 
+.     * -----------------------------------------------------------------------
+.     * 4. D_Fg: treatment value at switch date
+.     * -----------------------------------------------------------------------
+.     tempvar __dFgtmp __DFg
+ 37.     qui gen  `__dFgtmp' = `D' if `T' == `__Fg'
+ 38.     qui bysort `G': egen `__DFg' = min(`__dFgtmp') // Same D_Fg to all switchers g
+ 39.     drop `__dFgtmp'
+ 40. 
+.     * -----------------------------------------------------------------------
+.     * 5. Group-level summary statistics (one obs per group)
+.     * -----------------------------------------------------------------------
+.     tempvar __first
+ 41.     qui bysort `G': gen `__first' = (_n == 1)
+ 42. 
+.     * V(Fg | Fg <= Tmax): variance of Fg among switchers, group-level
+.     qui sum `__Fg' if `__first' & `__Fg' <= `Tmax' // we are working with switchers and only one observation per group
+ 43.     local n_switchers = r(N)
+ 44.     local V_Fg_cond   = r(Var)
+ 45.     local t_star      = cond(r(N) > 0, r(mean), `Tplus1')
+ 46. 
+.     * V(D_g1): variance of baseline treatment, group-level (all groups)
+.     qui sum `__Dg1' if `__first'
+ 47.     local V_Dg1 = r(Var)
+ 48. 
+.     * V(D_g1 | switchers): variance of Dg1 among switchers only (Fg <= Tmax)
+.     qui sum `__Dg1' if `__first' & `__Fg' <= `Tmax'
+ 49.     local V_Dg1_sw   = cond(missing(r(Var)), 0, r(Var))
+ 50.     local Dg1_sw_val = r(mean)          // common baseline value when V==0
+ 51. 
+.     * At least one non-switcher (Fg > Tmax) has Dg1 == Dg1_sw_val
+.     if missing(`Dg1_sw_val') {
+ 52.         local Dg1_ns_match = 0          // no switchers → condition fails
+ 53.     }
+ 54.     else {
+ 55.         qui count if `__first' & `__Fg' > `Tmax' ///
+>             & !missing(`__Dg1') & abs(`__Dg1' - `Dg1_sw_val') <= 1e-8
+ 56.         local Dg1_ns_match = (r(N) > 0)
+ 57.     }
+ 58. 
+.     * Binary: D takes only {d_min, d_max} across ALL observations FORCING TO TAKE ONLY TWO VALUES
+.         * THIS COULD BE FROM 4 TO 9 OR 5 TO 8 WE ARE NOT EXPLICITLY ASSUMING 0 AND 1
+.     qui sum `D'
+ 59.     local d_max = r(max)
+ 60.     local d_min = r(min)
+ 61.     tempvar __bchk
+ 62.     qui gen `__bchk' = (`D' == `d_max' | `D' == `d_min') if !missing(`D')
+ 63.     qui sum `__bchk'
+ 64.     local binary = (r(mean) == 1)
+ 65.     drop `__bchk'
+ 66. 
+.     * Binary at switch date: D takes only 2 values at T == t_star
+.     qui sum `D' if `T' == `t_star'
+ 67.     if r(N) == 0 {
+ 68.         local binary_at_switch = 1
+ 69.     }
+ 70.     else {
+ 71.         local d_max_ts = r(max)
+ 72.         local d_min_ts = r(min)
+ 73.         tempvar __bchk_ts
+ 74.         qui gen `__bchk_ts' = (`D'==`d_max_ts' | `D'==`d_min_ts') ///
+>             if `T' == `t_star' & !missing(`D')
+ 75.         qui sum `__bchk_ts'
+ 76.         local binary_at_switch = (r(mean) == 1)
+ 77.         drop `__bchk_ts'
+ 78.     }
+ 79. 
+.     * Absorbing: after Fg, D stays at D_Fg
+.     tempvar __abs_chk
+ 80.     qui gen `__abs_chk' = (`D' == `__DFg') if `T' > `__Fg' & !missing(`D') & !missing(`__DFg')
+ 81.     qui sum `__abs_chk' if !missing(`__DFg')
+ 82.     local absorbing = cond(missing(r(min)), 1, r(min) == 1)
+ 83.     drop `__abs_chk'
+ 84. 
+.     * ---- Drop working variables: leave only Y G T D for estimators --------
+.     drop `__first' `__Fg' `__Dg1' `__DFg'
+ 85. 
+.     * ---- Diagnostics -------------------------------------------------------
+.     di as text "  n_switchers    = `n_switchers'"
+ 86.     di as text "  V(Fg|Fg<=T)    = `V_Fg_cond'"
+ 87.     di as text "  V(D_g1) all    = `V_Dg1'"
+ 88.     di as text "  V(D_g1|sw)     = `V_Dg1_sw'  (switchers only)"
+ 89.     di as text "  Dg1_sw_val     = `Dg1_sw_val'"
+ 90.     di as text "  Dg1_ns_match   = `Dg1_ns_match'  (>=1 non-switcher has Dg1=Dg1_sw_val)"
+ 91.     di as text "  binary (all)   = `binary'"
+ 92.     di as text "  binary at t*   = `binary_at_switch'  (t*=`t_star')"
+ 93.     di as text "  absorbing      = `absorbing'"
+ 94. 
+.     * -----------------------------------------------------------------------
+.     * Classification: driven by whether estimators run
+.     * -----------------------------------------------------------------------
+.     local __design      ""
+ 95.     local __estimator   ""
+ 96.     local __had_stayers  0
+ 97.     local __design_code  8
+ 98. 
+.     * ======================== Step 1: run dyn (no options) ==================
+.     di _n as text "  [Step 1] did_multiplegt_dyn `Y' `G' `T' `D' ..."
+ 99.     ereturn clear
+100.     cap qui did_multiplegt_dyn `Y' `G' `T' `D'
+101.     local __rc_dyn = _rc
+102. 
+.     local __dyn_ok = 0
+103.     if `__rc_dyn' == 0 {
+104.         local __N1_dyn = e(N_effect_1)
+105.         if !missing(`__N1_dyn') & `__N1_dyn' > 0 {
+106.             di as text "           → OK  (e(N_effect_1)=`__N1_dyn')"
+107.             local __dyn_ok = 1
+108.         }
+109.         else {
+110.             di as text "           → ran but e(N_effect_1) missing or 0 — treated as failed"
+111.         }
+112.     }
+113.     else {
+114.         di as text "           → FAILED (rc=`__rc_dyn')"
+115.     }
+116. 
+.     if `__dyn_ok' {
+117. 
+.         * --- Condition 3: CLA -----------------------------------------------
+.         if `V_Fg_cond' == 0 & `V_Dg1' == 0 & `binary' {
+118.             di _n as result "Design CLA: V(Fg|Fg<=T)=0, V(D_g1)=0, binary treatment."
+119.             local __design      "CLA"
+120.             local __estimator   "did_multiplegt_dyn"
+121.             local __design_code  1
+122.         }
+123.         * --- Condition 4: HAD with stayers -----------------------------------
+.         * V(Fg|Fg<=T)==0         : all switchers share the same switch date t*
+.         * V(Dg1|sw)==0           : switchers all start from the same baseline
+.         * Dg1_ns_match==1        : at least one non-switcher has Dg1 = Dg1_sw_val
+.         * !binary_at_switch      : treatment at t* is not binary (multi-valued)
+.         else if `V_Fg_cond' == 0 & `V_Dg1_sw' == 0 & `Dg1_ns_match' & !`binary_at_switch' {
+124.             di _n as result ///
+>                 "Design HAD with stayers: V(Fg|Fg<=T)=0, V(Dg1|sw)=0, " ///
+>                 "non-switchers share Dg1=`Dg1_sw_val', non-binary at t*=`t_star'."
+125.             local __design      "HAD with stayers"
+126.             local __estimator   "did_had"
+127.             local __had_stayers  1
+128.             local __design_code  3
+129.         }
+130.         * --- Condition 5: SAD -----------------------------------------------
+.         else if `V_Fg_cond' > 0 & `binary' & `absorbing' {
+131.             di _n as result ///
+>                 "Design SAD: V(Fg|Fg<=T)>0, binary and absorbing treatment."
+132.             local __design      "SAD"
+133.             local __estimator   "did_multiplegt_dyn"
+134.             local __design_code  2
+135.         }
+136.         * --- Condition 6: SFSD (generic) ------------------------------------
+.         else {
+137.             di _n as result ///
+>                 "Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met."
+138.             local __design      "SSFSD"
+139.             local __estimator   "did_multiplegt_dyn"
+140.             local __design_code  4
+141.         }
+142.     }
+143. 
+.     * ======================== dyn failed / N_effect_1 invalid → Step 7 ======
+.     else {
+144. 
+.         * --- Step 7: continuous(1) ------------------------------------------
+.         di _n as text "  [Step 7] did_multiplegt_dyn `Y' `G' `T' `D', continuous(1) ..."
+145.         ereturn clear
+146.         cap qui did_multiplegt_dyn `Y' `G' `T' `D', continuous(1)
+147.         local __rc_cont = _rc
+148. 
+.         local __cont_ok = 0
+149.         if `__rc_cont' == 0 {
+150.             local __N1_cont = e(N_effect_1)
+151.             if !missing(`__N1_cont') & `__N1_cont' > 0 {
+152.                 di as text "           → OK  (e(N_effect_1)=`__N1_cont')"
+153.                 local __cont_ok = 1
+154.             }
+155.             else {
+156.                 di as text "           → ran but e(N_effect_1) missing or 0 — treated as failed"
+157.             }
+158.         }
+159.         else {
+160.             di as text "           → FAILED (rc=`__rc_cont')"
+161.         }
+162. 
+.         if `__cont_ok' {
+163.             di _n as result ///
+>                 "Design SFSD (continuous): did_multiplegt_dyn continuous(1) ran."
+164.             local __design      "SFSD"
+165.             local __estimator   "did_multiplegt_dyn"
+166.             local __design_code  5
+167.         }
+168. 
+.         * ======================== continuous also failed =====================
+.         else {
+169. 
+.             * --- Step 8: HAD w/o stayers ------------------------------------
+.                         * We  should conditioning the Dg1 only for  -- only switchers  have V(Dg1 = 0 | Fg<= Tmax)
+.                         * For every g such that Fg >= Tmax Dg1 == Dg'1 where g' are those that Fg <= Tmax
+.                 
+.             if `V_Fg_cond' == 0 & `V_Dg1' == 0 {
+170.                 di _n as text ///
+>                     "  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ..."
+171.                 di    as text ///
+>                     "           did_had `Y' `G' `T' `D' (output shown for quasi-stayer test):"
+172.                 cap noisily did_had `Y' `G' `T' `D'
+173.                 local __rc_had = _rc
+174.                                 local neffec = e(estimates)[1, 5]
+175.                                 local hadpass = cond(`neffec' > 0  & `neffec' != . , 1, 0)
+176. 
+.                 if `hadpass' == 1 {
+177.                     di _n as result "Design HAD w/o stayers: did_had ran."
+178.                     local __design      "HAD w/o stayers"
+179.                     local __estimator   "did_had"
+180.                     local __had_stayers  0
+181.                     local __design_code  6
+182.                 }
+183.                 else {
+184.                     di as text "           did_had → FAILED (rc=`__rc_had')"
+185.                     di _n as result "Design OTHER: did_had did not run."
+186.                     local __design      "OTHER"
+187.                     local __estimator   ""
+188.                     local __design_code  8
+189.                 }
+190.             }
+191. 
+.             * --- Step 9: V conditions not met → OTHER -----------------------
+.             else {
+192.                 di _n as result ///
+>                     "Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran."
+193.                 local __design      "OTHER"
+194.                 local __estimator   ""
+195.                 local __design_code  8
+196.             }
+197.         }
+198.     }
+199. 
+.     * -----------------------------------------------------------------------
+.     * Exit
+.     * -----------------------------------------------------------------------
+.     restore
+200. 
+.     di _n as result "========================================="
+201.     di    as result "  CLASSIFICATION : `__design' (code=`__design_code')"
+202.     di    as result "  ESTIMATOR      : `__estimator'"
+203.     di    as result "========================================="
+204. 
+.     return local  design       "`__design'"
+205.     return local  estimator    "`__estimator'"
+206.     return scalar had_stayers   = `__had_stayers'
+207.     return scalar design_code   = `__design_code'
+208. 
+. end
+
+. 
+end of do-file
+
+. adopath + "$twfe_root"
+  [1]  (BASE)      "/Applications/StataNow/ado/base/"
+  [2]  (SITE)      "/Applications/StataNow/ado/site/"
+  [3]              "."
+  [4]  (PERSONAL)  "/Users/anzony.quisperojas/Documents/Stata/ado/personal/"
+  [5]  (PLUS)      "/Users/anzony.quisperojas/Library/Application Support/Stata/ado/plus/"
+  [6]  (OLDPLACE)  "~/ado/"
+  [7]              "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey/data/2010-2012/Gentzkow et al. (2011)/20091316_data/external"
+  [8]              "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+
+. 
+. * --------------------------------------------------------------------------
+. * Paper list  (wave | folder-relative path | display name)
+. * --------------------------------------------------------------------------
+. 
+. * Wave 1: 2010–2012  (Acemoglu, Bagwell, Simcoe excluded)
+. local waves    "2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010-2012 2010
+> -2012"
+
+. local folders  `""Algan and Cahuc (2010)" "Baum-SnowandLutz(2011)" "Besley and Mueller (2012)" "Dinkelman (2011)" "Duranton and Turner (2011
+> )" "Enikolopov et al. (2011)" "Faye and Niehaus (2012)" "Forman et al. (2012)" "Gentzkow et al. (2011)" "Hornbeck (2012)" "Moser and Voena (
+> 2012)" "Wang (2011)" "Zhang and Zhu (2011)""'
+
+. local n1 = 13
+
+. 
+. * Wave 2: 2015–2019
+. local waves2   "2015-2019 2015-2019 2015-2019 2015-2019 2015-2019 2015-2019 2015-2019 2015-2019"
+
+. local folders2 `""Antecol et al. (2018)" "Berman et al. (2017)" "Burgess et al. (2015)" "Donaldson (2018)" "Favara and Imbs (2015)" "Fetzer 
+> (2019)" "Kaur (2019)" "Suárez Serrato and Zidar (2016)""'
+
+. local n2 = 8
+
+. 
+. * --------------------------------------------------------------------------
+. * postfile: one row per paper, results from both classifiers
+. * --------------------------------------------------------------------------
+. tempfile tmp
+
+. postfile handle                 ///
+>     str60  paper                ///
+>     str10  wave                 ///
+>     str30  design               ///
+>     int    design_code          ///
+>     byte   had_stayers          ///
+>     str30  estimator            ///
+>     str30  design_s2            ///
+>     int    design_code_s2       ///
+>     byte   had_stayers_s2       ///
+>     str30  estimator_s2         ///
+>     using `tmp', replace
+(file /var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//S_06260.000001 not found)
+
+. 
+. * --------------------------------------------------------------------------
+. * Helper macro: run both classifiers for one paper
+. * --------------------------------------------------------------------------
+. * (called inline in each forvalues loop — Stata macros can't be subroutines,
+. *  so we repeat the block; both loops are identical except for the counter)
+. 
+. * --- Wave 1 ---------------------------------------------------------------
+. forvalues i = 1/`n1' {
+  2.     local wave   : word `i' of `waves'
+  3.     local folder : word `i' of `folders'
+  4.     local dta    "$twfe_root/replications/`wave'/`folder'/panel_GTD.dta"
+  5. 
+.     di _n as text "================================================================"
+  6.     di    as text "  [`i'/21] `folder' (`wave')"
+  7.     di    as text "================================================================"
+  8. 
+.     * ---- classify_did -------------------------------------------------------
+.     local des   "FAILED"
+  9.     local est   ""
+ 10.     local code  = -1
+ 11.     local hs    = 0
+ 12. 
+.     cap noisily {
+ 13.         use "`dta'", clear
+ 14.         classify_did Y G T D
+ 15.         local des  "`r(design)'"
+ 16.         local est  "`r(estimator)'"
+ 17.         local code  = r(design_code)
+ 18.         local hs    = r(had_stayers)
+ 19.     }
+ 20.     if _rc {
+ 21.         di as error "  --> classify_did failed (rc=`_rc')"
+ 22.         local des   "FAILED"
+ 23.         local est   ""
+ 24.         local code  = -1
+ 25.         local hs    = 0
+ 26.     }
+ 27. 
+.     * ---- classify_sketch2 --------------------------------------------------
+.     local des2   "FAILED"
+ 28.     local est2   ""
+ 29.     local code2  = -1
+ 30.     local hs2    = 0
+ 31. 
+.     cap noisily {
+ 32.         use "`dta'", clear
+ 33.         classify_sketch2 Y G T D
+ 34.         local des2  "`r(design)'"
+ 35.         local est2  "`r(estimator)'"
+ 36.         local code2  = r(design_code)
+ 37.         local hs2    = r(had_stayers)
+ 38.     }
+ 39.     if _rc {
+ 40.         di as error "  --> classify_sketch2 failed (rc=`_rc')"
+ 41.         local des2   "FAILED"
+ 42.         local est2   ""
+ 43.         local code2  = -1
+ 44.         local hs2    = 0
+ 45.     }
+ 46. 
+.     post handle                                                     ///
+>         ("`folder'") ("`wave'")                                     ///
+>         ("`des'")  (`code')  (`hs')  ("`est'")                     ///
+>         ("`des2'") (`code2') (`hs2') ("`est2'")
+ 47. }
+
+================================================================
+  [1/21] Algan and Cahuc (2010) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(24 missing values generated)
+(25 missing values generated)
+(25 real changes made)
+(25 missing values generated)
+(2 missing values generated)
+(2 missing values generated)
+(24 missing values generated)
+(0 observations deleted)
+(48 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+(25 missing values generated)
+
+Your dataset corresponds to Design HAD with Stayers.
+  Common treatment date t* = .
+  Pure-control stayers (d_baseline=0, never-switchers) are present but the switchers satisfy HAD conditions.
+  Recommended estimator: did_had.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 23
+  V(Fg|Fg<=T)    = .2213438735177866
+  V(D_g1) all    = .0117143978621974
+  V(D_g1|sw)     = .0120226088314299  (switchers only)
+  Dg1_sw_val     = -.0717514299018227
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.304347826086957)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran.
+
+=========================================
+  CLASSIFICATION : OTHER (code=8)
+  ESTIMATOR      : 
+=========================================
+
+================================================================
+  [2/21] Baum-SnowandLutz(2011) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(276 missing values generated)
+(160 missing values generated)
+(160 real changes made)
+(276 missing values generated)
+(276 missing values generated)
+(0 observations deleted)
+(252 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your design is a Staggered Adoption Design, with an absorbing and binary treatment, and variation in treatment timing. You can for instance us
+> e the csdid, did_multiplegt_dyn, or did2s package to estimate the treatment's effect, see Chapter 6 of the DID textbook of de Chaisemartin a
+> nd D'Haultfoeuille for further details.
+
+Your dataset corresponds to Design SAD (Staggered Adoption Design).
+
+=========================================
+  CLASSIFICATION : SAD (code=2)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 92
+  V(Fg|Fg<=T)    = .2828475871954133
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=2.739130434782609)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=156)
+
+Design SAD: V(Fg|Fg<=T)>0, binary and absorbing treatment.
+
+=========================================
+  CLASSIFICATION : SAD (code=2)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [3/21] Besley and Mueller (2012) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(1,045 missing values generated)
+(571 missing values generated)
+(571 real changes made)
+(1,045 missing values generated)
+(1,045 missing values generated)
+(0 observations deleted)
+(7 missing values generated)
+(81 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your dataset corresponds to Design SSFSD (Strict Staggered First Switch Design).
+  Use did_multiplegt_dyn. Switch timing varies   within groups that share the same baseline treatment.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 11
+  V(Fg|Fg<=T)    = 97.25454545454545
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=6.363636363636363)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=19)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [4/21] Dinkelman (2011) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(1,816 missing values generated)
+(3,267 missing values generated)
+(3,267 real changes made)
+(3,267 missing values generated)
+(2,902 missing values generated)
+(2,902 missing values generated)
+(1,816 missing values generated)
+(0 observations deleted)
+(3,632 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your design is a Classical DID Design, with an absorbing and binary treatment, and no variation in treatment timing. You can use a static TWFE
+>  regression and/or an event-study TWFE regression to estimate the treatment's effect, see Chapter 3 of the DID textbook of de Chaisemartin a
+> nd D'Haultfoeuille for further details.
+
+Your dataset corresponds to Design CLA (Classical DID).
+  Note: CLA requires untreated/never-treated control groups.   Verify their presence before using did_multiplegt_dyn without controls.
+
+=========================================
+  CLASSIFICATION : CLA (code=1)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 365
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=2)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=1816)
+
+Design CLA: V(Fg|Fg<=T)=0, V(D_g1)=0, binary treatment.
+
+=========================================
+  CLASSIFICATION : CLA (code=1)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [5/21] Duranton and Turner (2011) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(228 missing values generated)
+(230 missing values generated)
+(230 real changes made)
+(230 missing values generated)
+(4 missing values generated)
+(4 missing values generated)
+(228 missing values generated)
+(0 observations deleted)
+(456 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+(230 missing values generated)
+
+Your dataset corresponds to Design HAD with Stayers.
+  Common treatment date t* = .
+  Pure-control stayers (d_baseline=0, never-switchers) are present but the switchers satisfy HAD conditions.
+  Recommended estimator: did_had.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 226
+  V(Fg|Fg<=T)    = .2504031465093412
+  V(D_g1) all    = .0380119973892259
+  V(D_g1|sw)     = .0382990995784282  (switchers only)
+  Dg1_sw_val     = -.075918104796283
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.526548672566372)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=4)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [6/21] Enikolopov et al. (2011) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(31 missing values generated)
+(0 observations deleted)
+(2,323 missing values generated)
+(2,354 missing values generated)
+(2,354 real changes made)
+(2,354 missing values generated)
+(62 missing values generated)
+(62 missing values generated)
+(2,323 missing values generated)
+(62 observations deleted)
+
+Your design is not a Staggered First Switch Design: all groups experience their first treatment change at period . You cannot use the did_mult
+> iplegt_dyn package to estimate the treatment's effect.
+
+All groups experience their first treatment change at period , but the magnitude of that change varies across groups. Then, your design is an 
+> Heterogeneous Adoption Design. You may be able to use the did_had package to estimate the treatment's effect, see Chapter 7 of the DID textb
+> ook of de Chaisemartin and D'Haultfoeuille for further details.
+(2,292 missing values generated)
+
+Your dataset corresponds to Design HAD (Heterogeneous Adoption Design).
+  Common treatment date t* = .  Pre-treatment D is constant within each group (any level).
+
+=========================================
+  CLASSIFICATION : HAD w/o stayers (code=6)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 2292
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=2)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ...
+           did_had Y G T D (output shown for quasi-stayer test):
+
+
+----------------------------------------------------------------------------------------------------------------
+                                    Effect Estimates                                              QUG* Test
+------------------------------------------------------------------------------------------ ---------------------
+
+             |  Estimate         SE      LB CI      UB CI          N         BW    N in BW          T      p-val 
+-------------+--------------------------------------------------------------------------------------------------
+    Effect_1 | -44.45653   310.9978  -725.7894   493.2995       1948    .378065         21   51.51582   .0190419 
+----------------------------------------------------------------------------------------------------------------
+                                                                                          *Quasi-untreated group
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+Design HAD w/o stayers: did_had ran.
+
+=========================================
+  CLASSIFICATION : HAD w/o stayers (code=6)
+  ESTIMATOR      : did_had
+=========================================
+
+================================================================
+  [7/21] Faye and Niehaus (2012) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(16,965 missing values generated)
+(4,350 missing values generated)
+(13,285 missing values generated)
+(13,285 real changes made)
+(16,995 missing values generated)
+(5,250 missing values generated)
+(9,600 missing values generated)
+(16,820 missing values generated)
+(5,550 observations deleted)
+(145 missing values generated)
+(6,300 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your dataset corresponds to Design SSFSD (Strict Staggered First Switch Design).
+  Use did_multiplegt_dyn. Switch timing varies   within groups that share the same baseline treatment.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 355
+  V(Fg|Fg<=T)    = 59.96021325694279
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=11.30985915492958)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=7220)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [8/21] Forman et al. (2012) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(393 missing values generated)
+(0 observations deleted)
+(3,137 missing values generated)
+(4,796 missing values generated)
+(4,796 real changes made)
+(4,796 missing values generated)
+(3,318 missing values generated)
+(3,318 missing values generated)
+(3,137 missing values generated)
+(786 observations deleted)
+(5,488 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+(4,010 missing values generated)
+
+Your dataset corresponds to Design HAD with Stayers.
+  Common treatment date t* = .
+  Pure-control stayers (d_baseline=0, never-switchers) are present but the switchers satisfy HAD conditions.
+  Recommended estimator: did_had.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 1478
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=2)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ...
+           did_had Y G T D (output shown for quasi-stayer test):
+
+NOTE: 1266 groups are untreated at period two
+no observations
+variable __00000B not found
+invalid syntax
+  --> classify_sketch2 failed (rc=)
+
+================================================================
+  [9/21] Gentzkow et al. (2011) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(17,186 missing values generated)
+(6,840 missing values generated)
+(9,465 missing values generated)
+(9,465 real changes made)
+(16,730 missing values generated)
+(6,840 missing values generated)
+(16,730 missing values generated)
+(6,840 observations deleted)
+(16 missing values generated)
+(3,863 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your dataset corresponds to Design SSFSD (Strict Staggered First Switch Design).
+  Use did_multiplegt_dyn. Switch timing varies   within groups that share the same baseline treatment.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 1154
+  V(Fg|Fg<=T)    = 18.15835188439171
+  V(D_g1) all    = .5463117540281603
+  V(D_g1|sw)     = .5280603233821498  (switchers only)
+  Dg1_sw_val     = -1.011265164644714
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=3.888214904679376)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=4694)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [10/21] Hornbeck (2012) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(12,464 missing values generated)
+(9,161 missing values generated)
+(9,161 real changes made)
+(12,929 missing values generated)
+(7,905 missing values generated)
+(7,905 missing values generated)
+(12,464 missing values generated)
+(34 observations deleted)
+(9,441 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+(11,953 missing values generated)
+
+Your dataset corresponds to Design HAD with Stayers.
+  Common treatment date t* = .
+  Pure-control stayers (d_baseline=0, never-switchers) are present but the switchers satisfy HAD conditions.
+  Recommended estimator: did_had.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 314
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=5)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=779)
+
+Design HAD with stayers: V(Fg|Fg<=T)=0, V(Dg1|sw)=0, non-switchers share Dg1=0, non-binary at t*=5.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+================================================================
+  [11/21] Moser and Voena (2012) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(463,872 missing values generated)
+(464,064 missing values generated)
+(464,064 real changes made)
+(470,784 missing values generated)
+(449,280 missing values generated)
+(449,280 missing values generated)
+(463,872 missing values generated)
+(0 observations deleted)
+(464,400 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your design is a Classical DID Design, with an absorbing and binary treatment, and no variation in treatment timing. You can use a static TWFE
+>  regression and/or an event-study TWFE regression to estimate the treatment's effect, see Chapter 3 of the DID textbook of de Chaisemartin a
+> nd D'Haultfoeuille for further details.
+
+Your dataset corresponds to Design CLA (Classical DID).
+  Note: CLA requires untreated/never-treated control groups.   Verify their presence before using did_multiplegt_dyn without controls.
+
+=========================================
+  CLASSIFICATION : CLA (code=1)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 336
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=45)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=7248)
+
+Design CLA: V(Fg|Fg<=T)=0, V(D_g1)=0, binary treatment.
+
+=========================================
+  CLASSIFICATION : CLA (code=1)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [12/21] Wang (2011) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(251 missing values generated)
+(0 observations deleted)
+(2,213 missing values generated)
+(1,806 missing values generated)
+(1,806 real changes made)
+(2,336 missing values generated)
+(2,280 missing values generated)
+(463 observations deleted)
+
+Your design is not a Staggered First Switch Design: all groups experience their first treatment change at period . You cannot use the did_mult
+> iplegt_dyn package to estimate the treatment's effect.
+
+All groups experience their first treatment change at period , but the magnitude of that change varies across groups. Then, your design is an 
+> Heterogeneous Adoption Design. You may be able to use the did_had package to estimate the treatment's effect, see Chapter 7 of the DID textb
+> ook of de Chaisemartin and D'Haultfoeuille for further details.
+(1,054 missing values generated)
+
+Your dataset corresponds to Design HAD (Heterogeneous Adoption Design).
+  Common treatment date t* = .  Pre-treatment D is constant within each group (any level).
+
+=========================================
+  CLASSIFICATION : HAD w/o stayers (code=6)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+  [Note] Not unique by G T — collapsing to group-time means.
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 8
+  V(Fg|Fg<=T)    = 2.571428571428572
+  V(D_g1) all    = .0117382219615345
+  V(D_g1|sw)     = .0117382219615345  (switchers only)
+  Dg1_sw_val     = -.0705489525571465
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=2.5)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran.
+
+=========================================
+  CLASSIFICATION : OTHER (code=8)
+  ESTIMATOR      : 
+=========================================
+
+================================================================
+  [13/21] Zhang and Zhu (2011) (2010-2012)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(12,090 missing values generated)
+(1,128 missing values generated)
+(9,268 missing values generated)
+(9,268 real changes made)
+(12,630 missing values generated)
+(5,448 missing values generated)
+(6,576 missing values generated)
+(11,949 missing values generated)
+(1,128 observations deleted)
+(9,873 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+(8,988 missing values generated)
+
+Your dataset corresponds to Design HAD with Stayers.
+  Common treatment date t* = .
+  Pure-control stayers (d_baseline=0, never-switchers) are present but the switchers satisfy HAD conditions.
+  Recommended estimator: did_had.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 929
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=5)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=1707)
+
+Design HAD with stayers: V(Fg|Fg<=T)=0, V(Dg1|sw)=0, non-switchers share Dg1=0, non-binary at t*=5.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+. 
+. * --- Wave 2 ---------------------------------------------------------------
+. forvalues i = 1/`n2' {
+  2.     local wave   : word `i' of `waves2'
+  3.     local folder : word `i' of `folders2'
+  4.     local dta    "$twfe_root/replications/`wave'/`folder'/panel_GTD.dta"
+  5. 
+.     local j = `n1' + `i'
+  6.     di _n as text "================================================================"
+  7.     di    as text "  [`j'/21] `folder' (`wave')"
+  8.     di    as text "================================================================"
+  9. 
+.     * ---- classify_did -------------------------------------------------------
+.     local des   "FAILED"
+ 10.     local est   ""
+ 11.     local code  = -1
+ 12.     local hs    = 0
+ 13. 
+.     cap noisily {
+ 14.         use "`dta'", clear
+ 15.         classify_did Y G T D
+ 16.         local des  "`r(design)'"
+ 17.         local est  "`r(estimator)'"
+ 18.         local code  = r(design_code)
+ 19.         local hs    = r(had_stayers)
+ 20.     }
+ 21.     if _rc {
+ 22.         di as error "  --> classify_did failed (rc=`_rc')"
+ 23.         local des   "FAILED"
+ 24.         local est   ""
+ 25.         local code  = -1
+ 26.         local hs    = 0
+ 27.     }
+ 28. 
+.     * ---- classify_sketch2 --------------------------------------------------
+.     local des2   "FAILED"
+ 29.     local est2   ""
+ 30.     local code2  = -1
+ 31.     local hs2    = 0
+ 32. 
+.     cap noisily {
+ 33.         use "`dta'", clear
+ 34.         classify_sketch2 Y G T D
+ 35.         local des2  "`r(design)'"
+ 36.         local est2  "`r(estimator)'"
+ 37.         local code2  = r(design_code)
+ 38.         local hs2    = r(had_stayers)
+ 39.     }
+ 40.     if _rc {
+ 41.         di as error "  --> classify_sketch2 failed (rc=`_rc')"
+ 42.         local des2   "FAILED"
+ 43.         local est2   ""
+ 44.         local code2  = -1
+ 45.         local hs2    = 0
+ 46.     }
+ 47. 
+.     post handle                                                     ///
+>         ("`folder'") ("`wave'")                                     ///
+>         ("`des'")  (`code')  (`hs')  ("`est'")                     ///
+>         ("`des2'") (`code2') (`hs2') ("`est2'")
+ 48. }
+
+================================================================
+  [14/21] Antecol et al. (2018) (2015-2019)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(1,240 missing values generated)
+(390 missing values generated)
+(908 missing values generated)
+(908 real changes made)
+(1,234 missing values generated)
+(234 missing values generated)
+(624 missing values generated)
+(1,225 missing values generated)
+(728 observations deleted)
+(166 missing values generated)
+(326 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your dataset corresponds to Design SSFSD (Strict Staggered First Switch Design).
+  Use did_multiplegt_dyn. Switch timing varies   within groups that share the same baseline treatment.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 37
+  V(Fg|Fg<=T)    = 31.85435435435435
+  V(D_g1) all    = .0399659863945578
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=5.081081081081081)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=53)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [15/21] Berman et al. (2017) (2015-2019)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(238 missing values generated)
+(238 observations deleted)
+(132,132 missing values generated)
+(141,308 missing values generated)
+(141,308 real changes made)
+(142,220 missing values generated)
+(141,232 missing values generated)
+(141,232 missing values generated)
+(132,132 missing values generated)
+(0 observations deleted)
+
+(Note: all non-always-treated groups are never-switchers. Including always-treated groups in the classification.)
+(141,384 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+(142,220 missing values generated)
+
+Your dataset corresponds to Design HAD with Stayers.
+  Common treatment date t* = .
+  Pure-control stayers (d_baseline=0, never-switchers) are present but the switchers satisfy HAD conditions.
+  Recommended estimator: did_had.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 76
+  V(Fg|Fg<=T)    = .0954385964912281
+  V(D_g1) all    = 1.083540737825857
+  V(D_g1|sw)     = 27.65982110702401  (switchers only)
+  Dg1_sw_val     = 10.88508799828981
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.105263157894737)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → OK  (e(N_effect_1)=10164)
+
+Design SFSD (continuous): did_multiplegt_dyn continuous(1) ran.
+
+=========================================
+  CLASSIFICATION : SFSD (code=5)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [16/21] Burgess et al. (2015) (2015-2019)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(1,968 missing values generated)
+(1,697 missing values generated)
+(1,697 real changes made)
+(1,996 missing values generated)
+(1,372 missing values generated)
+(1,372 missing values generated)
+(1,968 missing values generated)
+(0 observations deleted)
+(1,593 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+(1,801 missing values generated)
+
+Your dataset corresponds to Design HAD with Stayers.
+  Common treatment date t* = .
+  Pure-control stayers (d_baseline=0, never-switchers) are present but the switchers satisfy HAD conditions.
+  Recommended estimator: did_had.
+
+=========================================
+  CLASSIFICATION : HAD with stayers (code=3)
+  ESTIMATOR      : did_had
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 13
+  V(Fg|Fg<=T)    = 68.92307692307692
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=8.384615384615385)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=34)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [17/21] Donaldson (2018) (2015-2019)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(11,496 missing values generated)
+(10,080 missing values generated)
+(4,861 missing values generated)
+(4,861 real changes made)
+(11,334 missing values generated)
+(360 missing values generated)
+(10,440 missing values generated)
+(11,328 missing values generated)
+(10,980 observations deleted)
+(116 missing values generated)
+(443 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your design is a Staggered Adoption Design, with an absorbing and binary treatment, and variation in treatment timing. You can for instance us
+> e the csdid, did_multiplegt_dyn, or did2s package to estimate the treatment's effect, see Chapter 6 of the DID textbook of de Chaisemartin a
+> nd D'Haultfoeuille for further details.
+
+Your dataset corresponds to Design SAD (Staggered Adoption Design).
+
+=========================================
+  CLASSIFICATION : SAD (code=2)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 66
+  V(Fg|Fg<=T)    = 144.7452214452214
+  V(D_g1) all    = .2314299738219895
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=24.46969696969697)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=90)
+
+Design SAD: V(Fg|Fg<=T)>0, binary and absorbing treatment.
+
+=========================================
+  CLASSIFICATION : SAD (code=2)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [18/21] Favara and Imbs (2015) (2015-2019)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(11,531 missing values generated)
+(36 missing values generated)
+(5,854 missing values generated)
+(5,854 real changes made)
+(11,658 missing values generated)
+(1,560 missing values generated)
+(1,596 missing values generated)
+(11,528 missing values generated)
+(60 observations deleted)
+(6,728 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your dataset corresponds to Design SSFSD (Strict Staggered First Switch Design).
+  Use did_multiplegt_dyn. Switch timing varies   within groups that share the same baseline treatment.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 916
+  V(Fg|Fg<=T)    = 1.996778581143962
+  V(D_g1) all    = .0009541984732824
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 1  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=5.67467248908297)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=3922)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [19/21] Fetzer (2019) (2015-2019)
+================================================================
+(Written by R.              )
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(11 observations deleted)
+(32 missing values generated)
+(32 observations deleted)
+(5,670 missing values generated)
+(4,158 missing values generated)
+(4,158 real changes made)
+(5,670 missing values generated)
+(5,670 missing values generated)
+(0 observations deleted)
+
+Your design is not a Staggered First Switch Design: all groups experience their first treatment change at period . You cannot use the did_mult
+> iplegt_dyn package to estimate the treatment's effect.
+
+All groups experience their first treatment change at period , but the magnitude of that change varies across groups. Then, your design is an 
+> Heterogeneous Adoption Design. You may be able to use the did_had package to estimate the treatment's effect, see Chapter 7 of the DID textb
+> ook of de Chaisemartin and D'Haultfoeuille for further details.
+(1,890 missing values generated)
+
+Your dataset corresponds to Design HAD (Heterogeneous Adoption Design).
+  Common treatment date t* = .  Pre-treatment D is constant within each group (any level).
+
+=========================================
+  CLASSIFICATION : HAD w/o stayers (code=6)
+  ESTIMATOR      : did_had
+=========================================
+(Written by R.              )
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(11 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 378
+  V(Fg|Fg<=T)    = 0
+  V(D_g1) all    = 0
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 0  (t*=12)
+  absorbing      = 1
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 8] V(Fg|Fg<=T)=0, V(D_g1)=0 → checking did_had ...
+           did_had Y G T D (output shown for quasi-stayer test):
+
+
+----------------------------------------------------------------------------------------------------------------
+                                    Effect Estimates                                              QUG* Test
+------------------------------------------------------------------------------------------ ---------------------
+
+             |  Estimate         SE      LB CI      UB CI          N         BW    N in BW          T      p-val 
+-------------+--------------------------------------------------------------------------------------------------
+    Effect_1 |  .0175015   .0907514  -.1171762   .2385629        127        324         21   40.16667   .0242915 
+----------------------------------------------------------------------------------------------------------------
+                                                                                          *Quasi-untreated group
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+Design HAD w/o stayers: did_had ran.
+
+=========================================
+  CLASSIFICATION : HAD w/o stayers (code=6)
+  ESTIMATOR      : did_had
+=========================================
+
+================================================================
+  [20/21] Kaur (2019) (2015-2019)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(7,440 missing values generated)
+(3,852 missing values generated)
+(3,852 real changes made)
+(7,442 missing values generated)
+(64 missing values generated)
+(64 missing values generated)
+(7,440 missing values generated)
+(0 observations deleted)
+(1,145 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+Your dataset corresponds to Design SSFSD (Strict Staggered First Switch Design).
+  Use did_multiplegt_dyn. Switch timing varies   within groups that share the same baseline treatment.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 238
+  V(Fg|Fg<=T)    = 17.08016877637131
+  V(D_g1) all    = .0082984658298466
+  V(D_g1|sw)     = 0  (switchers only)
+  Dg1_sw_val     = 0
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 1
+  binary at t*   = 1  (t*=4)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → OK  (e(N_effect_1)=831)
+
+Design SFSD: did_multiplegt_dyn ran; conditions 3-5 not met.
+
+=========================================
+  CLASSIFICATION : SSFSD (code=4)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+================================================================
+  [21/21] Suárez Serrato and Zidar (2016) (2015-2019)
+================================================================
+
+===== classify_did =====
+  Outcome: Y
+  Group  : G
+  Time   : T
+  Treat  : D
+  Mode   : book=1 (HAD-with-stayers check ON)
+(0 observations deleted)
+(0 observations deleted)
+(980 missing values generated)
+(48 missing values generated)
+(48 real changes made)
+(980 missing values generated)
+(1,464 missing values generated)
+(1,452 missing values generated)
+(0 observations deleted)
+(496 missing values generated)
+
+Your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time. You can use 
+> the did_multiplegt_dyn package to estimate the treatment's effect, see Section 8.3 of the DID textbook of de Chaisemartin and D'Haultfoeuill
+> e for further details. If you are ready to assume that lagged treatments do not affect the current outcome beyond a pre-determined lag, you 
+> can also use the did_multiplegt_stat package, see Section 8.4 of the DID textbook.
+
+While your design is a Staggered First Switch Design, where groups experience their first treatment change at different points in time, groups
+>  with the same period-one treatment all experience their first treatment change at the same date, perhaps because the period-one treatment i
+> s a continuously distributed variable (groups all have different period-one treatments). Then, you can still use the did_multiplegt_dyn pack
+> age to estimate the treatment's effect, but you need to specify the continuous option, see Section 8.3.5.1 of the DID textbook of de Chaisem
+> artin and D'Haultfoeuille.
+
+Your dataset corresponds to Design SFSD (Relaxed SFSD).
+
+=========================================
+  CLASSIFICATION : SFSD (code=5)
+  ESTIMATOR      : did_multiplegt_dyn
+=========================================
+
+===== classify_sketch2 =====
+  Y=Y  G=G  T=T  D=D
+(0 observations deleted)
+  [Note] Not unique by G T — collapsing to group-time means.
+(0 real changes made)
+(0 real changes made)
+  n_switchers    = 48
+  V(Fg|Fg<=T)    = .2442375886524823
+  V(D_g1) all    = .0000426083776293
+  V(D_g1|sw)     = .0000426083776293  (switchers only)
+  Dg1_sw_val     = -.0132818754209438
+  Dg1_ns_match   = 0  (>=1 non-switcher has Dg1=Dg1_sw_val)
+  binary (all)   = 0
+  binary at t*   = 1  (t*=1.604166666666667)
+  absorbing      = 0
+
+  [Step 1] did_multiplegt_dyn Y G T D ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+  [Step 7] did_multiplegt_dyn Y G T D, continuous(1) ...
+           → ran but e(N_effect_1) missing or 0 — treated as failed
+
+Design OTHER: V(Fg|Fg<=T)>0 or V(D_g1)>0 and no estimator ran.
+
+=========================================
+  CLASSIFICATION : OTHER (code=8)
+  ESTIMATOR      : 
+=========================================
+
+. 
+. postclose handle
+
+. 
+. * --------------------------------------------------------------------------
+. * Build final dataset
+. * --------------------------------------------------------------------------
+. use `tmp', clear
+
+. 
+. * Value labels (shared by both design_code columns — same numeric scheme)
+. label define design_lbl     ///
+>     1  "CLA"                ///
+>     2  "SAD"                ///
+>     3  "HAD with stayers"   ///
+>     4  "SSFSD / SFSD(dyn)"  ///
+>     5  "SFSD"               ///
+>     6  "HAD w/o stayers"    ///
+>     7  "SSD"                ///
+>     8  "OTHER"              ///
+>     -1 "FAILED", replace
+
+. 
+. label values design_code   design_lbl
+
+. label values design_code_s2 design_lbl
+
+. 
+. label var paper           "Paper name"
+
+. label var wave            "Publication wave"
+
+. label var design          "classify_did: design label"
+
+. label var design_code     "classify_did: design code"
+
+. label var had_stayers     "classify_did: 1 if HAD detected after dropping stayers"
+
+. label var estimator       "classify_did: recommended estimator"
+
+. label var design_s2       "classify_sketch2: design label"
+
+. label var design_code_s2  "classify_sketch2: design code"
+
+. label var had_stayers_s2  "classify_sketch2: 1 if HAD with stayers"
+
+. label var estimator_s2    "classify_sketch2: recommended estimator"
+
+. 
+. * Flag disagreements between the two classifiers
+. gen byte agree = (design == design_s2)
+
+. label var agree "1 if classify_did and classify_sketch2 agree"
+
+. 
+. sort wave paper
+
+. save "$twfe_root/reports/classify_did_results.dta", replace
+file /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/reports/classify_did_results.dta saved
+
+. 
+. * --------------------------------------------------------------------------
+. * Summary tables
+. * --------------------------------------------------------------------------
+. di _n as text "================================================================"
+
+================================================================
+
+. di    as text "  RESULTS: classify_did vs classify_sketch2"
+  RESULTS: classify_did vs classify_sketch2
+
+. di    as text "================================================================"
+================================================================
+
+. list paper wave design design_s2 agree, sep(0) noobs abbrev(30)
+
+  +-------------------------------------------------------------------------------------------+
+  |                           paper        wave             design          design_s2   agree |
+  |-------------------------------------------------------------------------------------------|
+  |          Algan and Cahuc (2010)   2010-2012   HAD with stayers              OTHER       0 |
+  |          Baum-SnowandLutz(2011)   2010-2012                SAD                SAD       1 |
+  |       Besley and Mueller (2012)   2010-2012              SSFSD              SSFSD       1 |
+  |                Dinkelman (2011)   2010-2012                CLA                CLA       1 |
+  |      Duranton and Turner (2011)   2010-2012   HAD with stayers              SSFSD       0 |
+  |        Enikolopov et al. (2011)   2010-2012    HAD w/o stayers    HAD w/o stayers       1 |
+  |         Faye and Niehaus (2012)   2010-2012              SSFSD              SSFSD       1 |
+  |            Forman et al. (2012)   2010-2012   HAD with stayers             FAILED       0 |
+  |          Gentzkow et al. (2011)   2010-2012              SSFSD              SSFSD       1 |
+  |                 Hornbeck (2012)   2010-2012   HAD with stayers   HAD with stayers       1 |
+  |          Moser and Voena (2012)   2010-2012                CLA                CLA       1 |
+  |                     Wang (2011)   2010-2012    HAD w/o stayers              OTHER       0 |
+  |            Zhang and Zhu (2011)   2010-2012   HAD with stayers   HAD with stayers       1 |
+  |           Antecol et al. (2018)   2015-2019              SSFSD              SSFSD       1 |
+  |            Berman et al. (2017)   2015-2019   HAD with stayers               SFSD       0 |
+  |           Burgess et al. (2015)   2015-2019   HAD with stayers              SSFSD       0 |
+  |                Donaldson (2018)   2015-2019                SAD                SAD       1 |
+  |          Favara and Imbs (2015)   2015-2019              SSFSD              SSFSD       1 |
+  |                   Fetzer (2019)   2015-2019    HAD w/o stayers    HAD w/o stayers       1 |
+  |                     Kaur (2019)   2015-2019              SSFSD              SSFSD       1 |
+  | Suárez Serrato and Zidar (2016)   2015-2019               SFSD              OTHER       0 |
+  +-------------------------------------------------------------------------------------------+
+
+. 
+. di _n as text "Counts by design — classify_did:"
+
+Counts by design — classify_did:
+
+. tab design, sort
+
+    classify_did: design label |      Freq.     Percent        Cum.
+-------------------------------+-----------------------------------
+              HAD with stayers |          7       33.33       33.33
+                         SSFSD |          6       28.57       61.90
+               HAD w/o stayers |          3       14.29       76.19
+                           CLA |          2        9.52       85.71
+                           SAD |          2        9.52       95.24
+                          SFSD |          1        4.76      100.00
+-------------------------------+-----------------------------------
+                         Total |         21      100.00
+
+. 
+. di _n as text "Counts by design — classify_sketch2:"
+
+Counts by design — classify_sketch2:
+
+. tab design_s2, sort
+
+classify_sketch2: design label |      Freq.     Percent        Cum.
+-------------------------------+-----------------------------------
+                         SSFSD |          8       38.10       38.10
+                         OTHER |          3       14.29       52.38
+                           CLA |          2        9.52       61.90
+               HAD w/o stayers |          2        9.52       71.43
+              HAD with stayers |          2        9.52       80.95
+                           SAD |          2        9.52       90.48
+                        FAILED |          1        4.76       95.24
+                          SFSD |          1        4.76      100.00
+-------------------------------+-----------------------------------
+                         Total |         21      100.00
+
+. 
+. di _n as text "Disagreements (agree == 0):"
+
+Disagreements (agree == 0):
+
+. list paper wave design design_s2 if !agree, sep(0) noobs abbrev(30)
+
+  +----------------------------------------------------------------------------+
+  |                           paper        wave             design   design_s2 |
+  |----------------------------------------------------------------------------|
+  |          Algan and Cahuc (2010)   2010-2012   HAD with stayers       OTHER |
+  |      Duranton and Turner (2011)   2010-2012   HAD with stayers       SSFSD |
+  |            Forman et al. (2012)   2010-2012   HAD with stayers      FAILED |
+  |                     Wang (2011)   2010-2012    HAD w/o stayers       OTHER |
+  |            Berman et al. (2017)   2015-2019   HAD with stayers        SFSD |
+  |           Burgess et al. (2015)   2015-2019   HAD with stayers       SSFSD |
+  | Suárez Serrato and Zidar (2016)   2015-2019               SFSD       OTHER |
+  +----------------------------------------------------------------------------+
+
+. 
+. di _n "Results saved to: $twfe_root/reports/classify_did_results.dta"
+
+Results saved to: /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/reports/classify_did_results.dta
+
+. cap log close

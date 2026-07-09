@@ -1,0 +1,31 @@
+\begin{table}[htbp]
+\centering
+\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}
+\label{tab:gentzkow_twfe}
+\begin{tabular}{lc}
+\toprule
+ & FE (feTR) \\
+\midrule
+\multicolumn{2}{l}{\textit{Panel A: Specification}} \\[3pt]
+Regression type & Fixed Effects \\
+Dependent variable & Presidential turnout \\
+Treatment variable & Number of daily newspapers \\
+Panel & Counties $\times$ election years \\[6pt]
+\multicolumn{2}{l}{\textit{Panel B: Weight Decomposition}} \\[3pt]
+$\hat{\beta}_{TWFE}$ & 0.002636 \\
+\# positive weights & 5919 \\
+\# negative weights & 4137 \\
+\% negative weights &  41.1\% \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\textit{Notes:} Panel B reports the weight decomposition of the TWFE estimator 
+following de Chaisemartin \& D'Haultf\oe uille (2020). 
+The treatment variable (number of daily newspapers) is discrete. 
+The TWFE decomposition uses county and year fixed effects on the 
+mainsample subsample.
+\end{minipage}
+\end{table}

@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath}
+\geometry{margin=1in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Besley \& Mueller (2012)}\\
+{\large Estimating the Peace Dividend:}\\
+{\large The Impact of Violence on House Prices in Northern Ireland}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 102(2), 810--833}
+\end{center}
+
+\vspace{1em}
+
+\section*{1. Table 1 Replication}
+
+We replicate columns 3, 5, and 6 of Table 1 from the original paper. 
+The dependent variable is the log of the house price index for 11 regions 
+of Northern Ireland observed quarterly from 1984:IV to 2009:I. 
+The treatment variable is the number of conflict-related killings per region, 
+normalized by its standard deviation and lagged by one quarter.
+
+\input{table1_replication}
+
+\clearpage
+
+\section*{2. Two-Way FE Weights Analysis}
+
+We apply the decomposition of de Chaisemartin \& D'Haultf\oe uille (2020) 
+to assess whether the TWFE estimator from Column 3 assigns negative weights 
+to some group-period treatment effects.
+
+\input{table_twowayfeweights}
+
+\section*{3. Conclusion}
+
+The dCDH web appendix classifies this paper as a sharp design 
+where the stable groups assumption is \textit{not} satisfied. 
+The treatment (killings) varies continuously across regions and time, 
+meaning all groups are potentially  at different intensities. 
+The weight decomposition reveals whether this heterogeneity 
+leads to negative weights in the TWFE estimator.
+
+\end{document}

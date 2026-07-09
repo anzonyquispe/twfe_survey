@@ -1,0 +1,24 @@
+	(1)	(2)	(3)	(4)	(5)	(6)
+					unconstrained	
+	unconstrained	unconstrained	unconstrained	unconstrained	sunk_hs4_coeff_stat_t	unconstrained
+	sunk_hs4_coeff_stat_t	sunk_hs4_coeff_stat_t	sunk_hs4_coeff_stat_t	sunk_hs4_coeff_stat_t	tercile 1	sunk_hs4_coeff_stat_t
+	tercile 1	tercile~ 1	tercile 1	tercile~ 1	POOL	tercile~ 1
+	CHINA	CHINA	TAIWAN	TAIWAN	hs6 fe/cluster	POOL
+VARIABLES	section fe	section fe	section fe	section fe	ctry*section FE	hs6 fe/cluster
+						
+unc_pre	-0.611	1.105***	-0.593	0.0486		
+	[0.393]	[0.280]	[0.414]	[0.297]		
+dif_advalorem_mfn_5	-9.590	-12.09*	-6.699	-19.39***		
+	[13.30]	[7.107]	[11.91]	[6.484]		
+dif_ln_tcost_5	-2.288*	-4.512***	-3.214***	-5.181***	-1.128	-4.676***
+	[1.200]	[0.743]	[0.892]	[0.724]	[0.880]	[0.797]
+CHINA_unc_pre					0.0663	1.026***
+					[0.517]	[0.383]
+Constant	1.027***	0.621**	0.648*	0.354	1.166***	0.808***
+	[0.197]	[0.243]	[0.382]	[0.366]	[0.270]	[0.216]
+						
+Observations	759	1,519	759	1,519	1,518	3,038
+R-squared	0.080	0.089	0.132	0.106	0.315	0.428
+Number of hs6					759	1,519
+Robust standard errors in brackets						
+*** p<0.01, ** p<0.05, * p<0.1						

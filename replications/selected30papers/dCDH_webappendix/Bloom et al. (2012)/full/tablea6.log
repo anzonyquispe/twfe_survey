@@ -1,0 +1,227 @@
+
+. ***Source: Nick Bloom, November 2010, nbloom@stanford.edu
+. *This file investigates the sampling bias in the HH IT survey
+. *It tests if our sample of management firms with accounting data (those for w
+> hich we use in Table 6) has differential HH matching. 
+. 
+. 
+. u replicate,replace
+
+. qui tab cty,gen(cc)
+
+. *Matched are the sites which are in HH (single or one of multi-matches)
+. gen matched=(s_c~=.)
+
+. so company_code year
+
+. gen labp=ly-le
+(352 missing values generated)
+
+. *Collapse for the cross-sectional matching regression
+. collapse lemp peeps matched du_usa_mu du_oth_mu cc* labp ldegree_t* public* s
+> ic,by(company_code)
+
+. cap estimates drop *
+
+.  
+. *Column (1)
+. eststo: areg matched du_usa_mu du_oth_mu             cc* ,ab(sic) rob
+note: cc7 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  1,828
+Absorbed variable: sic                              No. of categories =    107
+                                                    F(8, 1713)        =  16.05
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.1435
+                                                    Adj R-squared     = 0.0865
+                                                    Root MSE          = 0.4759
+
+------------------------------------------------------------------------------
+             |               Robust
+     matched | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   du_usa_mu |  -.0468422   .0409859    -1.14   0.253    -.1272299    .0335455
+   du_oth_mu |   .0328011   .0280011     1.17   0.242    -.0221188    .0877209
+         cc1 |  -.0190597   .0366951    -0.52   0.604    -.0910317    .0529122
+         cc2 |     .02376   .0468748     0.51   0.612    -.0681778    .1156978
+         cc3 |  -.0458401   .0430697    -1.06   0.287    -.1303149    .0386347
+         cc4 |  -.1776747   .0406317    -4.37   0.000    -.2573676   -.0979817
+         cc5 |  -.4036984   .0406619    -9.93   0.000    -.4834506   -.3239462
+         cc6 |   .0070293   .0385984     0.18   0.856    -.0686756    .0827343
+         cc7 |          0  (omitted)
+       _cons |   .6065221   .0230132    26.36   0.000     .5613852     .651659
+------------------------------------------------------------------------------
+(est1 stored)
+
+. test du_usa_mu du_oth_mu
+
+ ( 1)  du_usa_mu = 0
+ ( 2)  du_oth_mu = 0
+
+       F(  2,  1713) =    1.74
+            Prob > F =    0.1761
+
+. 
+. *Column (2)
+. eststo: areg matched                      lemp       cc* ,ab(sic) rob
+note: cc7 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  1,828
+Absorbed variable: sic                              No. of categories =    107
+                                                    F(7, 1714)        =  32.01
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.1794
+                                                    Adj R-squared     = 0.1253
+                                                    Root MSE          = 0.4657
+
+------------------------------------------------------------------------------
+             |               Robust
+     matched | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        lemp |   .1232446   .0143775     8.57   0.000     .0950453    .1514439
+         cc1 |  -.0049943   .0362833    -0.14   0.891    -.0761585    .0661698
+         cc2 |  -.0557779   .0455565    -1.22   0.221    -.1451301    .0335743
+         cc3 |  -.0057368   .0415422    -0.14   0.890    -.0872157     .075742
+         cc4 |  -.1548127    .039472    -3.92   0.000    -.2322311   -.0773943
+         cc5 |  -.3481728   .0406818    -8.56   0.000    -.4279641   -.2683815
+         cc6 |   .0234756   .0382713     0.61   0.540    -.0515879    .0985391
+         cc7 |          0  (omitted)
+       _cons |   -.088692   .0847786    -1.05   0.296    -.2549725    .0775884
+------------------------------------------------------------------------------
+(est2 stored)
+
+. 
+. *Column (3)
+. eststo: areg matched du_usa_mu du_oth_mu  lemp       cc* ,ab(sic) rob
+note: cc7 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  1,828
+Absorbed variable: sic                              No. of categories =    107
+                                                    F(9, 1712)        =  25.54
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.1814
+                                                    Adj R-squared     = 0.1264
+                                                    Root MSE          = 0.4654
+
+------------------------------------------------------------------------------
+             |               Robust
+     matched | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   du_usa_mu |  -.0658676   .0405828    -1.62   0.105    -.1454648    .0137296
+   du_oth_mu |   .0171087   .0274009     0.62   0.532     -.036634    .0708515
+        lemp |   .1237953   .0144347     8.58   0.000     .0954838    .1521068
+         cc1 |  -.0065145   .0362875    -0.18   0.858     -.077687    .0646579
+         cc2 |  -.0567753   .0457995    -1.24   0.215    -.1466041    .0330535
+         cc3 |  -.0112347   .0416302    -0.27   0.787    -.0928862    .0704167
+         cc4 |  -.1619291   .0396524    -4.08   0.000    -.2397013   -.0841569
+         cc5 |  -.3535202   .0409808    -8.63   0.000     -.433898   -.2731424
+         cc6 |   .0158828   .0384334     0.41   0.679    -.0594987    .0912642
+         cc7 |          0  (omitted)
+       _cons |  -.0860126   .0848754    -1.01   0.311    -.2524831    .0804579
+------------------------------------------------------------------------------
+(est3 stored)
+
+. test du_usa_mu du_oth_mu
+
+ ( 1)  du_usa_mu = 0
+ ( 2)  du_oth_mu = 0
+
+       F(  2,  1712) =    1.84
+            Prob > F =    0.1593
+
+. 
+. *Column (4)
+. eststo: areg matched du_usa_mu du_oth_mu  lemp peeps cc*,ab(sic) rob
+note: cc7 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  1,828
+Absorbed variable: sic                              No. of categories =    107
+                                                    F(10, 1711)       =  22.98
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.1815
+                                                    Adj R-squared     = 0.1261
+                                                    Root MSE          = 0.4655
+
+------------------------------------------------------------------------------
+             |               Robust
+     matched | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   du_usa_mu |  -.0613407    .041224    -1.49   0.137    -.1421954     .019514
+   du_oth_mu |   .0189251    .027537     0.69   0.492    -.0350846    .0729348
+        lemp |   .1250673   .0146398     8.54   0.000     .0963536    .1537811
+       peeps |  -.0106045   .0172806    -0.61   0.540    -.0444978    .0232888
+         cc1 |  -.0066812   .0363192    -0.18   0.854    -.0779159    .0645535
+         cc2 |  -.0567262   .0458446    -1.24   0.216    -.1466435    .0331911
+         cc3 |  -.0123779   .0416795    -0.30   0.767    -.0941261    .0693703
+         cc4 |  -.1610448   .0396461    -4.06   0.000    -.2388048   -.0832848
+         cc5 |  -.3545355   .0410161    -8.64   0.000    -.4349824   -.2740886
+         cc6 |   .0153858   .0384817     0.40   0.689    -.0600904    .0908619
+         cc7 |          0  (omitted)
+       _cons |  -.0942015   .0862452    -1.09   0.275    -.2633587    .0749557
+------------------------------------------------------------------------------
+(est4 stored)
+
+. test du_usa_mu du_oth_mu
+
+ ( 1)  du_usa_mu = 0
+ ( 2)  du_oth_mu = 0
+
+       F(  2,  1711) =    1.69
+            Prob > F =    0.1855
+
+. 
+. 
+. *Column (5)
+. eststo: areg matched du_usa_mu du_oth_mu  lemp peeps labp cc*,ab(sic) rob
+note: cc7 omitted because of collinearity.
+
+Linear regression, absorbing indicators             Number of obs     =  1,828
+Absorbed variable: sic                              No. of categories =    107
+                                                    F(11, 1710)       =  20.98
+                                                    Prob > F          = 0.0000
+                                                    R-squared         = 0.1817
+                                                    Adj R-squared     = 0.1258
+                                                    Root MSE          = 0.4656
+
+------------------------------------------------------------------------------
+             |               Robust
+     matched | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   du_usa_mu |  -.0581686   .0414662    -1.40   0.161    -.1394983    .0231611
+   du_oth_mu |   .0223991   .0279775     0.80   0.423    -.0324748    .0772729
+        lemp |   .1113311   .0263327     4.23   0.000     .0596834    .1629788
+       peeps |  -.0089894   .0174584    -0.51   0.607    -.0432314    .0252527
+        labp |  -.0139701   .0220901    -0.63   0.527    -.0572965    .0293564
+         cc1 |  -.0036708   .0368118    -0.10   0.921    -.0758718    .0685302
+         cc2 |  -.0532053   .0460668    -1.15   0.248    -.1435587     .037148
+         cc3 |  -.0067329   .0429903    -0.16   0.876    -.0910521    .0775863
+         cc4 |  -.1774337   .0469733    -3.78   0.000    -.2695649   -.0853025
+         cc5 |  -.3584363   .0414152    -8.65   0.000     -.439666   -.2772066
+         cc6 |   .0194679    .038977     0.50   0.618    -.0569797    .0959155
+         cc7 |          0  (omitted)
+       _cons |  -.0253977   .1394698    -0.18   0.856    -.2989471    .2481517
+------------------------------------------------------------------------------
+(est5 stored)
+
+. test du_usa_mu du_oth_mu
+
+ ( 1)  du_usa_mu = 0
+ ( 2)  du_oth_mu = 0
+
+       F(  2,  1710) =    1.70
+            Prob > F =    0.1838
+
+. 
+. esttab  using TableA6.csv, replace stats(N, fmt(%9.0f %9.0g)) cells(b(star fm
+> t(4)) se(par fmt(4))) starlevels( * 0.10 ** 0.05 *** 0.01) keep(du_usa_mu du_
+> oth_mu lemp labp peeps) nogap
+(file TableA6.csv not found)
+(output written to TableA6.csv)
+
+. log close
+      name:  <unnamed>
+       log:  C:\Users\Usuario\Documents\GitHub\twfe_survey\replications\2010-20
+> 12\Bloom et al. (2012)\full\tablea6.log
+  log type:  text
+ closed on:   2 May 2026, 01:14:00
+-------------------------------------------------------------------------------

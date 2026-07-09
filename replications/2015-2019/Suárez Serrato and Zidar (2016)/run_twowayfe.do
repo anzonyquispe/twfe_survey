@@ -19,9 +19,25 @@ clear all
 set more off
 cap log close _all
 
-* ─── STEP 1: Load data ───────────────────────────────────────────────────────
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Suárez Serrato and Zidar (2016)/AER-2014-1702_Replication_Files/Final-Tables-and-Figures/dta/Tables"
 
+* ─── STEP 1: Load data ─────────────────────────────────────────────────────
+* --- Paths ---
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+* ─── STEP 1: Load data ───────────────────────────────────────────────────────
+global datadir "$twfe_root/data/2015-2019/Suárez Serrato and Zidar (2016)/AER-2014-1702_Replication_Files/Final-Tables-and-Figures/dta/Tables"
+global outdir "$twfe_root/replications/2015-2019/Suárez Serrato and Zidar (2016)"
 use "$datadir/Table4.dta", clear
 
 di _n "============================================================"
@@ -468,13 +484,21 @@ use "$datadir/Table4.dta", clear
 
 keep fe_group year d_keeprate E epop fips_state
 
-label variable fe_group   "G: State grouping"
+label variable fips_state   "G: State grouping"
 label variable year       "T: Decadal period"
 label variable d_keeprate "D: Change in log net-of-tax rate (continuous)"
 label variable E          "Y: Employment changes"
 
-local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Suárez Serrato and Zidar (2016)"
-save "`outdir'/panel_GTD.dta", replace
+rename fe_group FE1
+rename fips_state G
+rename year T
+rename d_keeprate D
+rename E Y
+
+egen aux = group(T)
+replace T = aux
+drop aux
+save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
 di "  G = fe_group, T = year, D = d_keeprate"
 

@@ -24,9 +24,23 @@ set more off
 cap log close _all
 
 * --- Paths ---
-global datadir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Dinkelman (2011)/20080791_dataset/data"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Dinkelman (2011)"
-global texdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2010-2012/Dinkelman (2011)"
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global datadir  "$twfe_root/data/2010-2012/Dinkelman (2011)/20080791_dataset/data"
+global outdir   "$twfe_root/replications/2010-2012/Dinkelman (2011)"
+global texdir   "$twfe_root/latex/2010-2012/Dinkelman (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 set more off
@@ -36,6 +50,83 @@ cap which estout
 if _rc ssc install estout, replace
 cap which twowayfeweights
 if _rc ssc install twowayfeweights, replace
+
+
+
+
+/*==============================================================================
+  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
+  G = comm_id      (community numeric ID)
+  T = year         (year: 1996/2001)
+  D = D            (electrification binary)
+  Y = prop_emp_f   (proportion female employed)
+==============================================================================*/
+
+
+/*==============================================================================
+  STEP 2: RESHAPE TO 2-PERIOD PANEL
+==============================================================================*/
+
+di _n "============================================================"
+di "  STEP 2: RESHAPING TO 2-PERIOD PANEL"
+di "============================================================"
+
+use "$datadir/matched_censusdata.dta", clear
+keep if largearea == 1
+keep placecode0 dccode0 T mean_grad_new prop_emp_f0 prop_emp_f1 prop_emp_m0 prop_emp_m1 $x1
+
+gen comm_id = _n
+scalar N_comm = _N
+
+expand 2
+sort comm_id
+by comm_id: gen year = cond(_n == 1, 1996, 2001)
+
+gen prop_emp_f = cond(year == 1996, prop_emp_f0, prop_emp_f1)
+gen prop_emp_m = cond(year == 1996, prop_emp_m0, prop_emp_m1)
+gen D = cond(year == 2001, T, 0)
+
+xtset comm_id year, delta(5)
+di "Panel: " _N " obs = " scalar(N_comm) " communities x 2 periods"
+
+* --- Levels TWFE regression ---
+di _n "--- TWFE levels regression ---"
+reghdfe prop_emp_f D, abosrb(i.comm_id i.year) cluster(placecode0)
+local twfe_beta = _b[D]
+local twfe_se   = _se[D]
+di "TWFE beta = " %8.4f `twfe_beta'
+di "TWFE se   = " %8.4f `twfe_se'
+di "  (should match Col 1 OLS: " %8.4f `b_ols1' ")"
+
+di _n "============================================================"
+di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
+di "============================================================"
+
+keep comm_id year D prop_emp_f placecode0
+
+label variable comm_id     "G: Community numeric ID"
+label variable year        "T: Year (1996/2001)"
+label variable D           "D: Electrification (binary)"
+label variable prop_emp_f  "Y: Proportion female employed"
+
+
+egen aux = group(year)
+replace year = aux
+drop aux 
+
+rename comm_id G
+rename year T
+rename prop_emp_f Y
+rename placecode0 cluster
+
+
+
+save "$outdir/panel_GTD.dta", replace
+di "  -> panel_GTD.dta saved with " _N " observations"
+di "  G = comm_id, T = year, D = D"
+
+
+
 
 
 /*==============================================================================
@@ -49,6 +140,9 @@ di "============================================================"
 use "$datadir/matched_censusdata.dta", clear
 keep if largearea == 1
 di "Sample N = " _N
+
+
+
 
 global x1 "kms_to_subs0 baseline_hhdens0 base_hhpovrate0 prop_head_f_a0 sexratio0 prop_indianwhite0 kms_to_road0 kms_to_town0 prop_matric_m0 prop_matric_f0"
 
@@ -133,40 +227,6 @@ di "  Male OLS+FE:     " %8.4f `b_ols3m'  " (" %6.4f `se_ols3m' ")"
 di "  Male IV+FE:      " %8.4f `b_iv7m'   " (" %6.4f `se_iv7m'  ")"
 
 
-/*==============================================================================
-  STEP 2: RESHAPE TO 2-PERIOD PANEL
-==============================================================================*/
-
-di _n "============================================================"
-di "  STEP 2: RESHAPING TO 2-PERIOD PANEL"
-di "============================================================"
-
-use "$datadir/matched_censusdata.dta", clear
-keep if largearea == 1
-keep placecode0 dccode0 T mean_grad_new prop_emp_f0 prop_emp_f1 prop_emp_m0 prop_emp_m1 $x1
-
-gen comm_id = _n
-scalar N_comm = _N
-
-expand 2
-sort comm_id
-by comm_id: gen year = cond(_n == 1, 1996, 2001)
-
-gen prop_emp_f = cond(year == 1996, prop_emp_f0, prop_emp_f1)
-gen prop_emp_m = cond(year == 1996, prop_emp_m0, prop_emp_m1)
-gen D = cond(year == 2001, T, 0)
-
-xtset comm_id year, delta(5)
-di "Panel: " _N " obs = " scalar(N_comm) " communities x 2 periods"
-
-* --- Levels TWFE regression ---
-di _n "--- TWFE levels regression ---"
-reg prop_emp_f D i.comm_id i.year, cluster(placecode0)
-local twfe_beta = _b[D]
-local twfe_se   = _se[D]
-di "TWFE beta = " %8.4f `twfe_beta'
-di "TWFE se   = " %8.4f `twfe_se'
-di "  (should match Col 1 OLS: " %8.4f `b_ols1' ")"
 
 
 /*==============================================================================
@@ -454,28 +514,5 @@ di "  4. $outdir/run_twowayfe.log"
 di "  5. $outdir/panel_GTD.dta"
 di "============================================================"
 
-
-/*==============================================================================
-  STEP 6: SAVE CLEAN PANEL DATA (G, T, D)
-  G = comm_id      (community numeric ID)
-  T = year         (year: 1996/2001)
-  D = D            (electrification binary)
-  Y = prop_emp_f   (proportion female employed)
-==============================================================================*/
-
-di _n "============================================================"
-di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
-di "============================================================"
-
-keep comm_id year D prop_emp_f
-
-label variable comm_id     "G: Community numeric ID"
-label variable year        "T: Year (1996/2001)"
-label variable D           "D: Electrification (binary)"
-label variable prop_emp_f  "Y: Proportion female employed"
-
-save "$outdir/panel_GTD.dta", replace
-di "  -> panel_GTD.dta saved with " _N " observations"
-di "  G = comm_id, T = year, D = D"
 
 log close

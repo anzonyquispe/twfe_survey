@@ -1,0 +1,282 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do check_vars.do 
+
+. /*===========================================================================
+> ==
+>   CHECK_VARS: Handley and Limao (2017)
+>   "Policy Uncertainty, Trade, and Welfare: Theory and Evidence for China
+>    and the United States"
+>   AER 107(9), 2731-2783
+> 
+>   Purpose: Verify whether paper has a standard TWFE specification
+> 
+>   Finding: NO clean TWFE.
+>   - Tables 2-5: cross-sectional OLS (year 2005 only)
+>   - Table A7: long-differences with rreg (robust regression)
+>   - Table A8: reghdfe with hs6 + section*year FE (non-standard multi-way FE)
+>   - Treatment is "uncertainty" interacted with pre/post, not binary DiD
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Handley and Limao (2017)/data_counterfactual_replication"
+
+. 
+. * --- Check main datasets ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  DATASET 1: replication_maindata1.dta (Tables 2, 4, 5)"
+  DATASET 1: replication_maindata1.dta (Tables 2, 4, 5)
+
+. di "============================================================"
+============================================================
+
+. use "$datadir/replication_maindata1.dta", clear
+
+. di "Observations: " _N
+Observations: 5033
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Handley and Limao (2017)/data_counterfactual_replication/replication_maindat
+> a1.dta
+ Observations:         5,033                  
+    Variables:            38                  3 May 2017 12:53
+Sorted by: hs6  year
+
+. cap ds *year* *yr* *time* *period*
+
+. di _n "--- Panel check ---"
+
+--- Panel check ---
+
+. cap tab year
+
+. if _rc == 0 {
+.     di "Year variable exists"
+Year variable exists
+.     tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2005 |      5,033      100.00      100.00
+------------+-----------------------------------
+      Total |      5,033      100.00
+. }
+
+. else {
+.     di "No year variable"
+. }
+
+. 
+. * Check for unit identifier
+. cap ds *hs6* *product* *hs*
+
+. di _n "--- Variables ---"
+
+--- Variables ---
+
+. ds
+hs6hs1        dif_ln_tco~5  ldif_ln_pi~t  rat_2000      trim_025ta~s
+hs6           dif_ln_imp_5  hs4           rat_ave_2000  xtile_sample
+num_prod      dif_advalo~5  hs4n          adval~n_2000  hs4_coeff~_t
+cifvalue_all  dif_ln_num~5  ldif~4_total  adval~2_2000  sunk_hs4_c~t
+year          imports       hs4_coeff~at  imports_pre   hi_sunk_t
+advalorem_~2  section       w_g_num_05    ratio_col2~N  prod_reg_s~e
+advalorem_~n  max2max       unc_adv_mf~g  pindex_sam~e
+ln_tcost      ldif~6_total  unc_pre       lprice_2ce~e
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  DATASET 2: replication_appxdata6.dta (Table A8 - panel)"
+  DATASET 2: replication_appxdata6.dta (Table A8 - panel)
+
+. di "============================================================"
+============================================================
+
+. use "$datadir/replication_appxdata6.dta", clear
+
+. di "Observations: " _N
+Observations: 37002
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Handley and Limao (2017)/data_counterfactual_replication/replication_appxdat
+> a6.dta
+ Observations:        37,002                  
+    Variables:            19                  18 Apr 2017 15:24
+Sorted by: hs6  year
+
+. 
+. di _n "--- Panel structure ---"
+
+--- Panel structure ---
+
+. cap tab year
+
+. if _rc == 0 {
+.     di "Year variable:"
+Year variable:
+.     tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1996 |      2,859        7.73        7.73
+       1997 |      3,010        8.13       15.86
+       1998 |      3,100        8.38       24.24
+       1999 |      3,195        8.63       32.87
+       2000 |      3,332        9.00       41.88
+       2001 |      3,373        9.12       50.99
+       2002 |      3,465        9.36       60.36
+       2003 |      3,542        9.57       69.93
+       2004 |      3,621        9.79       79.72
+       2005 |      3,709       10.02       89.74
+       2006 |      3,796       10.26      100.00
+------------+-----------------------------------
+      Total |     37,002      100.00
+. }
+
+. cap {
+
+. 
+. di _n "--- Variables ---"
+
+--- Variables ---
+
+. ds
+hs6           ln_tcost      _IyeaXf~1997  _IyeaXf~2001  _IyeaXf~2005
+year          section       _IyeaXf~1998  _IyeaXf~2002  _IyeaXf~2006
+advalorem_~n  unc_adv_mf~g  _IyeaXf~1999  _IyeaXf~2003  section_yr
+ln_imp        _IyeaXf~1996  _IyeaXf~2000  _IyeaXf~2004
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  DATASET 3: replication_appxdata5.dta (Table A7 - DD panel)"
+  DATASET 3: replication_appxdata5.dta (Table A7 - DD panel)
+
+. di "============================================================"
+============================================================
+
+. cap use "$datadir/replication_appxdata5.dta", clear
+
+. if _rc == 0 {
+.     di "Observations: " _N
+Observations: 55880
+.     desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Handley and Limao (2017)/data_counterfactual_replication/replication_appxdat
+> a5.dta
+ Observations:        55,880                  
+    Variables:            17                  3 May 2017 12:53
+Sorted by: 
+.     di _n "--- Variables ---"
+
+--- Variables ---
+.     ds
+hs6           MFA           dif_advalo~5  dif_ln_tco~3  out_tc_5
+year          ln_tcost      imports       dif_ln_imp_3
+advalorem_~n  dif_ln_tco~5  unc_adv_mf~g  dif_advalo~3
+TTB           dif_ln_imp_5  unc_pre       out_tc_~1999
+. }
+
+. else {
+.     di "File not found"
+. }
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  CONCLUSION"
+  CONCLUSION
+
+. di "============================================================"
+============================================================
+
+. di "  1. Main tables (2-5): cross-sectional analysis at year 2005"
+  1. Main tables (2-5): cross-sectional analysis at year 2005
+
+. di "     Regression: reg dif_ln_imp_5 unc_pre ..., cluster(section)"
+     Regression: reg dif_ln_imp_5 unc_pre ..., cluster(section)
+
+. di "     NO group or time FE in standard TWFE sense"
+     NO group or time FE in standard TWFE sense
+
+. di ""
+
+
+. di "  2. Table A7 (DD panel): uses rreg (robust regression) on"
+  2. Table A7 (DD panel): uses rreg (robust regression) on
+
+. di "     long-differenced data, NOT standard TWFE"
+     long-differenced data, NOT standard TWFE
+
+. di ""
+
+
+. di "  3. Table A8 (panel regs): reghdfe ln_imp ... , ab(hs6 section_yr)"
+  3. Table A8 (panel regs): reghdfe ln_imp ... , ab(hs6 section_yr)
+
+. di "     Has product FE (hs6) + section*year FE"
+     Has product FE (hs6) + section*year FE
+
+. di "     This is multi-way FE, NOT standard two-way G+T"
+     This is multi-way FE, NOT standard two-way G+T
+
+. di "     Treatment is uncertainty*period interaction, not binary DiD"
+     Treatment is uncertainty*period interaction, not binary DiD
+
+. di ""
+
+
+. di "  ==> NO TWFE specification available for decomposition"
+  ==> NO TWFE specification available for decomposition
+
+. di "============================================================"
+============================================================
+
+. 
+. * Done
+. 
+end of do-file

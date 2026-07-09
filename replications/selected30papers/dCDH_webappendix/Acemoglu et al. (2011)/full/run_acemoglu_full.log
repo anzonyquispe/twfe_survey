@@ -1,0 +1,1402 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/run_acemoglu_full.log
+  log type:  text
+ opened on:   6 May 2026, 00:03:52
+
+. 
+. * ===========================================================================
+> ==
+. * TABLE 2: Summary Statistics
+. * ===========================================================================
+> ==
+. di _n "===== TABLE 2: Summary Statistics ====="
+
+===== TABLE 2: Summary Statistics =====
+
+. 
+. use "20100816_replication_dataset.dta", clear
+(Replication dataset for "Consequences of Radical Reform")
+
+. keep if year==1700 | year==1750 | year==1800 | year==1850 | year==1875 | year
+> ==1900
+(95 observations deleted)
+
+. drop yr1880 yr1885 yr1895 yr1905 yr1910
+
+. 
+. gen napoleon = (fpresence>0)
+
+. 
+. log using "$outdir/table2.log", text replace name(t2)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acem
+    > oglu et al. (2011)/full/table2.log not found)
+-------------------------------------------------------------------------------
+      name:  t2
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table2.log
+  log type:  text
+ opened on:   6 May 2026, 00:03:52
+
+. 
+. format urbrate %9.2f
+
+. 
+. di _n "===== Panel A: West of Elbe, by Treatment ====="
+
+===== Panel A: West of Elbe, by Treatment =====
+
+. di _n "--- All West of Elbe ---"
+
+--- All West of Elbe ---
+
+. by year, sort: sum urbrate if westelbe==1 [aweight=totalpop1750], format
+
+-------------------------------------------------------------------------------
+-> year = 1700
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       9  5908932.31        5.86       4.22       0.00      14.17
+
+-------------------------------------------------------------------------------
+-> year = 1750
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      13  8640353.31        7.89       4.12       2.09      19.41
+
+-------------------------------------------------------------------------------
+-> year = 1800
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      13  8640353.31       10.23       4.37       3.39      18.64
+
+-------------------------------------------------------------------------------
+-> year = 1850
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      13  8640353.31       13.78       6.01       5.44      22.83
+
+-------------------------------------------------------------------------------
+-> year = 1875
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      13  8640353.31       25.70      10.70      15.05      42.82
+
+-------------------------------------------------------------------------------
+-> year = 1900
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      13  8640353.31       39.89      13.92      23.53      74.92
+
+
+. di _n "--- Napoleon (treated) ---"
+
+--- Napoleon (treated) ---
+
+. by year, sort: sum urbrate if westelbe==1 & napoleon==1 [aweight=totalpop1750
+> ], format
+
+-------------------------------------------------------------------------------
+-> year = 1700
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       5  2536356.31        6.35       5.93       0.00      14.17
+
+-------------------------------------------------------------------------------
+-> year = 1750
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31        8.09       4.40       2.09      19.41
+
+-------------------------------------------------------------------------------
+-> year = 1800
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       11.75       4.71       5.20      18.64
+
+-------------------------------------------------------------------------------
+-> year = 1850
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       14.96       6.65       5.44      22.83
+
+-------------------------------------------------------------------------------
+-> year = 1875
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       28.67      11.69      16.09      42.82
+
+-------------------------------------------------------------------------------
+-> year = 1900
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       43.55      15.20      23.53      74.92
+
+
+. di _n "--- No Napoleon (control) ---"
+
+--- No Napoleon (control) ---
+
+. by year, sort: sum urbrate if westelbe==1 & napoleon==0 [aweight=totalpop1750
+> ], format
+
+-------------------------------------------------------------------------------
+-> year = 1700
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       4     3372576        5.49       2.89       0.00       8.82
+
+-------------------------------------------------------------------------------
+-> year = 1750
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       5     3981794        7.66       4.19       4.16      13.92
+
+-------------------------------------------------------------------------------
+-> year = 1800
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       5     3981794        8.45       3.47       3.39      13.51
+
+-------------------------------------------------------------------------------
+-> year = 1850
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       5     3981794       12.38       5.42       8.29      20.49
+
+-------------------------------------------------------------------------------
+-> year = 1875
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       5     3981794       22.22       9.15      15.05      36.09
+
+-------------------------------------------------------------------------------
+-> year = 1900
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       5     3981794       35.60      12.12      27.75      54.02
+
+
+. 
+. di _n "--- Covariates: West of Elbe ---"
+
+--- Covariates: West of Elbe ---
+
+. sum protestant latitude longitude distpa if westelbe==1 [aweight=totalpop1750
+> ]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+  protestant |      78  51842119.9    .5787749   .3434565        .05          1
+    latitude |      78  51842119.9    50.43043    1.49958   48.13334   52.36666
+   longitude |      78  51842119.9    9.885727   2.006996        7.6   13.73333
+      distpa |      78  51842119.9    592.3754   146.2944   413.0552   848.7664
+
+. sum protestant latitude longitude distpa if westelbe==1 & napoleon==1 [aweigh
+> t=totalpop1750]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+  protestant |      48  27951355.9    .6184135    .302984        .25        .95
+    latitude |      48  27951355.9    51.41224   .9765205   49.31944   52.36666
+   longitude |      48  27951355.9    9.027449   1.505143        7.6   11.61667
+      distpa |      48  27951355.9     558.657   128.1925   413.0552    748.983
+
+. sum protestant latitude longitude distpa if westelbe==1 & napoleon==0 [aweigh
+> t=totalpop1750]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+  protestant |      30    23890764    .5323991   .3853424        .05          1
+    latitude |      30    23890764    49.28174   1.149553   48.13334      51.05
+   longitude |      30    23890764    10.88988   2.075268        8.4   13.73333
+      distpa |      30    23890764    631.8247    158.007   441.8782   848.7664
+
+. 
+. di _n "===== Panel B: All Germany ====="
+
+===== Panel B: All Germany =====
+
+. by year, sort: sum urbrate [aweight=totalpop1750], format
+
+-------------------------------------------------------------------------------
+-> year = 1700
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      14  8359312.31        7.08       5.61       0.00      19.03
+
+-------------------------------------------------------------------------------
+-> year = 1750
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      19  12144187.3        8.59       4.61       2.09      19.41
+
+-------------------------------------------------------------------------------
+-> year = 1800
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      19  12144187.3       10.81       4.92       3.39      22.51
+
+-------------------------------------------------------------------------------
+-> year = 1850
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      19  12144187.3       14.65       7.26       5.44      33.29
+
+-------------------------------------------------------------------------------
+-> year = 1875
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      19  12144187.3       26.52      11.21      15.05      50.23
+
+-------------------------------------------------------------------------------
+-> year = 1900
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      19  12144187.3       40.29      14.54      20.97      74.92
+
+
+. by year, sort: sum urbrate if napoleon==1 [aweight=totalpop1750], format
+
+-------------------------------------------------------------------------------
+-> year = 1700
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       5  2536356.31        6.35       5.93       0.00      14.17
+
+-------------------------------------------------------------------------------
+-> year = 1750
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31        8.09       4.40       2.09      19.41
+
+-------------------------------------------------------------------------------
+-> year = 1800
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       11.75       4.71       5.20      18.64
+
+-------------------------------------------------------------------------------
+-> year = 1850
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       14.96       6.65       5.44      22.83
+
+-------------------------------------------------------------------------------
+-> year = 1875
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       28.67      11.69      16.09      42.82
+
+-------------------------------------------------------------------------------
+-> year = 1900
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       8  4658559.31       43.55      15.20      23.53      74.92
+
+
+. by year, sort: sum urbrate if napoleon==0 [aweight=totalpop1750], format
+
+-------------------------------------------------------------------------------
+-> year = 1700
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |       9     5822956        7.40       5.75       0.00      19.03
+
+-------------------------------------------------------------------------------
+-> year = 1750
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      11     7485628        8.90       4.91       2.77      18.96
+
+-------------------------------------------------------------------------------
+-> year = 1800
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      11     7485628       10.22       5.16       3.39      22.51
+
+-------------------------------------------------------------------------------
+-> year = 1850
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      11     7485628       14.45       7.90       8.29      33.29
+
+-------------------------------------------------------------------------------
+-> year = 1875
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      11     7485628       25.19      11.20      15.05      50.23
+
+-------------------------------------------------------------------------------
+-> year = 1900
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     urbrate |      11     7485628       38.27      14.40      20.97      68.48
+
+
+. 
+. sum protestant latitude longitude distpa [aweight=totalpop1750]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+  protestant |     114  72865123.9    .6544285   .3304862        .05          1
+    latitude |     114  72865123.9    51.13919   1.851429   48.13334   54.73333
+   longitude |     114  72865123.9    11.34197   3.418309        7.6   20.48333
+      distpa |     114  72865123.9    712.8788   251.0056   413.0552   1401.567
+
+. sum protestant latitude longitude distpa if napoleon==1 [aweight=totalpop1750
+> ]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+  protestant |      48  27951355.9    .6184135    .302984        .25        .95
+    latitude |      48  27951355.9    51.41224   .9765205   49.31944   52.36666
+   longitude |      48  27951355.9    9.027449   1.505143        7.6   11.61667
+      distpa |      48  27951355.9     558.657   128.1925   413.0552    748.983
+
+. sum protestant latitude longitude distpa if napoleon==0 [aweight=totalpop1750
+> ]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+  protestant |      66    44913768    .6768419   .3467146        .05          1
+    latitude |      66    44913768    50.96926   2.220491   48.13334   54.73333
+   longitude |      66    44913768    12.78237   3.490838        8.4   20.48333
+      distpa |      66    44913768    808.8563   261.3894   441.8782   1401.567
+
+. 
+. log close t2
+      name:  t2
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table2.log
+  log type:  text
+ closed on:   6 May 2026, 00:03:52
+-------------------------------------------------------------------------------
+
+. 
+. * ===========================================================================
+> ==
+. * TABLE 3: Panel Fixed Effects
+. * ===========================================================================
+> ==
+. di _n "===== TABLE 3: Panel Fixed Effects ====="
+
+===== TABLE 3: Panel Fixed Effects =====
+
+. 
+. log using "$outdir/table3.log", text replace name(t3)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acem
+    > oglu et al. (2011)/full/table3.log not found)
+-------------------------------------------------------------------------------
+      name:  t3
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table3.log
+  log type:  text
+ opened on:   6 May 2026, 00:03:52
+
+. 
+. sort id year
+
+. 
+. * Column 1: West of Elbe, weighted
+. di _n "--- Table 3, Column 1: West of Elbe, weighted ---"
+
+--- Table 3, Column 1: West of Elbe, weighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 yr* ///
+>     if westelbe==1 [aweight=totalpop1750], fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9188                                         min =          5
+     Between = 0.1275                                         avg =        5.7
+     Overall = 0.6743                                         max =          6
+
+                                                F(10,12)          =     935.92
+corr(u_i, Xb) = 0.0165                          Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.4910237   .2487343    -1.97   0.072    -1.032969    .0509218
+fpresen~1800 |  -.2474441   .2251383    -1.10   0.293    -.7379783      .24309
+fpresen~1850 |  -.1602948   .2501326    -0.64   0.534    -.7052869    .3846972
+fpresen~1875 |    .402126   .3256276     1.23   0.240    -.3073556    1.111608
+fpresen~1900 |   .6338689   .4075106     1.56   0.146    -.2540205    1.521758
+      yr1700 |  -29.21852   4.246675    -6.88   0.000    -38.47123   -19.96581
+      yr1750 |  -25.94389   3.390967    -7.65   0.000    -33.33217   -18.55561
+      yr1800 |  -24.91925   3.599626    -6.92   0.000    -32.76216   -17.07634
+      yr1850 |  -21.84132   2.862168    -7.63   0.000    -28.07745   -15.60519
+      yr1875 |  -12.94605   1.372624    -9.43   0.000    -15.93674   -9.955362
+      yr1900 |          0  (omitted)
+       _cons |   36.31077    3.37137    10.77   0.000     28.96519    43.65636
+-------------+----------------------------------------------------------------
+     sigma_u |  6.7749955
+     sigma_e |  4.3452422
+         rho |   .7085422   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    3.41
+            Prob > F =    0.0532
+
+. local test1=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table3_results.xls", ctitle("Col 1: W.Elbe, wgt") br noast
+> er nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t1') ///
+>     replace
+c:\ado\plus/o/outreg2.ado
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table3_results.xls
+dir : seeout
+
+. 
+. * Column 2: West of Elbe, unweighted
+. di _n "--- Table 3, Column 2: West of Elbe, unweighted ---"
+
+--- Table 3, Column 2: West of Elbe, unweighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 yr* ///
+>     if westelbe==1, fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.8442                                         min =          5
+     Between = 0.1749                                         avg =        5.7
+     Overall = 0.6879                                         max =          6
+
+                                                F(10,12)          =     193.21
+corr(u_i, Xb) = 0.0235                          Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.2517311   .1723752    -1.46   0.170    -.6273044    .1238422
+fpresen~1800 |  -.0425451   .1534457    -0.28   0.786    -.3768745    .2917843
+fpresen~1850 |   .0331917   .1534879     0.22   0.832    -.3012297     .367613
+fpresen~1875 |   .3540444   .2949798     1.20   0.253    -.2886614    .9967502
+fpresen~1900 |   .5288898   .4014873     1.32   0.212     -.345876    1.403656
+      yr1700 |  -30.71882   4.729697    -6.49   0.000    -41.02395    -20.4137
+      yr1750 |   -27.2305   4.391724    -6.20   0.000    -36.79925   -17.66176
+      yr1800 |  -25.84024   3.609844    -7.16   0.000    -33.70541   -17.97506
+      yr1850 |  -23.10901   3.701157    -6.24   0.000    -31.17314   -15.04489
+      yr1875 |  -13.72183   1.894331    -7.24   0.000    -17.84923    -9.59444
+      yr1900 |          0  (omitted)
+       _cons |   36.23391   3.098298    11.69   0.000      29.4833    42.98452
+-------------+----------------------------------------------------------------
+     sigma_u |  6.6007385
+     sigma_e |  6.1047228
+         rho |  .53898016   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    0.91
+            Prob > F =    0.4632
+
+. local test2=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table3_results.xls", ctitle("Col 2: W.Elbe, unwgt") br noa
+> ster nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t2')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table3_results.xls
+dir : seeout
+
+. 
+. * Column 3: All Germany, weighted
+. di _n "--- Table 3, Column 3: All Germany, weighted ---"
+
+--- Table 3, Column 3: All Germany, weighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 yr* ///
+>     [aweight=totalpop1750], fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =        109
+Group variable: id                              Number of groups  =         19
+
+R-squared:                                      Obs per group:
+     Within  = 0.8948                                         min =          5
+     Between = 0.0170                                         avg =        5.7
+     Overall = 0.6401                                         max =          6
+
+                                                F(10,18)          =     222.22
+corr(u_i, Xb) = 0.0007                          Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 19 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.4877689   .2346843    -2.08   0.052    -.9808224    .0052846
+fpresen~1800 |  -.2683187   .2271092    -1.18   0.253    -.7454574      .20882
+fpresen~1850 |  -.2205774   .2492595    -0.88   0.388    -.7442522    .3030974
+fpresen~1875 |     .26588   .3031231     0.88   0.392     -.370958    .9027179
+fpresen~1900 |   .5033205   .3757051     1.34   0.197    -.2860066    1.292648
+      yr1700 |  -30.76349   3.623264    -8.49   0.000    -38.37568   -23.15129
+      yr1750 |   -27.9112   3.143763    -8.88   0.000      -34.516    -21.3064
+      yr1800 |  -26.53178   3.043012    -8.72   0.000    -32.92491   -20.13865
+      yr1850 |  -22.87444    2.21262   -10.34   0.000    -27.52298   -18.22589
+      yr1875 |  -12.86228   1.168029   -11.01   0.000    -15.31622   -10.40834
+      yr1900 |          0  (omitted)
+       _cons |   38.30368    2.66125    14.39   0.000      32.7126    43.89476
+-------------+----------------------------------------------------------------
+     sigma_u |  7.2220801
+     sigma_e |   4.798038
+         rho |  .69378441   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    18) =    4.19
+            Prob > F =    0.0205
+
+. local test3=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table3_results.xls", ctitle("Col 3: All, wgt") br noaster 
+> nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t3')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table3_results.xls
+dir : seeout
+
+. 
+. * Column 4: All Germany, unweighted
+. di _n "--- Table 3, Column 4: All Germany, unweighted ---"
+
+--- Table 3, Column 4: All Germany, unweighted ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 yr*, ///
+>     fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =        109
+Group variable: id                              Number of groups  =         19
+
+R-squared:                                      Obs per group:
+     Within  = 0.8424                                         min =          5
+     Between = 0.0585                                         avg =        5.7
+     Overall = 0.6501                                         max =          6
+
+                                                F(10,18)          =     468.64
+corr(u_i, Xb) = 0.0058                          Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 19 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.1973438   .1636937    -1.21   0.244    -.5412515    .1465639
+fpresen~1800 |  -.0470785   .1784083    -0.26   0.795    -.4219004    .3277433
+fpresen~1850 |  -.0234889   .1812587    -0.13   0.898    -.4042994    .3573215
+fpresen~1875 |   .2524087   .2991659     0.84   0.410    -.3761155    .8809329
+fpresen~1900 |   .5059934   .4229584     1.20   0.247    -.3826092    1.394596
+      yr1700 |  -30.98946   3.534578    -8.77   0.000    -38.41533   -23.56359
+      yr1750 |  -28.22213     3.3135    -8.52   0.000    -35.18353   -21.26072
+      yr1800 |  -26.07585   2.905187    -8.98   0.000    -32.17943   -19.97228
+      yr1850 |  -22.67553    2.52654    -8.97   0.000    -27.98359   -17.36747
+      yr1875 |  -12.71153   1.376103    -9.24   0.000    -15.60261   -9.820446
+      yr1900 |          0  (omitted)
+       _cons |   37.03718   2.306508    16.06   0.000     32.19139    41.88297
+-------------+----------------------------------------------------------------
+     sigma_u |  7.0855315
+     sigma_e |  5.8278844
+         rho |  .59647567   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    18) =    1.65
+            Prob > F =    0.2140
+
+. local test4=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table3_results.xls", ctitle("Col 4: All, unwgt") br noaste
+> r nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t4')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table3_results.xls
+dir : seeout
+
+. 
+. log close t3
+      name:  t3
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table3.log
+  log type:  text
+ closed on:   6 May 2026, 00:03:55
+-------------------------------------------------------------------------------
+
+. 
+. * ===========================================================================
+> ==
+. * TABLE 4: Robustness - Covariates and GMM
+. * ===========================================================================
+> ==
+. di _n "===== TABLE 4: Robustness ====="
+
+===== TABLE 4: Robustness =====
+
+. 
+. log using "$outdir/table4.log", text replace name(t4)
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acem
+    > oglu et al. (2011)/full/table4.log not found)
+-------------------------------------------------------------------------------
+      name:  t4
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Acemoglu et al. (2011)/full/table4.log
+  log type:  text
+ opened on:   6 May 2026, 00:03:55
+
+. 
+. * Column 1: Exclude Berlin
+. di _n "--- Table 4, Column 1: Exclude Berlin ---"
+
+--- Table 4, Column 1: Exclude Berlin ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 ///
+>     yr* if westelbe==1 & id~=2 [aweight=totalpop1750], fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         68
+Group variable: id                              Number of groups  =         12
+
+R-squared:                                      Obs per group:
+     Within  = 0.9352                                         min =          5
+     Between = 0.0999                                         avg =        5.7
+     Overall = 0.6984                                         max =          6
+
+                                                F(10,11)          =    1107.56
+corr(u_i, Xb) = 0.0139                          Prob > F          =     0.0000
+
+                                    (Std. err. adjusted for 12 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.5646331   .2814492    -2.01   0.070    -1.184099    .0548323
+fpresen~1800 |  -.3238465   .2488094    -1.30   0.220    -.8714722    .2237792
+fpresen~1850 |  -.2351954   .2752158    -0.85   0.411    -.8409412    .3705504
+fpresen~1875 |   .3240238   .3242079     1.00   0.339    -.3895528    1.037601
+fpresen~1900 |   .5517881   .4109023     1.34   0.206    -.3526017    1.456178
+      yr1700 |   -28.6496    4.29595    -6.67   0.000    -38.10493   -19.19428
+      yr1750 |  -25.30296    3.43311    -7.37   0.000    -32.85919   -17.74674
+      yr1800 |  -24.48963   3.671679    -6.67   0.000    -32.57095   -16.40832
+      yr1850 |  -21.29807   2.892704    -7.36   0.000    -27.66487   -14.93128
+      yr1875 |  -12.64504   1.368273    -9.24   0.000    -15.65658   -9.633487
+      yr1900 |          0  (omitted)
+       _cons |   36.09887   3.488833    10.35   0.000        28.42    43.77774
+-------------+----------------------------------------------------------------
+     sigma_u |    6.59596
+     sigma_e |  3.8074117
+         rho |  .75007559   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    11) =    2.35
+            Prob > F =    0.1282
+
+. local test=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table4_results.xls", ctitle("Col 1: Excl Berlin") br noast
+> er nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t') replace
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table4_results.xls
+dir : seeout
+
+. 
+. * Column 2: Protestant interaction
+. di _n "--- Table 4, Column 2: Protestant interaction ---"
+
+--- Table 4, Column 2: Protestant interaction ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 ///
+>     protestant1* yr* if westelbe==1 [aweight=totalpop1750], fe i(id) cluster(
+> id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9211                                         min =          5
+     Between = 0.0881                                         avg =        5.7
+     Overall = 0.6737                                         max =          6
+
+                                                F(12,12)          =          .
+corr(u_i, Xb) = 0.0118                          Prob > F          =          .
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.5472211   .3077457    -1.78   0.101    -1.217741    .1232993
+fpresen~1800 |  -.3362161   .2954003    -1.14   0.277    -.9798381    .3074059
+fpresen~1850 |  -.2291525   .3101788    -0.74   0.474     -.904974    .4466691
+fpresen~1875 |   .3532015    .312367     1.13   0.280    -.3273877    1.033791
+fpresen~1900 |   .5734494   .3704862     1.55   0.148    -.2337706    1.380669
+protest~1750 |    5.63764   1.469835     3.84   0.002     2.435144    8.840135
+protest~1800 |   3.353731   1.039788     3.23   0.007     1.088228    5.619235
+protest~1850 |   4.749989   2.682842     1.77   0.102    -1.095421     10.5954
+protest~1875 |   6.147564   5.323917     1.15   0.271    -5.452254    17.74738
+protest~1900 |   5.341618   8.048966     0.66   0.519    -12.19557    22.87881
+      yr1700 |  -25.68818    2.53087   -10.15   0.000    -31.20247   -20.17389
+      yr1750 |  -26.13794   2.527539   -10.34   0.000    -31.64497   -20.63091
+      yr1800 |  -23.61615   2.298145   -10.28   0.000    -28.62337   -18.60892
+      yr1850 |  -21.45349   3.079873    -6.97   0.000    -28.16396   -14.74303
+      yr1875 |  -13.47437   1.337833   -10.07   0.000    -16.38926   -10.55948
+      yr1900 |          0  (omitted)
+       _cons |   33.45239   2.692112    12.43   0.000     27.58678      39.318
+-------------+----------------------------------------------------------------
+     sigma_u |   6.794631
+     sigma_e |  4.5087891
+         rho |  .69428054   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    3.04
+            Prob > F =    0.0705
+
+. local test=r(p)
+
+. testparm protestant1*
+
+ ( 1)  protestant1750 = 0
+ ( 2)  protestant1800 = 0
+ ( 3)  protestant1850 = 0
+ ( 4)  protestant1875 = 0
+ ( 5)  protestant1900 = 0
+
+       F(  5,    12) =    4.06
+            Prob > F =    0.0217
+
+. local testcov=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table4_results.xls", ctitle("Col 2: Protestant") br noaste
+> r nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t', ///
+>     p-value joint signif covariate, `testcov')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table4_results.xls
+dir : seeout
+
+. 
+. * Column 3: Latitude interaction
+. di _n "--- Table 4, Column 3: Latitude interaction ---"
+
+--- Table 4, Column 3: Latitude interaction ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 ///
+>     latitude1* yr* if westelbe==1 [aweight=totalpop1750], fe i(id) cluster(id
+> )
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9205                                         min =          5
+     Between = 0.1601                                         avg =        5.7
+     Overall = 0.6889                                         max =          6
+
+                                                F(12,12)          =          .
+corr(u_i, Xb) = 0.0254                          Prob > F          =          .
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.5997352   .3556487    -1.69   0.118    -1.374627    .1751567
+fpresen~1800 |  -.3564435   .3242422    -1.10   0.293    -1.062907    .3500195
+fpresen~1850 |  -.2612966   .3555124    -0.73   0.476    -1.035892    .5132984
+fpresen~1875 |   .2920026   .3744716     0.78   0.451    -.5239009    1.107906
+fpresen~1900 |   .5119696   .4510269     1.14   0.278    -.4707337    1.494673
+latitude1750 |   .8845717     .56252     1.57   0.142     -.341054    2.110197
+latitude1800 |   .8922969   .4753124     1.88   0.085    -.1433198    1.927914
+latitude1850 |   .6777035   .6464962     1.05   0.315    -.7308906    2.086298
+latitude1875 |   .9224543   1.021686     0.90   0.384    -1.303607    3.148516
+latitude1900 |   1.238425   1.545768     0.80   0.439    -2.129514    4.606364
+      yr1700 |   32.87328   74.65078     0.44   0.668    -129.7768    195.5234
+      yr1750 |  -8.169869   66.48261    -0.12   0.904     -153.023    136.6833
+      yr1800 |  -7.533263   65.97844    -0.11   0.911    -151.2879    136.2214
+      yr1850 |   6.323669   60.92901     0.10   0.919    -126.4292    139.0766
+      yr1875 |    2.92513   31.75393     0.09   0.928    -66.26073    72.11099
+      yr1900 |          0  (omitted)
+       _cons |   -25.5229   75.49589    -0.34   0.741    -190.0143    138.9685
+-------------+----------------------------------------------------------------
+     sigma_u |  6.5991448
+     sigma_e |  4.5267994
+         rho |  .68001697   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    1.95
+            Prob > F =    0.1759
+
+. local test=r(p)
+
+. testparm latitude1*
+
+ ( 1)  latitude1750 = 0
+ ( 2)  latitude1800 = 0
+ ( 3)  latitude1850 = 0
+ ( 4)  latitude1875 = 0
+ ( 5)  latitude1900 = 0
+
+       F(  5,    12) =    1.09
+            Prob > F =    0.4139
+
+. local testcov=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table4_results.xls", ctitle("Col 3: Latitude") br noaster 
+> nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t', ///
+>     p-value joint signif covariate, `testcov')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table4_results.xls
+dir : seeout
+
+. 
+. * Column 4: Longitude interaction
+. di _n "--- Table 4, Column 4: Longitude interaction ---"
+
+--- Table 4, Column 4: Longitude interaction ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 ///
+>     longitude1* yr* if westelbe==1 [aweight=totalpop1750], fe i(id) cluster(i
+> d)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9258                                         min =          5
+     Between = 0.3637                                         avg =        5.7
+     Overall = 0.6918                                         max =          6
+
+                                                F(12,12)          =          .
+corr(u_i, Xb) = 0.0480                          Prob > F          =          .
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.4349868   .2444864    -1.78   0.101    -.9676768    .0977033
+fpresen~1800 |  -.2557556   .2146896    -1.19   0.257    -.7235239    .2120128
+fpresen~1850 |   .0182107   .2104272     0.09   0.932    -.4402707    .4766921
+fpresen~1875 |   .6225973   .2501543     2.49   0.028      .077558    1.167637
+fpresen~1900 |   .8927226   .3212702     2.78   0.017     .1927351     1.59271
+longitu~1750 |   .4191913   .4459439     0.94   0.366     -.552437     1.39082
+longitu~1800 |   .0250866   .5212957     0.05   0.962    -1.110719    1.160892
+longitu~1850 |   1.169256   .5391525     2.17   0.051    -.0054566    2.343968
+longitu~1875 |   1.426277   1.496343     0.95   0.359    -1.833975    4.686529
+longitu~1900 |   1.661352   2.260496     0.73   0.476    -3.263844    6.586549
+      yr1700 |  -10.96036    22.4269    -0.49   0.634    -59.82436    37.90365
+      yr1750 |  -12.57286   18.54058    -0.68   0.511    -52.96931    27.82358
+      yr1800 |  -7.305953   18.19711    -0.40   0.695    -46.95406    32.34215
+      yr1850 |  -16.54423   17.63044    -0.94   0.367    -54.95766     21.8692
+      yr1875 |  -10.41563   8.660048    -1.20   0.252    -29.28425    8.452997
+      yr1900 |          0  (omitted)
+       _cons |   18.44107   22.31695     0.83   0.425    -30.18339    67.06553
+-------------+----------------------------------------------------------------
+     sigma_u |  6.3013146
+     sigma_e |  4.3727806
+         rho |  .67496289   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    2.89
+            Prob > F =    0.0791
+
+. local test=r(p)
+
+. testparm longitude1*
+
+ ( 1)  longitude1750 = 0
+ ( 2)  longitude1800 = 0
+ ( 3)  longitude1850 = 0
+ ( 4)  longitude1875 = 0
+ ( 5)  longitude1900 = 0
+
+       F(  5,    12) =    4.03
+            Prob > F =    0.0222
+
+. local testcov=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table4_results.xls", ctitle("Col 4: Longitude") br noaster
+>  nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t', ///
+>     p-value joint signif covariate, `testcov')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table4_results.xls
+dir : seeout
+
+. 
+. * Column 5: Distance to Paris interaction
+. di _n "--- Table 4, Column 5: Distance to Paris ---"
+
+--- Table 4, Column 5: Distance to Paris ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 ///
+>     distpa1* yr* if westelbe==1 [aweight=totalpop1750], fe i(id) cluster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9237                                         min =          5
+     Between = 0.3840                                         avg =        5.7
+     Overall = 0.6996                                         max =          6
+
+                                                F(12,12)          =          .
+corr(u_i, Xb) = 0.0537                          Prob > F          =          .
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |   -.446352   .2776764    -1.61   0.134    -1.051357    .1586529
+fpresen~1800 |  -.2441306   .2481142    -0.98   0.345    -.7847249    .2964638
+fpresen~1850 |  -.0268965   .2417252    -0.11   0.913    -.5535704    .4997774
+fpresen~1875 |   .5610088   .2705418     2.07   0.060    -.0284512    1.150469
+fpresen~1900 |   .8362633   .3252641     2.57   0.024     .1275737    1.544953
+  distpa1750 |   .0075956   .0056067     1.35   0.200    -.0046203    .0198114
+  distpa1800 |   .0039692   .0051155     0.78   0.453    -.0071766     .015115
+  distpa1850 |   .0153753   .0070714     2.17   0.050    -.0000319    .0307824
+  distpa1875 |   .0176098   .0194829     0.90   0.384    -.0248398    .0600594
+  distpa1900 |    .021425   .0285734     0.75   0.468    -.0408311     .083681
+      yr1700 |  -14.90013   16.41987    -0.91   0.382    -50.67596    20.87569
+      yr1750 |  -16.90298   13.70989    -1.23   0.241    -46.77427    12.96832
+      yr1800 |  -13.50762   14.16948    -0.95   0.359    -44.38026    17.36501
+      yr1850 |  -17.88635   12.60197    -1.42   0.181    -45.34369    9.570984
+      yr1875 |   -10.4519   5.979602    -1.75   0.106    -23.48033    2.576534
+      yr1900 |          0  (omitted)
+       _cons |   22.46536   16.47041     1.36   0.198    -13.42058    58.35131
+-------------+----------------------------------------------------------------
+     sigma_u |  6.2394289
+     sigma_e |  4.4341531
+         rho |  .66443113   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    3.19
+            Prob > F =    0.0625
+
+. local test=r(p)
+
+. testparm distpa*
+
+ ( 1)  distpa1750 = 0
+ ( 2)  distpa1800 = 0
+ ( 3)  distpa1850 = 0
+ ( 4)  distpa1875 = 0
+ ( 5)  distpa1900 = 0
+
+       F(  5,    12) =    2.60
+            Prob > F =    0.0815
+
+. local testcov=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table4_results.xls", ctitle("Col 5: Dist Paris") br noaste
+> r nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t', ///
+>     p-value joint signif covariate, `testcov')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table4_results.xls
+dir : seeout
+
+. 
+. * Column 6: Territories interaction
+. di _n "--- Table 4, Column 6: Territories ---"
+
+--- Table 4, Column 6: Territories ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 ///
+>     territories1* yr* if westelbe==1 [aweight=totalpop1750], fe i(id) cluster
+> (id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9199                                         min =          5
+     Between = 0.1695                                         avg =        5.7
+     Overall = 0.6768                                         max =          6
+
+                                                F(12,12)          =          .
+corr(u_i, Xb) = 0.0204                          Prob > F          =          .
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |   -.531467   .2940743    -1.81   0.096      -1.1722    .1092658
+fpresen~1800 |  -.2878874   .2635772    -1.09   0.296    -.8621729    .2863981
+fpresen~1850 |  -.1139662   .2565591    -0.44   0.665    -.6729604    .4450281
+fpresen~1875 |   .3741163   .3047059     1.23   0.243    -.2897808    1.038013
+fpresen~1900 |   .6559553   .3824571     1.72   0.112    -.1773473    1.489258
+territo~1850 |  -.0681386   .0286325    -2.38   0.035    -.1305234   -.0057538
+territo~1875 |  -.0097636   .0894687    -0.11   0.915    -.2046991    .1851719
+territo~1900 |  -.0491021   .1426399    -0.34   0.737    -.3598878    .2616836
+      yr1700 |  -29.85604   5.729942    -5.21   0.000    -42.34051   -17.37157
+      yr1750 |  -26.56999   4.949102    -5.37   0.000    -37.35316   -15.78683
+      yr1800 |  -25.54535   5.162918    -4.95   0.000    -36.79439   -14.29632
+      yr1850 |  -21.59858   4.295363    -5.03   0.000    -30.95738   -12.23979
+      yr1875 |  -13.44766   1.833864    -7.33   0.000    -17.44331   -9.452012
+      yr1900 |          0  (omitted)
+       _cons |   37.12969   5.150788     7.21   0.000     25.90709    48.35229
+-------------+----------------------------------------------------------------
+     sigma_u |    6.75409
+     sigma_e |  4.4468383
+         rho |  .69760308   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    2.66
+            Prob > F =    0.0959
+
+. local test=r(p)
+
+. testparm territories1*
+
+ ( 1)  territories1850 = 0
+ ( 2)  territories1875 = 0
+ ( 3)  territories1900 = 0
+
+       F(  3,    12) =    4.38
+            Prob > F =    0.0267
+
+. local testcov=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table4_results.xls", ctitle("Col 6: Territories") br noast
+> er nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t', ///
+>     p-value joint signif covariate, `testcov')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table4_results.xls
+dir : seeout
+
+. 
+. * Column 7: Initial urbanization interaction
+. di _n "--- Table 4, Column 7: Initial Urbanization ---"
+
+--- Table 4, Column 7: Initial Urbanization ---
+
+. xtreg urbrate fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresen
+> ce1900 ///
+>     urbanization17501* yr* if westelbe==1 [aweight=totalpop1750], fe i(id) cl
+> uster(id)
+note: yr1900 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =         74
+Group variable: id                              Number of groups  =         13
+
+R-squared:                                      Obs per group:
+     Within  = 0.9249                                         min =          5
+     Between = 0.4098                                         avg =        5.7
+     Overall = 0.6974                                         max =          6
+
+                                                F(12,12)          =          .
+corr(u_i, Xb) = 0.0568                          Prob > F          =          .
+
+                                    (Std. err. adjusted for 13 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+fpresen~1750 |  -.4579774    .266864    -1.72   0.112    -1.039424    .1234693
+fpresen~1800 |  -.2093105   .2451975    -0.85   0.410    -.7435499    .3249289
+fpresen~1850 |  -.1363046   .2609417    -0.52   0.611    -.7048477    .4322386
+fpresen~1875 |   .4183036   .2836068     1.47   0.166    -.1996225     1.03623
+fpresen~1900 |    .650167   .3625768     1.79   0.098    -.1398199    1.440154
+urb~17501800 |  -.1488343   .1126074    -1.32   0.211    -.3941847    .0965162
+urb~17501850 |   .2649439   .1594646     1.66   0.123    -.0824997    .6123874
+urb~17501875 |    .493511   .5556287     0.89   0.392    -.7170998    1.704122
+urb~17501900 |   .4899849   .8692344     0.56   0.583    -1.403914    2.383884
+      yr1700 |  -25.28871   5.035249    -5.02   0.000    -36.25958   -14.31785
+      yr1750 |  -22.16647   5.017806    -4.42   0.001    -33.09933   -11.23361
+      yr1800 |  -19.99442   4.205289    -4.75   0.000    -29.15696   -10.83189
+      yr1850 |  -20.10642   4.257897    -4.72   0.000    -29.38358   -10.82926
+      yr1875 |  -12.97324   2.271669    -5.71   0.000    -17.92278   -8.023695
+      yr1900 |          0  (omitted)
+       _cons |   32.35859   5.409833     5.98   0.000     20.57157     44.1456
+-------------+----------------------------------------------------------------
+     sigma_u |  6.1570262
+     sigma_e |  4.3505432
+         rho |  .66698641   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. test fpresence1850 fpresence1875 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1875 = 0
+ ( 3)  fpresence1900 = 0
+
+       F(  3,    12) =    2.50
+            Prob > F =    0.1092
+
+. local test=r(p)
+
+. testparm urbanization17501*
+
+ ( 1)  urbanization17501800 = 0
+ ( 2)  urbanization17501850 = 0
+ ( 3)  urbanization17501875 = 0
+ ( 4)  urbanization17501900 = 0
+
+       F(  4,    12) =    2.26
+            Prob > F =    0.1227
+
+. local testcov=r(p)
+
+. outreg2 fpresence1750 fpresence1800 fpresence1850 fpresence1875 fpresence1900
+>  ///
+>     using "$outdir/table4_results.xls", ctitle("Col 7: Init Urban") br noaste
+> r nocons ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t', ///
+>     p-value joint signif covariate, `testcov')
+C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu e
+> t al. (2011)/full/table4_results.xls
+dir : seeout
+
+. 
+. * Column 8: GMM (Arellano-Bond)
+. di _n "--- Table 4, Column 8: GMM ---"
+
+--- Table 4, Column 8: GMM ---
+
+. preserve
+
+. keep if year==1700 | year==1750 | year==1800 | year==1850 | year==1900
+(19 observations deleted)
+
+. replace year=year/50
+(95 real changes made)
+
+. sort id year
+
+. tsset id year
+
+Panel variable: id (strongly balanced)
+ Time variable: year, 34 to 38
+         Delta: 1 unit
+
+. 
+. xtabond2 urbrate L.urbrate fpresence1800 fpresence1850 fpresence1900 yr* if w
+> estelbe==1 ///
+>     [aweight=totalpop1750], gmm(L.urbrate) iv(yr* fpresence1800 fpresence1850
+>  fpresence1900) ///
+>     robust noleveleq
+Favoring space over speed. To switch, type or click on mata: mata set matafavor
+>  speed, perm.
+yr1700 dropped due to collinearity
+yr1800 dropped due to collinearity
+yr1875 dropped due to collinearity
+(sum of weights is 23189638.9)
+Warning: Two-step estimated covariance matrix of moments is singular.
+  Using a generalized inverse to calculate robust weighting matrix for Hansen t
+> est.
+  Difference-in-Sargan/Hansen statistics may be negative.
+
+Dynamic panel-data estimation, one-step difference GMM
+------------------------------------------------------------------------------
+Group variable: id                              Number of obs      =        35
+Time variable : year                            Number of groups   =        13
+Number of instruments = 12                      Obs per group: min =         2
+Wald chi2(.)  =    452.49                                      avg =      2.69
+Prob > chi2   =         .                                      max =         3
+------------------------------------------------------------------------------
+             |               Robust
+     urbrate | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     urbrate |
+         L1. |  -.9548424   1.345441    -0.71   0.478    -3.591858    1.682173
+             |
+fpresen~1800 |   .0520156   .1262911     0.41   0.680    -.1955104    .2995415
+fpresen~1850 |    .371745   .3794154     0.98   0.327    -.3718955    1.115385
+fpresen~1900 |   1.249123   .7131578     1.75   0.080    -.1486411    2.646886
+      yr1750 |  -3.571861   3.065666    -1.17   0.244    -9.580457    2.436734
+      yr1850 |   4.056302     1.3167     3.08   0.002     1.475618    6.636986
+      yr1900 |   28.83656   4.036161     7.14   0.000     20.92583    36.74729
+------------------------------------------------------------------------------
+Instruments for first differences equation
+  Standard
+    D.(yr1700 yr1750 yr1800 yr1850 yr1875 yr1900 fpresence1800 fpresence1850
+    fpresence1900)
+  GMM-type (missing=0, separate instruments for each period unless collapsed)
+    L(1/4).L.urbrate
+------------------------------------------------------------------------------
+Arellano-Bond test for AR(1) in first differences: z =   1.48  Pr > z =  0.139
+Arellano-Bond test for AR(2) in first differences: z =   1.61  Pr > z =  0.107
+------------------------------------------------------------------------------
+Sargan test of overid. restrictions: chi2(5)    =  18.21  Prob > chi2 =  0.003
+  (Not robust, but not weakened by many instruments.)
+Hansen test of overid. restrictions: chi2(5)    =   6.44  Prob > chi2 =  0.266
+  (Robust, but weakened by many instruments.)
+
+
+. test fpresence1850 fpresence1900
+
+ ( 1)  fpresence1850 = 0
+ ( 2)  fpresence1900 = 0
+
+           chi2(  2) =    6.93
+         Prob > chi2 =    0.0312
+
+. local test=r(p)
+
+. outreg2 L.urbrate fpresence1800 fpresence1850 fpresence1900 ///
+>     using "$outdir/table4_results.xls", ctitle("Col 8: GMM") br noaster nocon
+> s ///
+>     addstat(Number of States, e(df_a)+1, p-value joint signif after 1800,`tes
+> t')
+check eret list for the existence of e(df_a)+1

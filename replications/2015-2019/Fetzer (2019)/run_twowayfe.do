@@ -19,7 +19,23 @@ set more off
 cap log close _all
 
 * ─── STEP 1: Load data ─────────────────────────────────────────────────────
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Fetzer (2019)/data-files"
+
+* --- Paths ---
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global datadir "$twfe_root/data/2015-2019/Fetzer (2019)/data-files"
+global outdir "$twfe_root/replications/2015-2019/Fetzer (2019)"
 
 use "$datadir/DISTRICT.dta", clear
 
@@ -415,12 +431,17 @@ gen temp = post2010 * totalimpact_finlosswap
 keep id ryr year temp pct_votes_UKIP post2010 totalimpact_finlosswap
 
 label variable id                      "G: Local authority district"
-label variable ryr                     "T: Region x year"
+label variable ryr                     "FE: Region x year"
 label variable temp                    "D: Post-austerity x fiscal impact (continuous)"
 label variable pct_votes_UKIP          "Y: UKIP vote share"
 
-local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Fetzer (2019)"
-save "`outdir'/panel_GTD.dta", replace
+rename id G
+rename year T
+rename temp D
+rename pct_votes_UKIP Y
+
+
+save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
 di "  G = id, T = ryr, D = temp"
 

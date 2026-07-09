@@ -10,8 +10,23 @@ set more off
 set maxvar 10000
 cap log close _all
 
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Acemoglu et al. (2011)/20100816_replication10"
-global outdir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu et al. (2011)/full"
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+cd ${twfe_root}
+* 
+global datadir "/data/2010-2012/Acemoglu et al. (2011)/20100816_replication10"
+global outdir  "/replications/2010-2012/Acemoglu et al. (2011)/full"
 
 * Install required packages
 cap which outreg2
@@ -25,7 +40,7 @@ if _rc ssc install ivreg2, replace
 cap which ranktest
 if _rc ssc install ranktest, replace
 
-cd "$datadir"
+cd "${twfe_root}$datadir"
 
 log using "$outdir/run_acemoglu_full.log", text replace
 

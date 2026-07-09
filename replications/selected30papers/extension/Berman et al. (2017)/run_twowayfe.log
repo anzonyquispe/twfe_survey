@@ -1,0 +1,822 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do run_twowayfe.do 
+
+. /*===========================================================================
+> ==
+>   TWFE Weight Decomposition: Berman et al. (2017)
+>   "This Mine is Mine! How Minerals Fuel Conflicts in Africa"
+>   AER 107(6), 1564-1610
+> 
+>   Main TWFE spec: Table 2, Column 2
+>   reg2hdfe acled main_lprice_mines, id1(cell) id2(it) [if sd_mines==0]
+>   Equivalent: reghdfe acled main_lprice_mines if sd_mines==0, absorb(cell it)
+> 
+>   Treatment: main_lprice_mines (continuous: log world price x mine indicator)
+>   Unit FE: cell (0.5 x 0.5 degree grid cell)
+>   Time FE: it (country x year)
+>   Outcome: acled (conflict indicator)
+>   Sample: cells with mine open entire period (sd_mines == 0)
+>   SE: Spatial HAC (Conley) — replicated here with cluster(cell) for compariso
+> n
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. set matsize 10000
+set matsize ignored.
+    Matrix sizes are no longer limited by c(matsize) in modern Statas.
+    Matrix sizes are now limited by edition of Stata.  See limits for more
+    details.
+
+. 
+. * --- STEP 1: Load and prepare data ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 1: DATA PREPARATION"
+  STEP 1: DATA PREPARATION
+
+. di "============================================================"
+============================================================
+
+. 
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Berman et al. (2017)/20150774_data"
+
+. 
+. use "$datadir/Data/BCRT_baseline.dta", clear
+
+. 
+. di "Raw obs: " _N
+Raw obs: 144690
+
+. 
+. * Drop diamonds and tantalum (as in baseline Table 2)
+. drop if mainmineral == "diamond" | mainmineral == "tantalum"
+(588 observations deleted)
+
+. di "After dropping diamond/tantalum: " _N
+After dropping diamond/tantalum: 144102
+
+. 
+. * Restrict to cells with mine open entire period (Col 2 condition)
+. keep if sd_mines == 0
+(1,568 observations deleted)
+
+. di "After sd_mines == 0: " _N
+After sd_mines == 0: 142534
+
+. 
+. * Check key variables
+. di _n "--- Key variables ---"
+
+--- Key variables ---
+
+. cap ds cell it year acled main_lprice_mines sd_mines
+
+. if _rc == 0 di "All key variables found"
+All key variables found
+
+. else {
+.     di "MISSING variables. Available:"
+.     ds *cell* *it* *year* *acled* *lprice* *mines*
+. }
+
+. 
+. * Panel structure
+. qui tab cell
+
+. local n_cells = r(r)
+
+. qui tab it
+
+. local n_it = r(r)
+
+. qui tab year
+
+. local n_years = r(r)
+
+. di "Cells: " `n_cells'
+Cells: 10181
+
+. di "Country-years (it): " `n_it'
+Country-years (it): 728
+
+. di "Years: " `n_years'
+Years: 14
+
+. 
+. di _n "--- Treatment: main_lprice_mines ---"
+
+--- Treatment: main_lprice_mines ---
+
+. sum main_lprice_mines, detail
+
+               $\ln$ price $\times$ mines $>0$
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs             142,296
+25%            0              0       Sum of wgt.     142,296
+
+50%            0                      Mean           .0850641
+                        Largest       Std. dev.      1.079157
+75%            0       17.64027
+90%            0       17.64027       Variance        1.16458
+95%            0       17.64027       Skewness       13.91832
+99%            0       17.64027       Kurtosis       204.1462
+
+. 
+. di _n "--- Outcome: acled ---"
+
+--- Outcome: acled ---
+
+. sum acled, detail
+
+                 Conflict incidence (Acled)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs             142,534
+25%            0              0       Sum of wgt.     142,534
+
+50%            0                      Mean           .0543169
+                        Largest       Std. dev.      .2266427
+75%            0              1
+90%            0              1       Variance       .0513669
+95%            1              1       Skewness       3.932928
+99%            1              1       Kurtosis       16.46792
+
+. 
+. * --- STEP 2: Replicate Table 2, Col 2 ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 2: TABLE 2, COL 2 REPLICATION"
+  STEP 2: TABLE 2, COL 2 REPLICATION
+
+. di "  reghdfe acled main_lprice_mines, absorb(cell it) vce(cl cell)"
+  reghdfe acled main_lprice_mines, absorb(cell it) vce(cl cell)
+
+. di "============================================================"
+============================================================
+
+. 
+. reghdfe acled main_lprice_mines, absorb(cell it) vce(cluster cell)
+(dropped 14 singleton observations)
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =    142,282
+Absorbing 2 HDFE groups                           F(   1,  10162) =      14.04
+Statistics robust to heteroskedasticity           Prob > F        =     0.0002
+                                                  R-squared       =     0.4231
+                                                  Adj R-squared   =     0.3754
+                                                  Within R-sq.    =     0.0003
+Number of clusters (cell)    =     10,163         Root MSE        =     0.1786
+
+                              (Std. err. adjusted for 10,163 clusters in cell)
+------------------------------------------------------------------------------
+             |               Robust
+       acled | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+main_lpric~s |   .0716129   .0191137     3.75   0.000     .0341462    .1090796
+       _cons |    .047878   .0016261    29.44   0.000     .0446906    .0510654
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        cell |     10163       10163           0    *|
+          it |       714           1         713     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. local beta_t2c2 = _b[main_lprice_mines]
+
+. local se_t2c2   = _se[main_lprice_mines]
+
+. local n_t2c2    = e(N)
+
+. local r2_t2c2   = e(r2)
+
+. 
+. di _n "--- Table 2 Col 2 Results ---"
+
+--- Table 2 Col 2 Results ---
+
+. di "  beta(main_lprice_mines) = " %12.6f `beta_t2c2'
+  beta(main_lprice_mines) =     0.071613
+
+. di "  se(main_lprice_mines)   = " %12.6f `se_t2c2'
+  se(main_lprice_mines)   =     0.019114
+
+. di "  N                       = " `n_t2c2'
+  N                       = 142282
+
+. di "  NOTE: SEs differ from paper (cluster vs spatial HAC)"
+  NOTE: SEs differ from paper (cluster vs spatial HAC)
+
+. 
+. * --- STEP 3: twowayfeweights ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION"
+  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di "  G = cell, T = it, D = main_lprice_mines"
+  G = cell, T = it, D = main_lprice_mines
+
+. di "============================================================"
+============================================================
+
+. 
+. * --- 3a. feTR ---
+. di _n "--- feTR decomposition ---"
+
+--- feTR decomposition ---
+
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights acled cell it main_lprice_mines, type(feTR) summa
+> ry_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.0716, estimates a weighted sum of 1064 AT
+> Ts. 
+416 ATTs receive a positive weight, and 648 receive a negative weight.
+------------------------------------------------
+Treat. var: main_lpric~s# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        416         10.6207     
+Negative weights        648         -9.6207     
+------------------------------------------------
+Total                   1064        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    0.0716
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.0030
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,
+> t) cells:    0.0033
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
+
+. local twfe_rc = _rc
+
+. 
+. local fetr_ok = 0
+
+. local fetr_beta = .
+
+. local fetr_npos = .
+
+. local fetr_nneg = .
+
+. local fetr_sumpos = .
+
+. local fetr_sumneg = .
+
+. local fetr_sens1 = .
+
+. local fetr_sens2 = .
+
+. 
+. if `twfe_rc' == 0 {
+.     local fetr_ok = 1
+.     cap local fetr_beta    = e(beta)
+.     cap local fetr_npos    = el(e(M),1,1)
+.     cap local fetr_nneg    = el(e(M),2,1)
+.     cap local fetr_sumpos  = el(e(M),1,2)
+.     cap local fetr_sumneg  = el(e(M),2,2)
+.     cap local fetr_sens1   = e(lb_se_te)
+.     cap local fetr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     di "  twowayfeweights returned rc=`twfe_rc', trying fallback..."
+.     cap local fetr_beta    = scalar(beta)
+.     cap local fetr_npos    = scalar(nplus)
+.     cap local fetr_nneg    = scalar(nminus)
+.     cap local fetr_sumpos  = scalar(sumplus)
+.     cap local fetr_sumneg  = scalar(summinus)
+.     if `fetr_npos' != . & `fetr_nneg' != . {
+.         local fetr_ok = 1
+.         di "  Fallback OK"
+.     }
+.     else {
+.         di "  Fallback FAILED"
+.     }
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     local fetr_ntot = `fetr_npos' + `fetr_nneg'
+.     if `fetr_ntot' > 0 {
+.         local fetr_pneg = 100 * `fetr_nneg' / `fetr_ntot'
+.     }
+.     else {
+.         local fetr_pneg = 0
+.     }
+.     di _n "--- feTR Summary ---"
+
+--- feTR Summary ---
+.     di "  beta       = " %12.6f `fetr_beta'
+  beta       =     0.071613
+.     di "  Pos weights: " %9.0f `fetr_npos'
+  Pos weights:       416
+.     di "  Neg weights: " %9.0f `fetr_nneg'
+  Neg weights:       648
+.     di "  % Negative:  " %5.1f `fetr_pneg' "%"
+  % Negative:   60.9%
+.     di "  Sum pos w:   " %9.4f `fetr_sumpos'
+  Sum pos w:     10.6207
+.     di "  Sum neg w:   " %9.4f `fetr_sumneg'
+  Sum neg w:     -9.6207
+.     if `fetr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fetr_sens1'
+  min sigma(D) for zero:     0.0030
+.     if `fetr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fetr_sens2'
+  min sigma(D) for opp:      0.0033
+. }
+
+. else {
+.     di "feTR FAILED completely with rc=`twfe_rc'"
+. }
+
+. 
+. * --- 3b. fdTR ---
+. di _n "--- fdTR decomposition ---"
+
+--- fdTR decomposition ---
+
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights acled cell it main_lprice_mines, type(fdTR) summa
+> ry_measures
+invalid syntax
+
+. local twfe_rc = _rc
+
+. 
+. local fdtr_ok = 0
+
+. local fdtr_beta = .
+
+. local fdtr_npos = .
+
+. local fdtr_nneg = .
+
+. local fdtr_sumpos = .
+
+. local fdtr_sumneg = .
+
+. local fdtr_sens1 = .
+
+. local fdtr_sens2 = .
+
+. 
+. if `twfe_rc' == 0 {
+.     local fdtr_ok = 1
+.     cap local fdtr_beta    = e(beta)
+.     cap local fdtr_npos    = el(e(M),1,1)
+.     cap local fdtr_nneg    = el(e(M),2,1)
+.     cap local fdtr_sumpos  = el(e(M),1,2)
+.     cap local fdtr_sumneg  = el(e(M),2,2)
+.     cap local fdtr_sens1   = e(lb_se_te)
+.     cap local fdtr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     di "  twowayfeweights fdTR returned rc=`twfe_rc', trying fallback..."
+  twowayfeweights fdTR returned rc=198, trying fallback...
+.     cap local fdtr_beta    = scalar(beta)
+.     cap local fdtr_npos    = scalar(nplus)
+.     cap local fdtr_nneg    = scalar(nminus)
+.     cap local fdtr_sumpos  = scalar(sumplus)
+.     cap local fdtr_sumneg  = scalar(summinus)
+.     if `fdtr_npos' != . & `fdtr_nneg' != . {
+.         local fdtr_ok = 1
+.         di "  Fallback OK"
+.     }
+.     else {
+.         di "  Fallback FAILED"
+  Fallback FAILED
+.     }
+. }
+
+. 
+. if `fdtr_ok' == 1 {
+.     local fdtr_ntot = `fdtr_npos' + `fdtr_nneg'
+.     if `fdtr_ntot' > 0 {
+.         local fdtr_pneg = 100 * `fdtr_nneg' / `fdtr_ntot'
+.     }
+.     else {
+.         local fdtr_pneg = 0
+.     }
+.     di _n "--- fdTR Summary ---"
+.     di "  beta       = " %12.6f `fdtr_beta'
+.     di "  Pos weights: " %9.0f `fdtr_npos'
+.     di "  Neg weights: " %9.0f `fdtr_nneg'
+.     di "  % Negative:  " %5.1f `fdtr_pneg' "%"
+.     di "  Sum pos w:   " %9.4f `fdtr_sumpos'
+.     di "  Sum neg w:   " %9.4f `fdtr_sumneg'
+.     if `fdtr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fdtr_sens1'
+.     if `fdtr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fdtr_sens2'
+. }
+
+. else {
+.     di "fdTR FAILED completely with rc=`twfe_rc'"
+fdTR FAILED completely with rc=198
+. }
+
+. 
+. * --- STEP 4: LaTeX output ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 4: LaTeX OUTPUT"
+  STEP 4: LaTeX OUTPUT
+
+. di "============================================================"
+============================================================
+
+. 
+. local texdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015
+> -2019/Berman et al. (2017)"
+
+. 
+. * --- Table replication ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table2_replication.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Berm
+    > an et al. (2017)/table2_replication.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Replication of Berman et al.\ (2017), Table 2, C
+> olumn 2}" _n
+
+. file write texfile "\label{tab:berman_t2c2}" _n
+
+. file write texfile "\begin{tabular}{lc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & Conflict (ACLED) \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "Log price $\times$ mines & " %12.6f (`beta_t2c2') " \\" _
+> n
+
+. file write texfile " & (" %12.6f (`se_t2c2') ") \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "Cell FE & Yes \\" _n
+
+. file write texfile "Country $\times$ Year FE & Yes \\" _n
+
+. file write texfile "SE & Cluster (cell) \\" _n
+
+. file write texfile "N & " %9.0fc (`n_t2c2') " \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\multicolumn{2}{l}{\footnotesize Note: Paper uses Conley 
+> spatial HAC SEs.} \\" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table2_replication.tex"
+  Saved: table2_replication.tex
+
+. 
+. * --- twowayfeweights table ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table_twowayfeweights.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Berm
+    > an et al. (2017)/table_twowayfeweights.tex not found)
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{TWFE Weight Decomposition: Berman et al.\ (2017)
+> }" _n
+
+. file write texfile "\label{tab:berman_weights}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & feTR & fdTR \\" _n
+
+. file write texfile "\hline" _n
+
+. 
+. * beta
+. if `fetr_ok' == 1 {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & " %12.6f (`fetr_beta') " & "
+. }
+
+. else {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %12.6f (`fdtr_beta') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Positive weights
+. if `fetr_ok' == 1 {
+.     file write texfile "Positive weights & " %9.0f (`fetr_npos') " & "
+. }
+
+. else {
+.     file write texfile "Positive weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.0f (`fdtr_npos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Negative weights
+. if `fetr_ok' == 1 {
+.     file write texfile "Negative weights & " %9.0f (`fetr_nneg') " & "
+. }
+
+. else {
+.     file write texfile "Negative weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.0f (`fdtr_nneg') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * % Negative
+. if `fetr_ok' == 1 {
+.     file write texfile "\% Negative & " %5.1f (`fetr_pneg') "\% & "
+. }
+
+. else {
+.     file write texfile "\% Negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %5.1f (`fdtr_pneg') "\% \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Sum weights
+. if `fetr_ok' == 1 {
+.     file write texfile "$\Sigma$ positive & " %9.4f (`fetr_sumpos') " & "
+. }
+
+. else {
+.     file write texfile "$\Sigma$ positive & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.4f (`fdtr_sumpos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. if `fetr_ok' == 1 & `fetr_sumneg' != . {
+.     file write texfile "$\Sigma$ negative & $-$" %9.4f (abs(`fetr_sumneg')) "
+>  & "
+. }
+
+. else {
+.     file write texfile "$\Sigma$ negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 & `fdtr_sumneg' != . {
+.     file write texfile "$-$" %9.4f (abs(`fdtr_sumneg')) " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. file write texfile "\hline" _n
+
+. 
+. * Summary measures
+. if `fetr_sens1' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$
+>  for $\beta_{fe}$ and $\Delta_{TR}=0$: " %9.4f (`fetr_sens1') "} \\" _n
+. }
+
+. if `fetr_sens2' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$
+>  for opposite sign: " %9.4f (`fetr_sens2') "} \\" _n
+. }
+
+. if `fetr_sens1' == . & `fetr_ok' == 1 {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize Sensitivity measures
+>  unavailable.} \\" _n
+. }
+
+. 
+. file write texfile "\hline" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Spec: cell FE + country$
+> \times$year FE. Treatment: log(price)$\times$mines (continuous).} \\" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Sample: cells with mine 
+> open entire period ($sd\_mines = 0$).} \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table_twowayfeweights.tex"
+  Saved: table_twowayfeweights.tex
+
+. 
+. * --- Master LaTeX ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/berman_tables.tex", write replace
+(file
+    C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Berm
+    > an et al. (2017)/berman_tables.tex not found)
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage[margin=1in]{geometry}" _n
+
+. file write texfile "\usepackage{booktabs,caption,amsfonts}" _n
+
+. file write texfile "\begin{document}" _n
+
+. file write texfile "\section*{Berman et al.\ (2017): TWFE Weight Decompositio
+> n}" _n
+
+. file write texfile "\subsection*{Paper: ``This Mine is Mine!'', AER 107(6)}" 
+> _n
+
+. file write texfile _n
+
+. file write texfile "\input{table2_replication}" _n
+
+. file write texfile _n
+
+. file write texfile "\input{table_twowayfeweights}" _n
+
+. file write texfile _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: berman_tables.tex"
+  Saved: berman_tables.tex
+
+. 
+. * --- STEP 5: Summary ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  FINAL SUMMARY: Berman et al. (2017)"
+  FINAL SUMMARY: Berman et al. (2017)
+
+. di "============================================================"
+============================================================
+
+. di "  Table 2, Col 2"
+  Table 2, Col 2
+
+. di "  Spec: reghdfe acled main_lprice_mines if sd_mines==0, absorb(cell it)"
+  Spec: reghdfe acled main_lprice_mines if sd_mines==0, absorb(cell it)
+
+. di "  beta(main_lprice_mines) = " %12.6f `beta_t2c2'
+  beta(main_lprice_mines) =     0.071613
+
+. di "  se(main_lprice_mines)   = " %12.6f `se_t2c2'
+  se(main_lprice_mines)   =     0.019114
+
+. di "  N                       = " `n_t2c2'
+  N                       = 142282
+
+. di "  Panel: " `n_cells' " cells x " `n_it' " country-years (" `n_years' " ye
+> ars)"
+  Panel: 10181 cells x 728 country-years (14 years)
+
+. di "------------------------------------------------------------"
+------------------------------------------------------------
+
+. if `fetr_ok' {
+.     di "  feTR: " %9.0f `fetr_npos' " pos, " %9.0f `fetr_nneg' " neg (" %5.1f
+>  `fetr_pneg' "% negative)"
+  feTR:       416 pos,       648 neg ( 60.9% negative)
+.     di "        Sum pos: " %9.4f `fetr_sumpos' "  Sum neg: " %9.4f `fetr_sumn
+> eg'
+        Sum pos:   10.6207  Sum neg:   -9.6207
+. }
+
+. else {
+.     di "  feTR: FAILED"
+. }
+
+. if `fdtr_ok' {
+.     di "  fdTR: " %9.0f `fdtr_npos' " pos, " %9.0f `fdtr_nneg' " neg (" %5.1f
+>  `fdtr_pneg' "% negative)"
+.     di "        Sum pos: " %9.4f `fdtr_sumpos' "  Sum neg: " %9.4f `fdtr_sumn
+> eg'
+. }
+
+. else {
+.     di "  fdTR: FAILED"
+  fdTR: FAILED
+. }
+
+. di "============================================================"
+============================================================
+
+. 
+. * Done

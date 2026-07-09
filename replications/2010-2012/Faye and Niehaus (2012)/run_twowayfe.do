@@ -23,9 +23,24 @@ set more off
 set matsize 5000
 cap log close _all
 
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Faye and Niehaus (2012)/data_analysis/data"
-global outdir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Faye and Niehaus (2012)"
-global latexdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2010-2012/Faye and Niehaus (2012)"
+
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global datadir "$twfe_root/data/2010-2012/Faye and Niehaus (2012)/data_analysis/data"
+global outdir  "$twfe_root/replications/2010-2012/Faye and Niehaus (2012)"
+global latexdir "$twfe_root/latex/2010-2012/Faye and Niehaus (2012)"
 
 * NOTE: log is auto-created by Stata -b mode (run_twowayfe.log)
 
@@ -550,6 +565,14 @@ label variable pair_id   "G: Donor x recipient pair ID"
 label variable year      "T: Year (1975-2003)"
 label variable i_elecex  "D: Election (binary)"
 label variable oda       "Y: ODA flows"
+
+rename pair_id G
+rename i_elecex D
+rename year T
+rename oda Y 
+egen aux = group(T)
+replace T = aux
+drop aux
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

@@ -1,0 +1,108 @@
+----------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/anzony.quisperojas/Documents/GitHub/twfe_survey/data/2010-2012
+> /Bagwell and Staiger (2011)/run_twowayfe.log
+  log type:  text
+ opened on:  16 May 2026, 11:21:34
+
+. 
+. * Install packages if needed
+. cap which estout
+
+. if _rc ssc install estout, replace
+
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1: IMPORT AND CLEAN DATA
+> ==============================================================================*/
+. 
+. import delimited using "$datadir/MainData.txt", delimiter(" ") clear
+(encoding automatically selected: ISO-8859-2)
+(14 vars, 79,888 obs)
+
+. 
+. * Check variable names
+. desc
+
+Contains data
+ Observations:        79,888                  
+    Variables:            14                  
+----------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+----------------------------------------------------------------------------------
+product         long    %12.0g                Product
+country         str10   %10s                  Country
+mfn             str17   %17s                  MFN
+bnd             str6    %9s                   BND
+wmfn            str17   %17s                  WMFN
+wbnd            str6    %9s                   WBND
+import          str16   %16s                  Import
+price2          str18   %18s                  Price2
+price3          str19   %19s                  Price3
+price4          str19   %19s                  Price4
+price6          str20   %20s                  Price6
+mismatch        str16   %16s                  MisMatch
+herf            str18   %18s                  Herf
+share           str20   %20s                  
+----------------------------------------------------------------------------------
+Sorted by: 
+     Note: Dataset has changed since last saved.
+
+. 
+. * Handle NA values - some columns may be imported as strings due to "NA"
+. * Force destring all numeric variables
+. foreach var of varlist mfn bnd wmfn wbnd import mismatch herf share {
+  2.     cap confirm string variable `var'
+  3.     if !_rc {
+  4.         destring `var', replace force
+  5.     }
+  6. }
+mfn: contains nonnumeric characters; replaced as double
+(3515 missing values generated)
+bnd: contains nonnumeric characters; replaced as double
+(3474 missing values generated)
+wmfn: contains nonnumeric characters; replaced as double
+(22989 missing values generated)
+wbnd: contains nonnumeric characters; replaced as double
+(23017 missing values generated)
+import: contains nonnumeric characters; replaced as double
+(35076 missing values generated)
+mismatch: contains nonnumeric characters; replaced as double
+(35076 missing values generated)
+herf: contains nonnumeric characters; replaced as double
+(38139 missing values generated)
+share: contains nonnumeric characters; replaced as double
+(304 missing values generated)
+
+. 
+end of do-file
+
+. do "/var/folders/gb/56xms55d53n734tnp7xq55bh0000gq/T//SD07020.000000"
+
+. * =============================================================================
+. * Antecol, Bedard & Stearns (2018)
+. * Equal but Inequitable: Who Benefits from Gender-Neutral
+. *   Tenure Clock Stopping Policies?
+. * AER, 108(9), 2420-2441
+. * FULL REPLICATION: Tables 2-9 and Figures 1-2
+. * =============================================================================
+. 
+. clear all
+
+. set more off
+
+. set matsize 8000
+set matsize ignored.
+    Matrix sizes are no longer limited by c(matsize) in modern Statas.  Matrix
+    sizes are now limited by edition of Stata.  See limits for more details.
+
+. set maxvar 10000
+
+
+. cap log close _all

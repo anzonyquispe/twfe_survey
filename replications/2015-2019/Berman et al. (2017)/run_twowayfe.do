@@ -25,7 +25,25 @@ di _n "============================================================"
 di "  STEP 1: DATA PREPARATION"
 di "============================================================"
 
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Berman et al. (2017)/20150774_data"
+
+* --- Paths ---
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global datadir "$twfe_root/data/2015-2019/Berman et al. (2017)/20150774_data"
+global outdir   "$twfe_root/replications/2015-2019/Berman et al. (2017)"
+
+
 
 use "$datadir/Data/BCRT_baseline.dta", clear
 
@@ -429,16 +447,27 @@ di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "============================================================"
 
 use "$datadir/Data/BCRT_baseline.dta", clear
+drop if mainmineral == "diamond" | mainmineral == "tantalum"
 keep if sd_mines == 0
 keep cell it year country_nb main_lprice_mines acled nb_acled
 
 label variable cell              "G: Grid cell (0.5x0.5 degree)"
-label variable it                "T: Country x year"
+label variable it                "FE: Country x year"
+label variable year                "TIME: year"
 label variable main_lprice_mines "D: Log world price x mine indicator (continuous)"
 label variable acled             "Y: Conflict indicator"
 
-local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Berman et al. (2017)"
-save "`outdir'/panel_GTD.dta", replace
+rename cell G
+rename it ctryXyear
+rename year T
+rename acled Y
+rename main_lprice_mines D
+egen aux = group(T)
+replace T = aux
+drop aux
+
+
+save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
 di "  G = cell, T = it, D = main_lprice_mines"
 

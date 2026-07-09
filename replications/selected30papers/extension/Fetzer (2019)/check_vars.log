@@ -1,0 +1,229 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do check_vars.do 
+
+. /*===========================================================================
+> ==
+>   CHECK_VARS: Fetzer (2019)
+>   "Did Austerity Cause Brexit?"
+>   AER 109(11), 3849-3886
+> 
+>   Purpose: Verify data structure and key variables for TWFE decomposition
+>   Main TWFE spec: Table 1, Panel A, Column 1
+>   reghdfe pct_votes_UKIP temp, absorb(id ryr) vce(cl id) nocons
+>   where temp = post2010 * totalimpact_finlosswap
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Fetzer (2019)/data-files"
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  DATASET: DISTRICT.dta"
+  DATASET: DISTRICT.dta
+
+. di "============================================================"
+============================================================
+
+. use "$datadir/DISTRICT.dta", clear
+(Written by R.              )
+
+. di "Observations: " _N
+Observations: 6091
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Fetzer (2019)/data-files/DISTRICT.dta
+ Observations:         6,091                  Written by R.              
+    Variables:           245                  22 Jun 2019 23:59
+Sorted by: 
+
+. 
+. di _n "--- Key variables ---"
+
+--- Key variables ---
+
+. cap ds id year ryr post2010 pct_votes_UKIP UKIPPct totalimpact_finlosswap
+
+. if _rc == 0 {
+.     di "All key variables found"
+All key variables found
+. }
+
+. else {
+.     di "MISSING key variables!"
+.     ds *id* *year* *ryr* *post* *total* *UKIP* *ukip*
+. }
+
+. 
+. di _n "--- Panel structure ---"
+
+--- Panel structure ---
+
+. qui tab id
+
+. di "Districts (id): " r(r)
+Districts (id): 380
+
+. qui tab year
+
+. di "Years: " r(r)
+Years: 16
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2000 |        380        6.25        6.25
+       2001 |        380        6.25       12.50
+       2002 |        380        6.25       18.75
+       2003 |        380        6.25       25.00
+       2004 |        380        6.25       31.25
+       2005 |        380        6.25       37.50
+       2006 |        380        6.25       43.75
+       2007 |        380        6.25       50.00
+       2008 |        380        6.25       56.25
+       2009 |        380        6.25       62.50
+       2010 |        380        6.25       68.75
+       2011 |        380        6.25       75.00
+       2012 |        380        6.25       81.25
+       2013 |        380        6.25       87.50
+       2014 |        380        6.25       93.75
+       2015 |        380        6.25      100.00
+------------+-----------------------------------
+      Total |      6,080      100.00
+
+. 
+. di _n "--- ryr (region x year FE) ---"
+
+--- ryr (region x year FE) ---
+
+. cap tab ryr
+
+. if _rc != 0 {
+.     di "ryr variable not found, checking alternatives..."
+.     cap ds *ryr* *region* *gor*
+. }
+
+. else {
+.     qui tab ryr
+.     di "Region-year groups: " r(r)
+Region-year groups: 176
+. }
+
+. 
+. di _n "--- Treatment: post2010 ---"
+
+--- Treatment: post2010 ---
+
+. cap tab post2010, missing
+
+. if _rc != 0 di "post2010 not found"
+
+. 
+. di _n "--- Treatment: totalimpact_finlosswap ---"
+
+--- Treatment: totalimpact_finlosswap ---
+
+. cap sum totalimpact_finlosswap, detail
+
+. if _rc != 0 di "totalimpact_finlosswap not found"
+
+. 
+. di _n "--- Outcome: pct_votes_UKIP ---"
+
+--- Outcome: pct_votes_UKIP ---
+
+. cap sum pct_votes_UKIP, detail
+
+. if _rc != 0 di "pct_votes_UKIP not found"
+
+. 
+. di _n "--- Outcome: UKIPPct ---"
+
+--- Outcome: UKIPPct ---
+
+. cap sum UKIPPct, detail
+
+. if _rc != 0 di "UKIPPct not found"
+
+. 
+. di _n "--- Create temp = post2010 * totalimpact_finlosswap ---"
+
+--- Create temp = post2010 * totalimpact_finlosswap ---
+
+. cap gen temp = post2010 * totalimpact_finlosswap
+
+. if _rc == 0 {
+.     sum temp, detail
+
+                            temp
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               6,048
+25%            0              0       Sum of wgt.       6,048
+
+50%            0                      Mean           139.7255
+                        Largest       Std. dev.      218.0147
+75%          329            914
+90%          505            914       Variance       47530.43
+95%          568            914       Skewness       1.128113
+99%          678            914       Kurtosis        2.73085
+.     count if temp != 0 & !missing(temp)
+  1,890
+.     di "Non-zero treatment obs: " r(N)
+Non-zero treatment obs: 1890
+. }
+
+. else {
+.     di "Cannot create temp variable"
+. }
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  CONCLUSION"
+  CONCLUSION
+
+. di "============================================================"
+============================================================
+
+. 
+. * Done

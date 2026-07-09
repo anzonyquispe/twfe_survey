@@ -33,10 +33,28 @@ clear all
 set more off
 cap log close _all
 
+
+
 * --- Paths ---
-global datadir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Burgess et al. (2015)/AER_2013_1031_replication/main-tables-figures"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Burgess et al. (2015)"
-global texdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2015-2019/Burgess et al. (2015)"
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
+
+* --- Paths ---
+global datadir  "$twfe_root/data/2015-2019/Burgess et al. (2015)/AER_2013_1031_replication/main-tables-figures"
+global outdir   "$twfe_root/replications/2015-2019/Burgess et al. (2015)"
+global texdir   "$twfe_root/latex/2015-2019/Burgess et al. (2015)"
 
 cap mkdir "$texdir"
 
@@ -908,6 +926,11 @@ label variable distnum        "G: District identifier"
 label variable year           "T: Year"
 label variable president      "D: President's coethnic (non-binary)"
 label variable exp_dens_share "Y: Road expenditure density share"
+
+rename year T
+rename distnum G
+rename president D
+rename exp_dens_share Y
 
 save "$outdir/panel_GTD_table1.dta", replace
 save "$outdir/panel_GTD.dta", replace

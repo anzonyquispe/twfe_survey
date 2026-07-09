@@ -22,9 +22,23 @@ set more off
 set matsize 2000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Duranton and Turner (2011)"
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global paperdir "$twfe_root/data/2010-2012/Duranton and Turner (2011)"
 global datadir  "$paperdir/data"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Duranton and Turner (2011)"
+global outdir   "$twfe_root/replications/2010-2012/Duranton and Turner (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -651,6 +665,11 @@ label variable msa        "G: MSA identifier"
 label variable year       "T: Decade (1983/1993/2003)"
 label variable Dl_ln_IH   "D: Delta log lane-km IH"
 label variable Dl_vmt_IH  "Y: Delta log VKT IH"
+
+rename msa G
+rename year T
+rename Dl_ln_IH D
+rename Dl_vmt_IH Y
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

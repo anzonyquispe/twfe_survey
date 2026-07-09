@@ -19,7 +19,24 @@ set more off
 cap log close _all
 
 * ─── STEP 1: Load data ─────────────────────────────────────────────────────
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/Kaur (2019)/data/4.Replication-files"
+* --- Paths ---
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
+global datadir "$twfe_root/data/2015-2019/Kaur (2019)/data/4.Replication-files"
+global outdir "$twfe_root/replications/2015-2019/Kaur (2019)"
+
 
 use "$datadir/data_wb_replication.dta", clear
 
@@ -433,15 +450,19 @@ di "============================================================"
 
 use "$datadir/data_wb_replication.dta", clear
 
-keep dist year amons80 bmons20 lwage regionyr
+keep dist year amons80 bmons20 lwage regionyr bmons20 lamons80 lbmons20 regionyr
 
 label variable dist    "G: District (240 units)"
 label variable year    "T: Year (1956-1987)"
 label variable amons80 "D: Monsoon rainfall > 80th pctile (binary)"
 label variable lwage   "Y: Log daily agricultural wage"
 
-local outdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015-2019/Kaur (2019)"
-save "`outdir'/panel_GTD.dta", replace
+rename lwage Y
+rename dist G
+rename year T
+rename amons80 D
+
+save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
 di "  G = dist, T = year, D = amons80"
 

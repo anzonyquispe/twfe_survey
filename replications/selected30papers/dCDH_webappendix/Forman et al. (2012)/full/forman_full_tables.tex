@@ -1,0 +1,72 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,adjustbox}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Forman, Goldfarb \& Greenstein (2012)}\\
+{\large The Internet and Local Wages: A Puzzle}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 102(1), 556--575}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Full replication.
+Tables 1--5 replicated from the original do-file.
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 1 -- Summary Statistics}
+
+Summary statistics for all variables used in the analysis (year 2000 sample).
+
+\vspace{1em}
+\input{table1_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 2 -- Main Effects: OLS}
+
+OLS regressions of county-level wage growth (2000--2006) on
+advanced Internet investment. Column 1 has no controls,
+column 2 adds full controls, column 3 adds PC and shallow Internet.
+
+\vspace{1em}
+\input{table2_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 3 -- Heterogeneous Effects}
+
+Interactions of advanced Internet with county characteristics:
+high income, education, industry concentration, and population.
+
+\vspace{1em}
+\input{table3_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 4 -- IV Regressions}
+
+Instrumental variables estimates using: other counties' programmers,
+Bartik employment shock, and ARPANET nodes as instruments.
+
+\vspace{1em}
+\input{table4_full}
+
+%% ====================================================================
+\clearpage
+\section{Table 5 -- Additional Outcomes}
+
+Employment growth (2000--2006) and wage growth over different
+time periods (1999--2005).
+
+\vspace{1em}
+\input{table5_full}
+
+\end{document}

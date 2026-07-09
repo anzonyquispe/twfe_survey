@@ -23,9 +23,22 @@ clear all
 set more off
 cap log close _all
 
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
 * --- Paths ---
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Algan and Cahuc (2010)"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Algan and Cahuc (2010)"
+global paperdir "$twfe_root/data/2010-2012/Algan and Cahuc (2010)"
+global outdir   "$twfe_root/replications/2010-2012/Algan and Cahuc (2010)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -47,55 +60,55 @@ which twowayfeweights
 use "$paperdir/AER_MACRO.dta", clear
 
 * Keep 1935-2000 sample
-keep if period19352000 == 1
-
-di _n "============================================================"
-di "  STEP 1: REPLICATE FIGURE 4"
-di "============================================================"
-tab cty period
-summarize trustgss gdpk_diffswd_good
-
-* Generate first-differences (matching README lines 370-375)
-sort cty period
-gen gdpk_lag1     = gdpk_diffswd_good[_n-1] if cty==cty[_n-1]
-gen trustgss_lag1 = trustgss[_n-1]           if cty==cty[_n-1]
-gen change_trust  = trustgss - trustgss_lag1           if period==2000
-gen change_gdpk   = gdpk_diffswd_good - gdpk_lag1     if period==2000
-
-* Show data for figure
-list cty change_trust change_gdpk if period==2000, clean noobs
-
-* --- Figure 4 regression ---
-di _n "============================================================"
-di "  FIGURE 4: reg change_gdpk change_trust"
-di "  Expected: coef = 32,238 | R2 = 0.43 | N = 24"
-di "============================================================"
-
-reg change_gdpk change_trust if period==2000 & Nsample1935==0
-est store fig4
-
-* Add extra stats for LaTeX
-estadd local period "1935--2000" : fig4
-estadd local countries "24" : fig4
-estadd local spec "First Differences" : fig4
-
-* Verify match
-di _n "  VERIFICATION:"
-di "  Coef:  " %12.1f _b[change_trust]   "  (paper: 32,238)"
-di "  R2:    " %12.4f e(r2)              "  (paper: 0.43)"
-di "  N:     " e(N)                       "  (paper: 24)"
-
-* --- Generate scatter plot (Figure 4) ---
-twoway (scatter change_gdpk change_trust if Nsample1935==0 & period==2000, ///
-        mlabel(cty) mlabsize(vsmall) msize(small) mcolor(navy)) ///
-       (lfit change_gdpk change_trust if Nsample1935==0 & period==2000, ///
-        lcolor(cranberry) lwidth(medium)), ///
-    ytitle("Change in Income relative to Sweden: 2000-1935", size(small)) ///
-    xtitle("Change in Inherited Trust: 2000-1935", size(small)) ///
-    title("Figure 4: Algan & Cahuc (2010)", size(medium)) ///
-    note("R{superscript:2} = 0.43, N = 24") ///
-    legend(off) scheme(s2color)
-graph export "$outdir/figure4.png", replace width(1400) height(1000)
+// keep if period19352000 == 1
+//
+// di _n "============================================================"
+// di "  STEP 1: REPLICATE FIGURE 4"
+// di "============================================================"
+// tab cty period
+// summarize trustgss gdpk_diffswd_good
+//
+// * Generate first-differences (matching README lines 370-375)
+// sort cty period
+// gen gdpk_lag1     = gdpk_diffswd_good[_n-1] if cty==cty[_n-1]
+// gen trustgss_lag1 = trustgss[_n-1]           if cty==cty[_n-1]
+// gen change_trust  = trustgss - trustgss_lag1           if period==2000
+// gen change_gdpk   = gdpk_diffswd_good - gdpk_lag1     if period==2000
+//
+// * Show data for figure
+// list cty change_trust change_gdpk if period==2000, clean noobs
+//
+// * --- Figure 4 regression ---
+// di _n "============================================================"
+// di "  FIGURE 4: reg change_gdpk change_trust"
+// di "  Expected: coef = 32,238 | R2 = 0.43 | N = 24"
+// di "============================================================"
+//
+// reg change_gdpk change_trust if period==2000 & Nsample1935==0
+// est store fig4
+//
+// * Add extra stats for LaTeX
+// estadd local period "1935--2000" : fig4
+// estadd local countries "24" : fig4
+// estadd local spec "First Differences" : fig4
+//
+// * Verify match
+// di _n "  VERIFICATION:"
+// di "  Coef:  " %12.1f _b[change_trust]   "  (paper: 32,238)"
+// di "  R2:    " %12.4f e(r2)              "  (paper: 0.43)"
+// di "  N:     " e(N)                       "  (paper: 24)"
+//
+// * --- Generate scatter plot (Figure 4) ---
+// twoway (scatter change_gdpk change_trust if Nsample1935==0 & period==2000, ///
+//         mlabel(cty) mlabsize(vsmall) msize(small) mcolor(navy)) ///
+//        (lfit change_gdpk change_trust if Nsample1935==0 & period==2000, ///
+//         lcolor(cranberry) lwidth(medium)), ///
+//     ytitle("Change in Income relative to Sweden: 2000-1935", size(small)) ///
+//     xtitle("Change in Inherited Trust: 2000-1935", size(small)) ///
+//     title("Figure 4: Algan & Cahuc (2010)", size(medium)) ///
+//     note("R{superscript:2} = 0.43, N = 24") ///
+//     legend(off) scheme(s2color)
+// graph export "$outdir/figure4.png", replace width(1400) height(1000)
 
 
 /*==============================================================================
@@ -451,12 +464,22 @@ di _n "============================================================"
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "============================================================"
 
+keep if period19352000 == 1
 keep cty_num period_num trustgss gdpk_diffswd_good
 
 label variable cty_num            "G: Country numeric ID"
 label variable period_num          "T: Period (1935/2000)"
 label variable trustgss            "D: Inherited trust (GSS)"
 label variable gdpk_diffswd_good  "Y: GDP per capita rel. Sweden"
+
+rename cty_num G
+rename period_num T
+rename trustgss D
+rename gdpk_diffswd_good Y
+egen aux = group(T)
+replace T = aux
+drop aux
+
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

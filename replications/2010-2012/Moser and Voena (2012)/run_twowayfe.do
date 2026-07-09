@@ -23,9 +23,25 @@ set more off
 set matsize 5000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Moser and Voena (2012)"
+
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
+global paperdir "$twfe_root/data/2010-2012/Moser and Voena (2012)"
 global datadir  "$paperdir/compulsory_licensing_replication"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Moser and Voena (2012)"
+global outdir   "$twfe_root/replications/2010-2012/Moser and Voena (2012)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -342,17 +358,20 @@ di "=============================================="
   Y = count_usa   (US patent count)
 ==============================================================================*/
 
-di _n "=============================================="
-di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
-di "=============================================="
+use "$datadir/chem_patents_maindataset.dta", clear
 
-keep class_id grntyr treat count_usa
+keep class_id grntyr treat count_usa count_for
 
 label variable class_id   "G: Patent class numeric ID"
 label variable grntyr     "T: Grant year (1875-1939)"
 label variable treat      "D: Licensed class (binary)"
 label variable count_usa  "Y: US patent count"
 
+rename class_id G
+rename grntyr T
+rename treat D
+rename count_usa Y
+rename count_for control
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
 di "  G = class_id, T = grntyr, D = treat"

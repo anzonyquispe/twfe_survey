@@ -1,0 +1,1070 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do run_twowayfe.do 
+
+. /*===========================================================================
+> ==
+>   TWFE Weight Decomposition: Suárez Serrato and Zidar (2016)
+>   "Who Benefits from State Corporate Tax Cuts? A Local Labor Markets
+>    Approach with Heterogeneous Firms"
+>   AER 106(9), 2582-2624
+> 
+>   Main TWFE spec: Table 4, Panel A, Column 1
+>   xi: reg E d_keeprate i.year i.fe_group [aw=epop], cluster(fips_state) r
+> 
+>   Treatment: d_keeprate (change in log net-of-business-tax rate, continuous)
+>   Unit FE: fe_group (state groupings)
+>   Time FE: year (decadal periods)
+>   Outcome: E (employment changes)
+>   Weights: epop (employment population)
+>   Clustering: fips_state
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. * ─── STEP 1: Load data ─────────────────────────────────────────────────────
+> ──
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Suárez Serrato and Zidar (2016)/AER-2014-1702_Replication_Files/Final-Tables-
+> and-Figures/dta/Tables"
+
+. 
+. use "$datadir/Table4.dta", clear
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 1: DATA EXPLORATION"
+  STEP 1: DATA EXPLORATION
+
+. di "============================================================"
+============================================================
+
+. di "Observations: " _N
+Observations: 1470
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Suárez Serrato and Zidar (2016)/AER-2014-1702_Replication_Files/Final-Tables
+> -and-Figures/dta/Tables/Table4.dta
+ Observations:         1,470                  
+    Variables:            14                  23 Feb 2016 14:26
+Sorted by: 
+
+. desc
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Suárez Serrato and Zidar (2016)/AER-2014-1702_Replication_Files/Final-Tables
+> -and-Figures/dta/Tables/Table4.dta
+ Observations:         1,470                  
+    Variables:            14                  23 Feb 2016 14:26
+                                              (_dta has notes)
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+year            float   %9.0g                 
+fips_state      double  %9.0g                 
+d_corp_ext      float   %9.0g                 Change in Other States' Taxes
+epop            float   %9.0g                 
+bartik          double  %9.0g                 Bartik
+dtotalexpendi~p float   %9.0g                 $ \Delta \ln $ Gov Expend/Capita
+d_keep_itc_st~e float   %9.0g                 $ \Delta $ State ITC
+fe_group        float   %9.0g                 
+E               float   %9.0g                 dest
+N               float   %9.0g                 dpop
+W               float   %9.0g                 dadjlwage
+R               float   %9.0g                 dadjklrent
+L               float   %9.0g                 demp
+d_keeprate      float   %9.0g                 $ \Delta \ln $
+                                                Net-of-Business-Tax Rate
+-------------------------------------------------------------------------------
+Sorted by: 
+
+. 
+. * Panel structure
+. di _n "--- Panel dimensions ---"
+
+--- Panel dimensions ---
+
+. qui tab fe_group
+
+. local n_groups = r(r)
+
+. di "Groups (fe_group): " `n_groups'
+Groups (fe_group): 13
+
+. qui tab year
+
+. local n_years = r(r)
+
+. di "Years:             " `n_years'
+Years:             3
+
+. tab year
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1990 |        490       33.33       33.33
+       2000 |        490       33.33       66.67
+       2010 |        490       33.33      100.00
+------------+-----------------------------------
+      Total |      1,470      100.00
+
+. 
+. * Check treatment variable
+. di _n "--- Treatment: d_keeprate ---"
+
+--- Treatment: d_keeprate ---
+
+. sum d_keeprate, detail
+
+           $ \Delta \ln $ Net-of-Business-Tax Rate
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.0234345      -.0283901
+ 5%    -.0195755      -.0278479
+10%    -.0164947      -.0270669       Obs               1,470
+25%    -.0117875      -.0267695       Sum of wgt.       1,470
+
+50%    -.0075244                      Mean          -.0082149
+                        Largest       Std. dev.      .0060903
+75%    -.0036894       .0117258
+90%    -.0013946       .0127141       Variance       .0000371
+95%    -.0003668       .0129934       Skewness      -.3668205
+99%     .0048972       .0131717       Kurtosis       3.431771
+
+. * Check if binary or continuous
+. qui count if d_keeprate == 0 | d_keeprate == 1
+
+. qui count
+
+. local pct_binary = .
+
+. cap {
+
+. di "  % obs that are 0 or 1: " %5.1f `pct_binary' "% (continuous if low)"
+  % obs that are 0 or 1:   0.0% (continuous if low)
+
+. 
+. * Outcomes
+. di _n "--- Outcomes ---"
+
+--- Outcomes ---
+
+. sum E N W R, detail
+
+                            dest
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.1220427      -.2301366
+ 5%    -.0662411      -.2122496
+10%    -.0342195      -.1779518       Obs               1,470
+25%     .0303648      -.1521577       Sum of wgt.       1,470
+
+50%     .1309661                      Mean           .1618123
+                        Largest       Std. dev.      .1761677
+75%     .2636559       .8687656
+90%     .4008941       .8869933       Variance       .0310351
+95%     .4936207       .9193601       Skewness       .9995689
+99%      .679602       1.262361       Kurtosis       4.689577
+
+                            dpop
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.1000728      -.1663131
+ 5%    -.0420256      -.1516289
+10%    -.0200914         -.1331       Obs               1,470
+25%     .0370289      -.1252839       Sum of wgt.       1,470
+
+50%     .0980795                      Mean           .1115887
+                        Largest       Std. dev.      .1137767
+75%     .1648969       .6223255
+90%     .2587072       .6283781       Variance       .0129451
+95%     .3291508       .7073405       Skewness         1.0532
+99%     .4613339       .7614493       Kurtosis       5.369376
+
+                          dadjlwage
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.2242312      -.3121876
+ 5%    -.1722834      -.2924109
+10%    -.1397467      -.2800489       Obs               1,470
+25%    -.0870775      -.2607688       Sum of wgt.       1,470
+
+50%    -.0253859                      Mean          -.0322284
+                        Largest       Std. dev.      .0787052
+75%     .0256812        .134363
+90%     .0658273       .1370122       Variance       .0061945
+95%     .0874103       .1425593       Skewness      -.3676222
+99%     .1154399       .1494145       Kurtosis       2.744347
+
+                         dadjklrent
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.2343959      -.4138078
+ 5%    -.1334722      -.3310205
+10%    -.0753642      -.3246079       Obs               1,470
+25%    -.0011371      -.3243041       Sum of wgt.       1,470
+
+50%     .0748809                      Mean           .0753245
+                        Largest       Std. dev.      .1237944
+75%     .1543205       .4263724
+90%     .2335875       .4272105       Variance       .0153251
+95%     .2854499       .4274216       Skewness      -.1136169
+99%     .3604396       .4341581       Kurtosis       3.324592
+
+. 
+. * Weights
+. di _n "--- Weights: epop ---"
+
+--- Weights: epop ---
+
+. sum epop, detail
+
+                            epop
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%       100499          56000
+ 5%       110005          58136
+10%       119340          62955       Obs               1,470
+25%       149519          64646       Sum of wgt.       1,470
+
+50%       257682                      Mean           491456.8
+                        Largest       Std. dev.        705470
+75%       541524        5373418
+90%      1115080        7506544       Variance       4.98e+11
+95%      1574640        8878157       Skewness       5.454819
+99%      3414239        9538191       Kurtosis       49.63207
+
+. 
+. * State clustering variable
+. di _n "--- Clustering: fips_state ---"
+
+--- Clustering: fips_state ---
+
+. qui tab fips_state
+
+. di "States: " r(r)
+States: 48
+
+. 
+. * ─── STEP 2: Replicate Table 4, Panel A, Column 1 ──────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 2: TABLE 4A, COLUMN 1 REPLICATION"
+  STEP 2: TABLE 4A, COLUMN 1 REPLICATION
+
+. di "  xi: reg E d_keeprate i.year i.fe_group [aw=epop], cluster(fips_state) r
+> "
+  xi: reg E d_keeprate i.year i.fe_group [aw=epop], cluster(fips_state) r
+
+. di "============================================================"
+============================================================
+
+. 
+. xi: reg E d_keeprate i.year i.fe_group [aw=epop], cluster(fips_state) r
+i.year            _Iyear_1990-2010    (naturally coded; _Iyear_1990 omitted)
+i.fe_group        _Ife_group_17-999   (naturally coded; _Ife_group_17 omitted)
+(sum of wgt is 722,441,450)
+
+Linear regression                               Number of obs     =      1,470
+                                                F(3, 47)          =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.4715
+                                                Root MSE          =     .12042
+
+                            (Std. err. adjusted for 48 clusters in fips_state)
+------------------------------------------------------------------------------
+             |               Robust
+           E | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  d_keeprate |   4.074018   1.824221     2.23   0.030      .404158    7.743877
+ _Iyear_2000 |  -.2137331   .0280458    -7.62   0.000    -.2701541   -.1573122
+ _Iyear_2010 |  -.2951493   .0193932   -15.22   0.000    -.3341633   -.2561352
+_Ife_grou~18 |   .0451267   .0113505     3.98   0.000     .0222924     .067961
+_Ife_grou~19 |  -.1073506   .0157455    -6.82   0.000    -.1390265   -.0756747
+_Ife_grou~20 |  -.0665062   .0023139   -28.74   0.000    -.0711612   -.0618512
+_Ife_grou~26 |   .0396719   .0009763    40.63   0.000     .0377079     .041636
+_Ife_grou~27 |  -.0188029   .0288334    -0.65   0.517    -.0768082    .0392024
+_Ife_grou~29 |   .0653427   .0129974     5.03   0.000     .0391953    .0914901
+_Ife_grou~31 |  -.0895474   .0029858   -29.99   0.000     -.095554   -.0835407
+_Ife_grou~38 |  -.0705074   .0059869   -11.78   0.000    -.0825514   -.0584633
+_Ife_grou~39 |   .0219434   .0120164     1.83   0.074    -.0022305    .0461174
+_Ife_grou~46 |  -.0658764   .0166772    -3.95   0.000    -.0994265   -.0323263
+_Ife_grou~55 |   .0246663   .0097328     2.53   0.015     .0050864    .0442461
+_Ife_gro~999 |   .0978807   .0208607     4.69   0.000     .0559143    .1398471
+       _cons |   .2720142   .0179173    15.18   0.000     .2359691    .3080592
+------------------------------------------------------------------------------
+
+. 
+. local beta_t4c1 = _b[d_keeprate]
+
+. local se_t4c1   = _se[d_keeprate]
+
+. local n_t4c1    = e(N)
+
+. local r2_t4c1   = e(r2)
+
+. 
+. di _n "--- Table 4A Col 1 Results ---"
+
+--- Table 4A Col 1 Results ---
+
+. di "  beta(d_keeprate) = " %9.4f `beta_t4c1'
+  beta(d_keeprate) =    4.0740
+
+. di "  se(d_keeprate)   = " %9.4f `se_t4c1'
+  se(d_keeprate)   =    1.8242
+
+. di "  N                = " `n_t4c1'
+  N                = 1470
+
+. di "  R2               = " %9.4f `r2_t4c1'
+  R2               =    0.4715
+
+. 
+. * Also replicate Panel B Col 1 (N = population changes)
+. xi: reg N d_keeprate i.year i.fe_group [aw=epop], cluster(fips_state) r
+i.year            _Iyear_1990-2010    (naturally coded; _Iyear_1990 omitted)
+i.fe_group        _Ife_group_17-999   (naturally coded; _Ife_group_17 omitted)
+(sum of wgt is 722,441,450)
+
+Linear regression                               Number of obs     =      1,470
+                                                F(3, 47)          =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.1118
+                                                Root MSE          =      .0988
+
+                            (Std. err. adjusted for 48 clusters in fips_state)
+------------------------------------------------------------------------------
+             |               Robust
+           N | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  d_keeprate |   4.275097   1.650906     2.59   0.013      .953902    7.596291
+ _Iyear_2000 |  -.0276985   .0240074    -1.15   0.254    -.0759951     .020598
+ _Iyear_2010 |   -.043412   .0210418    -2.06   0.045    -.0857426   -.0010813
+_Ife_grou~18 |   .0502263   .0102721     4.89   0.000     .0295614    .0708911
+_Ife_grou~19 |   .0102031   .0142496     0.72   0.478    -.0184633    .0388695
+_Ife_grou~20 |   .0334202   .0020941    15.96   0.000     .0292075    .0376329
+_Ife_grou~26 |  -.0111816   .0008836   -12.66   0.000    -.0129591   -.0094041
+_Ife_grou~27 |   .0256216    .026094     0.98   0.331    -.0268728    .0781159
+_Ife_grou~29 |   .0840108   .0117626     7.14   0.000     .0603476     .107674
+_Ife_grou~31 |   .0269736   .0027021     9.98   0.000     .0215377    .0324096
+_Ife_grou~38 |   .0294403   .0054181     5.43   0.000     .0185405      .04034
+_Ife_grou~39 |   .0239949   .0108748     2.21   0.032     .0021176    .0458721
+_Ife_grou~46 |   .0009721   .0150927     0.06   0.949    -.0293905    .0313346
+_Ife_grou~55 |   .0767169   .0088081     8.71   0.000     .0589973    .0944366
+_Ife_gro~999 |    .111094   .0232561     4.78   0.000     .0643089    .1578792
+       _cons |   .0653957   .0162151     4.03   0.000     .0327752    .0980161
+------------------------------------------------------------------------------
+
+. local beta_N = _b[d_keeprate]
+
+. local se_N   = _se[d_keeprate]
+
+. 
+. * Panel B Col 3 (W = wages)
+. xi: reg W d_keeprate i.year i.fe_group [aw=epop], cluster(fips_state) r
+i.year            _Iyear_1990-2010    (naturally coded; _Iyear_1990 omitted)
+i.fe_group        _Ife_group_17-999   (naturally coded; _Ife_group_17 omitted)
+(sum of wgt is 722,441,450)
+
+Linear regression                               Number of obs     =      1,470
+                                                F(3, 47)          =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.4022
+                                                Root MSE          =     .05603
+
+                            (Std. err. adjusted for 48 clusters in fips_state)
+------------------------------------------------------------------------------
+             |               Robust
+           W | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  d_keeprate |   1.451064   .9426052     1.54   0.130    -.4452128    3.347341
+ _Iyear_2000 |     .06217   .0211613     2.94   0.005     .0195989     .104741
+ _Iyear_2010 |  -.0163191   .0154308    -1.06   0.296    -.0473618    .0147237
+_Ife_grou~18 |  -.0215439    .005865    -3.67   0.001    -.0333428   -.0097451
+_Ife_grou~19 |  -.0455414    .008136    -5.60   0.000    -.0619089    -.029174
+_Ife_grou~20 |   .0067421   .0011956     5.64   0.000     .0043368    .0091474
+_Ife_grou~26 |  -.0408656   .0005045   -81.01   0.000    -.0418805   -.0398507
+_Ife_grou~27 |  -.0109836   .0148987    -0.74   0.465    -.0409559    .0189887
+_Ife_grou~29 |   .0086109    .006716     1.28   0.206    -.0048999    .0221217
+_Ife_grou~31 |  -.0400401   .0015428   -25.95   0.000    -.0431438   -.0369364
+_Ife_grou~38 |  -.0612887   .0030935   -19.81   0.000     -.067512   -.0550653
+_Ife_grou~39 |  -.0118272   .0062091    -1.90   0.063    -.0243183    .0006638
+_Ife_grou~46 |  -.0583086   .0086174    -6.77   0.000    -.0756445   -.0409727
+_Ife_grou~55 |  -.0031763   .0050291    -0.63   0.531    -.0132935    .0069409
+_Ife_gro~999 |   .0638817   .0161381     3.96   0.000      .031416    .0963475
+       _cons |  -.0882685   .0092582    -9.53   0.000    -.1068935   -.0696434
+------------------------------------------------------------------------------
+
+. local beta_W = _b[d_keeprate]
+
+. local se_W   = _se[d_keeprate]
+
+. 
+. * Panel B Col 5 (R = rents)
+. xi: reg R d_keeprate i.year i.fe_group [aw=epop], cluster(fips_state) r
+i.year            _Iyear_1990-2010    (naturally coded; _Iyear_1990 omitted)
+i.fe_group        _Ife_group_17-999   (naturally coded; _Ife_group_17 omitted)
+(sum of wgt is 722,441,450)
+
+Linear regression                               Number of obs     =      1,470
+                                                F(3, 47)          =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.1387
+                                                Root MSE          =     .11187
+
+                            (Std. err. adjusted for 48 clusters in fips_state)
+------------------------------------------------------------------------------
+             |               Robust
+           R | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  d_keeprate |   1.172318   1.435365     0.82   0.418    -1.715265      4.0599
+ _Iyear_2000 |  -.0972784   .0497045    -1.96   0.056     -.197271    .0027141
+ _Iyear_2010 |  -.0581031   .0253545    -2.29   0.026    -.1091099   -.0070964
+_Ife_grou~18 |  -.0477076    .008931    -5.34   0.000    -.0656745   -.0297407
+_Ife_grou~19 |  -.2268194   .0123892   -18.31   0.000    -.2517432   -.2018957
+_Ife_grou~20 |  -.1352551   .0018207   -74.29   0.000    -.1389178   -.1315924
+_Ife_grou~26 |  -.0935625   .0007682  -121.79   0.000    -.0951079   -.0920171
+_Ife_grou~27 |  -.0765664   .0226872    -3.37   0.001    -.1222072   -.0309257
+_Ife_grou~29 |   .0224561   .0102268     2.20   0.033     .0018824    .0430299
+_Ife_grou~31 |  -.0961102   .0023493   -40.91   0.000    -.1008365    -.091384
+_Ife_grou~38 |  -.1616595   .0047107   -34.32   0.000    -.1711362   -.1521828
+_Ife_grou~39 |     -.0247    .009455    -2.61   0.012    -.0437209    -.005679
+_Ife_grou~46 |   -.169223   .0131222   -12.90   0.000    -.1956214   -.1428245
+_Ife_grou~55 |  -.0291204   .0076581    -3.80   0.000    -.0445266   -.0137142
+_Ife_gro~999 |   .0830488   .0313238     2.65   0.011     .0200335     .146064
+       _cons |   .0757665    .014098     5.37   0.000      .047405    .1041281
+------------------------------------------------------------------------------
+
+. local beta_R = _b[d_keeprate]
+
+. local se_R   = _se[d_keeprate]
+
+. 
+. di _n "--- All Panel A/B Col 1 (baseline) ---"
+
+--- All Panel A/B Col 1 (baseline) ---
+
+. di "  E: " %9.2f `beta_t4c1' " (" %9.2f `se_t4c1' ")"
+  E:      4.07 (     1.82)
+
+. di "  N: " %9.2f `beta_N' " (" %9.2f `se_N' ")"
+  N:      4.28 (     1.65)
+
+. di "  W: " %9.2f `beta_W' " (" %9.2f `se_W' ")"
+  W:      1.45 (     0.94)
+
+. di "  R: " %9.2f `beta_R' " (" %9.2f `se_R' ")"
+  R:      1.17 (     1.44)
+
+. 
+. * ─── STEP 3: twowayfeweights decomposition ─────────────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION"
+  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di "  G = fe_group, T = year, D = d_keeprate"
+  G = fe_group, T = year, D = d_keeprate
+
+. di "============================================================"
+============================================================
+
+. 
+. * Rename conflicting variables (twowayfeweights uses W internally)
+. rename W _W_wages
+
+. rename N _N_pop
+
+. rename R _R_rents
+
+. rename L _L_emp
+
+. 
+. * --- 3a. feTR for E (main outcome) ---
+. di _n "--- feTR decomposition (Y=E) ---"
+
+--- feTR decomposition (Y=E) ---
+
+. * Clear global scalars to prevent stale values from leaking between feTR/fdTR
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights E fe_group year d_keeprate, type(feTR) weight(epo
+> p) summary_measures
+The treatment variable in the regression varies within some group * period cell
+> s.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) apply to two-
+> way fixed effects regressions
+with a group * period level treatment.
+The command will replace the treatment by its average value in each group * per
+> iod.
+The results below apply to the two-way fixed effects regression with that treat
+> ment variable.
+
+negative weights encountered
+
+. local twfe_rc = _rc
+
+. 
+. local fetr_ok = 0
+
+. local fetr_beta = .
+
+. local fetr_npos = .
+
+. local fetr_nneg = .
+
+. local fetr_sumpos = .
+
+. local fetr_sumneg = .
+
+. local fetr_sens1 = .
+
+. local fetr_sens2 = .
+
+. 
+. if `twfe_rc' == 0 {
+.     * Command succeeded: capture from e(M) matrix
+.     local fetr_ok = 1
+.     cap local fetr_beta    = e(beta)
+.     cap local fetr_npos    = el(e(M),1,1)
+.     cap local fetr_nneg    = el(e(M),2,1)
+.     cap local fetr_sumpos  = el(e(M),1,2)
+.     cap local fetr_sumneg  = el(e(M),2,2)
+.     cap local fetr_sens1   = e(lb_se_te)
+.     cap local fetr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     * Command failed (e.g. negative nat_weight): try global scalars as fallba
+> ck
+.     * twowayfeweights computes nplus/nminus/beta BEFORE the sensitivity measu
+> re
+.     * that crashes — these scalars persist after cap noisily
+.     di "  twowayfeweights returned rc=`twfe_rc', trying fallback scalars..."
+  twowayfeweights returned rc=402, trying fallback scalars...
+.     cap local fetr_beta    = scalar(beta)
+.     cap local fetr_npos    = scalar(nplus)
+.     cap local fetr_nneg    = scalar(nminus)
+.     cap local fetr_sumpos  = scalar(sumplus)
+.     cap local fetr_sumneg  = scalar(summinus)
+.     if `fetr_npos' != . & `fetr_nneg' != . {
+.         local fetr_ok = 1
+.         di "  Fallback OK: captured npos/nneg/beta from global scalars"
+  Fallback OK: captured npos/nneg/beta from global scalars
+.         di "  (sensitivity measures unavailable — nat_weight has negative val
+> ues)"
+  (sensitivity measures unavailable — nat_weight has negative values)
+.     }
+.     else {
+.         di "  Fallback FAILED: no global scalars available"
+.     }
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     local fetr_ntot = `fetr_npos' + `fetr_nneg'
+.     if `fetr_ntot' > 0 {
+.         local fetr_pneg = 100 * `fetr_nneg' / `fetr_ntot'
+.     }
+.     else {
+.         local fetr_pneg = 0
+.     }
+.     di _n "--- feTR Summary ---"
+
+--- feTR Summary ---
+.     di "  beta       = " %9.4f `fetr_beta'
+  beta       =    0.0000
+.     di "  Pos weights: " %9.0f `fetr_npos'
+  Pos weights:         4
+.     di "  Neg weights: " %9.0f `fetr_nneg'
+  Neg weights:         4
+.     di "  % Negative:  " %5.1f `fetr_pneg' "%"
+  % Negative:   50.0%
+.     di "  Sum pos w:   " %9.4f `fetr_sumpos'
+  Sum pos w:      2.1767
+.     di "  Sum neg w:   " %9.4f `fetr_sumneg'
+  Sum neg w:     -1.1767
+.     if `fetr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fetr_sens1'
+.     if `fetr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fetr_sens2'
+. }
+
+. else {
+.     di "feTR FAILED completely with rc=`twfe_rc'"
+. }
+
+. 
+. * --- 3b. fdTR ---
+. di _n "--- fdTR decomposition (Y=E) ---"
+
+--- fdTR decomposition (Y=E) ---
+
+. cap scalar drop nplus nminus beta sumplus summinus
+
+. cap noisily twowayfeweights E fe_group year d_keeprate, type(fdTR) weight(epo
+> p) summary_measures
+invalid syntax
+
+. local twfe_rc = _rc
+
+. 
+. local fdtr_ok = 0
+
+. local fdtr_beta = .
+
+. local fdtr_npos = .
+
+. local fdtr_nneg = .
+
+. local fdtr_sumpos = .
+
+. local fdtr_sumneg = .
+
+. local fdtr_sens1 = .
+
+. local fdtr_sens2 = .
+
+. 
+. if `twfe_rc' == 0 {
+.     local fdtr_ok = 1
+.     cap local fdtr_beta    = e(beta)
+.     cap local fdtr_npos    = el(e(M),1,1)
+.     cap local fdtr_nneg    = el(e(M),2,1)
+.     cap local fdtr_sumpos  = el(e(M),1,2)
+.     cap local fdtr_sumneg  = el(e(M),2,2)
+.     cap local fdtr_sens1   = e(lb_se_te)
+.     cap local fdtr_sens2   = e(lb_se_te2)
+. }
+
+. else {
+.     di "  twowayfeweights fdTR returned rc=`twfe_rc', trying fallback scalars
+> ..."
+  twowayfeweights fdTR returned rc=198, trying fallback scalars...
+.     cap local fdtr_beta    = scalar(beta)
+.     cap local fdtr_npos    = scalar(nplus)
+.     cap local fdtr_nneg    = scalar(nminus)
+.     cap local fdtr_sumpos  = scalar(sumplus)
+.     cap local fdtr_sumneg  = scalar(summinus)
+.     if `fdtr_npos' != . & `fdtr_nneg' != . {
+.         local fdtr_ok = 1
+.         di "  Fallback OK: captured npos/nneg/beta from global scalars"
+.     }
+.     else {
+.         di "  Fallback FAILED"
+  Fallback FAILED
+.     }
+. }
+
+. 
+. if `fdtr_ok' == 1 {
+.     local fdtr_ntot = `fdtr_npos' + `fdtr_nneg'
+.     if `fdtr_ntot' > 0 {
+.         local fdtr_pneg = 100 * `fdtr_nneg' / `fdtr_ntot'
+.     }
+.     else {
+.         local fdtr_pneg = 0
+.     }
+.     di _n "--- fdTR Summary ---"
+.     di "  beta       = " %9.4f `fdtr_beta'
+.     di "  Pos weights: " %9.0f `fdtr_npos'
+.     di "  Neg weights: " %9.0f `fdtr_nneg'
+.     di "  % Negative:  " %5.1f `fdtr_pneg' "%"
+.     di "  Sum pos w:   " %9.4f `fdtr_sumpos'
+.     di "  Sum neg w:   " %9.4f `fdtr_sumneg'
+.     if `fdtr_sens1' != . di "  min sigma(D) for zero:  " %9.4f `fdtr_sens1'
+.     if `fdtr_sens2' != . di "  min sigma(D) for opp:   " %9.4f `fdtr_sens2'
+. }
+
+. else {
+.     di "fdTR FAILED completely with rc=`twfe_rc'"
+fdTR FAILED completely with rc=198
+. }
+
+. 
+. * ─── STEP 4: LaTeX output ──────────────────────────────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 4: LaTeX OUTPUT"
+  STEP 4: LaTeX OUTPUT
+
+. di "============================================================"
+============================================================
+
+. 
+. local texdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015
+> -2019/Suárez Serrato and Zidar (2016)"
+
+. 
+. * --- Table replication ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table4_replication.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Replication of Su\'{a}rez Serrato and Zidar (201
+> 6), Table 4, Column 1}" _n
+
+. file write texfile "\label{tab:ssz_t4c1}" _n
+
+. file write texfile "\begin{tabular}{lcccc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & E & N & W & R \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "d\_keeprate & " %9.2f (`beta_t4c1') " & " %9.2f (`beta_N'
+> ) " & " %9.2f (`beta_W') " & " %9.2f (`beta_R') " \\" _n
+
+. file write texfile " & (" %9.2f (`se_t4c1') ") & (" %9.2f (`se_N') ") & (" %9
+> .2f (`se_W') ") & (" %9.2f (`se_R') ") \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "Group FE & Yes & Yes & Yes & Yes \\" _n
+
+. file write texfile "Year FE & Yes & Yes & Yes & Yes \\" _n
+
+. file write texfile "Weights & epop & epop & epop & epop \\" _n
+
+. file write texfile "Clustering & State & State & State & State \\" _n
+
+. file write texfile "N & " %9.0fc (`n_t4c1') " & " %9.0fc (`n_t4c1') " & " %9.
+> 0fc (`n_t4c1') " & " %9.0fc (`n_t4c1') " \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table4_replication.tex"
+  Saved: table4_replication.tex
+
+. 
+. * --- twowayfeweights table ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table_twowayfeweights.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{TWFE Weight Decomposition: Su\'{a}rez Serrato an
+> d Zidar (2016)}" _n
+
+. file write texfile "\label{tab:ssz_weights}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & feTR & fdTR \\" _n
+
+. file write texfile "\hline" _n
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & " %9.4f (`fetr_beta') " & "
+. }
+
+. else {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.4f (`fdtr_beta') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "Positive weights & " (`fetr_npos') " & "
+. }
+
+. else {
+.     file write texfile "Positive weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile (`fdtr_npos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "Negative weights & " (`fetr_nneg') " & "
+. }
+
+. else {
+.     file write texfile "Negative weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile (`fdtr_nneg') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "\% Negative & " %5.1f (`fetr_pneg') "\% & "
+. }
+
+. else {
+.     file write texfile "\% Negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %5.1f (`fdtr_pneg') "\% \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. * Sum of weights row
+. if `fetr_ok' == 1 {
+.     file write texfile "$\Sigma$ positive & " %9.4f (`fetr_sumpos') " & "
+. }
+
+. else {
+.     file write texfile "$\Sigma$ positive & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.4f (`fdtr_sumpos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "$\Sigma$ negative & $-$" %9.4f (abs(`fetr_sumneg')) "
+>  & "
+. }
+
+. else {
+.     file write texfile "$\Sigma$ negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile "$-$" %9.4f (abs(`fdtr_sumneg')) " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. file write texfile "\hline" _n
+
+. 
+. * Summary measures (if available)
+. if `fetr_sens1' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$
+>  for $\beta_{fe}$ and $\Delta_{TR}=0$: " %9.4f (`fetr_sens1') "} \\" _n
+. }
+
+. if `fetr_sens2' != . {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize min $\sigma(\Delta)$
+>  for opposite sign: " %9.4f (`fetr_sens2') "} \\" _n
+. }
+
+. if `fetr_sens1' == . & `fetr_ok' == 1 {
+.     file write texfile "\multicolumn{3}{l}{\footnotesize Sensitivity measures
+>  unavailable (continuous treatment with negative values).} \\" _n
+. }
+
+. file write texfile "\hline" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Spec: \texttt{reg E d\_k
+> eeprate i.year i.fe\_group [aw=epop]}} \\" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Panel: state-group $\tim
+> es$ decade. Treatment: $\Delta\ln$(net-of-tax rate).} \\" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize $\hat\beta$ from cell-me
+> an regression (treatment varies within cells). Original $\beta=4.07$.} \\" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize fdTR: invalid syntax (re
+> quires level treatment variable, only first-difference available).} \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table_twowayfeweights.tex"
+  Saved: table_twowayfeweights.tex
+
+. 
+. * --- Master LaTeX document ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/ssz_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage[margin=1in]{geometry}" _n
+
+. file write texfile "\usepackage{booktabs,caption}" _n
+
+. file write texfile "\begin{document}" _n
+
+. file write texfile "\section*{Su\'{a}rez Serrato and Zidar (2016): TWFE Weigh
+> t Decomposition}" _n
+
+. file write texfile "\subsection*{Paper: ``Who Benefits from State Corporate T
+> ax Cuts?'', AER 106(9)}" _n
+
+. file write texfile _n
+
+. file write texfile "\input{table4_replication}" _n
+
+. file write texfile _n
+
+. file write texfile "\input{table_twowayfeweights}" _n
+
+. file write texfile _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: ssz_tables.tex"
+  Saved: ssz_tables.tex
+
+. 
+. * ─── STEP 5: Summary ───────────────────────────────────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  FINAL SUMMARY: Suárez Serrato and Zidar (2016)"
+  FINAL SUMMARY: Suárez Serrato and Zidar (2016)
+
+. di "============================================================"
+============================================================
+
+. di "  Table 4A, Column 1"
+  Table 4A, Column 1
+
+. di "  Spec: reg E d_keeprate i.year i.fe_group [aw=epop], cl(fips_state)"
+  Spec: reg E d_keeprate i.year i.fe_group [aw=epop], cl(fips_state)
+
+. di "  beta(d_keeprate)  = " %9.4f `beta_t4c1'
+  beta(d_keeprate)  =    4.0740
+
+. di "  se(d_keeprate)    = " %9.4f `se_t4c1'
+  se(d_keeprate)    =    1.8242
+
+. di "  N                 = " `n_t4c1'
+  N                 = 1470
+
+. di "  Panel: " `n_groups' " groups x " `n_years' " year-periods"
+  Panel: 13 groups x 3 year-periods
+
+. di "------------------------------------------------------------"
+------------------------------------------------------------
+
+. if `fetr_ok' {
+.     di "  feTR: " %9.0f `fetr_npos' " pos, " %9.0f `fetr_nneg' " neg (" %5.1f
+>  `fetr_pneg' "% negative)"
+  feTR:         4 pos,         4 neg ( 50.0% negative)
+.     di "        Sum pos: " %9.4f `fetr_sumpos' "  Sum neg: " %9.4f `fetr_sumn
+> eg'
+        Sum pos:    2.1767  Sum neg:   -1.1767
+. }
+
+. else {
+.     di "  feTR: FAILED"
+. }
+
+. if `fdtr_ok' {
+.     di "  fdTR: " %9.0f `fdtr_npos' " pos, " %9.0f `fdtr_nneg' " neg (" %5.1f
+>  `fdtr_pneg' "% negative)"
+.     di "        Sum pos: " %9.4f `fdtr_sumpos' "  Sum neg: " %9.4f `fdtr_sumn
+> eg'
+. }
+
+. else {
+.     di "  fdTR: FAILED"
+  fdTR: FAILED
+. }
+
+. di "============================================================"
+============================================================
+
+. 
+. * Done

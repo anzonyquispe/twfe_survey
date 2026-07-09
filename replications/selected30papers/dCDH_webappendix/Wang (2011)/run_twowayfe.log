@@ -1,0 +1,1471 @@
+-----------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Wang (2011)/run_twowayfe.log
+  log type:  text
+ opened on:  20 Apr 2026, 16:22:12
+
+. 
+. * Install packages if needed
+. cap which estout
+
+. if _rc ssc install estout, replace
+
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. 
+. /*==============================================================================
+>   STEP 0: GENERATE MISMATCH VARIABLE (replicating Table 2 data prep)
+> 
+>   The mismatch Δ_i measures the gap between the housing a household WOULD
+>   have chosen in a free market vs what they actually got under state allocation.
+>   Estimated from a hedonic regression on private-market households (pre-reform).
+> ==============================================================================*/
+. 
+. use "$datadir/data_aersubmit.dta", clear
+
+. 
+. sort hhidc year id
+
+. 
+. di _n "=== STEP 0: Generate mismatch variable ==="
+
+=== STEP 0: Generate mismatch variable ===
+
+. di "Observations loaded: " _N
+Observations loaded: 31677
+
+. 
+. * --- Table 2 Column 1: Pre-reform hedonic regression ---
+. * Regress log rental value on household characteristics + province*year FE
+. * Sample: pre-reform (year<=1993), private market (apt_nonmrkt==0),
+. *         one obs per household-year
+. di _n "--- Table 2 Col 1: Pre-reform hedonic (private market) ---"
+
+--- Table 2 Col 1: Pre-reform hedonic (private market) ---
+
+. xi: regress logapt_rentval logwage_broadhh logtot_assets ///
+>     age_head age_head2 age_head3 eduyr_head ///
+>     i.province*i.year ///
+>     if year<=1993 & apt_nonmrkt==0 & ///
+>     (hhidc!=hhidc[_n-1] | year!=year[_n-1]), cluster(hhidc)
+i.province        _Iprovince_21-52    (naturally coded; _Iprovince_21 omitted)
+i.year            _Iyear_1989-2004    (naturally coded; _Iyear_1989 omitted)
+i.pro~e*i.year    _IproXyea_#_#       (coded as above)
+note: _Iprovince_23 omitted because of collinearity.
+note: _Iyear_1997 omitted because of collinearity.
+note: _Iyear_2000 omitted because of collinearity.
+note: _Iyear_2004 omitted because of collinearity.
+note: _IproXyea_23_1991 omitted because of collinearity.
+note: _IproXyea_23_1993 omitted because of collinearity.
+note: _IproXyea_23_1997 omitted because of collinearity.
+note: _IproXyea_23_2000 omitted because of collinearity.
+note: _IproXyea_23_2004 omitted because of collinearity.
+note: _IproXyea_32_1997 omitted because of collinearity.
+note: _IproXyea_32_2000 omitted because of collinearity.
+note: _IproXyea_32_2004 omitted because of collinearity.
+note: _IproXyea_37_1997 omitted because of collinearity.
+note: _IproXyea_37_2000 omitted because of collinearity.
+note: _IproXyea_37_2004 omitted because of collinearity.
+note: _IproXyea_41_1997 omitted because of collinearity.
+note: _IproXyea_41_2000 omitted because of collinearity.
+note: _IproXyea_41_2004 omitted because of collinearity.
+note: _IproXyea_42_1997 omitted because of collinearity.
+note: _IproXyea_42_2000 omitted because of collinearity.
+note: _IproXyea_42_2004 omitted because of collinearity.
+note: _IproXyea_43_1997 omitted because of collinearity.
+note: _IproXyea_43_2000 omitted because of collinearity.
+note: _IproXyea_43_2004 omitted because of collinearity.
+note: _IproXyea_45_1997 omitted because of collinearity.
+note: _IproXyea_45_2000 omitted because of collinearity.
+note: _IproXyea_45_2004 omitted because of collinearity.
+note: _IproXyea_52_1997 omitted because of collinearity.
+note: _IproXyea_52_2000 omitted because of collinearity.
+note: _IproXyea_52_2004 omitted because of collinearity.
+
+Linear regression                               Number of obs     =      1,212
+                                                F(29, 683)        =       8.43
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1725
+                                                Root MSE          =     .77074
+
+                                     (Std. err. adjusted for 684 clusters in hhidc)
+-----------------------------------------------------------------------------------
+                  |               Robust
+   logapt_rentval | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+  logwage_broadhh |   .1419257   .0353092     4.02   0.000      .072598    .2112534
+    logtot_assets |   .0536817   .0109566     4.90   0.000      .032169    .0751944
+         age_head |   .0806925   .0594001     1.36   0.175    -.0359363    .1973213
+        age_head2 |  -.0014648   .0012341    -1.19   0.236     -.003888    .0009583
+        age_head3 |   8.76e-06   8.21e-06     1.07   0.287    -7.37e-06    .0000249
+       eduyr_head |   .0032069   .0070125     0.46   0.648    -.0105618    .0169755
+    _Iprovince_23 |          0  (omitted)
+    _Iprovince_32 |    .143231   .1332372     1.08   0.283    -.1183728    .4048347
+    _Iprovince_37 |   .0424731   .1176674     0.36   0.718    -.1885602    .2735063
+    _Iprovince_41 |    -.70118   .1901613    -3.69   0.000    -1.074551   -.3278091
+    _Iprovince_42 |   .0266372   .1113547     0.24   0.811    -.1920015    .2452759
+    _Iprovince_43 |   .2135018   .1228627     1.74   0.083    -.0277322    .4547358
+    _Iprovince_45 |  -.2120397   .2368311    -0.90   0.371    -.6770443    .2529648
+    _Iprovince_52 |  -.2681454   .1732732    -1.55   0.122    -.6083575    .0720667
+      _Iyear_1991 |  -.1261177   .1281374    -0.98   0.325    -.3777083    .1254729
+      _Iyear_1993 |  -.4375211    .138995    -3.15   0.002      -.71043   -.1646122
+      _Iyear_1997 |          0  (omitted)
+      _Iyear_2000 |          0  (omitted)
+      _Iyear_2004 |          0  (omitted)
+_IproXyea_23_1991 |          0  (omitted)
+_IproXyea_23_1993 |          0  (omitted)
+_IproXyea_23_1997 |          0  (omitted)
+_IproXyea_23_2000 |          0  (omitted)
+_IproXyea_23_2004 |          0  (omitted)
+_IproXyea_32_1991 |   .2179172    .162159     1.34   0.179    -.1004728    .5363071
+_IproXyea_32_1993 |   .4688012     .18249     2.57   0.010     .1104924    .8271099
+_IproXyea_32_1997 |          0  (omitted)
+_IproXyea_32_2000 |          0  (omitted)
+_IproXyea_32_2004 |          0  (omitted)
+_IproXyea_37_1991 |    .129494    .150734     0.86   0.391    -.1664636    .4254516
+_IproXyea_37_1993 |   .6737725   .1655487     4.07   0.000     .3487271    .9988179
+_IproXyea_37_1997 |          0  (omitted)
+_IproXyea_37_2000 |          0  (omitted)
+_IproXyea_37_2004 |          0  (omitted)
+_IproXyea_41_1991 |   .6331336   .2792507     2.27   0.024     .0848407    1.181426
+_IproXyea_41_1993 |   .6242013   .3455839     1.81   0.071    -.0543331    1.302736
+_IproXyea_41_1997 |          0  (omitted)
+_IproXyea_41_2000 |          0  (omitted)
+_IproXyea_41_2004 |          0  (omitted)
+_IproXyea_42_1991 |   .3590953   .1489224     2.41   0.016     .0666947    .6514959
+_IproXyea_42_1993 |   .3535369   .2353842     1.50   0.134    -.1086267    .8157005
+_IproXyea_42_1997 |          0  (omitted)
+_IproXyea_42_2000 |          0  (omitted)
+_IproXyea_42_2004 |          0  (omitted)
+_IproXyea_43_1991 |   .2536082   .1642591     1.54   0.123    -.0689053    .5761217
+_IproXyea_43_1993 |   .4451745   .2004737     2.22   0.027     .0515557    .8387933
+_IproXyea_43_1997 |          0  (omitted)
+_IproXyea_43_2000 |          0  (omitted)
+_IproXyea_43_2004 |          0  (omitted)
+_IproXyea_45_1991 |   .1658801   .3177672     0.52   0.602    -.4580378    .7897981
+_IproXyea_45_1993 |   .4696427   .3348186     1.40   0.161    -.1877547     1.12704
+_IproXyea_45_1997 |          0  (omitted)
+_IproXyea_45_2000 |          0  (omitted)
+_IproXyea_45_2004 |          0  (omitted)
+_IproXyea_52_1991 |   .1520947   .2081648     0.73   0.465     -.256625    .5608145
+_IproXyea_52_1993 |   .4384807   .2314742     1.89   0.059    -.0160058    .8929672
+_IproXyea_52_1997 |          0  (omitted)
+_IproXyea_52_2000 |          0  (omitted)
+_IproXyea_52_2004 |          0  (omitted)
+            _cons |   1.736004   .9048084     1.92   0.055    -.0405355    3.512545
+-----------------------------------------------------------------------------------
+
+. 
+. di "  N = " e(N) "  R2 = " %5.3f e(r2)
+  N = 1212  R2 = 0.173
+
+. di "  Paper Table 2 Col 1: N=1212, R2=0.17"
+  Paper Table 2 Col 1: N=1212, R2=0.17
+
+. di "  beta(logwage): " %7.4f _b[logwage_broadhh] " (paper: 0.142)"
+  beta(logwage):  0.1419 (paper: 0.142)
+
+. 
+. * Predict log rental value for ALL pre-reform obs (including state housing)
+. predict pred_logapt_rentval if year<=1993 & ///
+>     (hhidc!=hhidc[_n-1] | year!=year[_n-1]), xb
+(28,409 missing values generated)
+
+. 
+. * Mismatch = predicted market value - actual value
+. * Positive mismatch = household consumes LESS housing than market would assign
+. gen log_mismatch = pred_logapt_rentval - logapt_rentval
+(29,246 missing values generated)
+
+. 
+. * --- Generate household-level prereform mismatch (Δ_i) ---
+. gen mpre = log_mismatch if year<=1993
+(29,246 missing values generated)
+
+. bysort hhidc: egen log_mismatchpre = mean(mpre)
+(11,770 missing values generated)
+
+. drop mpre
+
+. 
+. di _n "--- Mismatch variable summary ---"
+
+--- Mismatch variable summary ---
+
+. summ log_mismatchpre if apt_nonmrkt93==1, detail
+
+                       log_mismatchpre
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -1.439185      -1.721016
+ 5%    -1.085793      -1.721016
+10%     -.865984      -1.721016       Obs               8,235
+25%    -.3697963      -1.721016       Sum of wgt.       8,235
+
+50%     .0749846                      Mean           .1314565
+                        Largest       Std. dev.       .780009
+75%     .6105211       2.394812
+90%     1.143117       2.394812       Variance        .608414
+95%     1.654729       2.394812       Skewness       .3870346
+99%     2.205956       2.394812       Kurtosis       3.117093
+
+. di "  Paper Table 3: mean mismatch (state housing) = 0.150"
+  Paper Table 3: mean mismatch (state housing) = 0.150
+
+. 
+. * --- Generate interaction term: Post × Δ ---
+. gen post_mismatch = regime2 * log_mismatchpre
+(11,770 missing values generated)
+
+. label var post_mismatch "Post × Mismatch"
+
+. label var log_mismatchpre "Prereform Mismatch (Δ_i)"
+
+. 
+. * Province is already numeric
+. gen province_num = province
+
+. 
+. * Mark the analysis sample (one obs per household-year)
+. sort hhidc year id
+
+. gen first_hhyr = (hhidc!=hhidc[_n-1] | year!=year[_n-1])
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1: TABLE 5 PANEL A - PARSIMONIOUS SPECIFICATION
+> 
+>   Equation (15): F_it = α₀ + α₁(Post×Δ) + α₂ Post + α₃ Δ + α₄ X + prov*year + ε
+> 
+>   5 dependent variables:
+>     Col 1: logapt_sqm     (log floor space)
+>     Col 2: apt_toiletin   (flushing toilet)
+>     Col 3: apt_water_house (drinking water)
+>     Col 4: apt_electric    (electricity)
+>     Col 5: no_excreta      (no excreta)
+> 
+>   Sample: apt_nonmrkt93==1 & first obs per household-year
+>   SE: clustered by household (paper uses bootstrap 200 reps)
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 5 PANEL A: PARSIMONIOUS SPECIFICATION"
+TABLE 5 PANEL A: PARSIMONIOUS SPECIFICATION
+
+. di    "=============================================="
+==============================================
+
+. 
+. local depvars "logapt_sqm apt_toiletin apt_water_house apt_electric no_excreta"
+
+. local deplab1 "Log floor space"
+
+. local deplab2 "Flushing toilet"
+
+. local deplab3 "Drinking water"
+
+. local deplab4 "Electricity"
+
+. local deplab5 "No excreta"
+
+. 
+. * Paper values for verification (Post × Δ coefficient)
+. local paper_b1 = 0.21
+
+. local paper_b2 = 0.14
+
+. local paper_b3 = 0.06
+
+. local paper_b4 = -0.00
+
+. local paper_b5 = 0.05
+
+. 
+. * Paper values for N
+. local paper_n1 = 1867
+
+. local paper_n2 = 1919
+
+. local paper_n3 = 1918
+
+. local paper_n4 = 1914
+
+. local paper_n5 = 1903
+
+. 
+. * Paper values for R²
+. local paper_r1 = 0.25
+
+. local paper_r2 = 0.34
+
+. local paper_r3 = 0.35
+
+. local paper_r4 = 0.02
+
+. local paper_r5 = 0.05
+
+. 
+. set matsize 2000
+set matsize ignored.
+    Matrix sizes are no longer limited by c(matsize) in modern Statas.  Matrix sizes are now limited by edition
+    of Stata.  See limits for more details.
+
+. 
+. * --- Run regressions ---
+. local k = 0
+
+. foreach dv of local depvars {
+  2.     local ++k
+  3. 
+.     di _n "--- Column `k': `deplab`k'' (`dv') ---"
+  4. 
+.     cap noisily xi: regress `dv' i.regime2*log_mismatchpre ///
+>         logwage_broadhh logtot_assets ///
+>         age_head age_head2 age_head3 eduyr_head ///
+>         i.province*i.year ///
+>         if first_hhyr==1 & apt_nonmrkt93==1, cluster(hhidc)
+  5. 
+.     if !_rc & e(N) > 0 {
+  6.         estimates store col`k'
+  7. 
+.         * Extract key coefficients
+.         * The interaction term from xi: is _IregXlog_m_1 or similar
+.         * With xi: i.regime2*log_mismatchpre, the interaction is _IregXlog_1
+.         local b_postmis = _b[_IregXlog_m_1]
+  8.         local se_postmis = _se[_IregXlog_m_1]
+  9.         local b_post = _b[_Iregime2_1]
+ 10.         local se_post = _se[_Iregime2_1]
+ 11.         local b_mis = _b[log_mismatchpre]
+ 12.         local se_mis = _se[log_mismatchpre]
+ 13. 
+.         di "  Post × Δ:  " %7.3f `b_postmis' " (" %5.3f `se_postmis' ")"
+ 14.         di "  Post:      " %7.3f `b_post' " (" %5.3f `se_post' ")"
+ 15.         di "  Δ:         " %7.3f `b_mis' " (" %5.3f `se_mis' ")"
+ 16.         di "  N:         " e(N) " (paper: `paper_n`k'')"
+ 17.         di "  Adj R²:    " %5.2f e(r2_a) " (paper: `paper_r`k'')"
+ 18.         di "  Paper β₁:  `paper_b`k''"
+ 19.     }
+ 20.     else {
+ 21.         di "  FAILED"
+ 22.     }
+ 23. }
+
+--- Column 1: Log floor space (logapt_sqm) ---
+i.regime2         _Iregime2_0-1       (naturally coded; _Iregime2_0 omitted)
+i.regi~2*log_~e   _IregXlog_m_#       (coded as above)
+i.province        _Iprovince_21-52    (naturally coded; _Iprovince_21 omitted)
+i.year            _Iyear_1989-2004    (naturally coded; _Iyear_1989 omitted)
+i.pro~e*i.year    _IproXyea_#_#       (coded as above)
+note: _Iprovince_23 omitted because of collinearity.
+note: _Iyear_2000 omitted because of collinearity.
+note: _IproXyea_23_1991 omitted because of collinearity.
+note: _IproXyea_23_1993 omitted because of collinearity.
+note: _IproXyea_23_1997 omitted because of collinearity.
+note: _IproXyea_23_2000 omitted because of collinearity.
+note: _IproXyea_23_2004 omitted because of collinearity.
+note: _IproXyea_37_1997 omitted because of collinearity.
+
+Linear regression                               Number of obs     =      1,875
+                                                F(53, 502)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.2541
+                                                Root MSE          =     .48053
+
+                                     (Std. err. adjusted for 503 clusters in hhidc)
+-----------------------------------------------------------------------------------
+                  |               Robust
+       logapt_sqm | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+      _Iregime2_1 |   .3895755   .1159229     3.36   0.001     .1618216    .6173295
+  log_mismatchpre |  -.1915757   .0288879    -6.63   0.000    -.2483317   -.1348197
+    _IregXlog_m_1 |   .2050229   .0469349     4.37   0.000     .1128099    .2972358
+  logwage_broadhh |   .0148453   .0196376     0.76   0.450    -.0237367    .0534273
+    logtot_assets |   .0194661   .0061966     3.14   0.002     .0072917    .0316405
+         age_head |   .0192457   .0524534     0.37   0.714    -.0838095    .1223009
+        age_head2 |   .0000883   .0010627     0.08   0.934    -.0019997    .0021762
+        age_head3 |  -2.86e-06   6.97e-06    -0.41   0.682    -.0000165    .0000108
+       eduyr_head |  -.0007044   .0041063    -0.17   0.864    -.0087721    .0073634
+    _Iprovince_23 |          0  (omitted)
+    _Iprovince_32 |   .2694364   .0900547     2.99   0.003     .0925058     .446367
+    _Iprovince_37 |   .2402728   .1313019     1.83   0.068    -.0176962    .4982417
+    _Iprovince_41 |   .3583665   .0859385     4.17   0.000     .1895231    .5272099
+    _Iprovince_42 |   .4606349    .086203     5.34   0.000     .2912718     .629998
+    _Iprovince_43 |   .4364362   .0838027     5.21   0.000     .2717889    .6010835
+    _Iprovince_45 |    .149217   .1391627     1.07   0.284    -.1241959      .42263
+    _Iprovince_52 |    .314111   .0862754     3.64   0.000     .1446055    .4836164
+      _Iyear_1991 |  -.0821555   .0772242    -1.06   0.288     -.233878    .0695671
+      _Iyear_1993 |  -.1040883   .0775147    -1.34   0.180    -.2563815     .048205
+      _Iyear_1997 |  -.6235114   .2234139    -2.79   0.005    -1.062453   -.1845698
+      _Iyear_2000 |          0  (omitted)
+      _Iyear_2004 |    .057026   .1273896     0.45   0.655    -.1932564    .3073084
+_IproXyea_23_1991 |          0  (omitted)
+_IproXyea_23_1993 |          0  (omitted)
+_IproXyea_23_1997 |          0  (omitted)
+_IproXyea_23_2000 |          0  (omitted)
+_IproXyea_23_2004 |          0  (omitted)
+_IproXyea_32_1991 |  -.0104338   .0854011    -0.12   0.903    -.1782215    .1573538
+_IproXyea_32_1993 |   .0246538   .0890948     0.28   0.782    -.1503908    .1996984
+_IproXyea_32_1997 |    .042557   .1970829     0.22   0.829    -.3446521     .429766
+_IproXyea_32_2000 |  -.7008113   .1398928    -5.01   0.000    -.9756589   -.4259637
+_IproXyea_32_2004 |  -.6813495   .1545257    -4.41   0.000    -.9849463   -.3777527
+_IproXyea_37_1991 |  -.0097358   .1012621    -0.10   0.923    -.2086855    .1892138
+_IproXyea_37_1993 |   .0512805   .1110349     0.46   0.644    -.1668698    .2694308
+_IproXyea_37_1997 |          0  (omitted)
+_IproXyea_37_2000 |  -.5517796   .1974372    -2.79   0.005    -.9396846   -.1638747
+_IproXyea_37_2004 |  -.4554952   .2148917    -2.12   0.035    -.8776931   -.0332973
+_IproXyea_41_1991 |  -.0207404   .0901083    -0.23   0.818    -.1977762    .1562955
+_IproXyea_41_1993 |   .0208315   .0921098     0.23   0.821    -.1601367    .2017996
+_IproXyea_41_1997 |   .3060381   .2103392     1.45   0.146    -.1072154    .7192917
+_IproXyea_41_2000 |  -.2242643    .170048    -1.32   0.188    -.5583577    .1098291
+_IproXyea_41_2004 |  -.3183704   .1687881    -1.89   0.060    -.6499885    .0132478
+_IproXyea_42_1991 |  -.1339118   .1073136    -1.25   0.213    -.3447509    .0769272
+_IproXyea_42_1993 |  -.1230359     .11489    -1.07   0.285    -.3487603    .1026885
+_IproXyea_42_1997 |    .243701    .194831     1.25   0.212    -.1390837    .6264857
+_IproXyea_42_2000 |  -.3257484   .1365204    -2.39   0.017    -.5939701   -.0575266
+_IproXyea_42_2004 |  -.3654191   .1356589    -2.69   0.007    -.6319482     -.09889
+_IproXyea_43_1991 |   .0734414   .0877718     0.84   0.403     -.099004    .2458868
+_IproXyea_43_1993 |   .2227558   .0924073     2.41   0.016      .041203    .4043085
+_IproXyea_43_1997 |    .476582   .2021357     2.36   0.019     .0794459    .8737181
+_IproXyea_43_2000 |  -.0826685   .1617535    -0.51   0.610    -.4004658    .2351288
+_IproXyea_43_2004 |    .049539   .1498592     0.33   0.741    -.2448895    .3439675
+_IproXyea_45_1991 |   .1818531   .1322661     1.37   0.170    -.0780102    .4417164
+_IproXyea_45_1993 |   .3506885   .1448437     2.42   0.016     .0661141     .635263
+_IproXyea_45_1997 |   .5679638   .2869243     1.98   0.048     .0042434    1.131684
+_IproXyea_45_2000 |  -.1180231   .2191885    -0.54   0.591    -.5486629    .3126167
+_IproXyea_45_2004 |   1.300581   .1721863     7.55   0.000     .9622866    1.638876
+_IproXyea_52_1991 |  -.0879099    .092552    -0.95   0.343    -.2697469    .0939271
+_IproXyea_52_1993 |  -.0046456   .0920672    -0.05   0.960    -.1855301    .1762388
+_IproXyea_52_1997 |   .3888699   .2206256     1.76   0.079    -.0445934    .8223331
+_IproXyea_52_2000 |  -.2062833   .1720516    -1.20   0.231    -.5443132    .1317467
+_IproXyea_52_2004 |  -.3241247   .1765247    -1.84   0.067    -.6709429    .0226935
+            _cons |   2.488695   .8658892     2.87   0.004     .7874814    4.189908
+-----------------------------------------------------------------------------------
+  Post × Δ:    0.205 (0.047)
+  Post:        0.390 (0.116)
+  Δ:          -0.192 (0.029)
+  N:         1875 (paper: 1867)
+  Adj R²:     0.23 (paper: .25)
+  Paper β₁:  .21
+
+--- Column 2: Flushing toilet (apt_toiletin) ---
+i.regime2         _Iregime2_0-1       (naturally coded; _Iregime2_0 omitted)
+i.regi~2*log_~e   _IregXlog_m_#       (coded as above)
+i.province        _Iprovince_21-52    (naturally coded; _Iprovince_21 omitted)
+i.year            _Iyear_1989-2004    (naturally coded; _Iyear_1989 omitted)
+i.pro~e*i.year    _IproXyea_#_#       (coded as above)
+note: _Iprovince_23 omitted because of collinearity.
+note: _Iyear_2004 omitted because of collinearity.
+note: _IproXyea_23_1991 omitted because of collinearity.
+note: _IproXyea_23_1993 omitted because of collinearity.
+note: _IproXyea_23_1997 omitted because of collinearity.
+note: _IproXyea_23_2000 omitted because of collinearity.
+note: _IproXyea_23_2004 omitted because of collinearity.
+note: _IproXyea_37_1997 omitted because of collinearity.
+
+Linear regression                               Number of obs     =      1,926
+                                                F(53, 502)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.3645
+                                                Root MSE          =     .37868
+
+                                     (Std. err. adjusted for 503 clusters in hhidc)
+-----------------------------------------------------------------------------------
+                  |               Robust
+     apt_toiletin | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+      _Iregime2_1 |    .114844    .065449     1.75   0.080    -.0137437    .2434317
+  log_mismatchpre |  -.1994278   .0306306    -6.51   0.000    -.2596077   -.1392479
+    _IregXlog_m_1 |   .1453542   .0284309     5.11   0.000      .089496    .2012123
+  logwage_broadhh |   .0670705    .016171     4.15   0.000     .0352992    .0988417
+    logtot_assets |    .013669   .0050723     2.69   0.007     .0037035    .0236345
+         age_head |   .0473406   .0354424     1.34   0.182    -.0222931    .1169744
+        age_head2 |  -.0008404   .0007212    -1.17   0.244    -.0022573    .0005765
+        age_head3 |   5.17e-06   4.73e-06     1.09   0.275    -4.11e-06    .0000145
+       eduyr_head |   .0114217   .0031263     3.65   0.000     .0052795     .017564
+    _Iprovince_23 |          0  (omitted)
+    _Iprovince_32 |  -.0131092   .0826383    -0.16   0.874    -.1754688    .1492504
+    _Iprovince_37 |  -.4457016   .0656388    -6.79   0.000    -.5746623   -.3167409
+    _Iprovince_41 |  -.1163798    .079884    -1.46   0.146    -.2733278    .0405683
+    _Iprovince_42 |    .130085   .0620574     2.10   0.037     .0081609    .2520092
+    _Iprovince_43 |   .1524968   .0702405     2.17   0.030     .0144953    .2904984
+    _Iprovince_45 |   -.170666   .1226969    -1.39   0.165    -.4117287    .0703967
+    _Iprovince_52 |  -.3654209   .0732165    -4.99   0.000    -.5092694   -.2215724
+      _Iyear_1991 |  -.1012079   .0343474    -2.95   0.003    -.1686904   -.0337255
+      _Iyear_1993 |   .0055543   .0498416     0.11   0.911    -.0923695    .1034782
+      _Iyear_1997 |  -.3737056   .0727749    -5.14   0.000    -.5166865   -.2307246
+      _Iyear_2000 |   .0339502   .0427434     0.79   0.427    -.0500278    .1179282
+      _Iyear_2004 |          0  (omitted)
+_IproXyea_23_1991 |          0  (omitted)
+_IproXyea_23_1993 |          0  (omitted)
+_IproXyea_23_1997 |          0  (omitted)
+_IproXyea_23_2000 |          0  (omitted)
+_IproXyea_23_2004 |          0  (omitted)
+_IproXyea_32_1991 |  -.0044564   .0599505    -0.07   0.941    -.1222413    .1133284
+_IproXyea_32_1993 |  -.1192646   .0706318    -1.69   0.092    -.2580349    .0195057
+_IproXyea_32_1997 |   .1159551   .0837861     1.38   0.167    -.0486596    .2805698
+_IproXyea_32_2000 |  -.1383553   .1087419    -1.27   0.204    -.3520005      .07529
+_IproXyea_32_2004 |  -.1053095   .1348638    -0.78   0.435    -.3702765    .1596576
+_IproXyea_37_1991 |    .002161   .0321621     0.07   0.946    -.0610279    .0653499
+_IproXyea_37_1993 |  -.0603774   .0677087    -0.89   0.373    -.1934048      .07265
+_IproXyea_37_1997 |          0  (omitted)
+_IproXyea_37_2000 |  -.4122083   .0641151    -6.43   0.000    -.5381752   -.2862414
+_IproXyea_37_2004 |  -.3831366   .0800644    -4.79   0.000    -.5404391    -.225834
+_IproXyea_41_1991 |    .026439   .0430631     0.61   0.540     -.058167    .1110451
+_IproXyea_41_1993 |  -.0843706   .0567039    -1.49   0.137    -.1957767    .0270356
+_IproXyea_41_1997 |   .1996292   .0563741     3.54   0.000      .088871    .3103874
+_IproXyea_41_2000 |  -.1671755   .0733869    -2.28   0.023    -.3113588   -.0229923
+_IproXyea_41_2004 |  -.1187855   .1166705    -1.02   0.309    -.3480082    .1104371
+_IproXyea_42_1991 |  -.0314762   .0391258    -0.80   0.421    -.1083467    .0453942
+_IproXyea_42_1993 |  -.0931383   .0604448    -1.54   0.124    -.2118943    .0256176
+_IproXyea_42_1997 |   .3243098   .0643623     5.04   0.000     .1978571    .4507625
+_IproXyea_42_2000 |  -.0488773   .0652653    -0.75   0.454    -.1771041    .0793495
+_IproXyea_42_2004 |  -.0234976    .072973    -0.32   0.748    -.1668678    .1198725
+_IproXyea_43_1991 |    .022576   .0318345     0.71   0.479    -.0399693    .0851213
+_IproXyea_43_1993 |   .1060322   .0659057     1.61   0.108    -.0234528    .2355173
+_IproXyea_43_1997 |   .3339115   .0534826     6.24   0.000     .2288342    .4389889
+_IproXyea_43_2000 |  -.1058456   .0683026    -1.55   0.122    -.2400397    .0283485
+_IproXyea_43_2004 |  -.0289276   .0817352    -0.35   0.724    -.1895127    .1316576
+_IproXyea_45_1991 |   .1675476   .0911266     1.84   0.067     -.011489    .3465842
+_IproXyea_45_1993 |   .1329448    .122502     1.09   0.278     -.107735    .3736246
+_IproXyea_45_1997 |    .556734   .1233129     4.51   0.000      .314461     .799007
+_IproXyea_45_2000 |   .0222135   .1562015     0.14   0.887    -.2846758    .3291027
+_IproXyea_45_2004 |   .1160114    .143215     0.81   0.418    -.1653632    .3973861
+_IproXyea_52_1991 |   .0593591   .0473749     1.25   0.211    -.0337185    .1524367
+_IproXyea_52_1993 |   .0163681   .0642936     0.25   0.799    -.1099495    .1426857
+_IproXyea_52_1997 |   .5771986   .1122115     5.14   0.000     .3567365    .7976607
+_IproXyea_52_2000 |   .0594615   .1170864     0.51   0.612    -.1705782    .2895013
+_IproXyea_52_2004 |   .1526425    .143816     1.06   0.289     -.129913     .435198
+            _cons |  -.7296706   .5573228    -1.31   0.191    -1.824643    .3653019
+-----------------------------------------------------------------------------------
+  Post × Δ:    0.145 (0.028)
+  Post:        0.115 (0.065)
+  Δ:          -0.199 (0.031)
+  N:         1926 (paper: 1919)
+  Adj R²:     0.35 (paper: .34)
+  Paper β₁:  .14
+
+--- Column 3: Drinking water (apt_water_house) ---
+i.regime2         _Iregime2_0-1       (naturally coded; _Iregime2_0 omitted)
+i.regi~2*log_~e   _IregXlog_m_#       (coded as above)
+i.province        _Iprovince_21-52    (naturally coded; _Iprovince_21 omitted)
+i.year            _Iyear_1989-2004    (naturally coded; _Iyear_1989 omitted)
+i.pro~e*i.year    _IproXyea_#_#       (coded as above)
+note: _Iprovince_23 omitted because of collinearity.
+note: _Iyear_2004 omitted because of collinearity.
+note: _IproXyea_23_1991 omitted because of collinearity.
+note: _IproXyea_23_1993 omitted because of collinearity.
+note: _IproXyea_23_1997 omitted because of collinearity.
+note: _IproXyea_23_2000 omitted because of collinearity.
+note: _IproXyea_23_2004 omitted because of collinearity.
+note: _IproXyea_45_1997 omitted because of collinearity.
+
+Linear regression                               Number of obs     =      1,925
+                                                F(53, 502)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.3908
+                                                Root MSE          =     .25973
+
+                                     (Std. err. adjusted for 503 clusters in hhidc)
+-----------------------------------------------------------------------------------
+                  |               Robust
+  apt_water_house | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+      _Iregime2_1 |  -.0119132   .0224052    -0.53   0.595    -.0559327    .0321064
+  log_mismatchpre |  -.0745186   .0166028    -4.49   0.000    -.1071381    -.041899
+    _IregXlog_m_1 |    .063281   .0232868     2.72   0.007     .0175293    .1090327
+  logwage_broadhh |   .0035076   .0096977     0.36   0.718    -.0155454    .0225606
+    logtot_assets |   .0049342   .0033257     1.48   0.139    -.0015998    .0114681
+         age_head |   .0701746   .0253836     2.76   0.006     .0203033    .1200459
+        age_head2 |  -.0013694   .0005074    -2.70   0.007    -.0023663   -.0003725
+        age_head3 |   8.57e-06   3.30e-06     2.60   0.010     2.09e-06    .0000151
+       eduyr_head |   .0050453   .0015676     3.22   0.001     .0019654    .0081253
+    _Iprovince_23 |          0  (omitted)
+    _Iprovince_32 |  -.1425872   .0564957    -2.52   0.012    -.2535844     -.03159
+    _Iprovince_37 |  -.7068248   .0764023    -9.25   0.000    -.8569325   -.5567172
+    _Iprovince_41 |  -.1476295   .0515448    -2.86   0.004    -.2488996   -.0463595
+    _Iprovince_42 |  -.0075441   .0306662    -0.25   0.806     -.067794    .0527059
+    _Iprovince_43 |  -.0714233   .0426139    -1.68   0.094    -.1551469    .0123003
+    _Iprovince_45 |  -.2424493   .0861049    -2.82   0.005    -.4116196    -.073279
+    _Iprovince_52 |    .010117   .0306543     0.33   0.742    -.0501095    .0703434
+      _Iyear_1991 |  -.0253441   .0203681    -1.24   0.214    -.0653613    .0146731
+      _Iyear_1993 |   -.030399   .0199534    -1.52   0.128    -.0696014    .0088034
+      _Iyear_1997 |   .2353161   .0963484     2.44   0.015     .0460203    .4246119
+      _Iyear_2000 |  -.0024542    .005649    -0.43   0.664    -.0135528    .0086443
+      _Iyear_2004 |          0  (omitted)
+_IproXyea_23_1991 |          0  (omitted)
+_IproXyea_23_1993 |          0  (omitted)
+_IproXyea_23_1997 |          0  (omitted)
+_IproXyea_23_2000 |          0  (omitted)
+_IproXyea_23_2004 |          0  (omitted)
+_IproXyea_32_1991 |   .0037075   .0609306     0.06   0.952    -.1160029    .1234178
+_IproXyea_32_1993 |  -.0029871   .0666339    -0.04   0.964    -.1339027    .1279285
+_IproXyea_32_1997 |  -.1834359   .1248514    -1.47   0.142    -.4287316    .0618597
+_IproXyea_32_2000 |   .1202786    .081102     1.48   0.139    -.0390625    .2796197
+_IproXyea_32_2004 |   .1784665   .0584635     3.05   0.002     .0636032    .2933297
+_IproXyea_37_1991 |  -.1407737   .0808824    -1.74   0.082    -.2996835     .018136
+_IproXyea_37_1993 |  -.0056303   .1156532    -0.05   0.961    -.2328542    .2215936
+_IproXyea_37_1997 |  -.1916073   .1971983    -0.97   0.332    -.5790429    .1958282
+_IproXyea_37_2000 |    .164991   .1821649     0.91   0.366    -.1929085    .5228904
+_IproXyea_37_2004 |  -.0242009   .2569842    -0.09   0.925     -.529098    .4806962
+_IproXyea_41_1991 |  -.1112212   .0668286    -1.66   0.097    -.2425195    .0200771
+_IproXyea_41_1993 |   .0421768   .0598269     0.70   0.481    -.0753652    .1597188
+_IproXyea_41_1997 |  -.1590461   .1185654    -1.34   0.180    -.3919918    .0738995
+_IproXyea_41_2000 |   .1229355   .0534802     2.30   0.022     .0178629    .2280082
+_IproXyea_41_2004 |  -.0943965   .1144296    -0.82   0.410    -.3192163    .1304234
+_IproXyea_42_1991 |   .0032255   .0286523     0.11   0.910    -.0530677    .0595188
+_IproXyea_42_1993 |   .0124291   .0236819     0.52   0.600    -.0340988     .058957
+_IproXyea_42_1997 |  -.2521081   .0985061    -2.56   0.011    -.4456431   -.0585731
+_IproXyea_42_2000 |   .0258038   .0325849     0.79   0.429    -.0382158    .0898234
+_IproXyea_42_2004 |   .0254945   .0324439     0.79   0.432    -.0382481     .089237
+_IproXyea_43_1991 |   .1074136     .04731     2.27   0.024     .0144637    .2003635
+_IproXyea_43_1993 |    .134998   .0437245     3.09   0.002     .0490925    .2209036
+_IproXyea_43_1997 |  -.1572212   .1032712    -1.52   0.129    -.3601182    .0456758
+_IproXyea_43_2000 |   .0895102   .0447941     2.00   0.046     .0015032    .1775173
+_IproXyea_43_2004 |   .0885967   .0476847     1.86   0.064    -.0050895    .1822829
+_IproXyea_45_1991 |    .206553   .0986725     2.09   0.037      .012691     .400415
+_IproXyea_45_1993 |   .2774394    .084666     3.28   0.001     .1110961    .4437827
+_IproXyea_45_1997 |          0  (omitted)
+_IproXyea_45_2000 |   .1165165   .1295184     0.90   0.369    -.1379485    .3709815
+_IproXyea_45_2004 |    .233958   .0955161     2.45   0.015     .0462975    .4216186
+_IproXyea_52_1991 |  -.0505691    .052393    -0.97   0.335    -.1535057    .0523675
+_IproXyea_52_1993 |  -.0058882    .046873    -0.13   0.900    -.0979796    .0862033
+_IproXyea_52_1997 |  -.2334807   .0997014    -2.34   0.020    -.4293642   -.0375973
+_IproXyea_52_2000 |  -.0429481   .0539913    -0.80   0.427    -.1490249    .0631287
+_IproXyea_52_2004 |   .0011458   .0323336     0.04   0.972    -.0623801    .0646717
+            _cons |  -.2683817   .4171158    -0.64   0.520     -1.08789    .5511262
+-----------------------------------------------------------------------------------
+  Post × Δ:    0.063 (0.023)
+  Post:       -0.012 (0.022)
+  Δ:          -0.075 (0.017)
+  N:         1925 (paper: 1918)
+  Adj R²:     0.37 (paper: .35)
+  Paper β₁:  .06
+
+--- Column 4: Electricity (apt_electric) ---
+i.regime2         _Iregime2_0-1       (naturally coded; _Iregime2_0 omitted)
+i.regi~2*log_~e   _IregXlog_m_#       (coded as above)
+i.province        _Iprovince_21-52    (naturally coded; _Iprovince_21 omitted)
+i.year            _Iyear_1989-2004    (naturally coded; _Iyear_1989 omitted)
+i.pro~e*i.year    _IproXyea_#_#       (coded as above)
+note: _Iprovince_23 omitted because of collinearity.
+note: _Iyear_2000 omitted because of collinearity.
+note: _IproXyea_23_1991 omitted because of collinearity.
+note: _IproXyea_23_1993 omitted because of collinearity.
+note: _IproXyea_23_1997 omitted because of collinearity.
+note: _IproXyea_23_2000 omitted because of collinearity.
+note: _IproXyea_23_2004 omitted because of collinearity.
+note: _IproXyea_45_1997 omitted because of collinearity.
+
+Linear regression                               Number of obs     =      1,921
+                                                F(53, 502)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0459
+                                                Root MSE          =     .04518
+
+                                     (Std. err. adjusted for 503 clusters in hhidc)
+-----------------------------------------------------------------------------------
+                  |               Robust
+     apt_electric | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+      _Iregime2_1 |   -.000787   .0016779    -0.47   0.639    -.0040836    .0025095
+  log_mismatchpre |   .0005515   .0008664     0.64   0.525    -.0011507    .0022537
+    _IregXlog_m_1 |  -.0007395   .0010289    -0.72   0.473     -.002761     .001282
+  logwage_broadhh |   .0013517   .0013015     1.04   0.300    -.0012053    .0039087
+    logtot_assets |   .0001012   .0001478     0.68   0.494    -.0001893    .0003916
+         age_head |  -.0038162   .0023529    -1.62   0.105    -.0084391    .0008066
+        age_head2 |   .0000736   .0000485     1.52   0.130    -.0000217     .000169
+        age_head3 |  -4.39e-07   3.10e-07    -1.42   0.158    -1.05e-06    1.70e-07
+       eduyr_head |  -.0000791   .0002399    -0.33   0.742    -.0005503    .0003922
+    _Iprovince_23 |          0  (omitted)
+    _Iprovince_32 |  -.0002565   .0007313    -0.35   0.726    -.0016932    .0011802
+    _Iprovince_37 |  -.0010155   .0011713    -0.87   0.386    -.0033167    .0012857
+    _Iprovince_41 |  -.0188675   .0188476    -1.00   0.317    -.0558973    .0181623
+    _Iprovince_42 |  -.0000147   .0007477    -0.02   0.984    -.0014838    .0014543
+    _Iprovince_43 |  -.0008717   .0007734    -1.13   0.260    -.0023911    .0006478
+    _Iprovince_45 |  -.0031173   .0019275    -1.62   0.106    -.0069043    .0006696
+    _Iprovince_52 |   .0000714   .0005489     0.13   0.897     -.001007    .0011498
+      _Iyear_1991 |  -.0005136   .0008149    -0.63   0.529    -.0021147    .0010875
+      _Iyear_1993 |  -.0001206   .0008918    -0.14   0.892    -.0018727    .0016315
+      _Iyear_1997 |  -.0003932   .0017267    -0.23   0.820    -.0037855    .0029992
+      _Iyear_2000 |          0  (omitted)
+      _Iyear_2004 |  -.0000284   .0006721    -0.04   0.966    -.0013489    .0012921
+_IproXyea_23_1991 |          0  (omitted)
+_IproXyea_23_1993 |          0  (omitted)
+_IproXyea_23_1997 |          0  (omitted)
+_IproXyea_23_2000 |          0  (omitted)
+_IproXyea_23_2004 |          0  (omitted)
+_IproXyea_32_1991 |  -.0007803   .0004789    -1.63   0.104    -.0017212    .0001607
+_IproXyea_32_1993 |  -.0011174   .0007441    -1.50   0.134    -.0025792    .0003445
+_IproXyea_32_1997 |  -.0008955   .0011902    -0.75   0.452    -.0032339    .0014429
+_IproXyea_32_2000 |  -.0011781   .0011938    -0.99   0.324    -.0035235    .0011674
+_IproXyea_32_2004 |    -.07791   .0750719    -1.04   0.300    -.2254038    .0695837
+_IproXyea_37_1991 |  -.0004347   .0005297    -0.82   0.412    -.0014755    .0006061
+_IproXyea_37_1993 |  -.0006837   .0005606    -1.22   0.223    -.0017852    .0004177
+_IproXyea_37_1997 |   .0013878   .0012932     1.07   0.284    -.0011531    .0039286
+_IproXyea_37_2000 |   .0018166   .0025561     0.71   0.478    -.0032053    .0068385
+_IproXyea_37_2004 |   .0013932   .0027904     0.50   0.618    -.0040891    .0068755
+_IproXyea_41_1991 |   .0184634   .0185718     0.99   0.321    -.0180247    .0549514
+_IproXyea_41_1993 |  -.0022494   .0278761    -0.08   0.936    -.0570176    .0525189
+_IproXyea_41_1997 |   .0189857   .0192694     0.99   0.325    -.0188729    .0568444
+_IproXyea_41_2000 |   .0184247   .0183093     1.01   0.315    -.0175476    .0543969
+_IproXyea_41_2004 |  -.0487575   .0679241    -0.72   0.473    -.1822081    .0846931
+_IproXyea_42_1991 |  -.0001833    .000229    -0.80   0.424    -.0006331    .0002665
+_IproXyea_42_1993 |  -.0003836   .0004421    -0.87   0.386    -.0012522    .0004851
+_IproXyea_42_1997 |   .0005978   .0012643     0.47   0.637    -.0018861    .0030818
+_IproXyea_42_2000 |   .0007044   .0007271     0.97   0.333    -.0007242     .002133
+_IproXyea_42_2004 |   .0004632   .0008248     0.56   0.575    -.0011574    .0020837
+_IproXyea_43_1991 |    .000407   .0004351     0.94   0.350    -.0004478    .0012618
+_IproXyea_43_1993 |   .0000609   .0004673     0.13   0.896    -.0008572    .0009789
+_IproXyea_43_1997 |   .0016312   .0012374     1.32   0.188    -.0007999    .0040623
+_IproXyea_43_2000 |     .00017   .0010357     0.16   0.870    -.0018648    .0022048
+_IproXyea_43_2004 |   .0012324   .0015074     0.82   0.414    -.0017293     .004194
+_IproXyea_45_1991 |   .0005944   .0008539     0.70   0.487    -.0010832     .002272
+_IproXyea_45_1993 |   .0000516   .0011143     0.05   0.963    -.0021378    .0022409
+_IproXyea_45_1997 |          0  (omitted)
+_IproXyea_45_2000 |   .0011391   .0020528     0.55   0.579    -.0028939    .0051722
+_IproXyea_45_2004 |  -.0023137   .0034801    -0.66   0.506     -.009151    .0045236
+_IproXyea_52_1991 |   .0000849   .0004306     0.20   0.844     -.000761    .0009309
+_IproXyea_52_1993 |  -.0002606   .0006931    -0.38   0.707    -.0016224    .0011011
+_IproXyea_52_1997 |   .0014409     .00125     1.15   0.250     -.001015    .0038968
+_IproXyea_52_2000 |   .0002241   .0009689     0.23   0.817    -.0016794    .0021277
+_IproXyea_52_2004 |     .00019   .0012647     0.15   0.881    -.0022947    .0026747
+            _cons |   1.054128   .0328149    32.12   0.000     .9896566    1.118599
+-----------------------------------------------------------------------------------
+  Post × Δ:   -0.001 (0.001)
+  Post:       -0.001 (0.002)
+  Δ:           0.001 (0.001)
+  N:         1921 (paper: 1914)
+  Adj R²:     0.02 (paper: .02)
+  Paper β₁:  0
+
+--- Column 5: No excreta (no_excreta) ---
+i.regime2         _Iregime2_0-1       (naturally coded; _Iregime2_0 omitted)
+i.regi~2*log_~e   _IregXlog_m_#       (coded as above)
+i.province        _Iprovince_21-52    (naturally coded; _Iprovince_21 omitted)
+i.year            _Iyear_1989-2004    (naturally coded; _Iyear_1989 omitted)
+i.pro~e*i.year    _IproXyea_#_#       (coded as above)
+note: _Iprovince_23 omitted because of collinearity.
+note: _Iyear_2004 omitted because of collinearity.
+note: _IproXyea_23_1991 omitted because of collinearity.
+note: _IproXyea_23_1993 omitted because of collinearity.
+note: _IproXyea_23_1997 omitted because of collinearity.
+note: _IproXyea_23_2000 omitted because of collinearity.
+note: _IproXyea_23_2004 omitted because of collinearity.
+note: _IproXyea_37_1997 omitted because of collinearity.
+
+Linear regression                               Number of obs     =      1,910
+                                                F(53, 502)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0788
+                                                Root MSE          =     .22882
+
+                                     (Std. err. adjusted for 503 clusters in hhidc)
+-----------------------------------------------------------------------------------
+                  |               Robust
+       no_excreta | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+      _Iregime2_1 |   .1655185   .0413932     4.00   0.000     .0841932    .2468438
+  log_mismatchpre |  -.0295678   .0149535    -1.98   0.049    -.0589469   -.0001887
+    _IregXlog_m_1 |   .0474684    .018957     2.50   0.013     .0102237    .0847132
+  logwage_broadhh |    .030229   .0098584     3.07   0.002     .0108601    .0495978
+    logtot_assets |   -.002317   .0031569    -0.73   0.463    -.0085194    .0038855
+         age_head |  -.0076408   .0178164    -0.43   0.668    -.0426446     .027363
+        age_head2 |   .0000996   .0003547     0.28   0.779    -.0005973    .0007965
+        age_head3 |  -2.46e-07   2.26e-06    -0.11   0.914    -4.70e-06    4.20e-06
+       eduyr_head |   .0010343   .0015134     0.68   0.495    -.0019392    .0040078
+    _Iprovince_23 |          0  (omitted)
+    _Iprovince_32 |   .1888218    .041197     4.58   0.000      .107882    .2697617
+    _Iprovince_37 |  -.1620952   .0958752    -1.69   0.092    -.3504612    .0262709
+    _Iprovince_41 |   .0903448    .051635     1.75   0.081    -.0111025    .1917922
+    _Iprovince_42 |   .0719453   .0533059     1.35   0.178    -.0327848    .1766753
+    _Iprovince_43 |   .1553898   .0489487     3.17   0.002     .0592203    .2515592
+    _Iprovince_45 |   .1465012   .0517197     2.83   0.005     .0448875     .248115
+    _Iprovince_52 |   .0899444   .0552299     1.63   0.104    -.0185659    .1984547
+      _Iyear_1991 |   .0212969   .0314067     0.68   0.498    -.0404078    .0830016
+      _Iyear_1993 |   .0915787     .03877     2.36   0.019     .0154073    .1677501
+      _Iyear_1997 |   .1569713   .0982038     1.60   0.111    -.0359698    .3499123
+      _Iyear_2000 |  -.0041074   .0060453    -0.68   0.497    -.0159847    .0077699
+      _Iyear_2004 |          0  (omitted)
+_IproXyea_23_1991 |          0  (omitted)
+_IproXyea_23_1993 |          0  (omitted)
+_IproXyea_23_1997 |          0  (omitted)
+_IproXyea_23_2000 |          0  (omitted)
+_IproXyea_23_2004 |          0  (omitted)
+_IproXyea_32_1991 |   -.080875   .0421946    -1.92   0.056    -.1637748    .0020249
+_IproXyea_32_1993 |  -.1377574    .045133    -3.05   0.002    -.2264302   -.0490845
+_IproXyea_32_1997 |  -.3679646   .0877814    -4.19   0.000    -.5404289   -.1955003
+_IproXyea_32_2000 |  -.1966642   .0426474    -4.61   0.000    -.2804536   -.1128748
+_IproXyea_32_2004 |  -.1948567   .0439275    -4.44   0.000    -.2811611   -.1085523
+_IproXyea_37_1991 |    .313977     .08893     3.53   0.000     .1392562    .4886978
+_IproXyea_37_1993 |   .2734773   .0945097     2.89   0.004     .0877941    .4591605
+_IproXyea_37_1997 |          0  (omitted)
+_IproXyea_37_2000 |   .1542395   .0968106     1.59   0.112    -.0359643    .3444434
+_IproXyea_37_2004 |   -.097286   .2504143    -0.39   0.698    -.5892751    .3947031
+_IproXyea_41_1991 |   .0012596   .0568726     0.02   0.982     -.110478    .1129972
+_IproXyea_41_1993 |  -.0515638    .058866    -0.88   0.381    -.1672179    .0640903
+_IproXyea_41_1997 |  -.2694853   .0989335    -2.72   0.007      -.46386   -.0751107
+_IproXyea_41_2000 |  -.1215763   .0617822    -1.97   0.050    -.2429599   -.0001927
+_IproXyea_41_2004 |  -.0900985   .0529633    -1.70   0.090    -.1941555    .0139585
+_IproXyea_42_1991 |  -.0186427   .0576092    -0.32   0.746    -.1318275    .0945421
+_IproXyea_42_1993 |   .0066468   .0508196     0.13   0.896    -.0931985    .1064921
+_IproXyea_42_1997 |  -.2278275   .0957098    -2.38   0.018    -.4158687   -.0397863
+_IproXyea_42_2000 |    -.05883   .0538749    -1.09   0.275     -.164678     .047018
+_IproXyea_42_2004 |  -.0595871   .0545632    -1.09   0.275    -.1667874    .0476132
+_IproXyea_43_1991 |  -.0303324    .037259    -0.81   0.416    -.1035351    .0428703
+_IproXyea_43_1993 |  -.1287625   .0466045    -2.76   0.006    -.2203264   -.0371986
+_IproXyea_43_1997 |  -.3684013   .0927913    -3.97   0.000    -.5507084   -.1860942
+_IproXyea_43_2000 |  -.1701643   .0505144    -3.37   0.001      -.26941   -.0709185
+_IproXyea_43_2004 |   -.199655   .0608567    -3.28   0.001    -.3192201   -.0800898
+_IproXyea_45_1991 |  -.0855175   .0694715    -1.23   0.219    -.2220083    .0509732
+_IproXyea_45_1993 |  -.1668541   .0602909    -2.77   0.006    -.2853077   -.0484006
+_IproXyea_45_1997 |  -.3233214   .0935723    -3.46   0.001     -.507163   -.1394799
+_IproXyea_45_2000 |  -.1606474   .0522637    -3.07   0.002    -.2633299   -.0579649
+_IproXyea_45_2004 |  -.2157172   .0545367    -3.96   0.000    -.3228656   -.1085688
+_IproXyea_52_1991 |   .0061072   .0596804     0.10   0.919     -.111147    .1233614
+_IproXyea_52_1993 |  -.0772721   .0680119    -1.14   0.256    -.2108951    .0563508
+_IproXyea_52_1997 |  -.2373414   .0970262    -2.45   0.015    -.4279689   -.0467139
+_IproXyea_52_2000 |  -.0844613   .0562418    -1.50   0.134    -.1949597    .0260371
+_IproXyea_52_2004 |  -.0923511   .0572086    -1.61   0.107    -.2047489    .0200467
+            _cons |   .8247121   .2854215     2.89   0.004     .2639442     1.38548
+-----------------------------------------------------------------------------------
+  Post × Δ:    0.047 (0.019)
+  Post:        0.166 (0.041)
+  Δ:          -0.030 (0.015)
+  N:         1910 (paper: 1903)
+  Adj R²:     0.05 (paper: .05)
+  Paper β₁:  .05
+
+. 
+. 
+. /*==============================================================================
+>   STEP 2: TWOWAYFEWEIGHTS DECOMPOSITION
+> 
+>   Per dCDH web appendix #12: sharp design, Regression 1 type (feTR)
+> 
+>   Y = logapt_sqm, G = province, T = year
+>   D = Post × Δ (continuous treatment: regime2 * log_mismatchpre)
+>   Controls = log_mismatchpre + household covariates
+> 
+>   Note: regime2 (Post) is absorbed by year FE, so NOT in controls.
+>         log_mismatchpre varies within province, so included as control.
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TWOWAYFEWEIGHTS DECOMPOSITION"
+TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di    "=============================================="
+==============================================
+
+. 
+. * Prepare sample for twowayfeweights
+. preserve
+
+. keep if first_hhyr==1 & apt_nonmrkt93==1
+(28,944 observations deleted)
+
+. 
+. * Drop observations with missing key variables
+. drop if logapt_sqm == . | post_mismatch == . | log_mismatchpre == .
+(405 observations deleted)
+
+. drop if logwage_broadhh == . | logtot_assets == .
+(430 observations deleted)
+
+. drop if age_head == . | age_head2 == . | age_head3 == .
+(14 observations deleted)
+
+. drop if eduyr_head == .
+(9 observations deleted)
+
+. 
+. di "Observations for twowayfeweights: " _N
+Observations for twowayfeweights: 1875
+
+. 
+. di _n "--- Type: feTR (Fixed Effects, sharp design) ---"
+
+--- Type: feTR (Fixed Effects, sharp design) ---
+
+. di "Y = logapt_sqm, G = province_num, T = year, D = Post × Mismatch"
+Y = logapt_sqm, G = province_num, T = year, D = Post × Mismatch
+
+. cap noisily twowayfeweights logapt_sqm province_num year post_mismatch, ///
+>     type(feTR) controls(log_mismatchpre logwage_broadhh logtot_assets ///
+>     age_head age_head2 age_head3 eduyr_head)
+The treatment variable in the regression varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) apply to two-way fixed effects regressions
+with a group * period level treatment.
+The command will replace the treatment by its average value in each group * period.
+The results below apply to the two-way fixed effects regression with that treatment variable.
+
+The control variable 1 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 1 by its average value in each group * period cell.
+The results below apply to the regression with control variable 1 averaged at the group * period level.
+
+The control variable 2 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 2 by its average value in each group * period cell.
+The results below apply to the regression with control variable 2 averaged at the group * period level.
+
+The control variable 3 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 3 by its average value in each group * period cell.
+The results below apply to the regression with control variable 3 averaged at the group * period level.
+
+The control variable 4 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 4 by its average value in each group * period cell.
+The results below apply to the regression with control variable 4 averaged at the group * period level.
+
+The control variable 5 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 5 by its average value in each group * period cell.
+The results below apply to the regression with control variable 5 averaged at the group * period level.
+
+The control variable 6 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 6 by its average value in each group * period cell.
+The results below apply to the regression with control variable 6 averaged at the group * period level.
+
+The control variable 7 varies within some group * period cells.
+The results in de Chaisemartin, C. and D'Haultfoeuille, X. (2020) on two-way fixed effects regressions
+with controls apply to group * period level controls.
+The command will replace control variable 7 by its average value in each group * period cell.
+The results below apply to the regression with control variable 7 averaged at the group * period level.
+
+negative weights encountered
+
+. 
+. di _n "--- Type: fdTR (First Differences, for comparison) ---"
+
+--- Type: fdTR (First Differences, for comparison) ---
+
+. cap noisily twowayfeweights logapt_sqm province_num year post_mismatch, ///
+>     type(fdTR) controls(log_mismatchpre logwage_broadhh logtot_assets ///
+>     age_head age_head2 age_head3 eduyr_head)
+invalid syntax
+
+. 
+. restore
+
+. 
+. 
+. /*==============================================================================
+>   STEP 3: LATEX TABLE (AER format matching Paper Table 5 Panel A)
+> 
+>   Layout: 5 columns (one per dependent variable)
+>   Rows: Post × Δ, Post, Δ, Year dummies, Observations, R²
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "LaTeX TABLE EXPORT"
+LaTeX TABLE EXPORT
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- Helper program for significance stars ---
+. cap program drop _stars
+
+. program define _stars, rclass
+  1.     args b se
+  2.     local s ""
+  3.     if `se' > 0 & `se' < . {
+  4.         local t = abs(`b'/`se')
+  5.         if `t' > 2.576      local s "***"
+  6.         else if `t' > 1.960 local s "**"
+  7.         else if `t' > 1.645 local s "*"
+  8.     }
+  9.     return local s "`s'"
+ 10. end
+
+. 
+. * --- Extract stored estimates ---
+. forvalues k = 1/5 {
+  2.     cap estimates restore col`k'
+  3.     if !_rc {
+  4.         local n`k' = e(N)
+  5.         local r2_`k' : di %4.2f e(r2_a)
+  6. 
+.         * Post × Δ
+.         local b1_`k' = _b[_IregXlog_m_1]
+  7.         local se1_`k' = _se[_IregXlog_m_1]
+  8.         * Post
+.         local b2_`k' = _b[_Iregime2_1]
+  9.         local se2_`k' = _se[_Iregime2_1]
+ 10.         * Δ
+.         local b3_`k' = _b[log_mismatchpre]
+ 11.         local se3_`k' = _se[log_mismatchpre]
+ 12. 
+.         * Year dummies (relative to base year 1989)
+.         foreach yr in 1991 1993 1997 2000 2004 {
+ 13.             cap local b_yr`yr'_`k' = _b[_Iyear_`yr']
+ 14.             if _rc local b_yr`yr'_`k' = .
+ 15.             cap local se_yr`yr'_`k' = _se[_Iyear_`yr']
+ 16.             if _rc local se_yr`yr'_`k' = .
+ 17.         }
+ 18.     }
+ 19.     else {
+ 20.         local n`k' = 0
+ 21.     }
+ 22. }
+
+. 
+. * --- Write Table 5 Panel A ---
+. cap file close texfile
+
+. file open texfile using "$outdir/table5a.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\small" _n
+
+. file write texfile "\caption{Table 5---Impact of Household-Level Mismatch" _n
+
+. file write texfile " on Housing Size and Quality}" _n
+
+. file write texfile "\label{tab:table5a}" _n
+
+. file write texfile "\begin{tabular}{lccccc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & Log floor space & Flushing & Drinking & Electricity & No excreta \\" _n
+
+. file write texfile " & & toilet & water & & \\" _n
+
+. file write texfile " & (1) & (2) & (3) & (4) & (5) \\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "\multicolumn{6}{l}{\textit{Panel A. Parsimonious specification}} \\" _n
+
+. file write texfile "\addlinespace[3pt]" _n
+
+. 
+. * Row: Post × Δ
+. local line "Post $\times$ $\Delta_i$"
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local bfmt : di %5.2f `b1_`k''
+  4.         local bfmt = strtrim("`bfmt'")
+  5.         _stars `b1_`k'' `se1_`k''
+  6.         local s "`r(s)'"
+  7.         local line "`line' & `bfmt'`s'"
+  8.     }
+  9.     else {
+ 10.         local line "`line' & ---"
+ 11.     }
+ 12. }
+
+. file write texfile "`line' \\" _n
+
+. 
+. * SE row for Post × Δ
+. local line " "
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local sfmt : di %5.2f `se1_`k''
+  4.         local sfmt = strtrim("`sfmt'")
+  5.         local line "`line' & [`sfmt']"
+  6.     }
+  7.     else {
+  8.         local line "`line' & "
+  9.     }
+ 10. }
+
+. file write texfile "`line' \\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. * Row: Post
+. local line "Post"
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local bfmt : di %5.2f `b2_`k''
+  4.         local bfmt = strtrim("`bfmt'")
+  5.         _stars `b2_`k'' `se2_`k''
+  6.         local s "`r(s)'"
+  7.         local line "`line' & `bfmt'`s'"
+  8.     }
+  9.     else {
+ 10.         local line "`line' & ---"
+ 11.     }
+ 12. }
+
+. file write texfile "`line' \\" _n
+
+. 
+. local line " "
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local sfmt : di %5.2f `se2_`k''
+  4.         local sfmt = strtrim("`sfmt'")
+  5.         local line "`line' & [`sfmt']"
+  6.     }
+  7.     else {
+  8.         local line "`line' & "
+  9.     }
+ 10. }
+
+. file write texfile "`line' \\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. * Row: Δ
+. local line "$\Delta_i$"
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local bfmt : di %5.2f `b3_`k''
+  4.         local bfmt = strtrim("`bfmt'")
+  5.         _stars `b3_`k'' `se3_`k''
+  6.         local s "`r(s)'"
+  7.         local line "`line' & `bfmt'`s'"
+  8.     }
+  9.     else {
+ 10.         local line "`line' & ---"
+ 11.     }
+ 12. }
+
+. file write texfile "`line' \\" _n
+
+. 
+. local line " "
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local sfmt : di %5.2f `se3_`k''
+  4.         local sfmt = strtrim("`sfmt'")
+  5.         local line "`line' & [`sfmt']"
+  6.     }
+  7.     else {
+  8.         local line "`line' & "
+  9.     }
+ 10. }
+
+. file write texfile "`line' \\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. * Year dummies
+. foreach yr in 1991 1993 1997 2000 2004 {
+  2.     local line "Year `yr'"
+  3.     forvalues k = 1/5 {
+  4.         if `n`k'' > 0 & `b_yr`yr'_`k'' != . {
+  5.             local bfmt : di %5.2f `b_yr`yr'_`k''
+  6.             local bfmt = strtrim("`bfmt'")
+  7.             _stars `b_yr`yr'_`k'' `se_yr`yr'_`k''
+  8.             local s "`r(s)'"
+  9.             local line "`line' & `bfmt'`s'"
+ 10.         }
+ 11.         else {
+ 12.             local line "`line' & "
+ 13.         }
+ 14.     }
+ 15.     file write texfile "`line' \\" _n
+ 16. 
+.     local line " "
+ 17.     forvalues k = 1/5 {
+ 18.         if `n`k'' > 0 & `se_yr`yr'_`k'' != . {
+ 19.             local sfmt : di %5.2f `se_yr`yr'_`k''
+ 20.             local sfmt = strtrim("`sfmt'")
+ 21.             local line "`line' & [`sfmt']"
+ 22.         }
+ 23.         else {
+ 24.             local line "`line' & "
+ 25.         }
+ 26.     }
+ 27.     file write texfile "`line' \\" _n
+ 28.     file write texfile "\addlinespace" _n
+ 29. }
+
+. 
+. * Observations and R²
+. file write texfile "\midrule" _n
+
+. local line "Observations"
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local nfmt : di %12,0gc `n`k''
+  4.         local nfmt = strtrim("`nfmt'")
+  5.         local line "`line' & `nfmt'"
+  6.     }
+  7.     else {
+  8.         local line "`line' & ---"
+  9.     }
+ 10. }
+
+. file write texfile "`line' \\" _n
+
+. 
+. local line "Adjusted $R^2$"
+
+. forvalues k = 1/5 {
+  2.     if `n`k'' > 0 {
+  3.         local line "`line' & `r2_`k''"
+  4.     }
+  5.     else {
+  6.         local line "`line' & ---"
+  7.     }
+  8. }
+
+. file write texfile "`line' \\" _n
+
+. 
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\multicolumn{6}{p{0.95\linewidth}}{\footnotesize" _n
+
+. file write texfile " \textit{Notes:} Standard errors clustered by household" _n
+
+. file write texfile " in brackets (paper uses bootstrapped SE, 200 reps)." _n
+
+. file write texfile " Regressions include log household income, log assets," _n
+
+. file write texfile " a cubic in the head's age, the head's education," _n
+
+. file write texfile " province-year indicators, and a constant." _n
+
+. file write texfile " Sample: households in state-owned housing in 1993." _n
+
+. file write texfile " $\Delta_i$ is the prereform housing mismatch" _n
+
+. file write texfile " (predicted $-$ actual log rental value)." _n
+
+. file write texfile " *** Significant at 1\%, ** 5\%, * 10\%.}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table5a.tex created"
+  -> table5a.tex created
+
+. 
+. 
+. * --- twowayfeweights summary table ---
+. cap file close texfile
+
+. file open texfile using "$outdir/table_twowayfeweights.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition}" _n
+
+. file write texfile "\label{tab:twfe}" _n
+
+. file write texfile "\begin{tabular}{lc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile "Statistic & Value \\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{Panel: Log floor space (Column 1)}} \\" _n
+
+. file write texfile "\addlinespace" _n
+
+. file write texfile "Type & feTR (sharp design) \\" _n
+
+. file write texfile "Group ($G$) & Province \\" _n
+
+. file write texfile "Time ($T$) & Year \\" _n
+
+. file write texfile "Treatment ($D$) & Post $\times$ Mismatch \\" _n
+
+. file write texfile "\addlinespace" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{See log file for full decomposition results.}} \\" _n
+
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table_twowayfeweights.tex created"
+  -> table_twowayfeweights.tex created
+
+. 
+. 
+. * --- Master document ---
+. cap file close texfile
+
+. file open texfile using "$outdir/wang_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write texfile "\geometry{margin=1in}" _n
+
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize," _n
+
+. file write texfile "  justification=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Wang (2011)}\\" _n
+
+. file write texfile "{\large State Misallocation and Housing Prices:}\\" _n
+
+. file write texfile "{\large Theory and Evidence from China}\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}," _n
+
+. file write texfile " 101(5), 2081--2107}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. file write texfile "\vspace{1em}" _n _n
+
+. 
+. file write texfile "\input{table5a}" _n _n
+
+. file write texfile "\clearpage" _n
+
+. file write texfile "\input{table_twowayfeweights}" _n _n
+
+. 
+. file write texfile "\end{document}" _n
+
+. file close texfile
+
+. 
+. di "  -> wang_tables.tex created"
+  -> wang_tables.tex created
+
+. 
+. 
+. /*==============================================================================
+>   VERIFICATION SUMMARY
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "VERIFICATION vs Paper Table 5 Panel A"
+VERIFICATION vs Paper Table 5 Panel A
+
+. di    "=============================================="
+==============================================
+
+. 
+. forvalues k = 1/5 {
+  2.     cap estimates restore col`k'
+  3.     if !_rc {
+  4.         local our_b = _b[_IregXlog_m_1]
+  5.         di "Col `k' (`deplab`k''):"
+  6.         di "  Post×Δ: " %7.3f `our_b' " (paper: `paper_b`k'')"
+  7.         di "  N:      " e(N) " (paper: `paper_n`k'')"
+  8.         di "  R²:     " %5.2f e(r2_a) " (paper: `paper_r`k'')"
+  9.     }
+ 10. }
+Col 1 (Log floor space):
+  Post×Δ:   0.205 (paper: .21)
+  N:      1875 (paper: 1867)
+  R²:      0.23 (paper: .25)
+Col 2 (Flushing toilet):
+  Post×Δ:   0.145 (paper: .14)
+  N:      1926 (paper: 1919)
+  R²:      0.35 (paper: .34)
+Col 3 (Drinking water):
+  Post×Δ:   0.063 (paper: .06)
+  N:      1925 (paper: 1918)
+  R²:      0.37 (paper: .35)
+Col 4 (Electricity):
+  Post×Δ:  -0.001 (paper: 0)
+  N:      1921 (paper: 1914)
+  R²:      0.02 (paper: .02)
+Col 5 (No excreta):
+  Post×Δ:   0.047 (paper: .05)
+  N:      1910 (paper: 1903)
+  R²:      0.05 (paper: .05)
+
+. 
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "ALL DONE - Wang (2011)"
+ALL DONE - Wang (2011)
+
+. di    "=============================================="
+==============================================
+
+. di "Output files:"
+Output files:
+
+. di "  1. $outdir/table5a.tex"
+  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Wang (2011)/table5a.tex
+
+. di "  2. $outdir/table_twowayfeweights.tex"
+  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Wang (2011)/table_twowayfeweights.tex
+
+. di "  3. $outdir/wang_tables.tex (compilable)"
+  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Wang (2011)/wang_tables.tex (compilable)
+
+. di "  4. $outdir/run_twowayfe.log"
+  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Wang (2011)/run_twowayfe.log
+
+. di "=============================================="
+==============================================
+
+. 
+. log close _all
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Wang (2011)/run_twowayfe.log
+  log type:  text
+ closed on:  20 Apr 2026, 16:22:15
+-----------------------------------------------------------------------------------------------------------------

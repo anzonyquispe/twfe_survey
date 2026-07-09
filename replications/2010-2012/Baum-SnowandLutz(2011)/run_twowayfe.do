@@ -22,9 +22,26 @@ set more off
 set matsize 5000
 cap log close _all
 
-global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Baum-SnowandLutz(2011)/MS20080918_data_programs/data"
-global outdir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Baum-SnowandLutz(2011)"
-global latexdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2010-2012/Baum-SnowandLutz(2011)"
+
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+
+
+global datadir "$twfe_root/data/2010-2012/Baum-SnowandLutz(2011)/MS20080918_data_programs/data"
+global outdir  "$twfe_root/replications/2010-2012/Baum-SnowandLutz(2011)"
+global latexdir "$twfe_root/latex/2010-2012/Baum-SnowandLutz(2011)"
 
 * NOTE: log is auto-created by Stata -b mode (run_twowayfe.log)
 
@@ -466,6 +483,11 @@ label variable leaid     "G: School district LEA ID"
 label variable year      "T: Census year (1960-1990)"
 label variable imp_post  "D: Post-desegregation (binary)"
 label variable lnwpu     "Y: Log white public enrollment"
+
+rename leaid G
+rename year T
+rename imp_post D
+rename lnwpu Y
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

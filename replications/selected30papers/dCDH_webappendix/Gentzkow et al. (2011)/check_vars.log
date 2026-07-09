@@ -1,0 +1,134 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Gentzkow et al. (2011)/check_vars.log
+  log type:  text
+ opened on:  23 Apr 2026, 00:09:45
+
+. 
+. use "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Gentzkow et
+>  al. (2011)/20091316_data/temp/voting_cnty_clean.dta", clear
+
+. 
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012
+> /Gentzkow et al. (2011)/20091316_data/temp/voting_cnty_clean.dta
+ Observations:       143,244                  
+    Variables:            91                  2 Dec 2010 09:56
+Sorted by: cnty90  year
+
+. di "N obs = " _N
+N obs = 143244
+
+. 
+. foreach v in cnty90 year state styr numdailies prestout congtout presrepshare
+>  congrepshare readshare_hhld mainsample mainsample_circ {
+  2.     cap confirm variable `v'
+  3.     if _rc == 0 {
+  4.         di "`v': EXISTS"
+  5.         qui sum `v'
+  6.         di "  N=" r(N) " mean=" r(mean) " min=" r(min) " max=" r(max)
+  7.     }
+  8.     else {
+  9.         di "`v': MISSING"
+ 10.     }
+ 11. }
+cnty90: EXISTS
+  N=143244 mean=30679.15 min=1001 max=56045
+year: EXISTS
+  N=143244 mean=1914 min=1824 max=2004
+state: EXISTS
+  N=0 mean=. min=. max=.
+styr: EXISTS
+  N=143244 mean=1186.6471 min=1 max=2300
+numdailies: EXISTS
+  N=143244 mean=.40902237 min=0 max=45
+prestout: EXISTS
+  N=102581 mean=.60755334 min=.00011548 max=9.6149998
+congtout: EXISTS
+  N=86811 mean=.58149199 min=0 max=9.7880001
+presrepshare: EXISTS
+  N=96990 mean=.48137817 min=0 max=1
+congrepshare: EXISTS
+  N=83085 mean=.43511173 min=0 max=1
+readshare_hhld: EXISTS
+  N=143244 mean=.15549855 min=0 max=1
+mainsample: EXISTS
+  N=143244 mean=.10909357 min=0 max=1
+mainsample_circ: EXISTS
+  N=143244 mean=.07875373 min=0 max=1
+
+. 
+. * Check panel structure
+. xtset
+
+Panel variable: cnty90 (strongly balanced)
+ Time variable: year, 1824 to 2004
+         Delta: 4 units
+
+. di "---"
+---
+
+. tab year
+
+    Year of |
+   Election |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       1824 |      3,114        2.17        2.17
+       1828 |      3,114        2.17        4.35
+       1832 |      3,114        2.17        6.52
+       1836 |      3,114        2.17        8.70
+       1840 |      3,114        2.17       10.87
+       1844 |      3,114        2.17       13.04
+       1848 |      3,114        2.17       15.22
+       1852 |      3,114        2.17       17.39
+       1856 |      3,114        2.17       19.57
+       1860 |      3,114        2.17       21.74
+       1864 |      3,114        2.17       23.91
+       1868 |      3,114        2.17       26.09
+       1872 |      3,114        2.17       28.26
+       1876 |      3,114        2.17       30.43
+       1880 |      3,114        2.17       32.61
+       1884 |      3,114        2.17       34.78
+       1888 |      3,114        2.17       36.96
+       1892 |      3,114        2.17       39.13
+       1896 |      3,114        2.17       41.30
+       1900 |      3,114        2.17       43.48
+       1904 |      3,114        2.17       45.65
+       1908 |      3,114        2.17       47.83
+       1912 |      3,114        2.17       50.00
+       1916 |      3,114        2.17       52.17
+       1920 |      3,114        2.17       54.35
+       1924 |      3,114        2.17       56.52
+       1928 |      3,114        2.17       58.70
+       1932 |      3,114        2.17       60.87
+       1936 |      3,114        2.17       63.04
+       1940 |      3,114        2.17       65.22
+       1944 |      3,114        2.17       67.39
+       1948 |      3,114        2.17       69.57
+       1952 |      3,114        2.17       71.74
+       1956 |      3,114        2.17       73.91
+       1960 |      3,114        2.17       76.09
+       1964 |      3,114        2.17       78.26
+       1968 |      3,114        2.17       80.43
+       1972 |      3,114        2.17       82.61
+       1976 |      3,114        2.17       84.78
+       1980 |      3,114        2.17       86.96
+       1984 |      3,114        2.17       89.13
+       1988 |      3,114        2.17       91.30
+       1992 |      3,114        2.17       93.48
+       1996 |      3,114        2.17       95.65
+       2000 |      3,114        2.17       97.83
+       2004 |      3,114        2.17      100.00
+------------+-----------------------------------
+      Total |    143,244      100.00
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Gentzkow et al. (2011)/check_vars.log
+  log type:  text
+ closed on:  23 Apr 2026, 00:09:46
+-------------------------------------------------------------------------------

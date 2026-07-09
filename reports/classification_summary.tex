@@ -1,0 +1,240 @@
+\documentclass[10pt,aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{xcolor}
+
+\definecolor{claColor}{HTML}{1F77B4}
+\definecolor{sadColor}{HTML}{2CA02C}
+\definecolor{sfsdColor}{HTML}{FF7F0E}
+\definecolor{hadColor}{HTML}{9467BD}
+\definecolor{otherColor}{HTML}{7F7F7F}
+
+\title[TWFE Design Classification]{Classification of TWFE Replicated Papers}
+\subtitle{dCDH Framework: CLA / SAD / SFSD / HAD}
+\author{TWFE Survey --- Replication Tracker}
+\date{\today}
+
+\begin{document}
+
+%%========================================================================
+\begin{frame}
+\titlepage
+\end{frame}
+
+%%========================================================================
+\begin{frame}{Overview}
+\begin{itemize}
+  \item \textbf{Universe:} 30 papers replicated (full, partial, or complete) across waves 2010--2012 and 2015--2019.
+  \item \textbf{Goal:} Classify each design under the de Chaisemartin \& D'Haultf\oe uille (dCDH) taxonomy.
+  \item \textbf{Source of evidence:} Replication tex files, weight-decomposition tables, and original treatment definitions.
+  \item \textbf{Output:} Updated \texttt{classification} column in \\
+    \texttt{reports/tracker\_master\_consolidado\_final.xlsx}.
+\end{itemize}
+\end{frame}
+
+%%========================================================================
+\begin{frame}{Design definitions (dCDH)}
+\small
+\begin{description}
+  \item[\textcolor{claColor}{\textbf{CLA}} --- Classical DiD]
+    Single date of treatment, binary $D \in \{0,1\}$, never-treated control units, units remain treated once switched.
+  \item[\textcolor{sadColor}{\textbf{SAD}} --- Staggered Adoption Design]
+    Many treatment dates, binary $D \in \{0,1\}$, absorbing treatment (once treated, stays treated).
+  \item[\textcolor{sfsdColor}{\textbf{SFSD}} --- Staggered First Switch Design]
+    $\exists\, g \ne g'$ such that (i) $D_{g,1} = D_{g',1}$ \emph{and} (ii) $F_g \ne F_{g'}$.
+    Heterogeneous first-switch dates; treatment may switch on/off.
+  \item[\textcolor{hadColor}{\textbf{HAD}} --- Heterogeneous Adoption Design]
+    $D_1 = 0$, $D_2 \ge 0$, $\mathbb{E}_u(D_2) > 0$, $\mathrm{Var}_u(D_2 \mid D_2 > 0) > 0$.
+    Continuous treatment with stayers and a clean baseline.
+  \item[\textcolor{otherColor}{\textbf{OTHER}}]
+    Designs that fit none of the four: continuous multi-period treatments without staggered structure, RD designs, or cross-sectional OLS.
+\end{description}
+\end{frame}
+
+%%========================================================================
+\begin{frame}{Distribution of designs (n=30)}
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Design} & \textbf{Count} & \textbf{Share} \\
+\midrule
+\textcolor{claColor}{\textbf{CLA}}   & 1  & 3.3\% \\
+\textcolor{sadColor}{\textbf{SAD}}   & 7  & 23.3\% \\
+\textcolor{sfsdColor}{\textbf{SFSD}} & 4  & 13.3\% \\
+\textcolor{hadColor}{\textbf{HAD}}   & 1  & 3.3\% \\
+\textcolor{otherColor}{\textbf{OTHER}} & 17 & 56.7\% \\
+\midrule
+\textbf{Total} & \textbf{30} & 100\% \\
+\bottomrule
+\end{tabular}
+
+\vspace{1em}
+\footnotesize
+\textit{Take-away:} Less than half of the replicated papers (43\%) fit cleanly into one of the four canonical dCDH designs. The majority use continuous, non-absorbing, or non-DiD designs.
+\end{frame}
+
+%%========================================================================
+\begin{frame}{\textcolor{claColor}{CLA} --- Classical DiD ($n=1$)}
+\begin{itemize}
+  \item \textbf{Dinkelman (2011)} --- \emph{The Effects of Rural Electrification on Employment} (AER)
+  \begin{itemize}
+    \item Binary electrification, 2 periods (1996, 2001 South African Census).
+    \item Reshaped to 2-period panel; 0\% negative weights.
+    \item Textbook classical $2\times 2$ DiD.
+  \end{itemize}
+\end{itemize}
+\vfill
+\footnotesize\textit{Note:} Pure CLA designs are rare in the AER/QJE top-journal sample --- most studies exploit some staggered or continuous variation.
+\end{frame}
+
+%%========================================================================
+\begin{frame}{\textcolor{sadColor}{SAD} --- Staggered Adoption ($n=7$)}
+\small
+\begin{tabular}{ll>{\raggedright\arraybackslash}p{6cm}}
+\toprule
+\textbf{Paper} & \textbf{Year} & \textbf{Treatment} \\
+\midrule
+Antecol et al.        & 2018 & Tenure-clock stopping policies \\
+Baum-Snow \& Lutz     & 2011 & School desegregation orders \\
+Enikolopov et al.     & 2011 & NTV reception expansion \\
+Forman et al.         & 2012 & Internet adoption events \\
+Hornbeck              & 2012 & Dust Bowl erosion exposure \\
+Moser \& Voena        & 2012 & Compulsory licensing (TWEA) \\
+Zhang \& Zhu          & 2011 & Wikipedia block in China \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.8em}
+\footnotesize
+\textit{Common pattern:} Binary 0/1 treatment, multiple adoption dates, absorbing structure (units stay treated after switch). Negative-weight share ranges from 0\% (clean control, Moser-Voena, Zhang-Zhu) to $\sim$52\% (Enikolopov).
+\end{frame}
+
+%%========================================================================
+\begin{frame}{\textcolor{sfsdColor}{SFSD} --- Staggered First Switch ($n=4$)}
+\small
+\begin{tabular}{ll>{\raggedright\arraybackslash}p{7cm}}
+\toprule
+\textbf{Paper} & \textbf{Year} & \textbf{Treatment} \\
+\midrule
+Acemoglu et al.    & 2011 & Binary, multiple switches, some never-treated \\
+Burgess et al.     & 2015 & President's coethnic dummy (on/off by presidency) \\
+Faye \& Niehaus    & 2012 & Executive-election year (binary, repeats) \\
+Kaur               & 2019 & Binary rainfall shock (transient) \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.8em}
+\footnotesize
+\textit{Distinguishing feature:} Binary treatment that can switch on \emph{and} off --- not absorbing. Same period-1 status across groups but heterogeneous first-switch dates. dCDH SFSD estimators apply.
+\end{frame}
+
+%%========================================================================
+\begin{frame}{\textcolor{hadColor}{HAD} --- Heterogeneous Adoption ($n=1$)}
+\begin{itemize}
+  \item \textbf{Algan \& Cahuc (2010)} --- \emph{Inherited Trust and Growth} (AER)
+  \begin{itemize}
+    \item Continuous treatment (trust intensity), no pre-treatment period.
+    \item Some stayers ($D_1 = 0$), variance in $D_2 \mid D_2 > 0$ --- exact match for HAD.
+    \item $\sim$50\% negative weights detected.
+  \end{itemize}
+\end{itemize}
+\vfill
+\footnotesize\textit{Note:} HAD is a 2-period continuous-treatment design with a clean baseline. Most continuous-treatment papers in the sample have multi-period variation that does \emph{not} fit HAD's 2-period structure --- they fall into OTHER.
+\end{frame}
+
+%%========================================================================
+\begin{frame}{\textcolor{otherColor}{OTHER} --- Non-canonical designs ($n=17$)}
+\scriptsize
+\begin{tabular}{lll}
+\toprule
+\textbf{Paper} & \textbf{Year} & \textbf{Why not CLA/SAD/SFSD/HAD?} \\
+\midrule
+Aaronson et al.            & 2012 & Continuous log min wage, multi-period \\
+Anderson \& Sallee         & 2011 & CAFE manufacturer panel, not classical DiD \\
+Bagwell \& Staiger         & 2011 & Continuous tariff variation \\
+Berman et al.              & 2017 & Continuous shock, 60.9\% neg weights \\
+Besley \& Mueller          & 2012 & Continuous killings/SD, multi-period \\
+Bloom et al.               & 2012 & Cross-sectional OLS --- not DiD \\
+Dell                       & 2015 & Regression discontinuity design \\
+Donaldson                  & 2018 & Continuous railroad market access \\
+Duranton \& Turner         & 2011 & Continuous roads (km), 49\% neg \\
+Favara \& Imbs             & 2015 & Continuous credit, on/off \\
+Fetzer                     & 2019 & Continuous rainfall/conflict over time \\
+Gentzkow et al.            & 2011 & Discrete count, varies up \emph{and} down \\
+Handley \& Lima\~o         & 2017 & Continuous tariff uncertainty \\
+Munshi \& Rosenzweig       & 2016 & Cross-section OLS --- not DiD \\
+Simcoe                     & 2012 & Continuous (Suit-share $\times$ S-track) \\
+Su\'arez Serrato \& Zidar  & 2016 & Continuous tax with negative values \\
+Wang                       & 2011 & Continuous treatment, neg weights \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+%%========================================================================
+\begin{frame}{Negative-weight patterns by design}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Design} & \textbf{Neg-weight range} & \textbf{Pattern} \\
+\midrule
+\textcolor{claColor}{CLA}   & 0\%            & Clean 2-period DiD avoids decomposition pathologies \\
+\textcolor{sadColor}{SAD}   & 0\%--52\%     & Wide range; depends on heterogeneity in adoption timing \\
+\textcolor{sfsdColor}{SFSD} & 0\%--52\%     & On/off treatment introduces sign issues even when binary \\
+\textcolor{hadColor}{HAD}   & $\sim$50\%    & Continuous treatment $\Rightarrow$ many TWFE weights flip sign \\
+\textcolor{otherColor}{OTHER} & 21\%--61\%  & Worst offenders are multi-period continuous designs \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.8em}
+\footnotesize\textit{Empirical regularity:} Negative-weight share rises sharply when the treatment is non-binary or non-absorbing. Clean SAD with homogeneous timing (e.g., Moser-Voena, Zhang-Zhu) is the closest thing to a ``safe'' TWFE specification.
+\end{frame}
+
+%%========================================================================
+\begin{frame}{Wave comparison}
+\small
+\centering
+\begin{tabular}{lccccc|c}
+\toprule
+\textbf{Wave} & CLA & SAD & SFSD & HAD & OTHER & \textbf{Total} \\
+\midrule
+2010--2012   & 1 & 5 & 2 & 1 & 10 & 19 \\
+2015--2019   & 0 & 2 & 2 & 0 & 7  & 11 \\
+\midrule
+\textbf{Total} & 1 & 7 & 4 & 1 & 17 & 30 \\
+\bottomrule
+\end{tabular}
+
+\vspace{1em}
+\footnotesize
+\textit{Observation:} The 2015--2019 wave has \emph{no} pure CLA papers and a higher share of continuous-treatment OTHER designs, consistent with a methodological shift toward richer (and less canonical) identification strategies in the more recent literature.
+\end{frame}
+
+%%========================================================================
+\begin{frame}{Methodological implications}
+\begin{itemize}
+  \item \textbf{Only 8 of 30 papers} (CLA + SAD = 27\%) use the design that standard TWFE \emph{intuitions} assume.
+  \item \textbf{4 SFSD papers} require non-absorbing-treatment estimators (e.g., \texttt{did\_multiplegt\_dyn}).
+  \item \textbf{1 HAD + 17 OTHER papers} (60\%) involve continuous or non-DiD designs --- standard TWFE coefficients should be interpreted with caution.
+  \item Negative-weight diagnostics confirm: TWFE is a problematic summary in the majority of the sample.
+\end{itemize}
+\vfill
+\textbf{Bottom line:} The dCDH taxonomy reveals that ``DiD-style'' papers in the AER/QJE sample are heterogeneous in design, and most require beyond-TWFE estimators for valid inference under treatment-effect heterogeneity.
+\end{frame}
+
+%%========================================================================
+\begin{frame}{Sources \& reproducibility}
+\begin{itemize}
+  \item Excel tracker: \texttt{reports/tracker\_master\_consolidado\_final.xlsx}
+  \item LaTeX replication tables: \texttt{latex/2010-2012/} and \texttt{latex/2015-2019/}
+  \item Each paper folder contains a \texttt{table\_twowayfeweights.tex} with the decomposition that informed the classification.
+  \item Design definitions follow de Chaisemartin \& D'Haultf\oe uille, ``Two-Way Fixed Effects Estimators with Heterogeneous Treatment Effects'' (AER 2020) and the corresponding textbook chapter.
+\end{itemize}
+\end{frame}
+
+\end{document}

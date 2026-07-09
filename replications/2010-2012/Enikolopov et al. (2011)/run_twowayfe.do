@@ -28,9 +28,24 @@ set more off
 set matsize 2000
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Enikolopov et al. (2011)"
+
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global paperdir "$twfe_root/data/2010-2012/Enikolopov et al. (2011)"
 global datadir  "$paperdir/Replication"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Enikolopov et al. (2011)"
+global outdir   "$twfe_root/replications/2010-2012/Enikolopov et al. (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -375,13 +390,25 @@ di "=============================================="
 di _n "=============================================="
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "=============================================="
+keep if _j == 1995 | _j == 1999
 
+egen aux = group( _j ) 
+replace _j = aux
 keep tik_id _j Watch_probit_ Votes_SPS_
+
+
 
 label variable tik_id         "G: Subregion numeric ID"
 label variable _j             "T: Election year (1995/1999)"
 label variable Watch_probit_  "D: NTV access (probit predicted)"
 label variable Votes_SPS_     "Y: SPS vote share"
+
+rename Watch_probit_ D
+rename Votes_SPS_ Y
+rename tik_id G
+
+rename _j T
+
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

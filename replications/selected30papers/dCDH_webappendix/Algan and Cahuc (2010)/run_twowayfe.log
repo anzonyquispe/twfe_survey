@@ -1,0 +1,914 @@
+-----------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/run_twowayfe.log
+  log type:  text
+ opened on:  20 Apr 2026, 16:35:45
+
+. 
+. * --- Force install packages ---
+. cap ado uninstall estout
+
+. ssc install estout, replace
+checking estout consistency and verifying not already installed...
+installing into C:\Users\Usuario\ado\plus\...
+installation complete.
+
+. 
+. cap ado uninstall twowayfeweights
+
+. ssc install twowayfeweights, replace
+checking twowayfeweights consistency and verifying not already installed...
+installing into C:\Users\Usuario\ado\plus\...
+installation complete.
+
+. which twowayfeweights
+C:\Users\Usuario\ado\plus\t\twowayfeweights.ado
+
+. 
+. /*==============================================================================
+>   STEP 1: REPLICATE FIGURE 4
+>   README_PROGRAM.do line 376:
+>     reg change_gdpk change_trust if period==2000 & Nsample1935==0
+>   Paper: coef ~ 32,238, R² = 0.43, N = 24
+> ==============================================================================*/
+. 
+. use "$paperdir/AER_MACRO.dta", clear
+
+. 
+. * Keep 1935-2000 sample
+. keep if period19352000 == 1
+(72 observations deleted)
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 1: REPLICATE FIGURE 4"
+  STEP 1: REPLICATE FIGURE 4
+
+. di "============================================================"
+============================================================
+
+. tab cty period
+
+           |        period
+       cty |      1935       2000 |     Total
+-----------+----------------------+----------
+      Afri |         1          1 |         2 
+       Aut |         1          1 |         2 
+        Bg |         1          1 |         2 
+        Cd |         1          1 |         2 
+       Czr |         1          1 |         2 
+        Dk |         1          1 |         2 
+       Fin |         1          1 |         2 
+       Fra |         1          1 |         2 
+       Ger |         1          1 |         2 
+        Hg |         1          1 |         2 
+     India |         1          1 |         2 
+       Ire |         1          1 |         2 
+       Ita |         1          1 |         2 
+        Mx |         1          1 |         2 
+       Nth |         1          1 |         2 
+        Nw |         1          1 |         2 
+       Pol |         1          1 |         2 
+        Pt |         1          1 |         2 
+       Rus |         1          1 |         2 
+        Sp |         1          1 |         2 
+       Swd |         1          1 |         2 
+     Switz |         1          1 |         2 
+        Uk |         1          1 |         2 
+      Youg |         1          1 |         2 
+-----------+----------------------+----------
+     Total |        24         24 |        48 
+
+. summarize trustgss gdpk_diffswd_good
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    trustgss |         48   -.0129932    .1140266  -.4310252   .2843457
+gdpk_diffs~d |         48   -2992.397    6051.065  -19571.59   4596.701
+
+. 
+. * Generate first-differences (matching README lines 370-375)
+. sort cty period
+
+. gen gdpk_lag1     = gdpk_diffswd_good[_n-1] if cty==cty[_n-1]
+(24 missing values generated)
+
+. gen trustgss_lag1 = trustgss[_n-1]           if cty==cty[_n-1]
+(24 missing values generated)
+
+. gen change_trust  = trustgss - trustgss_lag1           if period==2000
+(24 missing values generated)
+
+. gen change_gdpk   = gdpk_diffswd_good - gdpk_lag1     if period==2000
+(24 missing values generated)
+
+. 
+. * Show data for figure
+. list cty change_trust change_gdpk if period==2000, clean noobs
+
+      cty   change_~t   change_~k  
+     Afri   -.0624618   -16732.02  
+      Aut    .0901648    357.2808  
+       Bg    .0247568   -1225.811  
+       Cd    .0843834    1171.168  
+      Czr   -.0951184   -10707.58  
+       Dk    .0554613    700.8079  
+      Fin    .1528294   -97.05127  
+      Fra   -.1212849    100.0535  
+      Ger   -.0715106   -2037.295  
+       Hg   -.0373233   -12188.73  
+    India   -.4013184   -16117.28  
+      Ire   -.0883923    3115.802  
+      Ita    -.081378   -1316.374  
+       Mx   -.2322926   -12017.22  
+      Nth    .0389314   -880.2654  
+       Nw   -.0944738    4964.527  
+      Pol   -.1217381   -11847.99  
+       Pt    -.034546   -5062.598  
+      Rus   -.2756716   -14199.53  
+       Sp    .0758358   -3460.744  
+      Swd           0           0  
+    Switz   -.0074808   -627.4431  
+       Uk   -.0920785   -1998.067  
+     Youg   -.3374585   -13743.93  
+
+. 
+. * --- Figure 4 regression ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  FIGURE 4: reg change_gdpk change_trust"
+  FIGURE 4: reg change_gdpk change_trust
+
+. di "  Expected: coef = 32,238 | R2 = 0.43 | N = 24"
+  Expected: coef = 32,238 | R2 = 0.43 | N = 24
+
+. di "============================================================"
+============================================================
+
+. 
+. reg change_gdpk change_trust if period==2000 & Nsample1935==0
+
+      Source |       SS           df       MS      Number of obs   =        24
+-------------+----------------------------------   F(1, 22)        =     16.70
+       Model |   442246710         1   442246710   Prob > F        =    0.0005
+    Residual |   582448001        22  26474909.1   R-squared       =    0.4316
+-------------+----------------------------------   Adj R-squared   =    0.4058
+       Total |  1.0247e+09        23    44551944   Root MSE        =    5145.4
+
+------------------------------------------------------------------------------
+ change_gdpk | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+change_trust |      32238   7887.748     4.09   0.000     15879.81    48596.19
+       _cons |  -2551.357   1179.351    -2.16   0.042    -4997.181   -105.5328
+------------------------------------------------------------------------------
+
+. est store fig4
+
+. 
+. * Add extra stats for LaTeX
+. estadd local period "1935--2000" : fig4
+
+. estadd local countries "24" : fig4
+
+. estadd local spec "First Differences" : fig4
+
+. 
+. * Verify match
+. di _n "  VERIFICATION:"
+
+  VERIFICATION:
+
+. di "  Coef:  " %12.1f _b[change_trust]   "  (paper: 32,238)"
+  Coef:       32238.0  (paper: 32,238)
+
+. di "  R2:    " %12.4f e(r2)              "  (paper: 0.43)"
+  R2:          0.4316  (paper: 0.43)
+
+. di "  N:     " e(N)                       "  (paper: 24)"
+  N:     24  (paper: 24)
+
+. 
+. * --- Generate scatter plot (Figure 4) ---
+. twoway (scatter change_gdpk change_trust if Nsample1935==0 & period==2000, ///
+>         mlabel(cty) mlabsize(vsmall) msize(small) mcolor(navy)) ///
+>        (lfit change_gdpk change_trust if Nsample1935==0 & period==2000, ///
+>         lcolor(cranberry) lwidth(medium)), ///
+>     ytitle("Change in Income relative to Sweden: 2000-1935", size(small)) ///
+>     xtitle("Change in Inherited Trust: 2000-1935", size(small)) ///
+>     title("Figure 4: Algan & Cahuc (2010)", size(medium)) ///
+>     note("R{superscript:2} = 0.43, N = 24") ///
+>     legend(off) scheme(s2color)
+
+. graph export "$outdir/figure4.png", replace width(1400) height(1000)
+file C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/figure4.png saved as PNG format
+
+. 
+. 
+. /*==============================================================================
+>   STEP 2: REPLICATE TABLE VI (Within-country FE)
+>   README_PROGRAM.do lines 361-365
+> ==============================================================================*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 2: TABLE VI (Within-country FE)"
+  STEP 2: TABLE VI (Within-country FE)
+
+. di "============================================================"
+============================================================
+
+. 
+. encode cty, gen(cty_num)
+
+. 
+. * Table VI Col 1: FE with noconstant (exact README)
+. xi: reg gdpk_diffswd_good trustgss i.cty_num if period19352000==1, noconstant
+i.cty_num         _Icty_num_1-24      (naturally coded; _Icty_num_1 omitted)
+
+      Source |       SS           df       MS      Number of obs   =        48
+-------------+----------------------------------   F(24, 24)       =      5.08
+       Model |  1.7967e+09        24  74864513.5   Prob > F        =    0.0001
+    Residual |   353988063        24  14749502.6   R-squared       =    0.8354
+-------------+----------------------------------   Adj R-squared   =    0.6708
+       Total |  2.1507e+09        48    44807008   Root MSE        =    3840.5
+
+------------------------------------------------------------------------------
+gdpk_diffs~d | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    trustgss |    41007.7   6041.575     6.79   0.000      28538.5    53476.89
+ _Icty_num_2 |  -620.7942   2715.982    -0.23   0.821    -6226.306    4984.718
+ _Icty_num_3 |  -2610.171   2752.717    -0.95   0.352      -8291.5    3071.158
+ _Icty_num_4 |   901.8483   2715.837     0.33   0.743    -4703.363    6507.059
+ _Icty_num_5 |   -4393.41   2732.721    -1.61   0.121    -10033.47    1246.648
+ _Icty_num_6 |  -1342.279   2750.599    -0.49   0.630    -7019.237    4334.679
+ _Icty_num_7 |  -2603.874   2724.901    -0.96   0.349    -8227.793    3020.046
+ _Icty_num_8 |   1518.378   2719.774     0.56   0.582    -4094.958    7131.715
+ _Icty_num_9 |  -379.2855   2716.877    -0.14   0.890    -5986.644    5228.073
+_Icty_num_10 |  -7113.683   2716.048    -2.62   0.015    -12719.33   -1508.035
+_Icty_num_11 |  -1570.135   3051.522    -0.51   0.612    -7868.167    4727.896
+_Icty_num_12 |   1453.749   2717.991     0.53   0.598    -4155.909    7063.407
+_Icty_num_13 |   1882.876   2758.095     0.68   0.501    -3809.552    7575.305
+_Icty_num_14 |   -6516.78   2723.364    -2.39   0.025    -12137.53   -896.0334
+_Icty_num_15 |   1755.579   2718.026     0.65   0.524    -3854.151     7365.31
+_Icty_num_16 |  -2405.894   2796.117    -0.86   0.398    -8176.795    3365.007
+_Icty_num_17 |  -6608.679    2721.01    -2.43   0.023    -12224.57   -992.7899
+_Icty_num_18 |  -4003.327   2717.233    -1.47   0.154    -9611.421    1604.768
+_Icty_num_19 |  -9766.925   2717.529    -3.59   0.001    -15375.63   -4158.221
+_Icty_num_20 |   -1987.31   2719.864    -0.73   0.472    -7600.833    3626.214
+_Icty_num_21 |          0   2715.649     0.00   1.000    -5604.825    5604.825
+_Icty_num_22 |  -659.2649   2736.817    -0.24   0.812    -6307.777    4989.247
+_Icty_num_23 |   623.8189    2715.65     0.23   0.820    -4981.007    6228.645
+_Icty_num_24 |  -14065.28   2804.044    -5.02   0.000    -19852.54   -8278.015
+------------------------------------------------------------------------------
+
+. est store tab6_col1
+
+. estadd local ctyfe "Yes" : tab6_col1
+
+. estadd local period "1935--2000" : tab6_col1
+
+. 
+. * Table VI Col 2: FE + lagged income
+. xi: reg gdpk_diffswd_good trustgss gdpk_diffswd_good_1 i.cty_num if period19352000==1, noconstant
+i.cty_num         _Icty_num_1-24      (naturally coded; _Icty_num_1 omitted)
+
+      Source |       SS           df       MS      Number of obs   =        48
+-------------+----------------------------------   F(25, 23)       =      6.62
+       Model |  1.8883e+09        25  75531749.1   Prob > F        =    0.0000
+    Residual |   262442657        23  11410550.3   R-squared       =    0.8780
+-------------+----------------------------------   Adj R-squared   =    0.7453
+       Total |  2.1507e+09        48    44807008   Root MSE        =      3378
+
+-------------------------------------------------------------------------------------
+  gdpk_diffswd_good | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+--------------------+----------------------------------------------------------------
+           trustgss |   27332.62   7179.626     3.81   0.001     12480.43    42184.81
+gdpk_diffswd_good_1 |   2.939431   1.037763     2.83   0.009      .792654    5.086207
+        _Icty_num_2 |   196.8062   2406.241     0.08   0.936    -4780.882    5174.494
+        _Icty_num_3 |  -4621.413    2523.15    -1.83   0.080    -9840.946    598.1197
+        _Icty_num_4 |   291.0195   2398.451     0.12   0.904    -4670.555    5252.594
+        _Icty_num_5 |  -2314.028   2513.199    -0.92   0.367    -7512.976    2884.921
+        _Icty_num_6 |  -2337.171   2444.677    -0.96   0.349    -7394.371    2720.028
+        _Icty_num_7 |   34.33319   2571.333     0.01   0.989    -5284.874     5353.54
+        _Icty_num_8 |   467.9974   2420.772     0.19   0.848    -4539.751    5475.746
+        _Icty_num_9 |  -483.3356   2389.934    -0.20   0.842    -5427.291     4460.62
+       _Icty_num_10 |   -4193.15   2601.941    -1.61   0.121    -9575.676    1189.376
+       _Icty_num_11 |   604.7743   2791.666     0.22   0.830    -5170.228    6379.776
+       _Icty_num_12 |   2948.541   2448.188     1.20   0.241    -2115.921    8013.004
+       _Icty_num_13 |   1984.729   2426.172     0.82   0.422     -3034.19    7003.648
+       _Icty_num_14 |  -3544.918   2615.069    -1.36   0.188      -8954.6    1864.764
+       _Icty_num_15 |  -1510.634   2654.239    -0.57   0.575    -7001.346    3980.077
+       _Icty_num_16 |  -219.7199   2577.616    -0.09   0.933    -5551.926    5112.486
+       _Icty_num_17 |  -3008.111   2709.929    -1.11   0.278    -8614.025    2597.804
+       _Icty_num_18 |  -778.9993   2647.218    -0.29   0.771    -6255.187    4697.189
+       _Icty_num_19 |  -4476.222   3033.503    -1.48   0.154     -10751.5    1799.058
+       _Icty_num_20 |   100.9617   2503.309     0.04   0.968    -5077.527     5279.45
+       _Icty_num_21 |          0   2388.572     0.00   1.000    -4941.137    4941.137
+       _Icty_num_22 |  -3522.896   2610.879    -1.35   0.190    -8923.909    1878.118
+       _Icty_num_23 |  -2524.412   2634.514    -0.96   0.348     -7974.32    2925.496
+       _Icty_num_24 |  -6237.372   3704.107    -1.68   0.106     -13899.9    1425.157
+-------------------------------------------------------------------------------------
+
+. est store tab6_col2
+
+. estadd local ctyfe "Yes" : tab6_col2
+
+. estadd local period "1935--2000" : tab6_col2
+
+. 
+. * Table VI Col 4: FE + lagged income + polity
+. xi: reg gdpk_diffswd_good trustgss gdpk_diffswd_good_1 polity2diff i.cty_num if period19352000==1, noconstant
+i.cty_num         _Icty_num_1-24      (naturally coded; _Icty_num_1 omitted)
+note: _Icty_num_11 omitted because of collinearity.
+
+      Source |       SS           df       MS      Number of obs   =        46
+-------------+----------------------------------   F(25, 21)       =      5.65
+       Model |  1.5479e+09        25  61914291.6   Prob > F        =    0.0001
+    Residual |   230250919        21  10964329.5   R-squared       =    0.8705
+-------------+----------------------------------   Adj R-squared   =    0.7164
+       Total |  1.7781e+09        46  38654526.3   Root MSE        =    3311.2
+
+-------------------------------------------------------------------------------------
+  gdpk_diffswd_good | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+--------------------+----------------------------------------------------------------
+           trustgss |   28230.15   7350.495     3.84   0.001     12943.96    43516.34
+gdpk_diffswd_good_1 |   2.814842   1.027521     2.74   0.012     .6779961    4.951688
+        polity2diff |  -149.3482   89.41237    -1.67   0.110    -335.2914    36.59498
+        _Icty_num_2 |   -683.903   2417.514    -0.28   0.780    -5711.399    4343.593
+        _Icty_num_3 |  -4559.856   2489.632    -1.83   0.081     -9737.33    617.6175
+        _Icty_num_4 |   315.2317   2351.468     0.13   0.895    -4574.914    5205.378
+        _Icty_num_5 |  -2662.409   2485.435    -1.07   0.296    -7831.154    2506.335
+        _Icty_num_6 |  -2318.002   2407.746    -0.96   0.347    -7325.184     2689.18
+        _Icty_num_7 |  -514.9357   2541.855    -0.20   0.841    -5801.012    4771.141
+        _Icty_num_8 |   445.7222   2373.199     0.19   0.853    -4489.616    5381.061
+        _Icty_num_9 |  -1557.403    2431.51    -0.64   0.529    -6614.005      3499.2
+       _Icty_num_10 |  -5135.905   2621.597    -1.96   0.064    -10587.82    316.0052
+       _Icty_num_11 |          0  (omitted)
+       _Icty_num_12 |   2786.576   2405.051     1.16   0.260    -2215.001    7788.153
+       _Icty_num_13 |   586.9669   2546.557     0.23   0.820    -4708.887    5882.821
+       _Icty_num_14 |  -5004.237   2729.999    -1.83   0.081    -10681.58     673.107
+       _Icty_num_15 |  -1366.215   2604.726    -0.52   0.605    -6783.039    4050.609
+       _Icty_num_16 |  -347.4243   2535.528    -0.14   0.892    -5620.343    4925.494
+       _Icty_num_17 |  -4219.578   2773.744    -1.52   0.143    -9987.894    1548.738
+       _Icty_num_18 |   -2329.59   2772.636    -0.84   0.410    -8095.603    3436.423
+       _Icty_num_19 |  -6326.215   3188.422    -1.98   0.060     -12956.9    304.4722
+       _Icty_num_20 |  -203.6082   2467.244    -0.08   0.935    -5334.522    4927.306
+       _Icty_num_21 |          0   2341.402     0.00   1.000    -4869.213    4869.213
+       _Icty_num_22 |  -3419.396   2574.261    -1.33   0.198    -8772.865    1934.073
+       _Icty_num_23 |  -2391.076   2587.182    -0.92   0.366    -7771.415    2989.263
+       _Icty_num_24 |  -8121.799   3800.871    -2.14   0.045    -16026.14   -217.4544
+-------------------------------------------------------------------------------------
+
+. est store tab6_col4
+
+. estadd local ctyfe "Yes" : tab6_col4
+
+. estadd local period "1935--2000" : tab6_col4
+
+. 
+. di _n "  TABLE VI SUMMARY:"
+
+  TABLE VI SUMMARY:
+
+. est restore tab6_col1
+(results tab6_col1 are active now)
+
+. di "  Col 1 (trust only):     " %10.1f _b[trustgss]
+  Col 1 (trust only):        41007.7
+
+. est restore tab6_col2
+(results tab6_col2 are active now)
+
+. di "  Col 2 (+ lagged GDP):   " %10.1f _b[trustgss]
+  Col 2 (+ lagged GDP):      27332.6
+
+. est restore tab6_col4
+(results tab6_col4 are active now)
+
+. di "  Col 4 (+ polity):       " %10.1f _b[trustgss]
+  Col 4 (+ polity):          28230.1
+
+. 
+. 
+. /*==============================================================================
+>   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+>   dCDH: "This regression corresponds to Regression 2" => fdTR
+>   But we also run feTR for the TWFE (Table VI) interpretation
+> ==============================================================================*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3: TWOWAYFEWEIGHTS"
+  STEP 3: TWOWAYFEWEIGHTS
+
+. di "============================================================"
+============================================================
+
+. 
+. * Create clean integer period
+. gen period_num = 1 if period == 1935
+(24 missing values generated)
+
+. replace period_num = 2 if period == 2000
+(24 real changes made)
+
+. 
+. di _n "--- Variable check ---"
+
+--- Variable check ---
+
+. tab period_num
+
+ period_num |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |         24       50.00       50.00
+          2 |         24       50.00      100.00
+------------+-----------------------------------
+      Total |         48      100.00
+
+. summarize cty_num period_num trustgss gdpk_diffswd_good
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     cty_num |         48        12.5    6.995439          1         24
+  period_num |         48         1.5    .5052912          1          2
+    trustgss |         48   -.0129932    .1140266  -.4310252   .2843457
+gdpk_diffs~d |         48   -2992.397    6051.065  -19571.59   4596.701
+
+. 
+. * --- fdTR (First Difference = Figure 4's Regression 2) ---
+. * NOTE: fdTR requires T>=3 (needs variation across differenced periods).
+. * With T=2, there is only ONE first-difference per group => no weight variation.
+. * twowayfeweights returns "invalid syntax" (rc=198) with T=2 for fdTR.
+. * We still attempt it but expect failure.
+. di _n "============================================================"
+
+============================================================
+
+. di "  fdTR (Regression 2 = Figure 4)"
+  fdTR (Regression 2 = Figure 4)
+
+. di "  NOTE: T=2 panel — fdTR not applicable (requires T>=3)"
+  NOTE: T=2 panel — fdTR not applicable (requires T>=3)
+
+. di "============================================================"
+============================================================
+
+. cap noisily twowayfeweights gdpk_diffswd_good cty_num period_num trustgss, type(fdTR)
+invalid syntax
+
+. if _rc == 0 | _rc == 402 {
+.     local tw_beta_fd   = e(beta)
+.     local tw_npos_fd   = e(num_pos_weights)
+.     local tw_nneg_fd   = e(num_neg_weights)
+.     di "  fdTR succeeded: beta=`tw_beta_fd', pos=`tw_npos_fd', neg=`tw_nneg_fd'"
+. }
+
+. else {
+.     di "  fdTR not available with T=2 (rc=" _rc "). Using feTR only."
+  fdTR not available with T=2 (rc=198). Using feTR only.
+.     local tw_beta_fd   = .
+.     local tw_npos_fd   = .
+.     local tw_nneg_fd   = .
+. }
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  fdTR with summary_measures"
+  fdTR with summary_measures
+
+. di "============================================================"
+============================================================
+
+. cap noisily twowayfeweights gdpk_diffswd_good cty_num period_num trustgss, type(fdTR) summary_measures
+invalid syntax
+
+. 
+. * --- feTR (Fixed Effects = Table VI's Regression 1) ---
+. di _n "============================================================"
+
+============================================================
+
+. di "  feTR (Regression 1 = Table VI)"
+  feTR (Regression 1 = Table VI)
+
+. di "============================================================"
+============================================================
+
+. cap noisily twowayfeweights gdpk_diffswd_good cty_num period_num trustgss, type(feTR)
+negative weights encountered
+
+. if _rc == 0 | _rc == 402 {
+.     * rc=402 means negative weights found — results ARE stored, capture them
+.     local tw_beta_fe   = e(beta)
+.     local tw_npos_fe   = e(num_pos_weights)
+.     local tw_nneg_fe   = e(num_neg_weights)
+.     di "  feTR succeeded (rc=" _rc "): beta=`tw_beta_fe', pos=`tw_npos_fe', neg=`tw_nneg_fe'"
+  feTR succeeded (rc=402): beta=., pos=., neg=.
+. }
+
+. else {
+.     di as error "  feTR failed with rc = " _rc
+.     local tw_beta_fe   = .
+.     local tw_npos_fe   = .
+.     local tw_nneg_fe   = .
+. }
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  feTR with summary_measures"
+  feTR with summary_measures
+
+. di "============================================================"
+============================================================
+
+. cap noisily twowayfeweights gdpk_diffswd_good cty_num period_num trustgss, type(feTR) summary_measures
+negative weights encountered
+
+. 
+. * --- Manual feTR decomposition (twowayfeweights fails with T=2) ---
+. * Following dCDH (2020): w_{g,t} = (D_{g,t} - D_bar_g) / Σ (D_{g,t} - D_bar_g)^2
+. if `tw_npos_fe' == . {
+.     di _n "============================================================"
+
+============================================================
+.     di "  MANUAL feTR weight decomposition (T=2 fallback)"
+  MANUAL feTR weight decomposition (T=2 fallback)
+.     di "============================================================"
+============================================================
+. 
+.     * Compute demeaned treatment
+.     bysort cty_num: egen D_bar_g = mean(trustgss)
+.     gen D_demean = trustgss - D_bar_g
+.     gen D_demean2 = D_demean^2
+.     qui summ D_demean2
+.     local denom = r(sum)
+.     gen w_gt = D_demean / `denom'
+. 
+.     * Beta_fe from within regression
+.     qui reg gdpk_diffswd_good trustgss i.cty_num
+.     local tw_beta_fe = _b[trustgss]
+. 
+.     * Count positive/negative weights
+.     qui count if w_gt > 0 & w_gt < .
+.     local tw_npos_fe = r(N)
+.     qui count if w_gt < 0
+.     local tw_nneg_fe = r(N)
+. 
+.     * Sum of weights
+.     qui summ w_gt if w_gt > 0
+.     local sumpos : di %6.4f r(sum)
+.     qui summ w_gt if w_gt < 0
+.     local sumneg : di %6.4f r(sum)
+.     local sumtot : di %6.4f `sumpos' + `sumneg'
+. 
+.     di "  β_fe = " %10.1f `tw_beta_fe'
+  β_fe =    39999.5
+.     di "  Positive weights: `tw_npos_fe' (Σ = `sumpos')"
+  Positive weights: 23 (Σ = 4.9893)
+.     di "  Negative weights: `tw_nneg_fe' (Σ = `sumneg')"
+  Negative weights: 23 (Σ = -4.9893)
+.     di "  Total weights:    " `tw_npos_fe' + `tw_nneg_fe' " (Σ = `sumtot')"
+  Total weights:    46 (Σ = 0.0000)
+. 
+.     drop D_bar_g D_demean D_demean2 w_gt
+. }
+
+. 
+. 
+. /*==============================================================================
+>   STEP 4: EXPORT LATEX TABLES
+> ==============================================================================*/
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 4: LATEX EXPORT"
+  STEP 4: LATEX EXPORT
+
+. di "============================================================"
+============================================================
+
+. 
+. * ---------------------------------------------------------------
+. * TABLE A: Figure 4 replication (First Difference regression)
+. * ---------------------------------------------------------------
+. 
+. esttab fig4 using "$outdir/table_figure4.tex", replace ///
+>     cells(b(star fmt(1)) se(par fmt(1))) ///
+>     starlevels(* 0.10 ** 0.05 *** 0.01) ///
+>     stats(r2 N period countries spec, ///
+>         fmt(3 0) ///
+>         labels("R-squared" "Observations" "Period" "Countries" "Specification")) ///
+>     title("Algan \& Cahuc (2010): Figure 4 --- First Difference Regression") ///
+>     mtitles("\$\Delta\$ GDP p.c.") ///
+>     varlabels(change_trust "\$\Delta\$ Inherited Trust" _cons "Constant") ///
+>     note("Dependent variable: Change in income per capita relative to Sweden (2000--1935)." ///
+>          " Standard errors in parentheses." ///
+>          " *** p\$<\$0.01, ** p\$<\$0.05, * p\$<\$0.1") ///
+>     booktabs nonumbers
+(output written to C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/table_figure4.tex)
+
+. 
+. di "  -> table_figure4.tex created"
+  -> table_figure4.tex created
+
+. 
+. * ---------------------------------------------------------------
+. * TABLE B: Table VI replication (Within-country FE)
+. * ---------------------------------------------------------------
+. 
+. esttab tab6_col1 tab6_col2 tab6_col4 using "$outdir/table_tableVI.tex", replace ///
+>     keep(trustgss gdpk_diffswd_good_1 polity2diff) ///
+>     cells(b(star fmt(1)) se(par fmt(1))) ///
+>     starlevels(* 0.10 ** 0.05 *** 0.01) ///
+>     stats(r2 N ctyfe period, ///
+>         fmt(3 0) ///
+>         labels("R-squared" "Observations" "Country FE" "Period")) ///
+>     title("Algan \& Cahuc (2010): Table VI --- Within Estimates") ///
+>     mtitles("(1)" "(2)" "(4)") ///
+>     varlabels(trustgss "Inherited Trust" ///
+>               gdpk_diffswd_good_1 "Lagged GDP p.c." ///
+>               polity2diff "Political Institutions") ///
+>     note("Dependent variable: Income per capita relative to Sweden." ///
+>          " All regressions include country fixed effects (no constant)." ///
+>          " Panel: 24 countries, 2 periods (1935, 2000)." ///
+>          " *** p\$<\$0.01, ** p\$<\$0.05, * p\$<\$0.1") ///
+>     booktabs nonumbers
+(output written to C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/table_tableVI.tex)
+
+. 
+. di "  -> table_tableVI.tex created"
+  -> table_tableVI.tex created
+
+. 
+. * ---------------------------------------------------------------
+. * TABLE C: twowayfeweights summary (manual LaTeX)
+. * ---------------------------------------------------------------
+. 
+. * Get stored stats
+. est restore fig4
+(results fig4 are active now)
+
+. local fig4_b  : di %10.1f _b[change_trust]
+
+. local fig4_se : di %10.1f _se[change_trust]
+
+. local fig4_r2 : di %5.3f e(r2)
+
+. local fig4_N  = e(N)
+
+. 
+. est restore tab6_col1
+(results tab6_col1 are active now)
+
+. local tab6_b  : di %10.1f _b[trustgss]
+
+. local tab6_se : di %10.1f _se[trustgss]
+
+. local tab6_r2 : di %5.3f e(r2)
+
+. local tab6_N  = e(N)
+
+. 
+. * Format twowayfeweights results
+. local tw_npos_fd_s : di %3.0f `tw_npos_fd'
+
+. local tw_nneg_fd_s : di %3.0f `tw_nneg_fd'
+
+. local tw_npos_fe_s : di %3.0f `tw_npos_fe'
+
+. local tw_nneg_fe_s : di %3.0f `tw_nneg_fe'
+
+. 
+. * Compute % negative
+. if `tw_npos_fd' != . & `tw_nneg_fd' != . {
+.     local tw_total_fd = `tw_npos_fd' + `tw_nneg_fd'
+.     if `tw_total_fd' > 0 {
+.         local tw_pct_neg_fd : di %5.1f 100*`tw_nneg_fd'/`tw_total_fd'
+.     }
+.     else {
+.         local tw_pct_neg_fd = "---"
+.     }
+. }
+
+. else {
+.     local tw_pct_neg_fd = "n/a"
+. }
+
+. 
+. if `tw_npos_fe' != . & `tw_nneg_fe' != . {
+.     local tw_total_fe = `tw_npos_fe' + `tw_nneg_fe'
+.     if `tw_total_fe' > 0 {
+.         local tw_pct_neg_fe : di %5.1f 100*`tw_nneg_fe'/`tw_total_fe'
+.     }
+.     else {
+.         local tw_pct_neg_fe = "---"
+.     }
+. }
+
+. else {
+.     local tw_pct_neg_fe = "n/a"
+. }
+
+. 
+. cap file close texfile
+
+. file open texfile using "$outdir/table_twowayfeweights.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Algan \& Cahuc (2010): Two-Way FE Weights Decomposition}" _n
+
+. file write texfile "\label{tab:algan_twfe}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & FE (Table VI) & FD (Figure 4) \\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel A: Original Regression}} \\[3pt]" _n
+
+. file write texfile "Coefficient on Trust &`tab6_b' &`fig4_b' \\" _n
+
+. file write texfile " & (`tab6_se') & (`fig4_se') \\" _n
+
+. file write texfile "R-squared &`tab6_r2' &`fig4_r2' \\" _n
+
+. file write texfile "N & `tab6_N' & `fig4_N' \\[6pt]" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel B: dCDH (2020) Decomposition}} \\[3pt]" _n
+
+. file write texfile "\# positive weights & `tw_npos_fe_s' & `tw_npos_fd_s' \\" _n
+
+. file write texfile "\# negative weights & `tw_nneg_fe_s' & `tw_nneg_fd_s' \\" _n
+
+. file write texfile "\% negative weights & `tw_pct_neg_fe'\% & `tw_pct_neg_fd'\% \\[6pt]" _n
+
+. file write texfile "\multicolumn{3}{l}{\textit{Panel C: Classification (dCDH Web Appendix)}} \\[3pt]" _n
+
+. file write texfile "Regression type & Regression 1 & Regression 2 \\" _n
+
+. file write texfile "Design & Sharp & Sharp \\" _n
+
+. file write texfile "Stable groups & \multicolumn{2}{c}{Satisfied} \\" _n
+
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile _n
+
+. file write texfile "\vspace{6pt}" _n
+
+. file write texfile "\begin{minipage}{0.9\textwidth}" _n
+
+. file write texfile "\footnotesize" _n
+
+. file write texfile "\textit{Notes:} Panel A reports the original paper's regressions. " _n
+
+. file write texfile "The FE column corresponds to Table VI Column 1 (levels with country FE). " _n
+
+. file write texfile "The FD column corresponds to Figure 4 (first differences 2000--1935). " _n
+
+. file write texfile "Panel B reports the two-way FE weights decomposition " _n
+
+. file write texfile "(de Chaisemartin \& D'Haultf\oe uille, 2020). " _n
+
+. file write texfile "Panel C reports the classification from the dCDH web appendix. " _n
+
+. file write texfile "Standard errors in parentheses." _n
+
+. file write texfile "\end{minipage}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table_twowayfeweights.tex created"
+  -> table_twowayfeweights.tex created
+
+. 
+. * ---------------------------------------------------------------
+. * STANDALONE COMPILABLE DOCUMENT
+. * ---------------------------------------------------------------
+. 
+. cap file close fulltex
+
+. file open fulltex using "$outdir/algan_cahuc_tables.tex", write replace
+
+. 
+. file write fulltex "\documentclass[12pt]{article}" _n
+
+. file write fulltex "\usepackage{booktabs}" _n
+
+. file write fulltex "\usepackage[margin=1in]{geometry}" _n
+
+. file write fulltex "\usepackage{graphicx}" _n
+
+. file write fulltex "\begin{document}" _n
+
+. file write fulltex _n
+
+. file write fulltex "\section*{Algan \& Cahuc (2010): ``Inherited Trust and Growth''}" _n
+
+. file write fulltex "\subsection*{AER, 100(5), 2060--2092}" _n
+
+. file write fulltex _n
+
+. file write fulltex "\begin{figure}[htbp]" _n
+
+. file write fulltex "\centering" _n
+
+. file write fulltex "\includegraphics[width=0.8\textwidth]{figure4.png}" _n
+
+. file write fulltex "\caption{Figure 4: Change in Inherited Trust and Change in Income (2000--1935)}" _n
+
+. file write fulltex "\end{figure}" _n
+
+. file write fulltex _n
+
+. file write fulltex "\input{table_figure4}" _n
+
+. file write fulltex "\clearpage" _n
+
+. file write fulltex "\input{table_tableVI}" _n
+
+. file write fulltex "\clearpage" _n
+
+. file write fulltex "\input{table_twowayfeweights}" _n
+
+. file write fulltex _n
+
+. file write fulltex "\end{document}" _n
+
+. 
+. file close fulltex
+
+. di "  -> algan_cahuc_tables.tex created"
+  -> algan_cahuc_tables.tex created
+
+. 
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  DONE - Output files:"
+  DONE - Output files:
+
+. di "============================================================"
+============================================================
+
+. di "  1. $outdir/figure4.png"
+  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/figure4.png
+
+. di "  2. $outdir/table_figure4.tex"
+  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/table_figure4.tex
+
+. di "  3. $outdir/table_tableVI.tex"
+  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/table_tableVI.tex
+
+. di "  4. $outdir/table_twowayfeweights.tex"
+  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/table_twowayfeweights.tex
+
+. di "  5. $outdir/algan_cahuc_tables.tex  (compilable)"
+  5. C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/algan_cahuc_tables.tex  (compilable
+> )
+
+. di "  6. $outdir/run_twowayfe.log"
+  6. C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/run_twowayfe.log
+
+. di "============================================================"
+============================================================
+
+. 
+. log close _all
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Algan and Cahuc (2010)/run_twowayfe.log
+  log type:  text
+ closed on:  20 Apr 2026, 16:35:58
+-----------------------------------------------------------------------------------------------------------------

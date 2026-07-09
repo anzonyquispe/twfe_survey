@@ -1,0 +1,928 @@
+-----------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)/run_twowayfe.log
+  log type:  text
+ opened on:  20 Apr 2026, 10:25:17
+
+. 
+. * Install packages if needed
+. cap which twowayfeweights
+
+. if _rc ssc install twowayfeweights, replace
+
+. 
+. * Helper program: significance stars
+. cap program drop _stars
+
+. program define _stars, rclass
+  1.     args b se
+  2.     local s ""
+  3.     if `se' > 0 & `se' < . {
+  4.         local t = abs(`b'/`se')
+  5.         if `t' > 2.576      local s "***"
+  6.         else if `t' > 1.960 local s "**"
+  7.         else if `t' > 1.645 local s "*"
+  8.     }
+  9.     return local s "`s'"
+ 10. end
+
+. 
+. 
+. /*==============================================================================
+>   STEP 1: DATA PREPARATION
+>   Load aggregate-level data and reshape to panel (1995, 1999).
+>   Following original Aggregate_level_results_Replication.do exactly.
+> ==============================================================================*/
+. 
+. use "$datadir/NTV_Aggregate_Data.dta", clear
+
+. 
+. di _n "=== RAW DATA SUMMARY ==="
+
+=== RAW DATA SUMMARY ===
+
+. di "Observations: " _N
+Observations: 3580
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)/Replication/NTV_Agg
+> regate_Data.dta
+ Observations:         3,580                  
+    Variables:            49                  9 Dec 2010 17:07
+Sorted by: 
+
+. 
+. * Create polynomial variables (following original code)
+. forvalues x = 2/5 {
+  2.     gen population98_`x' = population1998^`x'
+  3.     gen population96_`x' = population1996^`x'
+  4.     gen wage1998_`x' = wage98^`x'
+  5.     gen wage1996_`x' = wage96^`x'
+  6. }
+(1,495 missing values generated)
+(1,471 missing values generated)
+(1,485 missing values generated)
+(1,499 missing values generated)
+(1,495 missing values generated)
+(1,471 missing values generated)
+(1,485 missing values generated)
+(1,499 missing values generated)
+(1,495 missing values generated)
+(1,471 missing values generated)
+(1,485 missing values generated)
+(1,499 missing values generated)
+(1,495 missing values generated)
+(1,471 missing values generated)
+(1,485 missing values generated)
+(1,499 missing values generated)
+
+. gen population98_1 = population1998
+(1,495 missing values generated)
+
+. gen population96_1 = population1996
+(1,471 missing values generated)
+
+. gen wage1998_1 = wage98
+(1,485 missing values generated)
+
+. gen wage1996_1 = wage96
+(1,499 missing values generated)
+
+. 
+. * Define globals
+. global socioec "population98_* wage1998_* Gorod doctors_pc1998 nurses1998"
+
+. 
+. * --- Sample restriction (same as original) ---
+. drop if Votes_Edinstvo_1999 == .
+(1,257 observations deleted)
+
+. di "After dropping missing Edinstvo_1999: " _N " subregions"
+After dropping missing Edinstvo_1999: 2323 subregions
+
+. 
+. * --- Prepare variables for reshape ---
+. * Harmonize party names across elections (DVR 1995 -> SPS 1999)
+. rename Votes_DVR_1995 Votes_SPS_1995
+
+. 
+. * Create Watch_probit by year (0 in 1995, actual in 1999)
+. gen Watch_probit_1995 = 0
+
+. rename Watch_probit Watch_probit_1999
+
+. 
+. * Turnout variable name harmonization
+. cap rename Turnout_2003 Turnout2003
+
+. cap rename Turnout1995 Turnout_1995
+
+. cap rename Turnout1999 Turnout_1999
+
+. cap gen Turnout_1995 = Turnout1995
+
+. cap gen Turnout_1999 = Turnout1999
+
+. 
+. * Population and wage by year
+. rename logpop98 logpop1999
+
+. rename logpop96 logpop1995
+
+. rename wage98_ln logwage1999
+
+. rename wage96_ln logwage1995
+
+. 
+. di _n "=== TREATMENT SUMMARY ==="
+
+=== TREATMENT SUMMARY ===
+
+. di "Watch_probit_1995 (NTV access 1995): always 0"
+Watch_probit_1995 (NTV access 1995): always 0
+
+. summ Watch_probit_1995
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+Watch_p~1995 |      2,323           0           0          0          0
+
+. di "Watch_probit_1999 (NTV access 1999):"
+Watch_probit_1999 (NTV access 1999):
+
+. summ Watch_probit_1999
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+Watch_p~1999 |      2,292     .575986    .0912511   .2526413   .9106122
+
+. 
+. * --- Reshape to long panel ---
+. reshape long Watch_probit_ Votes_SPS_ Turnout_ Votes_Yabloko_ ///
+>     Votes_KPRF_ Votes_LDPR_ logpop logwage, i(tik_id) j(_j)
+(j = 97 1995 1999 2003)
+(variable Watch_probit_97 not found)
+(variable Votes_SPS_97 not found)
+(variable Turnout_97 not found)
+(variable Votes_Yabloko_97 not found)
+(variable Votes_KPRF_97 not found)
+(variable Votes_LDPR_97 not found)
+(variable logwage97 not found)
+(variable Watch_probit_2003 not found)
+(variable Turnout_2003 not found)
+(variable logpop2003 not found)
+(variable logwage2003 not found)
+
+Data                               Wide   ->   Long
+-----------------------------------------------------------------------------
+Number of observations            2,323   ->   9,292       
+Number of variables                  70   ->   58          
+j variable (4 values)                     ->   _j
+xij variables:
+Watch_probit_97 Watch_probit_1995 ... Watch_probit_2003->Watch_probit_
+Votes_SPS_97 Votes_SPS_1995 ... Votes_SPS_2003->Votes_SPS_
+Turnout_97 Turnout_1995 ... Turnout_2003  ->   Turnout_
+Votes_Yabloko_97 Votes_Yabloko_1995 ... Votes_Yabloko_2003->Votes_Yabloko_
+Votes_KPRF_97 Votes_KPRF_1995 ... Votes_KPRF_2003->Votes_KPRF_
+Votes_LDPR_97 Votes_LDPR_1995 ... Votes_LDPR_2003->Votes_LDPR_
+     logpop97 logpop1995 ... logpop2003   ->   logpop
+  logwage97 logwage1995 ... logwage2003   ->   logwage
+-----------------------------------------------------------------------------
+
+. 
+. * Create year dummies
+. xi i._j
+i._j              _I_j_97-2003        (naturally coded; _I_j_97 omitted)
+
+. 
+. di _n "=== PANEL DATA SUMMARY ==="
+
+=== PANEL DATA SUMMARY ===
+
+. di "Observations: " _N
+Observations: 9292
+
+. qui tab tik_id
+
+. di "Subregions: " r(r)
+Subregions: 2323
+
+. di "Election years: 1995, 1999 (and 2003 if present)"
+Election years: 1995, 1999 (and 2003 if present)
+
+. di ""
+
+
+. di "Treatment variable: Watch_probit_"
+Treatment variable: Watch_probit_
+
+. summ Watch_probit_ if _j == 1995
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+Watch_prob~_ |      2,323           0           0          0          0
+
+. summ Watch_probit_ if _j == 1999
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+Watch_prob~_ |      2,292     .575986    .0912511   .2526413   .9106122
+
+. di ""
+
+
+. di "--- Sample for analysis: _j != 2003, region != 5,6 ---"
+--- Sample for analysis: _j != 2003, region != 5,6 ---
+
+. count if _j != 2003
+  6,969
+
+. di "  Observations for analysis: " r(N)
+  Observations for analysis: 6969
+
+. 
+. 
+. /*==============================================================================
+>   STEP 2: TABLE 3 -- PANEL FIXED EFFECTS (1995-1999)
+>   Dep var: vote share for various parties
+>   FE: subregion (tik_id) + year (_j)
+>   Treatment: Watch_probit_ (NTV access share)
+>   Sample: _j != 2003
+> 
+>   dCDH verification target: beta_fe = 6.65 (SE = 1.40)
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TABLE 3: PANEL FIXED EFFECTS (1995-1999)"
+TABLE 3: PANEL FIXED EFFECTS (1995-1999)
+
+. di    "=============================================="
+==============================================
+
+. 
+. local cond "if _j != 2003"
+
+. local i = 0
+
+. 
+. foreach var of varlist Votes_SPS_ Votes_Yabloko_ Votes_KPRF_ Votes_LDPR_ Turnout_ {
+  2.     local i = `i' + 1
+  3.     di _n "--- `var' ---"
+  4.     xtreg `var' Watch_probit_ _I* `cond', fe i(tik_id) cluster(tik_id)
+  5.     local b_`i'  = _b[Watch_probit_]
+  6.     local se_`i' = _se[Watch_probit_]
+  7.     local nn_`i' = e(N)
+  8.     local ng_`i' = e(N_g)
+  9.     di "  beta(Watch_probit_) = " %7.2f `b_`i'' " (" %5.2f `se_`i'' ")"
+ 10.     di "  N = " `nn_`i'' ", subregions = " `ng_`i''
+ 11. }
+
+--- Votes_SPS_ ---
+warning: existing panel variable is not tik_id
+note: _I_j_1999 omitted because of collinearity.
+note: _I_j_2003 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =      4,240
+Group variable: tik_id                          Number of groups  =      2,302
+
+R-squared:                                      Obs per group:
+     Within  = 0.3522                                         min =          1
+     Between = 0.1152                                         avg =        1.8
+     Overall = 0.2098                                         max =          2
+
+                                                F(2,2301)         =     563.28
+corr(u_i, Xb) = 0.0380                          Prob > F          =     0.0000
+
+                              (Std. err. adjusted for 2,302 clusters in tik_id)
+-------------------------------------------------------------------------------
+              |               Robust
+   Votes_SPS_ | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Watch_probit_ |   6.651896   1.396518     4.76   0.000      3.91333    9.390461
+    _I_j_1995 |   .5436845   .8344274     0.65   0.515    -1.092624    2.179993
+    _I_j_1999 |          0  (omitted)
+    _I_j_2003 |          0  (omitted)
+        _cons |   1.394613   .8166419     1.71   0.088    -.2068184    2.996044
+--------------+----------------------------------------------------------------
+      sigma_u |  2.8301733
+      sigma_e |  3.2308695
+          rho |  .43417758   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+  beta(Watch_probit_) =    6.65 ( 1.40)
+  N = 4240, subregions = 2302
+
+--- Votes_Yabloko_ ---
+note: _I_j_1999 omitted because of collinearity.
+note: _I_j_2003 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =      4,240
+Group variable: tik_id                          Number of groups  =      2,302
+
+R-squared:                                      Obs per group:
+     Within  = 0.0306                                         min =          1
+     Between = 0.0560                                         avg =        1.8
+     Overall = 0.0324                                         max =          2
+
+                                                F(2,2301)         =      29.84
+corr(u_i, Xb) = 0.1150                          Prob > F          =     0.0000
+
+                              (Std. err. adjusted for 2,302 clusters in tik_id)
+-------------------------------------------------------------------------------
+              |               Robust
+Votes_Yablo~_ | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Watch_probit_ |   1.835564   .7553065     2.43   0.015     .3544115    3.316717
+    _I_j_1995 |   1.417268   .4378336     3.24   0.001      .558678    2.275857
+    _I_j_1999 |          0  (omitted)
+    _I_j_2003 |          0  (omitted)
+        _cons |   2.196536   .4356426     5.04   0.000     1.342243    3.050829
+--------------+----------------------------------------------------------------
+      sigma_u |  2.8014727
+      sigma_e |  1.5321154
+          rho |  .76976623   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+  beta(Watch_probit_) =    1.84 ( 0.76)
+  N = 4240, subregions = 2302
+
+--- Votes_KPRF_ ---
+note: _I_j_1999 omitted because of collinearity.
+note: _I_j_2003 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =      4,240
+Group variable: tik_id                          Number of groups  =      2,302
+
+R-squared:                                      Obs per group:
+     Within  = 0.0735                                         min =          1
+     Between = 0.0078                                         avg =        1.8
+     Overall = 0.0060                                         max =          2
+
+                                                F(2,2301)         =      77.00
+corr(u_i, Xb) = -0.0339                         Prob > F          =     0.0000
+
+                              (Std. err. adjusted for 2,302 clusters in tik_id)
+-------------------------------------------------------------------------------
+              |               Robust
+  Votes_KPRF_ | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Watch_probit_ |  -2.200941   2.116517    -1.04   0.299     -6.35142    1.949539
+    _I_j_1995 |  -3.719628   1.243513    -2.99   0.003     -6.15815   -1.281105
+    _I_j_1999 |          0  (omitted)
+    _I_j_2003 |          0  (omitted)
+        _cons |   29.10789   1.226415    23.73   0.000      26.7029    31.51289
+--------------+----------------------------------------------------------------
+      sigma_u |  10.616466
+      sigma_e |  6.1499455
+          rho |  .74874421   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+  beta(Watch_probit_) =   -2.20 ( 2.12)
+  N = 4240, subregions = 2302
+
+--- Votes_LDPR_ ---
+note: _I_j_1999 omitted because of collinearity.
+note: _I_j_2003 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =      4,240
+Group variable: tik_id                          Number of groups  =      2,302
+
+R-squared:                                      Obs per group:
+     Within  = 0.6099                                         min =          1
+     Between = 0.0611                                         avg =        1.8
+     Overall = 0.3030                                         max =          2
+
+                                                F(2,2301)         =    1517.59
+corr(u_i, Xb) = -0.0085                         Prob > F          =     0.0000
+
+                              (Std. err. adjusted for 2,302 clusters in tik_id)
+-------------------------------------------------------------------------------
+              |               Robust
+  Votes_LDPR_ | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Watch_probit_ |   1.178929   1.381012     0.85   0.393     -1.52923    3.887087
+    _I_j_1995 |   7.089106   .8183022     8.66   0.000     5.484419    8.693793
+    _I_j_1999 |          0  (omitted)
+    _I_j_2003 |          0  (omitted)
+        _cons |   6.390198   .8039126     7.95   0.000     4.813729    7.966667
+--------------+----------------------------------------------------------------
+      sigma_u |   4.112244
+      sigma_e |  3.6241361
+          rho |   .5628424   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+  beta(Watch_probit_) =    1.18 ( 1.38)
+  N = 4240, subregions = 2302
+
+--- Turnout_ ---
+note: _I_j_1999 omitted because of collinearity.
+note: _I_j_2003 omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =      4,240
+Group variable: tik_id                          Number of groups  =      2,302
+
+R-squared:                                      Obs per group:
+     Within  = 0.7216                                         min =          1
+     Between = 0.0935                                         avg =        1.8
+     Overall = 0.2982                                         max =          2
+
+                                                F(2,2301)         =    2525.24
+corr(u_i, Xb) = 0.0168                          Prob > F          =     0.0000
+
+                              (Std. err. adjusted for 2,302 clusters in tik_id)
+-------------------------------------------------------------------------------
+              |               Robust
+     Turnout_ | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Watch_probit_ |  -2.061134   2.013906    -1.02   0.306    -6.010394    1.888127
+    _I_j_1995 |   10.81863   1.192786     9.07   0.000      8.47958    13.15767
+    _I_j_1999 |          0  (omitted)
+    _I_j_2003 |          0  (omitted)
+        _cons |   58.03258    1.17209    49.51   0.000     55.73411    60.33104
+--------------+----------------------------------------------------------------
+      sigma_u |  8.8313515
+      sigma_e |  5.2804993
+          rho |   .7366395   (fraction of variance due to u_i)
+-------------------------------------------------------------------------------
+  beta(Watch_probit_) =   -2.06 ( 2.01)
+  N = 4240, subregions = 2302
+
+. 
+. * Labels for table
+. local lbl_1 "SPS (DVR in 1995)"
+
+. local lbl_2 "Yabloko"
+
+. local lbl_3 "KPRF"
+
+. local lbl_4 "LDPR"
+
+. local lbl_5 "Turnout"
+
+. 
+. 
+. /*==============================================================================
+>   STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+> 
+>   feTR: Y = Votes_SPS_, G = tik_id, T = _j, D = Watch_probit_
+>   Fuzzy design: NTV access varies within subregion x year cells
+> 
+>   dCDH report for this paper:
+>     918 positive weights (47.4%), 1020 negative weights (52.6%)
+>     sigma_fe = 0.91, sigma_fe_bar = 1.23
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "TWOWAYFEWEIGHTS DECOMPOSITION"
+TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di    "=============================================="
+==============================================
+
+. 
+. * --- A1: feTR for SPS/DVR votes (main outcome) ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A1: feTR -- Votes_SPS_ (opposition: SPS/DVR)"
+A1: feTR -- Votes_SPS_ (opposition: SPS/DVR)
+
+. di    "=============================================="
+==============================================
+
+. di "  Y = Votes_SPS_, G = tik_id, T = _j, D = Watch_probit_"
+  Y = Votes_SPS_, G = tik_id, T = _j, D = Watch_probit_
+
+. di "  Sample: _j != 2003"
+  Sample: _j != 2003
+
+. di ""
+
+
+. preserve
+
+. keep if _j != 2003
+(2,323 observations deleted)
+
+. cap noisily twowayfeweights Votes_SPS_ tik_id _j Watch_probit_, ///
+>     type(feTR) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 6.6519, estimates a weighted sum of 1938 ATTs. 
+918 ATTs receive a positive weight, and 1020 receive a negative weight.
+2292 (g,t) cells receive the treatment, but the ATTs of 354 cells receive a weight equal to zero.
+------------------------------------------------
+Treat. var: Watch_prob~_# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        918         3.2590      
+Negative weights        1020        -2.2590     
+------------------------------------------------
+Total                   1938        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    6.6519
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.9065
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:    1.2302
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. restore
+
+. 
+. * --- A2: feTR for Yabloko votes ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A2: feTR -- Votes_Yabloko_"
+A2: feTR -- Votes_Yabloko_
+
+. di    "=============================================="
+==============================================
+
+. preserve
+
+. keep if _j != 2003
+(2,323 observations deleted)
+
+. cap noisily twowayfeweights Votes_Yabloko_ tik_id _j Watch_probit_, ///
+>     type(feTR) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 1.8356, estimates a weighted sum of 1938 ATTs. 
+918 ATTs receive a positive weight, and 1020 receive a negative weight.
+2292 (g,t) cells receive the treatment, but the ATTs of 354 cells receive a weight equal to zero.
+------------------------------------------------
+Treat. var: Watch_prob~_# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        918         3.2590      
+Negative weights        1020        -2.2590     
+------------------------------------------------
+Total                   1938        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    1.8356
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.2501
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:    0.3395
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. restore
+
+. 
+. * --- A3: feTR for KPRF votes ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A3: feTR -- Votes_KPRF_"
+A3: feTR -- Votes_KPRF_
+
+. di    "=============================================="
+==============================================
+
+. preserve
+
+. keep if _j != 2003
+(2,323 observations deleted)
+
+. cap noisily twowayfeweights Votes_KPRF_ tik_id _j Watch_probit_, ///
+>     type(feTR) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to -2.2009, estimates a weighted sum of 1938 ATTs. 
+918 ATTs receive a positive weight, and 1020 receive a negative weight.
+2292 (g,t) cells receive the treatment, but the ATTs of 354 cells receive a weight equal to zero.
+------------------------------------------------
+Treat. var: Watch_prob~_# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        918         3.2590      
+Negative weights        1020        -2.2590     
+------------------------------------------------
+Total                   1938        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =   -2.2009
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.2999
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:    0.4070
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. restore
+
+. 
+. * --- A4: feTR for Turnout ---
+. di _n "=============================================="
+
+==============================================
+
+. di    "A4: feTR -- Turnout_"
+A4: feTR -- Turnout_
+
+. di    "=============================================="
+==============================================
+
+. preserve
+
+. keep if _j != 2003
+(2,323 observations deleted)
+
+. cap noisily twowayfeweights Turnout_ tik_id _j Watch_probit_, ///
+>     type(feTR) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to -2.0611, estimates a weighted sum of 1938 ATTs. 
+918 ATTs receive a positive weight, and 1020 receive a negative weight.
+2292 (g,t) cells receive the treatment, but the ATTs of 354 cells receive a weight equal to zero.
+------------------------------------------------
+Treat. var: Watch_prob~_# ATTs      Σ weights  
+------------------------------------------------
+Positive weights        918         3.2590      
+Negative weights        1020        -2.2590     
+------------------------------------------------
+Total                   1938        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =   -2.0611
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.2809
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,t) cells:    0.3812
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCREDIBLE,GA N°101043899).
+
+. restore
+
+. 
+. 
+. /*==============================================================================
+>   STEP 4: LATEX TABLES
+> ==============================================================================*/
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "LaTeX TABLE EXPORT"
+LaTeX TABLE EXPORT
+
+. di    "=============================================="
+==============================================
+
+. 
+. * ===== TABLE 3 =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table3.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Table 3---Panel Fixed Effects: NTV and Voting (1995--1999)}" _n
+
+. file write texfile "\label{tab:table3}" _n
+
+. file write texfile "\begin{tabular}{lccccc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile " & SPS & Yabloko & KPRF & LDPR & Turnout \\\\" _n
+
+. file write texfile " & (1) & (2) & (3) & (4) & (5) \\\\" _n
+
+. file write texfile "\midrule" _n
+
+. 
+. * Write coefficients
+. file write texfile "NTV access share" _n
+
+. 
+. local bline " "
+
+. local sline " "
+
+. forvalues k = 1/5 {
+  2.     local bfmt : di %6.2f `b_`k''
+  3.     local bfmt = strtrim("`bfmt'")
+  4.     _stars `b_`k'' `se_`k''
+  5.     local bline "`bline' & `bfmt'`r(s)'"
+  6. 
+.     local sfmt : di %6.2f `se_`k''
+  7.     local sfmt = strtrim("`sfmt'")
+  8.     local sline "`sline' & (`sfmt')"
+  9. }
+
+. file write texfile "`bline' \\\\" _n
+
+. file write texfile "`sline' \\\\" _n
+
+. 
+. file write texfile "\addlinespace" _n
+
+. file write texfile "Subregion FE & Y & Y & Y & Y & Y \\\\" _n
+
+. file write texfile "Year FE & Y & Y & Y & Y & Y \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. 
+. local nfmt : di %6.0fc `nn_1'
+
+. local nfmt = strtrim("`nfmt'")
+
+. local gfmt : di %6.0fc `ng_1'
+
+. local gfmt = strtrim("`gfmt'")
+
+. file write texfile "Observations & `nfmt' & `nfmt' & `nfmt' & `nfmt' & `nfmt' \\\\" _n
+
+. file write texfile "Subregions & `gfmt' & `gfmt' & `gfmt' & `gfmt' & `gfmt' \\\\" _n
+
+. 
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\multicolumn{6}{p{0.95\linewidth}}{\footnotesize" _n
+
+. file write texfile " \textit{Notes:} Panel FE regressions with subregion and year fixed effects." _n
+
+. file write texfile " Standard errors clustered by subregion in parentheses." _n
+
+. file write texfile " DVR (1995) mapped to SPS (1999). Treatment: share of population" _n
+
+. file write texfile " with NTV access (0 in 1995, positive in 1999)." _n
+
+. file write texfile " *** Significant at 1\%, ** 5\%, * 10\%.}" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table3.tex created"
+  -> table3.tex created
+
+. 
+. * ===== TWOWAYFEWEIGHTS SUMMARY =====
+. cap file close texfile
+
+. file open texfile using "$outdir/table_twowayfeweights.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Two-Way Fixed Effects Decomposition (de Chaisemartin \& D'Haultf\oe uille, 2020)}"
+>  _n
+
+. file write texfile "\label{tab:twowayfe}" _n
+
+. file write texfile "\begin{tabular}{lc}" _n
+
+. file write texfile "\toprule" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{Specification: Table 3 (feTR)}} \\\\" _n
+
+. file write texfile "\midrule" _n
+
+. file write texfile "Regression type & Fixed effects (feTR) \\\\" _n
+
+. file write texfile "Dependent variable & Vote share for SPS/DVR \\\\" _n
+
+. file write texfile "Treatment variable & NTV access share (Watch\_probit) \\\\" _n
+
+. file write texfile "Group (G) & Subregion (tik\_id) \\\\" _n
+
+. file write texfile "Time (T) & Election year (1995, 1999) \\\\" _n
+
+. file write texfile "Design & Fuzzy (NTV access varies within cells) \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. file write texfile "dCDH reference values: & \\\\" _n
+
+. file write texfile "\quad Positive weights & 918 (47.4\%) \\\\" _n
+
+. file write texfile "\quad Negative weights & 1,020 (52.6\%) \\\\" _n
+
+. file write texfile "\quad \$\\hat{\\sigma}_{fe}\$ & 0.91 \\\\" _n
+
+. file write texfile "\quad \$\\bar{\\hat{\\sigma}}_{fe}\$ & 1.23 \\\\" _n
+
+. file write texfile "\addlinespace" _n
+
+. file write texfile "\multicolumn{2}{l}{\textit{See log file for detailed weight distribution}} \\\\" _n
+
+. file write texfile "\bottomrule" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  -> table_twowayfeweights.tex created"
+  -> table_twowayfeweights.tex created
+
+. 
+. * ===== MASTER DOCUMENT =====
+. cap file close texfile
+
+. file open texfile using "$outdir/enikolopov_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage{booktabs,caption,geometry,amsmath}" _n
+
+. file write texfile "\geometry{margin=1in}" _n
+
+. file write texfile "\captionsetup{labelsep=endash, font=normalsize, justification=centering}" _n
+
+. file write texfile "\begin{document}" _n _n
+
+. file write texfile "\begin{center}" _n
+
+. file write texfile "{\Large\bfseries Enikolopov, Petrova \& Zhuravskaya (2011)}\\\\" _n
+
+. file write texfile "{\large Media and Political Persuasion:}\\\\" _n
+
+. file write texfile "{\large Evidence from Russia}\\\\" _n
+
+. file write texfile "\vspace{0.5em}" _n
+
+. file write texfile "{\normalsize \textit{American Economic Review}, 101(7), 3253--3285}" _n
+
+. file write texfile "\end{center}" _n _n
+
+. file write texfile "\vspace{1em}" _n _n
+
+. file write texfile "\input{table3}" _n _n
+
+. file write texfile "\input{table_twowayfeweights}" _n _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  -> enikolopov_tables.tex created"
+  -> enikolopov_tables.tex created
+
+. 
+. 
+. di _n "=============================================="
+
+==============================================
+
+. di    "ALL DONE - Enikolopov et al. (2011)"
+ALL DONE - Enikolopov et al. (2011)
+
+. di    "=============================================="
+==============================================
+
+. di "Output files:"
+Output files:
+
+. di "  1. $outdir/table3.tex"
+  1. C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)/table3.tex
+
+. di "  2. $outdir/table_twowayfeweights.tex"
+  2. C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)/table_twowayfeweights.tex
+
+. di "  3. $outdir/enikolopov_tables.tex (compilable master)"
+  3. C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)/enikolopov_tables.tex (compilable
+>  master)
+
+. di "  4. $outdir/run_twowayfe.log"
+  4. C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)/run_twowayfe.log
+
+. di "=============================================="
+==============================================
+
+. 
+. log close _all
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/papers_economic/Enikolopov et al. (2011)/run_twowayfe.log
+  log type:  text
+ closed on:  20 Apr 2026, 10:25:19
+-----------------------------------------------------------------------------------------------------------------

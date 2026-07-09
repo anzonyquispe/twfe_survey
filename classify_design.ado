@@ -65,6 +65,7 @@ program define classify_design, rclass
 
     * --- _diff_D = D_{g,t} - D_{g,t-1} -------------------------------------
     gen _diff_D = _D - L._D
+	replace _diff_D = _D if _diff_D == .
 
     * --- _D_g1 = D at first period (per group) -----------------------------
     tempvar tmp

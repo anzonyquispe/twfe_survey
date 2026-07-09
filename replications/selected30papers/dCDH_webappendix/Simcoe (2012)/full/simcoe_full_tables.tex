@@ -1,0 +1,72 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs,caption,geometry,amsmath,adjustbox}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\geometry{margin=0.8in}
+\captionsetup{labelsep=endash, font=normalsize, justification=centering}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Simcoe (2012)}\\
+{\large Standard Setting Committees: Consensus Governance for Shared Technology Platforms}\\
+\vspace{0.5em}
+{\normalsize \textit{American Economic Review}, 102(1), 305--336}
+\end{center}
+
+\vspace{1em}
+\noindent\textbf{Replication status:} Full replication.
+Main table (Table 4), robustness checks, and interaction results replicated.
+Propensity score matching, working group fixed effects, and diff-in-diffs all successful.
+
+\tableofcontents
+
+%% ====================================================================
+\clearpage
+\section{Table 3 -- Covariate Balance (Matched Sample)}
+
+Balance between standards-track and non-standards RFCs in the
+propensity-score matched sample (p99/p5 trimming).
+
+\vspace{1em}
+\input{table3_balance}
+
+%% ====================================================================
+\clearpage
+\section{Table 4 -- Main Results: Duration and STB Affiliation}
+
+Diff-in-diffs estimates of the effect of standards-body affiliation on
+document processing time. Columns vary specification:
+OLS, matched sample, WG fixed effects, standards-only RE.
+
+\vspace{1em}
+\input{table4_main}
+
+%% ====================================================================
+\clearpage
+\section{Table 5 -- Robustness: Alternative STB Measure (Email Activity)}
+
+Using email-based STB measure instead of organizational affiliation.
+
+\vspace{1em}
+\input{table5_robust_stb}
+
+%% ====================================================================
+\clearpage
+\section{Table 6 -- Robustness: Alternative Dependent Variables}
+
+Age (years since first draft) and log duration as alternative DVs.
+
+\vspace{1em}
+\input{table6_robust_dv}
+
+%% ====================================================================
+\clearpage
+\section{Table 7 -- Interactions: Organization, Tech Area, and Cohort}
+
+Heterogeneity by organization type (commercial vs.\ academic),
+IETF technology area, and publication cohort.
+
+\vspace{1em}
+\input{table7_interactions}
+
+\end{document}

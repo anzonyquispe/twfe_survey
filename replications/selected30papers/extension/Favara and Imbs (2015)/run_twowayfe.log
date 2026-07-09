@@ -1,0 +1,708 @@
+
+  ___  ____  ____  ____  ____ ©
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: Unlimited-user 64-core network perpetual
+Serial number: 18461036
+  Licensed to: TEAM BTCR
+               TEAM BTCR
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+
+. do run_twowayfe.do 
+
+. /*===========================================================================
+> ==
+>   TWFE Weight Decomposition: Favara and Imbs (2015)
+>   "Credit Supply and the Price of Housing"
+>   AER 105(3), 958-992
+> 
+>   Main TWFE spec: Table 4, Column 1
+>   xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)
+> 
+>   Treatment: Linter_bra (lagged interstate branching deregulation, binary)
+>   Panel: county x year
+>   Outcome: Dl_hpi (change in log house price index)
+>   Weights: w1 (analytical weights)
+>   Clustering: state_n
+> =============================================================================
+> */
+. 
+. clear all
+
+. set more off
+
+. cap log close _all
+
+. 
+. * ─── STEP 1: Load and merge data ───────────────────────────────────────────
+> ──
+. global datadir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019/
+> Favara and Imbs/20121416_1data/data"
+
+. 
+. use "$datadir/hmda.dta", clear
+
+. merge 1:1 county year using "$datadir/hp_dereg_controls.dta", nogen keep(1 3)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                            12,538  
+    -----------------------------------------
+
+. merge 1:1 county year using "$datadir/call.dta", nogen keep(1 3)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                            82
+        from master                        82  
+        from using                          0  
+
+    Matched                            12,456  
+    -----------------------------------------
+
+. 
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 1: DATA EXPLORATION"
+  STEP 1: DATA EXPLORATION
+
+. di "============================================================"
+============================================================
+
+. di "Observations: " _N
+Observations: 12538
+
+. desc, short
+
+Contains data from C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2015-2019
+> /Favara and Imbs/20121416_1data/data/hmda.dta
+ Observations:        12,538                  
+    Variables:            99                  28 Sep 2014 15:51
+Sorted by: county  year
+     Note: Dataset has changed since last saved.
+
+. 
+. * Panel structure
+. qui tab county
+
+. local n_counties = r(r)
+
+. qui tab year
+
+. local n_years = r(r)
+
+. di _n "Counties (G): " `n_counties'
+
+Counties (G): 1048
+
+. di "Years (T):    " `n_years'
+Years (T):    12
+
+. di "Panel:        " `n_counties' " x " `n_years'
+Panel:        1048 x 12
+
+. 
+. * Treatment variable
+. di _n "--- Treatment: Linter_bra ---"
+
+--- Treatment: Linter_bra ---
+
+. sum Linter_bra, detail
+
+                      lagged inter_bra
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              12,538
+25%            0              0       Sum of wgt.      12,538
+
+50%            1                      Mean           1.235604
+                        Largest       Std. dev.      1.489482
+75%            2              4
+90%            4              4       Variance       2.218555
+95%            4              4       Skewness       .8899247
+99%            4              4       Kurtosis       2.267932
+
+. tab Linter_bra, missing
+
+     lagged |
+  inter_bra |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      5,822       46.43       46.43
+          1 |      2,896       23.10       69.53
+          2 |        864        6.89       76.42
+          3 |        956        7.62       84.05
+          4 |      2,000       15.95      100.00
+------------+-----------------------------------
+      Total |     12,538      100.00
+
+. 
+. * Outcome variable
+. di _n "--- Outcome: Dl_hpi ---"
+
+--- Outcome: Dl_hpi ---
+
+. sum Dl_hpi, detail
+
+                log change house price index
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%    -.0345198      -.0949887
+ 5%     -.006716      -.0907234
+10%     .0046527      -.0897685       Obs              12,214
+25%     .0263263       -.085736       Sum of wgt.      12,214
+
+50%     .0470886                      Mean           .0518646
+                        Largest       Std. dev.      .0441336
+75%      .069606       .3734778
+90%      .101622       .3794586       Variance       .0019478
+95%     .1323796       .3808444       Skewness       1.387219
+99%     .2069746       .3978758       Kurtosis       7.847712
+
+. 
+. * Weights
+. di _n "--- Weights: w1 ---"
+
+--- Weights: w1 ---
+
+. sum w1, detail
+
+            inverse number of counties in a state
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .0119048       .0119048
+ 5%     .0119048       .0119048
+10%     .0131579       .0119048       Obs              12,538
+25%     .0227273       .0119048       Sum of wgt.      12,538
+
+50%      .027027                      Mean           .0445788
+                        Largest       Std. dev.      .0630422
+75%     .0454545              1
+90%     .0769231              1       Variance       .0039743
+95%         .125              1       Skewness        6.70124
+99%     .3333333              1       Kurtosis       70.88423
+
+. 
+. * Check yr* variables exist
+. cap ds yr*
+
+. if _rc != 0 {
+.     di _n "WARNING: yr* variables not found. Generating year dummies..."
+.     qui tab year, gen(yr)
+. }
+
+. else {
+.     di _n "yr* variables found in data"
+
+yr* variables found in data
+.     ds yr*
+yryear_1994  yryear_1996  yryear_1998  yryear_2000  yryear_2002  yryear_2004
+yryear_1995  yryear_1997  yryear_1999  yryear_2001  yryear_2003  yryear_2005
+. }
+
+. 
+. * ─── STEP 2: Replicate Table 4, Column 1 ───────────────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 2: TABLE 4, COLUMN 1 REPLICATION"
+  STEP 2: TABLE 4, COLUMN 1 REPLICATION
+
+. di "  xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)"
+  xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)
+
+. di "============================================================"
+============================================================
+
+. 
+. xtset county year
+
+Panel variable: county (unbalanced)
+ Time variable: year, 1994 to 2005
+         Delta: 1 unit
+
+. xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)
+note: yryear_1994 omitted because of collinearity
+
+Fixed-effects (within) regression               Number of obs      =     12214
+Group variable: county                          Number of groups   =      1021
+
+R-sq:  Within  = 0.1990                         Obs per group: min =         1
+       Between = 0.0098                                        avg =      12.0
+       Overall = 0.0503                                        max =        12
+
+                                                F(12,49)           =     21.23
+corr(u_i, Xb)  = -0.2472                        Prob > F           =    0.0000
+
+                               (Std. err. adjusted for 50 clusters in state_n)
+------------------------------------------------------------------------------
+             |               Robust
+      Dl_hpi | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  Linter_bra |   .0103015    .004115     2.50   0.016      .002032    .0185709
+ yryear_1994 |          0  (omitted)
+ yryear_1995 |  -.0145186    .003331    -4.36   0.000    -.0212124   -.0078248
+ yryear_1996 |  -.0024449   .0057333    -0.43   0.672    -.0139663    .0090766
+ yryear_1997 |  -.0154189   .0070318    -2.19   0.033    -.0295499    -.001288
+ yryear_1998 |  -.0081147   .0082591    -0.98   0.331    -.0247121    .0084826
+ yryear_1999 |  -.0288868   .0088599    -3.26   0.002    -.0466914   -.0110822
+ yryear_2000 |  -.0361069    .010173    -3.55   0.001    -.0565503   -.0156635
+ yryear_2001 |  -.0246981   .0106453    -2.32   0.025    -.0460907   -.0033056
+ yryear_2002 |  -.0046349   .0105382    -0.44   0.662    -.0258123    .0165424
+ yryear_2003 |   -.001035   .0107067    -0.10   0.923    -.0225509     .020481
+ yryear_2004 |   .0125894   .0124674     1.01   0.318    -.0124647    .0376435
+ yryear_2005 |   .0270768   .0111054     2.44   0.018     .0047596    .0493941
+       _cons |   .0509335   .0061057     8.34   0.000     .0386636    .0632033
+-------------+----------------------------------------------------------------
+     sigma_u |  .02050941
+     sigma_e |  .04393803
+         rho |  .17890361   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. local beta_t4c1 = _b[Linter_bra]
+
+. local se_t4c1   = _se[Linter_bra]
+
+. local n_t4c1    = e(N)
+
+. local r2_t4c1   = e(r2_w)
+
+. 
+. di _n "--- Table 4 Col 1 Results ---"
+
+--- Table 4 Col 1 Results ---
+
+. di "  beta(Linter_bra) = " %9.4f `beta_t4c1'
+  beta(Linter_bra) =    0.0103
+
+. di "  se(Linter_bra)   = " %9.4f `se_t4c1'
+  se(Linter_bra)   =    0.0041
+
+. di "  N                = " `n_t4c1'
+  N                = 12214
+
+. di "  R2 (within)      = " %9.4f `r2_t4c1'
+  R2 (within)      =    0.1990
+
+. 
+. * ─── STEP 3: twowayfeweights decomposition ─────────────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION"
+  STEP 3: TWOWAYFEWEIGHTS DECOMPOSITION
+
+. di "============================================================"
+============================================================
+
+. 
+. * --- 3a. feTR ---
+. di _n "--- feTR decomposition ---"
+
+--- feTR decomposition ---
+
+. cap noisily twowayfeweights Dl_hpi county year Linter_bra, type(feTR) weight(
+> w1) summary_measures
+
+Under the common trends assumption,
+the TWFE coefficient beta, equal to 0.0103, estimates a weighted sum of 6473 AT
+> Ts. 
+4406 ATTs receive a positive weight, and 2067 receive a negative weight.
+------------------------------------------------
+Treat. var: Linter_bra  # ATTs      Σ weights  
+------------------------------------------------
+Positive weights        4406        1.1244      
+Negative weights        2067        -0.1244     
+------------------------------------------------
+Total                   6473        1.0000      
+------------------------------------------------
+
+Summary Measures:
+TWFE coefficient (β_fe) =    0.0103
+min σ(Δ) compatible with β_fe and Δ_TR = 0:    0.0085
+min σ(Δ) compatible with treatment effect of opposite sign than β_fe in all (g,
+> t) cells:    0.0296
+Reference: Corollary 1, de Chaisemartin, C and D'Haultfoeuille, X (2020a)
+
+
+The development of this package was funded by the European Union (ERC, REALLYCR
+> EDIBLE,GA N°101043899).
+
+. if _rc == 0 {
+.     local fetr_ok = 1
+.     * Capture results
+.     local fetr_beta    = e(beta)
+.     local fetr_npos    = e(num_pos_w)
+.     local fetr_nneg    = e(num_neg_w)
+.     local fetr_ntot    = `fetr_npos' + `fetr_nneg'
+.     if `fetr_ntot' > 0 {
+.         local fetr_pneg = 100 * `fetr_nneg' / `fetr_ntot'
+.     }
+.     else {
+.         local fetr_pneg = 0
+.     }
+.     cap local fetr_sumn = e(sum_neg_w)
+.     if _rc != 0 local fetr_sumn = .
+. 
+.     di _n "--- feTR Summary ---"
+
+--- feTR Summary ---
+.     di "  beta       = " %9.4f `fetr_beta'
+  beta       =    0.0103
+.     di "  Pos weights: " `fetr_npos'
+  Pos weights: .
+.     di "  Neg weights: " `fetr_nneg'
+  Neg weights: .
+.     di "  % Negative:  " %5.1f `fetr_pneg' "%"
+  % Negative:      .%
+.     if `fetr_sumn' != . di "  Sum neg w:   " %9.4f `fetr_sumn'
+. }
+
+. else {
+.     di "feTR FAILED with rc=" _rc
+.     local fetr_ok = 0
+. }
+
+. 
+. * --- 3b. fdTR ---
+. di _n "--- fdTR decomposition ---"
+
+--- fdTR decomposition ---
+
+. cap noisily twowayfeweights Dl_hpi county year Linter_bra, type(fdTR) weight(
+> w1) summary_measures
+invalid syntax
+
+. if _rc == 0 {
+.     local fdtr_ok = 1
+.     local fdtr_beta    = e(beta)
+.     local fdtr_npos    = e(num_pos_w)
+.     local fdtr_nneg    = e(num_neg_w)
+.     local fdtr_ntot    = `fdtr_npos' + `fdtr_nneg'
+.     if `fdtr_ntot' > 0 {
+.         local fdtr_pneg = 100 * `fdtr_nneg' / `fdtr_ntot'
+.     }
+.     else {
+.         local fdtr_pneg = 0
+.     }
+.     cap local fdtr_sumn = e(sum_neg_w)
+.     if _rc != 0 local fdtr_sumn = .
+. 
+.     di _n "--- fdTR Summary ---"
+.     di "  beta       = " %9.4f `fdtr_beta'
+.     di "  Pos weights: " `fdtr_npos'
+.     di "  Neg weights: " `fdtr_nneg'
+.     di "  % Negative:  " %5.1f `fdtr_pneg' "%"
+.     if `fdtr_sumn' != . di "  Sum neg w:   " %9.4f `fdtr_sumn'
+. }
+
+. else {
+.     di "fdTR FAILED with rc=" _rc
+fdTR FAILED with rc=198
+.     local fdtr_ok = 0
+. }
+
+. 
+. * ─── STEP 4: LaTeX output ──────────────────────────────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  STEP 4: LaTeX OUTPUT"
+  STEP 4: LaTeX OUTPUT
+
+. di "============================================================"
+============================================================
+
+. 
+. local texdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2015
+> -2019/Favara and Imbs (2015)"
+
+. 
+. * --- Table replication ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table4_replication.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{Replication of Favara and Imbs (2015), Table 4, 
+> Column 1}" _n
+
+. file write texfile "\label{tab:favara_t4c1}" _n
+
+. file write texfile "\begin{tabular}{lc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & $\Delta \ln(\text{HPI})$ \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "Linter\_bra & " %9.4f (`beta_t4c1') " \\" _n
+
+. file write texfile " & (" %9.4f (`se_t4c1') ") \\" _n
+
+. file write texfile "\hline" _n
+
+. file write texfile "County FE & Yes \\" _n
+
+. file write texfile "Year FE & Yes \\" _n
+
+. file write texfile "Weights & Yes (w1) \\" _n
+
+. file write texfile "Clustering & State \\" _n
+
+. file write texfile "N & " %9.0fc (`n_t4c1') " \\" _n
+
+. file write texfile "$R^2$ (within) & " %9.4f (`r2_t4c1') " \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table4_replication.tex"
+  Saved: table4_replication.tex
+
+. 
+. * --- twowayfeweights table ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/table_twowayfeweights.tex", write replace
+
+. 
+. file write texfile "\begin{table}[htbp]" _n
+
+. file write texfile "\centering" _n
+
+. file write texfile "\caption{TWFE Weight Decomposition: Favara and Imbs (2015
+> )}" _n
+
+. file write texfile "\label{tab:favara_weights}" _n
+
+. file write texfile "\begin{tabular}{lcc}" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile " & feTR & fdTR \\" _n
+
+. file write texfile "\hline" _n
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & " %9.4f (`fetr_beta') " & "
+. }
+
+. else {
+.     file write texfile "$\hat{\beta}_{TWFE}$ & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %9.4f (`fdtr_beta') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "Positive weights & " (`fetr_npos') " & "
+. }
+
+. else {
+.     file write texfile "Positive weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile (`fdtr_npos') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "Negative weights & " (`fetr_nneg') " & "
+. }
+
+. else {
+.     file write texfile "Negative weights & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile (`fdtr_nneg') " \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. if `fetr_ok' == 1 {
+.     file write texfile "\% Negative & " %5.1f (`fetr_pneg') "\% & "
+. }
+
+. else {
+.     file write texfile "\% Negative & --- & "
+. }
+
+. if `fdtr_ok' == 1 {
+.     file write texfile %5.1f (`fdtr_pneg') "\% \\" _n
+. }
+
+. else {
+.     file write texfile "--- \\" _n
+. }
+
+. 
+. file write texfile "\hline" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Spec: \texttt{xtreg Dl\_
+> hpi Linter\_bra yr* [aw=w1], fe cl(state\_n)}} \\" _n
+
+. file write texfile "\multicolumn{3}{l}{\footnotesize Panel: county $\times$ y
+> ear. Treatment: lagged interstate branch deregulation.} \\" _n
+
+. file write texfile "\hline\hline" _n
+
+. file write texfile "\end{tabular}" _n
+
+. file write texfile "\end{table}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: table_twowayfeweights.tex"
+  Saved: table_twowayfeweights.tex
+
+. 
+. * --- Master LaTeX document ---
+. cap file close texfile
+
+. file open texfile using "`texdir'/favara_tables.tex", write replace
+
+. 
+. file write texfile "\documentclass[12pt]{article}" _n
+
+. file write texfile "\usepackage[margin=1in]{geometry}" _n
+
+. file write texfile "\usepackage{booktabs,caption}" _n
+
+. file write texfile "\begin{document}" _n
+
+. file write texfile "\section*{Favara and Imbs (2015): TWFE Weight Decompositi
+> on}" _n
+
+. file write texfile "\subsection*{Paper: ``Credit Supply and the Price of Hous
+> ing'', AER 105(3)}" _n
+
+. file write texfile _n
+
+. file write texfile "\input{table4_replication}" _n
+
+. file write texfile _n
+
+. file write texfile "\input{table_twowayfeweights}" _n
+
+. file write texfile _n
+
+. file write texfile "\end{document}" _n
+
+. 
+. file close texfile
+
+. di "  Saved: favara_tables.tex"
+  Saved: favara_tables.tex
+
+. 
+. * ─── STEP 5: Summary ───────────────────────────────────────────────────────
+> ──
+. di _n "============================================================"
+
+============================================================
+
+. di "  FINAL SUMMARY: Favara and Imbs (2015)"
+  FINAL SUMMARY: Favara and Imbs (2015)
+
+. di "============================================================"
+============================================================
+
+. di "  Table 4, Column 1"
+  Table 4, Column 1
+
+. di "  Spec: xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)"
+  Spec: xtreg Dl_hpi Linter_bra yr* [aw=w1], fe cl(state_n)
+
+. di "  beta(Linter_bra)  = " %9.4f `beta_t4c1'
+  beta(Linter_bra)  =    0.0103
+
+. di "  se(Linter_bra)    = " %9.4f `se_t4c1'
+  se(Linter_bra)    =    0.0041
+
+. di "  N                 = " `n_t4c1'
+  N                 = 12214
+
+. di "  Panel: " `n_counties' " counties x " `n_years' " years"
+  Panel: 1048 counties x 12 years
+
+. di "------------------------------------------------------------"
+------------------------------------------------------------
+
+. if `fetr_ok' {
+.     di "  feTR: " `fetr_npos' " pos, " `fetr_nneg' " neg (" %5.1f `fetr_pneg'
+>  "% negative)"
+  feTR: . pos, . neg (    .% negative)
+. }
+
+. else {
+.     di "  feTR: FAILED"
+. }
+
+. if `fdtr_ok' {
+.     di "  fdTR: " `fdtr_npos' " pos, " `fdtr_nneg' " neg (" %5.1f `fdtr_pneg'
+>  "% negative)"
+. }
+
+. else {
+.     di "  fdTR: FAILED"
+  fdTR: FAILED
+. }
+
+. di "============================================================"
+============================================================
+
+. 
+. * Done

@@ -24,10 +24,25 @@ clear all
 set more off
 cap log close _all
 
+
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
 * --- Paths ---
-global datadir  "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Besley and Mueller/data"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Besley and Mueller (2012)"
-global texdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/latex/2010-2012/Besley and Mueller (2012)"
+global datadir  "$twfe_root/data/2010-2012/Besley and Mueller/data"
+global outdir   "$twfe_root/replications/2010-2012/Besley and Mueller (2012)"
+global texdir   "$twfe_root/latex/2010-2012/Besley and Mueller (2012)"
 
 cap log using "$outdir/run_twowayfe_detail.log", text replace name(detail)
 
@@ -587,6 +602,14 @@ label variable region        "G: NI region (11 regions)"
 label variable time          "T: Quarter"
 label variable L1_wtd        "D: Lagged killings per SD"
 label variable lnhouseprice  "Y: Log house price"
+
+rename region G
+rename time T
+rename L1_wtd D
+rename lnhouseprice Y
+egen aux = group(T)
+replace T = aux
+drop aux
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

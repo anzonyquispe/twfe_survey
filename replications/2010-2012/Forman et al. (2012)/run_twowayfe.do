@@ -26,9 +26,23 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Forman et al. (2012)"
+
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global paperdir "$twfe_root/data/2010-2012/Forman et al. (2012)"
 global datadir  "$paperdir/data_and_programs"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Forman et al. (2012)"
+global outdir   "$twfe_root/replications/2010-2012/Forman et al. (2012)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -397,6 +411,17 @@ label variable county_id        "G: County numeric ID"
 label variable period           "T: Period (1995/2000)"
 label variable surv_deeppost00  "D: Advanced Internet adoption"
 label variable wagediff         "Y: Wage growth differential"
+
+egen aux = group(period)
+replace period = aux
+drop aux 
+
+rename county_id G
+rename period T
+rename surv_deeppost00 D
+rename wagediff Y
+
+
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"

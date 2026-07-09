@@ -1,0 +1,53 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Algan and Cahuc (2010)/full/test_algan.log
+  log type:  text
+ opened on:   6 May 2026, 02:21:20
+
+. 
+. di "TEST: Loading micro data..."
+TEST: Loading micro data...
+
+. use "AER_MICRO.dta", clear
+
+. describe, short
+
+Contains data from AER_MICRO.dta
+ Observations:        29,359                  
+    Variables:           146                  13 Dec 2009 21:44
+Sorted by: 
+
+. 
+. di "TEST: Running one regression..."
+TEST: Running one regression...
+
+. reg trust10_large age men ageedu if native==1, robust
+
+Linear regression                               Number of obs     =     14,118
+                                                F(3, 14114)       =     322.40
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0593
+                                                Root MSE          =     .47876
+
+------------------------------------------------------------------------------
+             |               Robust
+trust10_la~e | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0034504   .0002335    14.78   0.000     .0029928    .0039081
+         men |   .0331514   .0081134     4.09   0.000     .0172481    .0490546
+      ageedu |   .0405963   .0013781    29.46   0.000     .0378952    .0432975
+       _cons |  -.2834952   .0231113   -12.27   0.000    -.3287964   -.2381939
+------------------------------------------------------------------------------
+
+. di "TEST: Done."
+TEST: Done.
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-20
+> 12/Algan and Cahuc (2010)/full/test_algan.log
+  log type:  text
+ closed on:   6 May 2026, 02:21:22
+-------------------------------------------------------------------------------

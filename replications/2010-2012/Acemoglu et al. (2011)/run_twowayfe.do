@@ -21,9 +21,22 @@ clear all
 set more off
 cap log close _all
 
-global paperdir "C:/Users/Usuario/Documents/GitHub/twfe_survey/data/2010-2012/Acemoglu et al. (2011)"
+if "`c(username)'" == "anzony.quisperojas" {
+    global twfe_root   "/Users/anzony.quisperojas/Documents/GitHub/twfe_survey"
+    global papers_root "/Users/anzony.quisperojas/Documents/GitHub/papers_economic"
+}
+else if "`c(username)'" == "Usuario" {
+    global twfe_root   "C:/Users/Usuario/Documents/GitHub/twfe_survey"
+    global papers_root "C:/Users/Usuario/Documents/GitHub/papers_economic"
+}
+else {
+    di as error "Unknown user `c(username)'. Add your repo paths to the user-detection block at the top of this dofile."
+    exit 198
+}
+
+global paperdir "$twfe_root/data/2010-2012/Acemoglu et al. (2011)"
 global datadir  "$paperdir/20100816_replication10"
-global outdir   "C:/Users/Usuario/Documents/GitHub/twfe_survey/replications/2010-2012/Acemoglu et al. (2011)"
+global outdir   "$twfe_root/replications/2010-2012/Acemoglu et al. (2011)"
 
 log using "$outdir/run_twowayfe.log", text replace
 
@@ -424,12 +437,20 @@ di _n "=============================================="
 di "  STEP 6: SAVE CLEAN PANEL .dta (G, T, D)"
 di "=============================================="
 
-keep id year fpresence urbrate
+keep id year fpresence urbrate 
 
 label variable id         "G: Polity numeric ID"
 label variable year       "T: Year (1700-1900)"
 label variable fpresence  "D: French presence (binary)"
 label variable urbrate    "Y: Urbanization rate"
+
+rename id G
+rename year T
+rename fpresence D
+rename urbrate Y
+egen aux = group(T)
+replace T = aux
+drop aux
 
 save "$outdir/panel_GTD.dta", replace
 di "  -> panel_GTD.dta saved with " _N " observations"
